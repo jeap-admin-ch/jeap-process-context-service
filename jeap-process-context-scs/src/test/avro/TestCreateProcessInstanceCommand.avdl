@@ -1,0 +1,18 @@
+@namespace("ch.admin.bit.jeap.processcontext.command.test.createprocessinstance")
+protocol TestCreateProcessInstanceCommandProtocol {
+
+  import idl "MessagingBaseTypes.avdl";
+
+  record TestCreateProcessInstanceCommandReferences {
+
+  }
+
+  record TestCreateProcessInstanceCommand {
+    ch.admin.bit.jeap.messaging.avro.AvroMessageIdentity identity;
+    ch.admin.bit.jeap.messaging.avro.AvroMessageType type;
+    ch.admin.bit.jeap.messaging.avro.AvroMessagePublisher publisher;
+    TestCreateProcessInstanceCommandReferences references;
+    string commandVersion;
+    string processId;
+  }
+}

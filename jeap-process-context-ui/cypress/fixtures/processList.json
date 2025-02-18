@@ -1,0 +1,27 @@
+{
+  "totalCount": 2,
+  "processInstanceLightDtoList": [
+    {
+      "createdAt": "122",
+      "lastMessageCreatedAt": "111",
+      "state": "status1",
+      "originProcessId": "o1",
+      "name": {
+        "de": "xxxx",
+        "it": "[IT] xxxx",
+        "fr": "[FR] xxxx"
+      }
+    },
+    {
+      "createdAt": "122",
+      "lastMessageCreatedAt": "111",
+      "state": "status2",
+      "originProcessId": "o2",
+      "name": {
+        "de": "Race Across Switzerland",
+        "it": "[IT] Race Across Switzerland",
+        "fr": "[FR] Race Across Switzerland"
+      }
+    }
+  ]
+}

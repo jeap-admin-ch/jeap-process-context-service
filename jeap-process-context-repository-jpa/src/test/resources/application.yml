@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: test
+  test:
+    database:
+      replace: none
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        use_sql_comments: true
+        format_sql: true
+  datasource:
+    url: "jdbc:h2:mem:testdb;DATABASE_TO_UPPER=FALSE;MODE=PostgreSQL"
+  flyway:
+    locations: classpath:db/migration/common, classpath:db/migration/h2
+    # The new H2 version coming with spring boot 2.7 no longer accepts keywords as column names.
+    # Unfortunately, we already have a DDL script that does just that. We can tell H2 to still
+    # accept the keywords listed below as normal identifiers, though.
+    init-sqls:
+      - SET NON_KEYWORDS KEY, VALUE

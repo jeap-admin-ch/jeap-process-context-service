@@ -1,0 +1,32 @@
+<h5>{{ "i18n.process.relations" | translate }}</h5>
+<div *ngIf="processRelations.length">
+	<table mat-table [dataSource]="dataSource" class="ob-table ob-table-sm ob-table-cicd" *ngIf="processRelations.length">
+		<ng-container matColumnDef="relation">
+			<th *matHeaderCellDef mat-header-cell>{{ "i18n.process.relation.relation" | translate }}</th>
+			<td *matCellDef="let row" mat-cell>{{ row.relation[this.translate.currentLang] }}</td>
+		</ng-container>
+
+		<ng-container matColumnDef="type">
+			<th *matHeaderCellDef mat-header-cell>{{ "i18n.process.relation.type" | translate }}</th>
+			<td *matCellDef="let row" mat-cell>{{ row.processName[this.translate.currentLang] }}</td>
+		</ng-container>
+
+		<ng-container matColumnDef="id">
+			<th *matHeaderCellDef mat-header-cell>{{ "i18n.process.relation.id" | translate }}</th>
+			<td *matCellDef="let row" mat-cell>
+				<a routerLink="/process/{{ row.processId }}" (click)="emitClick(row.processId)">{{ row.processId }}</a>
+			</td>
+		</ng-container>
+
+		<ng-container matColumnDef="state">
+			<th *matHeaderCellDef mat-header-cell>{{ "i18n.process.relation.state" | translate }}</th>
+			<td *matCellDef="let row" mat-cell>{{ "i18n.process.state." + row.processState | translate }}</td>
+		</ng-container>
+
+		<tr *matHeaderRowDef="['relation', 'type', 'id', 'state']" mat-header-row></tr>
+		<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+	</table>
+	<mat-paginator [pageSizeOptions]="[5]"></mat-paginator>
+</div>
+
+<p *ngIf="processRelations.length === 0">{{ "i18n.none" | translate }}</p>

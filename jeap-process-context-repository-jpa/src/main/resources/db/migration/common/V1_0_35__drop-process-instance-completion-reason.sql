@@ -1,0 +1,2 @@
+UPDATE process_instance SET process_completion_name = process_completion_reason WHERE process_completion_name IS NULL and process_completion_reason IS NOT NULL;
+ALTER TABLE process_instance DROP COLUMN process_completion_reason;

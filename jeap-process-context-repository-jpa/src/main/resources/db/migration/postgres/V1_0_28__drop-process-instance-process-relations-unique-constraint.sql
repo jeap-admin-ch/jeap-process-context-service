@@ -1,0 +1,1 @@
+ALTER TABLE process_instance_process_relations drop constraint process_instance_process_relations_process_instance_id_key;

@@ -1,0 +1,21 @@
+@namespace("ch.admin.bit.jeap.processcontext.event.test5")
+protocol Test5CreatingProcessInstanceEventProtocol {
+  import idl "DomainEventBaseTypes.avdl";
+
+  record Test5CreatingProcessInstanceEventReferences {}
+
+  record Test5CreatingProcessInstanceEventPayload {
+    string trigger;
+  }
+
+  record Test5CreatingProcessInstanceEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    Test5CreatingProcessInstanceEventReferences references;
+    Test5CreatingProcessInstanceEventPayload payload;
+    string domainEventVersion;
+    string processId;
+  }
+
+}

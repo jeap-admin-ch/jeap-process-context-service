@@ -1,0 +1,47 @@
+{
+  "name": "migrationFullTest",
+  "tasks": [
+    {
+      "name": "mandatory",
+      "completedBy": {
+        "domainEvent": "Test2Event"
+      }
+    },
+    {
+      "name": "task2"
+    }
+  ],
+  "events": [
+    {
+      "eventName": "Test1Event",
+      "topicName": "topic.test1",
+      "referenceExtractor": "ch.admin.bit.jeap.processcontext.testevent.ProcessDataCorrelationEventDataReferenceExtractor"
+    },
+    {
+      "eventName": "Test2Event",
+      "topicName": "topic.test2",
+      "referenceExtractor": "ch.admin.bit.jeap.processcontext.testevent.ProcessDataCorrelationEventDataReferenceExtractor",
+      "correlatedBy": {
+        "processDataKey": "correlationProcessData",
+        "eventDataKey": "correlationEventDataKey"
+      }
+    }
+  ],
+  "milestones": [
+    {
+      "name": "milestone",
+      "reachedWhen": {
+        "condition": "ch.admin.bit.jeap.processcontext.milestone.Task1And2CompletedCondition"
+      }
+    }
+  ],
+  "processData": [
+    {
+      "key": "correlationProcessData",
+      "source": {
+        "eventName": "Test1Event",
+        "eventDataKey": "correlationEventDataKey"
+      }
+    }
+  ]
+}

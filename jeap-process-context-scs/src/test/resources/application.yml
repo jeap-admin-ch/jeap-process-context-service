@@ -1,0 +1,81 @@
+spring:
+  test:
+    database:
+      replace: none
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: "jdbc:h2:mem:${random.uuid};DATABASE_TO_UPPER=FALSE;MODE=PostgreSQL"
+  jpa:
+    open-in-view: false
+  flyway:
+    locations: classpath:db/migration/common, classpath:db/migration/h2
+    # The new H2 version coming with spring boot 2.7 no longer accepts keywords as column names.
+    # Unfortunately, we already have a DDL script that does just that. We can tell H2 to still
+    # accept the keywords listed below as normal identifiers, though.
+    init-sqls:
+      - SET NON_KEYWORDS KEY, VALUE
+  application:
+    name: test
+jeap:
+
+  security:
+    oauth2:
+      resourceserver:
+        authorization-server:
+          issuer: http://localhost:8180/
+        system-name: "jme"
+
+  messaging:
+    kafka:
+      system-name: JEAP
+      service-name: test
+      useSchemaRegistry: false
+      schemaRegistryUrl: "mock://none"
+      username: user
+      password: user-secret
+      securityProtocol: PLAINTEXT
+      consume-without-contract-allowed: true
+
+  monitor:
+    prometheus:
+      user: prometheus
+      password: "{noop}test"
+
+  processcontext:
+    consumer-contract-validator:
+      enabled: false
+    frontend:
+      application-url: "http://localhost:8080"
+
+
+logging:
+  level:
+    kafka: WARN
+    org:
+      apache:
+        kafka: ERROR
+        zookeeper: WARN
+      springframework:
+        orm: WARN
+    io:
+      confluent: WARN
+    state:
+      change: WARN
+    com:
+      zaxxer: WARN
+    ch:
+      admin:
+        bit:
+          jeap:
+            kafka: WARN
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,prometheus"
+
+server:
+  servlet:
+    context-path: /process-context
+  compression:
+    enabled: true

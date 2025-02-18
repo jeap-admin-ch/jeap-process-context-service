@@ -1,0 +1,66 @@
+{
+  "name": "twoMilestones",
+  "tasks": [
+    {
+      "name": "task1",
+      "completedBy": {
+        "domainEvent": "Test2Event"
+      }
+    },
+    {
+      "name": "task2",
+      "lifecycle": "dynamic",
+      "cardinality": "single-instance",
+      "plannedBy": {
+        "domainEvent": "Test1Event"
+      },
+      "completedBy": {
+        "domainEvent": "Test3Event"
+      }
+    },
+    {
+      "name": "task3",
+      "lifecycle": "dynamic",
+      "cardinality": "single-instance",
+      "plannedBy": {
+        "domainEvent": "Test1Event"
+      },
+      "completedBy": {
+        "domainEvent": "Test4Event"
+      }
+    }
+  ],
+  "milestones": [
+    {
+      "name": "Task1Completed",
+      "reachedWhen": {
+        "condition": "ch.admin.bit.jeap.processcontext.milestone.Task1CompletedCondition"
+      }
+    },
+    {
+      "name": "Task1And2Completed",
+      "reachedWhen": {
+        "condition": "ch.admin.bit.jeap.processcontext.milestone.Task1And2CompletedCondition"
+      }
+    }
+  ],
+  "events": [
+    {
+      "eventName": "Test1Event",
+      "topicName": "topic.test1",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.TaskTest1EventCorrelationProvider"
+    },
+    {
+      "eventName": "Test2Event",
+      "topicName": "topic.test2"
+    },
+    {
+      "eventName": "Test3Event",
+      "topicName": "topic.test3"
+    },
+    {
+      "eventName": "Test4Event",
+      "topicName": "topic.test4"
+    }
+  ]
+}

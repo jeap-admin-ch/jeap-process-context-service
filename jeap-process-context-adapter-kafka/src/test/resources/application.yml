@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: jeap-process-context-scs

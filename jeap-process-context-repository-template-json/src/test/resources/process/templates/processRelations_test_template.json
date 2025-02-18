@@ -1,0 +1,43 @@
+{
+  "name": "processRelationsTestProcess",
+  "processRelationPatterns": [
+    {
+      "name": "aName",
+      "roleType": "origin",
+      "originRole": "originRole1",
+      "targetRole": "targetRole2",
+      "visibility": "both",
+      "source": {
+        "messageName": "TestEvent",
+        "messageDataKey": "otherProcessId"
+      }
+    },
+    {
+      "name": "bName",
+      "roleType": "origin",
+      "originRole": "originRole1",
+      "targetRole": "targetRole2",
+      "visibility": "both",
+      "source": {
+        "messageName": "TestEvent",
+        "messageDataKey": "otherProcessId"
+      }
+    }
+  ],
+  "messages": [
+    {
+      "messageName": "TestEvent",
+      "topicName": "test.topic",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider"
+    }
+  ],
+  "tasks": [
+    {
+      "name": "single",
+      "completedBy": {
+        "message": "TestEvent"
+      }
+    }
+  ]
+}
+

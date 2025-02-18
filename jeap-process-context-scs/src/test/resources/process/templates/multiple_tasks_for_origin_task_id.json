@@ -1,0 +1,13 @@
+{
+  "name": "multipleTasksForOriginTaskId",
+  "tasks": [
+    {
+      "name": "multiple1",
+      "lifecycle": "dynamic"
+    },
+    {
+      "name": "multiple2",
+      "lifecycle": "dynamic"
+    }
+  ]
+}

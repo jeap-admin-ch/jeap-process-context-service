@@ -1,0 +1,20 @@
+{
+  "name": "commandTriggersProcessInstantiation",
+  "tasks": [
+    {
+      "name": "mandatory",
+      "completedBy": {
+        "domainEvent": "TestCreateProcessInstanceCommand"
+      }
+    }
+  ],
+  "events": [
+    {
+      "eventName": "TestCreateProcessInstanceCommand",
+      "topicName": "topic.testcreateprocessinstance",
+      "triggersProcessInstantiation": true
+    }
+  ],
+  "milestones": [],
+  "processData": []
+}

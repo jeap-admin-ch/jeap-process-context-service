@@ -1,0 +1,79 @@
+{
+  "originProcessId": "XXX",
+  "name": {
+    "de": "Race Across Switzerland",
+    "it": "[IT] Race Across Switzerland",
+    "fr": "[FR] Race Across Switzerland"
+  },
+  "state": "STARTED",
+  "createdAt": "2023-06-27T10:19:09.786578+02:00",
+  "modifiedAt": "2023-06-27T10:19:10.431462+02:00",
+  "tasks": [
+    {
+      "originTaskId": null,
+      "name": {
+        "de": "Rennen starten",
+        "it": "[IT] Rennen starten",
+        "fr": "[FR] Rennen starten"
+      },
+      "lifecycle": "STATIC",
+      "cardinality": "SINGLE_INSTANCE",
+      "state": "PLANNED",
+      "plannedAt": "2023-06-27T10:19:09.763437+02:00",
+      "completedAt": null
+    },
+    {
+      "originTaskId": null,
+      "name": {
+        "de": "Ziel passieren",
+        "it": "[IT] Ziel passieren",
+        "fr": "[FR] Ziel passieren"
+      },
+      "lifecycle": "STATIC",
+      "cardinality": "SINGLE_INSTANCE",
+      "state": "PLANNED",
+      "plannedAt": "2023-06-27T10:19:09.763482+02:00",
+      "completedAt": null
+    },
+    {
+      "originTaskId": null,
+      "name": {
+        "de": "Rennstrecke validieren",
+        "it": "[IT] Rennstrecke validieren",
+        "fr": "[FR] Rennstrecke validieren"
+      },
+      "lifecycle": "STATIC",
+      "cardinality": "SINGLE_INSTANCE",
+      "state": "PLANNED",
+      "plannedAt": "2023-06-27T10:19:09.763496+02:00",
+      "completedAt": null
+    }
+  ],
+  "milestones": [
+    {
+      "name": "AllControlPointsPassed",
+      "labels": {
+        "de": "Alle Kontrollpunkte wurden durchgefahren",
+        "it": "[IT] Alle Kontrollpunkte wurden durchgefahren",
+        "fr": "[FR] Alle Kontrollpunkte wurden durchgefahren"
+      },
+      "state": "NOT_REACHED",
+      "reachedAt": null
+    }
+  ],
+  "messages": [],
+  "processData": [
+    {
+      "key": "race-car-number",
+      "value": "string",
+      "role": null
+    },
+    {
+      "key": "race-id",
+      "value": "New Race Across Switzerland",
+      "role": null
+    }
+  ],
+  "relations": [],
+  "processCompletion": null
+}

@@ -1,0 +1,9 @@
+DROP INDEX process_instance_created_at;
+DROP INDEX process_instance_version;
+DROP INDEX task_instance_state;
+DROP INDEX task_instance_created_at;
+DROP INDEX task_instance_modified_at;
+DROP INDEX task_instance_version;
+DROP INDEX milestone_version;
+DROP INDEX milestone_state;
+DROP INDEX process_data_role;

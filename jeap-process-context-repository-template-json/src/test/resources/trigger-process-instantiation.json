@@ -1,0 +1,19 @@
+{
+  "name": "trigger-process-instantiation",
+  "events": [
+    {
+      "eventName": "TriggerEvent",
+      "topicName": "test.topic",
+      "triggersProcessInstantiation": true
+    }
+  ],
+  "tasks": [
+    {
+      "name": "single",
+      "completedBy": {
+        "domainEvent": "TriggerEvent"
+      }
+    }
+  ]
+}
+

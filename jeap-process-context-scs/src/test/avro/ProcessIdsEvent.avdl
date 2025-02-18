@@ -1,0 +1,22 @@
+@namespace("ch.admin.bit.jeap.processcontext.event.processids")
+protocol ProcessIdsEventProtocol {
+  import idl "DomainEventBaseTypes.avdl";
+
+  record ProcessIdsEventReferences {
+  }
+
+  record ProcessIdsEventPayload {
+    array<string> processIds;
+  }
+
+  record ProcessIdsEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    ProcessIdsEventReferences references;
+    ProcessIdsEventPayload payload;
+    union {null, string} processId = null;
+    string domainEventVersion;
+  }
+
+}

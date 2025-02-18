@@ -1,0 +1,18 @@
+{
+  "name": "domainEventsWithDifferentPayloadExtractor",
+  "tasks": [
+    {
+      "name": "completed_by_custom_condition_and_event_data",
+      "completedBy": {
+        "domainEvent": "Test1Event"
+      }
+    }
+  ],
+  "events": [
+    {
+      "eventName": "Test1Event",
+      "topicName": "topic.test1",
+      "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.Test1EventDifferentPayloadExtractor"
+    }
+  ]
+}

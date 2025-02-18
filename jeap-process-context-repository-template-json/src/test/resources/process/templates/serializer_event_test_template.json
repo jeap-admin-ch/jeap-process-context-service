@@ -1,0 +1,177 @@
+{
+  "name": "serializerTestProcess",
+  "events": [
+    {
+      "eventName": "TestEvent",
+      "topicName": "test.topic",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider"
+    },
+    {
+      "eventName": "TestEvent2",
+      "topicName": "test2.topic"
+    },
+    {
+      "eventName": "TestEvent3",
+      "topicName": "test3.topic",
+      "payloadExtractor": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestPayloadExtractor"
+    },
+    {
+      "eventName": "TestEvent4",
+      "topicName": "test4.topic",
+      "correlatedBy": {
+        "processDataKey": "processDataKey",
+        "eventDataKey": "someEventDataKey"
+      },
+      "referenceExtractor": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestReferenceExtractor"
+    }
+  ],
+  "tasks": [
+    {
+      "name": "single-legacy",
+      "cardinality": "single"
+    },
+    {
+      "name": "dynamic-legacy",
+      "cardinality": "dynamic"
+    },
+    {
+      "name": "defaults"
+    },
+    {
+      "name": "single",
+      "lifecycle": "static"
+    },
+    {
+      "name": "single-explicit",
+      "lifecycle": "static",
+      "cardinality": "single-instance"
+    },
+    {
+      "name": "dynamic",
+      "lifecycle": "dynamic"
+    },
+    {
+      "name": "dynamic-multi",
+      "lifecycle": "dynamic",
+      "cardinality": "multi-instance"
+    },
+    {
+      "name": "observed",
+      "lifecycle": "observed",
+      "observes": {
+        "domainEvent": "TestEvent"
+      }
+    },
+    {
+      "name": "observedWithCondition",
+      "lifecycle": "observed",
+      "observes": {
+        "domainEvent": "TestEvent",
+        "condition": "ch.admin.bit.jeap.processcontext.repository.template.json.TestTaskInstantiationCondition"
+      }
+    },
+    {
+      "name": "plannedByEventOrMessage",
+      "lifecycle": "dynamic",
+      "plannedBy": {
+        "domainEvent": "TestEvent"
+      },
+      "taskData": [
+        {
+          "sourceMessage": "TestEvent",
+          "messageDataKeys": ["foo", "bar"]
+        }
+      ]
+    },
+    {
+      "name": "plannedByEventOrMessageWithCondition",
+      "lifecycle": "dynamic",
+      "plannedBy": {
+        "domainEvent": "TestEvent",
+        "condition": "ch.admin.bit.jeap.processcontext.repository.template.json.TestTaskInstantiationCondition"
+      }
+    },
+    {
+      "name": "completedByDomainEvent",
+      "completedBy": {
+        "domainEvent": "TestEvent"
+      },
+      "taskData": [
+        {
+          "sourceMessage": "TestEvent",
+          "messageDataKeys": ["foo"]
+        }
+      ]
+    }
+  ],
+  "milestones": [
+    {
+      "name": "BorderCrossed",
+      "reachedWhen": {
+        "condition": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestMilestoneCondition"
+      }
+    },
+    {
+      "name": "MultiTasks",
+      "reachedWhen": {
+        "tasksCompleted": [
+          "completedByDomainEvent"
+        ]
+      }
+    }
+  ],
+  "processData": [
+    {
+      "key": "processDataKey",
+      "source": {
+        "eventName": "TestEvent4",
+        "eventDataKey": "sourceDataKey"
+      }
+    }
+  ],
+  "relationSystemId": "ch.test.System",
+  "relationPatterns": [
+    {
+      "subject": {
+        "type": "some-type",
+        "selector": {
+          "processDataKey": "processDataKey",
+          "role": "some-role"
+        }
+      },
+      "object": {
+        "type": "some-other-type",
+        "selector": {
+          "processDataKey": "processDataKey"
+        }
+      },
+      "predicateType": "some relationship"
+    }
+  ],
+  "completions": [
+    {
+      "completedBy" : {
+        "condition" : "ch.admin.bit.jeap.processcontext.plugin.api.condition.AllTasksInFinalStateProcessCompletionCondition"
+      }
+    },
+    {
+      "completedBy" : {
+        "domainEvent" : "TestEvent4",
+        "conclusion" : "cancelled",
+        "name" : "Cancelled because of TestEvent4"
+      }
+    }
+  ],
+  "snapshots": [
+    {
+      "createdOn" : {
+        "condition" : "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestProcessSnapshotCondition"
+      }
+    },
+    {
+      "createdOn" : {
+        "completion": "any"
+      }
+    }
+  ]
+}

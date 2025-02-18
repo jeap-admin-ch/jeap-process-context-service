@@ -1,0 +1,30 @@
+@namespace("ch.admin.bit.jeap.processcontext.event.test1")
+protocol Test1EventProtocol {
+  import idl "DomainEventBaseTypes.avdl";
+
+  record SubjectReference {
+      string type = "subject";
+      string version = "1";
+      string subjectId;
+  }
+
+  record Test1EventReferences {
+    union {null, SubjectReference} subjectReference;
+  }
+
+  record Test1EventPayload {
+    array<string> taskIds;
+    union {null, string} someField;
+  }
+
+  record Test1Event {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    Test1EventReferences references;
+    Test1EventPayload payload;
+    string domainEventVersion;
+    union {null, string} processId = null;
+  }
+
+}

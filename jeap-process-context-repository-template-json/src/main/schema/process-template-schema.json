@@ -1,0 +1,414 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "$ref": "#/definitions/processTemplate",
+  "definitions": {
+    "message": {
+      "type": "object",
+      "properties": {
+        "messageName": {
+          "type": "string"
+        },
+        "topicName": {
+          "type": "string"
+        },
+        "clusterName": {
+          "type": "string"
+        },
+        "correlationProvider": {
+          "type": "string"
+        },
+        "payloadExtractor": {
+          "type": "string"
+        },
+        "referenceExtractor": {
+          "type": "string"
+        },
+        "correlatedBy": {
+          "$ref": "#/definitions/correlatedByProcessData"
+        },
+        "triggersProcessInstantiation": {
+          "type": "boolean"
+        },
+        "processInstantiationCondition": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "messageName",
+        "topicName"
+      ]
+    },
+    "processTemplate": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/task"
+          }
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/message"
+          }
+        },
+        "milestones": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/milestone"
+          }
+        },
+        "processData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/processData"
+          }
+        },
+        "relationSystemId": {
+          "type": "string"
+        },
+        "relationPatterns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/relationPatterns"
+          }
+        },
+        "completions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/completion"
+          }
+        },
+        "snapshots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/snapshot"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "tasks"
+      ],
+      "additionalProperties": false
+    },
+    "milestone": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "reachedWhen": {
+          "$ref": "#/definitions/reachedWhen"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "reachedWhen"
+      ]
+    },
+    "processData": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/definitions/source"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "source"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "messageDataKey": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "message",
+        "messageDataKey"
+      ]
+    },
+    "reachedWhen": {
+      "type": "object",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/reachedWhenCondition"
+        },
+        {
+          "$ref": "#/definitions/reachedWhenTasksCompleted"
+        }
+      ]
+    },
+    "reachedWhenCondition": {
+      "properties": {
+        "condition": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "condition"
+      ]
+    },
+    "reachedWhenTasksCompleted": {
+      "properties": {
+        "tasksCompleted": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "tasksCompleted"
+      ]
+    },
+    "completedBy": {
+      "$ref": "#/definitions/completedByMessage"
+    },
+    "completedByMessage": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "task": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "lifecycle": {
+          "type": "string",
+          "enum": [
+            "static",
+            "dynamic",
+            "observed"
+          ]
+        },
+        "cardinality": {
+          "type": "string",
+          "enum": [
+            "single-instance",
+            "multi-instance",
+            "single",
+            "dynamic"
+          ]
+        },
+        "completedBy": {
+          "type": "object",
+          "$ref": "#/definitions/completedBy"
+        },
+        "plannedBy": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            },
+            "condition": {
+              "type": "string"
+            }
+          }
+        },
+        "observes": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            },
+            "condition": {
+              "type": "string"
+            }
+          }
+        },
+        "taskData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/taskData"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
+    "relationPatterns": {
+      "type": "object",
+      "properties": {
+        "object": {
+          "type": "object",
+          "$ref": "#/definitions/relationNode"
+        },
+        "subject": {
+          "type": "object",
+          "$ref": "#/definitions/relationNode"
+        },
+        "predicateType": {
+          "type": "string"
+        },
+        "joinType": {
+          "type": "string",
+          "enum": ["byValue", "byRole"]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "object",
+        "subject",
+        "predicateType"
+      ]
+    },
+    "relationNode": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "object",
+          "$ref": "#/definitions/relationNodeSelector"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "selector"
+      ]
+    },
+    "relationNodeSelector": {
+      "type": "object",
+      "properties": {
+        "processDataKey": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "processDataKey"
+      ]
+    },
+    "correlatedByProcessData": {
+      "type": "object",
+      "properties": {
+        "processDataKey": {
+          "type": "string"
+        },
+        "messageDataKey": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "processDataKey",
+        "messageDataKey"
+      ],
+      "additionalProperties": false
+    },
+    "completion": {
+      "type": "object",
+      "properties": {
+        "completedBy": {
+          "type": "object",
+          "$ref": "#/definitions/completionCondition"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "completedBy"
+      ]
+    },
+    "completionCondition": {
+      "type": "object",
+      "properties": {
+        "condition": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "conclusion": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "snapshot": {
+      "type": "object",
+      "properties": {
+        "createdOn": {
+          "type": "object",
+          "$ref": "#/definitions/snapshotCondition"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "createdOn"
+      ]
+    },
+    "snapshotCondition": {
+      "type": "object",
+      "properties": {
+        "condition": {
+          "type": "string"
+        },
+        "completion": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "taskData": {
+      "type": "object",
+      "properties": {
+        "sourceMessage": {
+          "type": "string"
+        },
+        "messageDataKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [ "sourceMessage", "messageDataKeys" ]
+    }
+  }
+}

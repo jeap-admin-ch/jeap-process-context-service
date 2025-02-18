@@ -1,0 +1,23 @@
+{
+  "name": "messageClusterTestProcess",
+  "messages": [
+    {
+      "messageName": "TestEventWithCluster",
+      "topicName": "test.topic",
+      "clusterName": "aws"
+    },
+    {
+      "messageName": "TestEventWithoutCluster",
+      "topicName": "test.topic2"
+    }
+  ],
+  "tasks": [
+    {
+      "name": "single",
+      "completedBy": {
+        "message": "TestEventWithCluster"
+      }
+    }
+  ]
+}
+

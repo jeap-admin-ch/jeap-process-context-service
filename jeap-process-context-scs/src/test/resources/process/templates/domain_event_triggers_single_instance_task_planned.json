@@ -1,0 +1,41 @@
+{
+  "name": "domainEventTriggersSingleInstanceTaskPlanned",
+  "tasks": [
+    {
+      "name": "staticTask",
+      "lifecycle": "static",
+      "completedBy": {
+        "domainEvent": "Test1Event"
+      }
+    },
+    {
+      "name": "PlannedByDomainEventSingleInstance",
+      "lifecycle": "dynamic",
+      "cardinality": "single-instance",
+      "plannedBy": {
+        "domainEvent": "Test1Event"
+      },
+      "completedBy": {
+        "domainEvent": "Test2Event"
+      }
+    }
+  ],
+  "events": [
+    {
+      "eventName": "Test1Event",
+      "topicName": "topic.test1",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.TaskTest1EventCorrelationProvider"
+    },
+    {
+      "eventName": "Test2Event",
+      "topicName": "topic.test2",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.TaskTest2EventCorrelationProvider",
+      "correlatedBy": {
+        "processDataKey": "correlationProcessData",
+        "eventDataKey": "correlationEventDataKey"
+      }
+    }
+  ],
+  "milestones": [],
+  "processData": []
+}

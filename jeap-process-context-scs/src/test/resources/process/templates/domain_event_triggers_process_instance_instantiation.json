@@ -1,0 +1,43 @@
+{
+  "name": "domainEventTriggersProcessInstantiation",
+  "tasks": [
+    {
+      "name": "mandatory",
+      "completedBy": {
+        "domainEvent": "Test2Event"
+      }
+    }
+  ],
+  "events": [
+    {
+      "eventName": "Test1CreatingProcessInstanceEvent",
+      "topicName": "topic.test1creatingprocessinstance",
+      "referenceExtractor": "ch.admin.bit.jeap.processcontext.testevent.ProcessDataCorrelationEventDataReferenceExtractor",
+      "triggersProcessInstantiation": true
+    },
+    {
+      "eventName": "Test2Event",
+      "topicName": "topic.test2",
+      "referenceExtractor": "ch.admin.bit.jeap.processcontext.testevent.ProcessDataCorrelationEventDataReferenceExtractor",
+      "correlatedBy": {
+        "processDataKey": "correlationProcessData",
+        "eventDataKey": "correlationEventDataKey"
+      }
+    },
+    {
+      "eventName": "Test4CreatingProcessInstanceEvent",
+      "topicName": "topic.test4creatingprocessinstance",
+      "triggersProcessInstantiation": true
+    }
+  ],
+  "milestones": [],
+  "processData": [
+    {
+      "key": "correlationProcessData",
+      "source": {
+        "eventName": "Test1CreatingProcessInstanceEvent",
+        "eventDataKey": "correlationEventDataKey"
+      }
+    }
+  ]
+}

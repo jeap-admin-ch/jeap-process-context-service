@@ -1,0 +1,11 @@
+{
+  "name": "migrationTaskTestNew",
+  "tasks": [
+    {
+      "name": "task1"
+    },
+    {
+      "name": "task3"
+    }
+  ]
+}

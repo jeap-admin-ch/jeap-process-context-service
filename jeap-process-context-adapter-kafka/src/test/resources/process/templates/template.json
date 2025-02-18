@@ -1,0 +1,8 @@
+{
+  "events": [
+    {
+      "eventName": "JeapInitializerSimpleTestEvent",
+      "topicName": "topic1"
+    }
+  ]
+}

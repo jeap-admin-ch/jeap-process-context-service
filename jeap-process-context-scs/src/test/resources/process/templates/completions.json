@@ -1,0 +1,45 @@
+{
+  "name": "completions",
+  "tasks": [
+    {
+      "name": "mandatory",
+      "completedBy": {
+        "message": "Test3Event"
+      }
+    }
+  ],
+  "messages": [
+    {
+      "messageName": "Test1Event",
+      "topicName": "topic.test1",
+      "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.Test1EventPayloadExtractor"
+    },
+    {
+      "messageName": "Test2Event",
+      "topicName": "topic.test2"
+    },
+    {
+      "messageName": "Test3Event",
+      "topicName": "topic.test3"
+    }
+  ],
+  "completions": [
+    {
+      "completedBy" : {
+        "condition" : "ch.admin.bit.jeap.processcontext.processcompletion.Event1GotchaInDataKey1ProcessCompletionCondition"
+      }
+    },
+    {
+      "completedBy" : {
+        "message": "Test2Event",
+        "conclusion": "succeeded",
+        "name": "Abgeschlossen mit Test2Event"
+      }
+    },
+    {
+      "completedBy" : {
+        "condition" : "ch.admin.bit.jeap.processcontext.plugin.api.condition.AllTasksInFinalStateProcessCompletionCondition"
+      }
+    }
+  ]
+}

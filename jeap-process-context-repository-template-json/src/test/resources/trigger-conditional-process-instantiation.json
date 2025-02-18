@@ -1,0 +1,19 @@
+{
+  "name": "trigger-conditional-process-instantiation",
+  "events": [
+    {
+      "eventName": "TriggerEvent",
+      "topicName": "test.topic",
+      "processInstantiationCondition": "ch.admin.bit.jeap.processcontext.repository.template.json.TestProcessInstantiationCondition"
+    }
+  ],
+  "tasks": [
+    {
+      "name": "single",
+      "completedBy": {
+        "domainEvent": "TriggerEvent"
+      }
+    }
+  ]
+}
+

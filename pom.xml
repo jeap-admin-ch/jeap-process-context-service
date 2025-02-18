@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <url>https://github.com/jeap-admin-ch/jeap-process-context-service/tree/main</url>
+    <scm>
+        <url>https://github.com/jeap-admin-ch/jeap-process-context-service/tree/master.git</url>
+        <connection>scm:git:git://github.com/jeap-admin-ch/jeap-process-context-service.git</connection>
+        <developerConnection>scm:git:ssh://github.com:jeap-admin-ch/jeap-process-context-service.git</developerConnection>
+    </scm>
+    <developers>
+        <developer>
+            <name>BIT</name>
+            <email>jeap-community@bit.admin.ch</email>
+            <organization>Federal Office of Information Technology, Systems and Telecommunication FOITT</organization>
+            <organizationUrl>https://www.bit.admin.ch/</organizationUrl>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
+    <parent>
+        <groupId>ch.admin.bit.jeap</groupId>
+        <artifactId>jeap-spring-boot-parent</artifactId>
+        <version>26.24.2</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <artifactId>jeap-process-context-service</artifactId>
+    <version>13.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <description>JEAP Process Context Service</description>
+
+    <properties>
+        <maven.javadoc.skip>false</maven.javadoc.skip>
+        <guava.version>33.4.0-jre</guava.version>
+        <testcontainers.version>1.20.4</testcontainers.version>
+    </properties>
+
+    <modules>
+        <module>jeap-process-context-domain</module>
+        <module>jeap-process-context-domain-test</module>
+        <module>jeap-process-context-plugin-api</module>
+        <module>jeap-process-context-message</module>
+        <module>jeap-process-context-adapter-kafka</module>
+        <module>jeap-process-context-adapter-micrometer</module>
+        <module>jeap-process-context-adapter-rest-api</module>
+        <module>jeap-process-context-repository-jpa</module>
+        <module>jeap-process-context-repository-template-json</module>
+        <module>jeap-process-context-scs</module>
+        <module>jeap-process-context-ui</module>
+        <module>jeap-process-context-adapter-objectstorage</module>
+        <module>jeap-process-context-service-instance</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-process-context-domain</artifactId>
+                <version>13.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-process-context-plugin-api</artifactId>
+                <version>13.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-process-context-domain-test</artifactId>
+                <version>13.0.0-SNAPSHOT</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-process-context-ui</artifactId>
+                <version>13.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-process-context-scs</artifactId>
+                <version>13.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-process-context-repository-jpa</artifactId>
+                <version>13.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-process-context-repository-template-json</artifactId>
+                <version>13.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-process-context-adapter-kafka</artifactId>
+                <version>13.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-process-context-message</artifactId>
+                <version>13.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-process-context-adapter-micrometer</artifactId>
+                <version>13.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-process-context-adapter-rest-api</artifactId>
+                <version>13.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-process-context-adapter-objectstorage</artifactId>
+                <version>13.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-process-context-service-instance</artifactId>
+                <version>13.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.uuid</groupId>
+                <artifactId>java-uuid-generator</artifactId>
+                <version>5.1.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- Add license entry to jar manifest -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <Bundle-License>https://www.apache.org/licenses/LICENSE-2.0</Bundle-License>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <!-- Check third-party license compliance -->
+            <plugin>
+                <groupId>org.honton.chas</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+            </plugin>
+            <!-- Generate third-party license list -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

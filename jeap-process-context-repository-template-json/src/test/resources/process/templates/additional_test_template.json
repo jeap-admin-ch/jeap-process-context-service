@@ -1,0 +1,30 @@
+{
+  "name": "additionalTestProcess",
+  "events": [
+    {
+      "eventName": "TestEvent",
+      "topicName": "test.topic",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider"
+    },
+    {
+      "eventName": "AdditionalTestEvent",
+      "topicName": "additional.test.topic",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider"
+    }
+  ],
+  "tasks": [
+    {
+      "name": "single",
+      "completedBy": {
+        "domainEvent": "TestEvent"
+      }
+    },
+    {
+      "name": "additional-single",
+      "completedBy": {
+        "domainEvent": "AdditionalTestEvent"
+      }
+    }
+  ]
+}
+

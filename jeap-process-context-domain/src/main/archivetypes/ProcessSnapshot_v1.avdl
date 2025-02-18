@@ -1,0 +1,51 @@
+@namespace("ch.admin.bit.jeap.processcontext.archive.processsnapshot.v1")
+protocol ProcessSnapshotProtocol {
+
+	record ProcessSnapshot {
+		string templateName;
+		string? templateLabel = null;
+		string originProcessId;
+		string state;
+		timestamp_ms dateTimeCreated;
+		timestamp_ms? dateTimeModified = null;
+		timestamp_ms? dateTimeCompleted = null;
+		string? completionName = null;
+		string? completionConclusion = null;
+		string? completionReasonLabel = null;
+		array<Task> tasks = [];
+		array<ProcessData> processData = [];
+		array<ProcessRelation> processRelations = [];
+		timestamp_ms snapshotDateTimeCreated;
+	}
+
+	record Task {
+		string taskType;
+		string? taskTypeLabel = null;
+		string? originTaskId = null;
+		string state;
+		timestamp_ms dateTimeCreated;
+		timestamp_ms? dateTimePlanned = null;
+		timestamp_ms? dateTimeCompleted = null;
+	}
+
+	record ProcessData {
+		string key;
+		string value;
+		string? role = null;
+	}
+
+	enum ProcessRelationRole {
+      ORIGIN, TARGET
+    }
+
+	record ProcessRelation {
+        ProcessRelationRole relationRole;
+        string relationName;
+        string originRole;
+        string targetRole;
+        string originProcessId;
+        string? processName;
+        string? processLabel;
+        string? processState;
+    }
+}

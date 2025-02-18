@@ -1,0 +1,22 @@
+@namespace("ch.admin.bit.jeap.processcontext.event.externalreference")
+protocol ExternalReferenceEventProtocol {
+  import idl "DomainEventBaseTypes.avdl";
+
+  record ExternalReferenceEventReferences {
+  }
+
+  record ExternalReferenceEventPayload {
+    string externalReference;
+  }
+
+  record ExternalReferenceEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    ExternalReferenceEventReferences references;
+    ExternalReferenceEventPayload payload;
+    union {null, string} processId = null;
+    string domainEventVersion;
+  }
+
+}

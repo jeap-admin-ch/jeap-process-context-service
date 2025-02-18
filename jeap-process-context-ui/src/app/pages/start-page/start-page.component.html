@@ -1,0 +1,64 @@
+<h1>{{"i18n.welcome" | translate}}</h1>
+
+<form [formGroup]="jumpToFormGroup" (ngSubmit)="findProcessId()">
+	<label>{{'i18n.process.openProcess' | translate}}</label>
+	<mat-form-field obErrorMessages>
+		<mat-label>ProcessOriginId</mat-label>
+		<input type="text" formControlName="processIdControl" matInput placeholder="ProcessOriginId"/>
+		<mat-error></mat-error>
+	</mat-form-field>
+	<button type="submit" [disabled]="!jumpToFormGroup.valid" class="reload-button" color="primary" mat-flat-button>
+		{{'i18n.process.open' | translate}}
+	</button>
+</form>
+
+<p></p>
+<label>{{'i18n.process.searchWithProcessData' | translate}}</label>
+<form [formGroup]="searchProcessDataFormGroup" (ngSubmit)="reload()">
+	<mat-form-field obErrorMessages>
+		<mat-label>Process Data</mat-label>
+		<input type="text" formControlName="processDataControl" matInput placeholder="Process Data"/>
+		<mat-error></mat-error>
+	</mat-form-field>
+
+	<button id="btn_reload" (click)="reload()" [disabled]="isLoadingResults" class="reload-button" color="primary"
+			mat-flat-button>{{'i18n.process.search' | translate}}
+	</button>
+</form>
+<p></p>
+
+<table mat-table matSort [dataSource]="data" class="ob-table ob-table-cicd ob-table-sm w-100">
+	<ng-container [matColumnDef]="COLUMN_NAME_ORIGIN_PROCESS_ID">
+		<th mat-header-cell *matHeaderCellDef>{{ 'i18n.process.id' | translate }}</th>
+		<td mat-cell *matCellDef="let element" title="{{ 'i18n.process.id' | translate }}"> {{element.originProcessId}} </td>
+	</ng-container>
+
+	<ng-container [matColumnDef]="COLUMN_NAME_PROCESS_TEMPLATE">
+		<th mat-header-cell *matHeaderCellDef>{{ 'i18n.process.processTemplate' | translate }}</th>
+		<td mat-cell *matCellDef="let element" title="{{ 'i18n.process.processTemplate' | translate }}"> {{element?.name[this.translate.currentLang]}} </td>
+	</ng-container>
+
+	<ng-container [matColumnDef]="COLUMN_NAME_STATE">
+		<th mat-header-cell *matHeaderCellDef>{{ 'i18n.process.state' | translate }}</th>
+		<td mat-cell *matCellDef="let element" title="{{ 'i18n.process.state' | translate }}"> {{'i18n.process.state.' + element.state | translate}} </td>
+	</ng-container>
+
+	<ng-container [matColumnDef]="COLUMN_NAME_CREATED_AT">
+		<th mat-header-cell *matHeaderCellDef mat-sort-header [disabled]="true">{{ 'i18n.process.createdAt' | translate }}</th>
+		<td mat-cell *matCellDef="let element" title="{{ 'i18n.process.createdAt' | translate }}"> {{element.createdAt}} </td>
+	</ng-container>
+
+	<ng-container [matColumnDef]="COLUMN_NAME_LAST_MESSAGE_CREATED_AT">
+		<th mat-header-cell *matHeaderCellDef>{{ 'i18n.process.lastMessageCreatedAt' | translate }}</th>
+		<td mat-cell *matCellDef="let element" title="{{ 'i18n.process.lastMessageCreatedAt' | translate }}"> {{element.lastMessageCreatedAt}} </td>
+	</ng-container>
+
+	<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+	<tr mat-row *matRowDef="let row; columns: displayedColumns;"
+		[routerLink]="'/process/'+row.originProcessId"></tr>
+
+</table>
+<mat-paginator [length]="resultsLength" [pageSizeOptions]="pageSizeOptions"></mat-paginator>
+<button (click)="reload()" [disabled]="isLoadingResults" class="reload-button" color="primary" mat-flat-button>{{'i18n.process.reload' | translate}}</button>
+
+

@@ -1,0 +1,50 @@
+.reload-button {
+    margin-top: 20px;
+}
+
+h2 {
+    margin-top: 20px;
+}
+
+.headerColumn {
+    background-color: #F0F4F7;
+}
+
+.list-container {
+    padding-top: 10px;
+}
+
+.process-table {
+    width: 100%;
+    min-width: 200px;
+}
+
+.custom-icon-style {
+	vertical-align: middle;
+	font-size: 20px;
+}
+
+.process-div {
+	width: 50%;
+	height: 290px;
+	min-width: 200px;
+}
+
+.radio-button {
+	padding-right: 20px;
+}
+
+.task-layout {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 20px; /* Adjust the gap between the columns */
+	height: 100%; /* Full height layout */
+}
+
+.task-list {
+	/* Styles for the task list (left side) */
+}
+
+.task-detail {
+	/* Styles for the task detail view (right side) */
+}

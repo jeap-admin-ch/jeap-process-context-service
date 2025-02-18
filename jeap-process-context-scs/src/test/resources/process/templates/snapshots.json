@@ -1,0 +1,33 @@
+{
+  "name": "snapshots",
+  "tasks": [
+    {
+      "name": "mandatory",
+      "completedBy": {
+        "domainEvent": "Test2Event"
+      }
+    }
+  ],
+  "events": [
+    {
+      "eventName": "Test1Event",
+      "topicName": "topic.test1"
+    },
+    {
+      "eventName": "Test2Event",
+      "topicName": "topic.test2"
+    }
+  ],
+  "snapshots": [
+    {
+      "createdOn" : {
+        "condition" : "ch.admin.bit.jeap.processcontext.processsnapshot.TestEvent1ReceivedProcessSnapshotCondition"
+      }
+    },
+    {
+      "createdOn" : {
+        "completion": "any"
+      }
+    }
+  ]
+}

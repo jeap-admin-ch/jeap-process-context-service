@@ -1,0 +1,2 @@
+ALTER SEQUENCE events_event_data_id_seq CYCLE;
+ALTER SEQUENCE events_origin_task_ids_id_seq CYCLE;

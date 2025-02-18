@@ -1,0 +1,36 @@
+{
+  "name": "processRelationsD",
+  "processRelationPatterns": [
+    {
+      "name": "processRelationOrigin",
+      "roleType": "origin",
+      "originRole": "preliminary proceedings",
+      "targetRole": "follow-up proceedings",
+      "visibility": "target",
+      "source": {
+        "messageName": "Test6Event",
+        "messageDataKey": "relatedProcessId"
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "name": "mandatory",
+      "completedBy": {
+        "domainEvent": "Test1Event"
+      }
+    }
+  ],
+  "messages": [
+    {
+      "messageName": "Test1Event",
+      "topicName": "topic.test1"
+    },
+    {
+      "messageName": "Test6Event",
+      "topicName": "topic.test6",
+      "referenceExtractor": "ch.admin.bit.jeap.processcontext.testevent.Test6EventReferenceExtractor"
+    }
+  ]
+
+}

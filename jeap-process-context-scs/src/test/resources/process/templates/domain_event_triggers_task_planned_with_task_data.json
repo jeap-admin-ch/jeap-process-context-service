@@ -1,0 +1,30 @@
+{
+  "name": "domainEventTriggersTaskPlannedWithTaskData",
+  "tasks": [
+    {
+      "name": "StaticTask",
+      "lifecycle": "static"
+    },
+    {
+      "name": "PlannedByDomainEvent",
+      "lifecycle": "dynamic",
+      "plannedBy": {
+        "domainEvent": "Test1Event"
+      },
+      "taskData": [
+        {
+          "sourceMessage": "Test1Event",
+          "messageDataKeys": ["someField"]
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "eventName": "Test1Event",
+      "topicName": "topic.test1",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.TaskTest1EventCorrelationProvider",
+      "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.Test1EventPayloadExtractor"
+    }
+  ]
+ }

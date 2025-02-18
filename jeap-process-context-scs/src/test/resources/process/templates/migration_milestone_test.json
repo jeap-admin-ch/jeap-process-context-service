@@ -1,0 +1,22 @@
+{
+  "name": "migrationMilestoneTest",
+  "tasks": [
+    {
+      "name": "task1"
+    }
+  ],
+  "milestones": [
+    {
+      "name": "MilestoneDontTouch",
+      "reachedWhen": {
+        "condition": "ch.admin.bit.jeap.processcontext.milestone.Task1CompletedCondition"
+      }
+    },
+    {
+      "name": "DeletedMilestone",
+      "reachedWhen": {
+        "condition": "ch.admin.bit.jeap.processcontext.milestone.Task1And2CompletedCondition"
+      }
+    }
+  ]
+}

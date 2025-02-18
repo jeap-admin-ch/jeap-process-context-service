@@ -1,0 +1,46 @@
+{
+  "name": "migrationTaskTestOptional",
+  "tasks": [
+    {
+      "name": "task1"
+    },
+    {
+      "name": "task2"
+    },
+    {
+      "name": "optionalMultiInstanceTask",
+      "lifecycle": "dynamic",
+      "cardinality": "multi-instance",
+      "plannedBy": {
+        "domainEvent": "AnyDomainEvent"
+      }
+    },
+    {
+      "name": "optionalTaskWithoutPlannedByEvent",
+      "lifecycle": "dynamic",
+      "cardinality": "multi-instance"
+    },
+    {
+      "name": "optionalSingleInstanceTask",
+      "lifecycle": "dynamic",
+      "cardinality": "single-instance",
+      "plannedBy": {
+        "domainEvent": "AnyDomainEvent"
+      }
+    },
+    {
+      "name": "staticSingleInstanceTask",
+      "lifecycle": "static"
+    },
+    {
+      "name": "optionalTask",
+      "lifecycle": "observed"
+    }
+  ],
+  "events": [
+    {
+      "eventName": "AnyDomainEvent",
+      "topicName": "any.test.topic"
+    }
+  ]
+}

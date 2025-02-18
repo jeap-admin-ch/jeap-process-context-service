@@ -1,0 +1,35 @@
+.headerColumn {
+	background-color: #F0F4F7;
+}
+
+.blank_row {
+	height: 10px !important; /* overwrites any other rules */
+	background-color: #a09b9b;
+}
+
+.task-details-table {
+	width: 100%;
+	min-width: 200px;
+	td {
+		//border: 1px solid black;
+		padding: 8px;
+		/* Align text to the upper left */
+		text-align: left;
+		vertical-align: top;
+	}
+	/* Set the width of the first column */
+	colgroup col:first-child {
+		width: 20%; /* Adjust this value to set the desired width */
+	}
+}
+
+.task-details-table .task-details-left-column {
+	vertical-align: middle;
+}
+
+.task-data-table {
+	colgroup col:first-child {
+		width: 30%; /* Adjust this value to set the desired width */
+	}
+
+}

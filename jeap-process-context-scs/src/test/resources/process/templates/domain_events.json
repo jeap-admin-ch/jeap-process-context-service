@@ -1,0 +1,75 @@
+{
+  "name": "domainEvents",
+  "tasks": [
+    {
+      "name": "mandatory",
+      "completedBy": {
+        "domainEvent": "Test1Event"
+      }
+    },
+    {
+      "name": "optional",
+      "lifecycle": "observed",
+      "observes": {
+        "domainEvent": "Test2Event"
+      }
+    },
+    {
+      "name": "multiple",
+      "cardinality": "dynamic",
+      "plannedBy": {
+        "domainEvent": "Test4Event"
+      },
+      "completedBy": {
+        "domainEvent": "Test3Event"
+      }
+    }
+  ],
+  "events": [
+    {
+      "eventName": "Test1Event",
+      "topicName": "topic.test1"
+    },
+    {
+      "eventName": "Test2Event",
+      "topicName": "topic.test2",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.Test2EventCorrelationProvider"
+    },
+    {
+      "eventName": "Test3Event",
+      "topicName": "topic.test3",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.Test3EventCorrelationProvider"
+    },
+    {
+      "eventName": "Test4Event",
+      "topicName": "topic.test4",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.TaskTest4EventCorrelationProvider"
+    }
+  ],
+  "milestones": [
+    {
+      "name": "MandatoryTaskCompleted",
+      "reachedWhen": {
+        "tasksCompleted": "mandatory"
+      }
+    },
+    {
+      "name": "OptionalTaskCompleted",
+      "reachedWhen": {
+        "tasksCompleted": "optional"
+      }
+    },
+    {
+      "name": "AllMultipleTaskInstancesCompleted",
+      "reachedWhen": {
+        "tasksCompleted": "multiple"
+      }
+    },
+    {
+      "name": "Test1EventReceived",
+      "reachedWhen": {
+        "condition": "ch.admin.bit.jeap.processcontext.milestone.Test1EventReceivedCondition"
+      }
+    }
+  ]
+}

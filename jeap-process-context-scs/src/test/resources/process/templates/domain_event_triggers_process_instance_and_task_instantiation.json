@@ -1,0 +1,19 @@
+{
+  "name": "domainEventTriggersProcessAndTaskInstantiation",
+  "tasks": [
+    {
+      "name": "mandatory",
+      "observes": {
+        "message": "TestCreatingProcessInstanceAndTaskEvent"
+      }
+    }
+  ],
+  "events": [
+    {
+      "eventName": "TestCreatingProcessInstanceAndTaskEvent",
+      "topicName": "topic.testcreatingprocessinstanceandtask",
+      "triggersProcessInstantiation": true
+    }
+  ],
+  "milestones": []
+}

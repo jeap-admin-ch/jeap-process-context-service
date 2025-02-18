@@ -1,0 +1,28 @@
+{
+  "name": "processRelationsB",
+  "tasks": [
+    {
+      "name": "mandatory",
+      "completedBy": {
+        "domainEvent": "Test1Event"
+      }
+    }
+  ],
+  "messages": [
+    {
+      "messageName": "Test1Event",
+      "topicName": "topic.test1"
+    },
+    {
+      "messageName": "Test6Event",
+      "topicName": "topic.test6",
+      "referenceExtractor": "ch.admin.bit.jeap.processcontext.testevent.Test6EventReferenceExtractor"
+    }
+  ]
+
+}
+
+
+
+
+

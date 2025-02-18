@@ -1,0 +1,8 @@
+{
+  "name": "migrationTaskTestAllDeleted",
+  "tasks": [
+    {
+      "name": "task1"
+    }
+  ]
+}

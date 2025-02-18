@@ -1,0 +1,18 @@
+{
+  "name": "domainEventToMultipleProcessInstances",
+  "tasks": [
+    {
+      "name": "mandatory",
+      "completedBy": {
+        "domainEvent": "ProcessIdsEvent"
+      }
+    }
+  ],
+  "events": [
+    {
+      "eventName": "ProcessIdsEvent",
+      "topicName": "topic.processids",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.ProcessIdsEventCorrelationProvider"
+    }
+  ]
+}

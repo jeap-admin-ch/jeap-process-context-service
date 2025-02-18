@@ -1,0 +1,38 @@
+{
+  "name": "observationTasksWithDomainEvent",
+  "tasks": [
+    {
+      "name": "first_observation_task",
+      "observes": {
+        "domainEvent": "Test1Event"
+      }
+    },
+    {
+      "name": "second_observation_task",
+      "observes": {
+        "domainEvent": "Test2Event"
+      }
+    },
+    {
+      "name": "PlannedTheOldWay",
+      "completedBy": {
+        "domainEvent": "Test2Event"
+      }
+    }
+  ],
+  "events": [
+    {
+      "eventName": "Test1Event",
+      "topicName": "topic.test1"
+    },
+    {
+      "eventName": "Test2Event",
+      "topicName": "topic.test2",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.Test2EventCorrelationProvider",
+      "correlatedBy": {
+        "processDataKey": "correlationProcessData",
+        "eventDataKey": "correlationEventDataKey"
+      }
+    }
+  ]
+}

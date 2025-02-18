@@ -1,0 +1,16 @@
+@namespace("ch.admin.bit.jeap.processcontext.internal.event.statechanged")
+protocol ProcessContextStateChangedProtocol {
+  import idl "DomainEventBaseTypes.avdl";
+
+  record ProcessContextStateChangedReferences {
+  }
+
+  record ProcessContextStateChangedEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    ProcessContextStateChangedReferences references;
+    string processId;
+    string domainEventVersion;
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "external-process-instantiation-2",
+  "events": [
+    {
+      "eventName": "TriggerEvent",
+      "topicName": "test.topic"
+    }
+  ],
+  "tasks": [
+    {
+      "name": "single",
+      "completedBy": {
+        "domainEvent": "TriggerEvent"
+      }
+    }
+  ]
+}
+
