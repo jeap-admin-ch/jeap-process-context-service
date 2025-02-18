@@ -5,11 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [13.0.0] - 2025-02-18
+## [12.1.0] - 2025-02-18
 
 ### Changed
 
-- Breaking: Performance optimization of the housekeeping by dropping fk constraints to the `events` table
+- Performance optimization of the housekeeping by dropping fk constraints to the `events` table
 - Dropped foreign key constraint `events_event_data_events_id_fkey` from the table `events_event_data`.
 - Dropped foreign key constraint `events_origin_task_ids_events_id_fkey` from the table `events_origin_task_ids`.
 - Dropped foreign key constraint `events_user_data_events_id_fkey` from the table `events_user_data`.
