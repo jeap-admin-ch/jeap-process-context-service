@@ -31,6 +31,7 @@
     "@oblique/oblique": "^12.0.1",
     "@popperjs/core": "^2.0.0",
     "@quadrel-services/qd-auth": "^16.1.8",
+    "angular-oauth2-oidc": "^19.0.0",
     "cypress": "^13.15.2",
     "jwt-decode": "^4.0.0",
     "rxjs": "~7.8.0",
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "@angular-builders/jest": "^18.0.0",
+    "@angular-devkit/build-angular": "^18.0.0",
     "@angular-eslint/builder": "18.4.0",
     "@angular-eslint/eslint-plugin": "18.4.0",
     "@angular-eslint/eslint-plugin-template": "18.4.0",
