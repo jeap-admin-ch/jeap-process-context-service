@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>ch.admin.bit.jeap</groupId>
 		<artifactId>jeap-process-context-service</artifactId>
-		<version>12.1.1-SNAPSHOT</version>
+		<version>12.2.0-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -63,6 +63,34 @@
 						<artifactId>exec-maven-plugin</artifactId>
 						<version>${exec-maven-plugin.version}</version>
 						<executions>
+							<execution>
+								<id>generate-license-file</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>run</argument>
+										<argument>generateLicenseFile</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>check-licenses</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>run</argument>
+										<argument>check-licenses</argument>
+									</arguments>
+								</configuration>
+							</execution>
 							<execution>
 								<id>cypress-test</id>
 								<phase>test</phase>

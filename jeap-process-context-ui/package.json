@@ -1,11 +1,19 @@
 {
+  "title": "JEAP Process Context UI",
   "name": "jeap-process-context-ui",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "organization": {
+    "name": "Federal Office of Information Technology, Systems and Telecommunication FOITT",
+    "url": "http://www.bit.admin.ch/"
+  },
   "scripts": {
     "start": "ng serve",
     "build": "ng build --base-href /process-context/",
     "build-prod": "ng build -c production --base-href /process-context/",
-    "cypress:run": "cypress run --config video=false --component"
+    "cypress:run": "cypress run --config video=false --component",
+    "check-licenses": "apache2-license-checker",
+    "generateLicenseFile": "license-checker --customPath custom-license-md-format.json --markdown > ../THIRD-PARTY-FRONTEND-LICENSES.md"
   },
   "private": true,
   "dependencies": {
@@ -39,6 +47,7 @@
     "@angular/build": "^18.2.11",
     "@angular/cli": "~18.2.11",
     "@angular/compiler-cli": "^18.2.11",
+    "@bbc/apache2-license-checker": "^1.1.4",
     "@types/jest": "^29.5.10",
     "@typescript-eslint/eslint-plugin": "6.13.2",
     "@typescript-eslint/parser": "6.13.2",
@@ -50,6 +59,7 @@
     "husky": "^8.0.0",
     "jest": "^29.7.0",
     "jest-sonar-reporter": "2.0.0",
+    "license-checker": "^25.0.1",
     "ng-mocks": "^14.11.0",
     "prettier": "^3.2.5",
     "typescript": "~5.4.5"

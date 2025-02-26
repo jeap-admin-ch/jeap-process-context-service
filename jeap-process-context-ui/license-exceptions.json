@@ -1,0 +1,37 @@
+{
+  "exceptions": {
+    "@ngx-translate/core@15.0.0": {
+      "reason": "MIT; see: https://github.com/ngx-translate/core"
+    },
+    "@quadrel-services/qd-auth@16.1.10": {
+      "reason": "UNKNOWN; BIT internal package"
+    },
+    "argparse@2.0.1": {
+      "reason": "Python-2.0; Dev dependency, see: https://github.com/nodeca/argparse"
+    },
+    "caniuse-lite@1.0.30001701": {
+      "reason": "CC-BY-4.0; see: https://github.com/browserslist/caniuse-lite"
+    },
+    "jackspeak@3.4.3": {
+      "reason": "BlueOak-1.0.0; Dev dependency, see: https://github.com/isaacs/jackspeak"
+    },
+    "jeap-process-context-ui@1.0.0": {
+      "reason": "Apache-2.0; LICENSE file is out of search scope (see package.json). BIT internal package"
+    },
+    "json-schema@0.4.0": {
+      "reason": "(AFL-2.1 OR BSD-3-Clause); see: https://github.com/kriszyp/json-schema"
+    },
+    "package-json-from-dist@1.0.1": {
+      "reason": "BlueOak-1.0.0; Dev dependency, see: https://github.com/isaacs/package-json-from-dist"
+    },
+    "path-scurry@1.11.1": {
+      "reason": "BlueOak-1.0.0; Dev dependency, see: https://github.com/isaacs/path-scurry"
+    },
+    "tslib@2.8.1": {
+      "reason": "0BSD; see: https://github.com/Microsoft/tslib"
+    },
+    "type-fest@0.21.3": {
+      "reason": "(MIT OR CC0-1.0); see: https://github.com/sindresorhus/type-fest"
+    }
+  }
+}
