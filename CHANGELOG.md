@@ -9,7 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - **BREAKING** - Removed default values for the following Spring properties:
-  - `jeap.processcontext.frontend.tokenAwarePattern`
+  - `jeap.processcontext.frontend.logoutRedirectUri`
 
 ## [12.2.0] - 2025-02-26
 
