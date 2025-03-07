@@ -10,6 +10,7 @@ import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.http.urlconnection.ProxyConfiguration;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
@@ -44,7 +45,12 @@ public class TimedS3Client {
                 .region(connectionProperties.getRegion())
                 .forcePathStyle(true)
                 .credentialsProvider(awsCredentialsProvider)
-                .httpClient(UrlConnectionHttpClient.builder().build())
+                .httpClient(UrlConnectionHttpClient.builder()
+                        .proxyConfiguration(ProxyConfiguration.builder() // Configure proxy to work around the issue https://github.com/aws/aws-sdk-java-v2/issues/4728 which is coming with the aws sdk update
+                                .useSystemPropertyValues(false)
+                                .useEnvironmentVariablesValues(false)
+                                .build())
+                        .build())
                 .overrideConfiguration(overrideConfig.build());
         if (hasText(connectionProperties.getAccessUrl())) {
             log.info("Overriding S3 API endpoint URL in S3 client with {}.", connectionProperties.getAccessUrl());
