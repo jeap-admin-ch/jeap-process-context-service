@@ -41,7 +41,7 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
         """;
 
     String FIND_MESSAGE_REFERENCES_MESSAGES_QUERY = """
-                select r.id as messageReferenceId, e.id as messageId, e.messageName as messageName, e.createdAt as messageReceivedAt, e.traceId as traceId
+                select r.id as messageReferenceId, e.id as messageId, e.messageName as messageName, e.createdAt as messageReceivedAt, e.messageCreatedAt as messageCreatedAt, e.traceId as traceId
             from ProcessInstance p join p.messageReferences r join events e on e.id = r.messageId
         where p.id = :processInstanceId
         """;

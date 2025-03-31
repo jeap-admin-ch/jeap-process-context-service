@@ -24,6 +24,7 @@ public class MessageDTO {
     String traceId;
     Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> messageData;
     ZonedDateTime receivedAt;
+    ZonedDateTime createdAt;
 
     static MessageDTO create(MessageReferenceMessageDTO messageReferenceMessageDTO) {
         return MessageDTO.builder()
@@ -32,6 +33,7 @@ public class MessageDTO {
                 .relatedOriginTaskIds(messageReferenceMessageDTO.getRelatedOriginTaskIds())
                 .messageData(toMessageData(messageReferenceMessageDTO.getMessageData()))
                 .receivedAt(messageReferenceMessageDTO.getMessageReceivedAt())
+                .createdAt(messageReferenceMessageDTO.getMessageCreatedAt())
                 .traceId(messageReferenceMessageDTO.getTraceId())
                 .build();
     }

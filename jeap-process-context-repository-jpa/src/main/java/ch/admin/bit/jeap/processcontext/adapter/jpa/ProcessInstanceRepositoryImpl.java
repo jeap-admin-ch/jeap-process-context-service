@@ -132,6 +132,7 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
                 .messageReferenceId(messageReferenceMessage.getMessageReferenceId())
                 .messageId(messageReferenceMessage.getMessageId())
                 .messageName(messageReferenceMessage.getMessageName())
+                .messageCreatedAt(messageReferenceMessage.getMessageCreatedAt())
                 .messageReceivedAt(messageReferenceMessage.getMessageReceivedAt())
                 .messageData(messageDataById.getOrDefault(messageReferenceMessage.getMessageReferenceId(), Set.of()))
                 .traceId(messageReferenceMessage.getTraceId())

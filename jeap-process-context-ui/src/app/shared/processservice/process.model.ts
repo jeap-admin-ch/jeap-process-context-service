@@ -94,6 +94,7 @@ export interface MilestoneDTO {
 export interface MessageDTO {
 	id: string;
 	name: string;
+	createdAt: string;
 	receivedAt: string;
 	relatedOriginTaskIds: Set<string>[];
 	messageData: MessageDataDTO[];

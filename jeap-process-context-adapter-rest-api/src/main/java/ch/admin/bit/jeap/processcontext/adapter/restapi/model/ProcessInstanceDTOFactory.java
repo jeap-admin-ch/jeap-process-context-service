@@ -40,7 +40,7 @@ public class ProcessInstanceDTOFactory {
             .thenComparing(Milestone::getName);
 
     private static final Comparator<MessageReferenceMessageDTO> MESSAGE_COMPARATOR = Comparator
-            .comparing(MessageReferenceMessageDTO::getMessageReceivedAt).reversed()
+            .comparing(MessageReferenceMessageDTO::getMessageCreatedAt).reversed()
             .thenComparing(MessageReferenceMessageDTO::getMessageName);
 
     private static final Comparator<Relation> RELATIONS_COMPARATOR = Comparator

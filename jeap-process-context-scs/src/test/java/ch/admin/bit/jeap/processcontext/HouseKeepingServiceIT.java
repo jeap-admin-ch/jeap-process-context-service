@@ -286,6 +286,7 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
                 .messageId(Generators.timeBasedEpochGenerator().generate().toString())
                 .idempotenceId(Generators.timeBasedEpochGenerator().generate().toString())
                 .createdAt(ZonedDateTime.now().minus(age))
+                .messageCreatedAt(ZonedDateTime.now().minus(age))
                 .originTaskIds(OriginTaskId.from("templateName", Set.of("taskId1", "taskId2")))
                 .messageData(Set.of(MessageData.builder()
                         .templateName("templateName")

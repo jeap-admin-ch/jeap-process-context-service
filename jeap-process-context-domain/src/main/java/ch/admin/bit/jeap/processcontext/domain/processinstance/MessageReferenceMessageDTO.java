@@ -21,6 +21,8 @@ public class MessageReferenceMessageDTO {
     @NonNull
     ZonedDateTime messageReceivedAt;
     @NonNull
+    ZonedDateTime messageCreatedAt;
+    @NonNull
     Set<MessageReferenceMessageDataDTO> messageData;
     @NonNull
     Set<String> relatedOriginTaskIds;

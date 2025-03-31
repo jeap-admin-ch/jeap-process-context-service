@@ -498,6 +498,7 @@ class ProcessInstanceJpaRepositoryTest {
                 .messageName(e.getMessageName())
                 .traceId(e.getTraceId())
                 .messageReceivedAt(e.getMessageReceivedAt().truncatedTo(ChronoUnit.MILLIS).withFixedOffsetZone())
+                .messageCreatedAt(e.getMessageCreatedAt().truncatedTo(ChronoUnit.MILLIS).withFixedOffsetZone())
                 .messageData(Set.of())
                 .relatedOriginTaskIds(Set.of())
                 .build()).collect(toSet())
@@ -514,6 +515,7 @@ class ProcessInstanceJpaRepositoryTest {
                 .messageId(message.getId())
                 .messageName(message.getMessageName())
                 .messageReceivedAt(message.getReceivedAt().truncatedTo(ChronoUnit.MILLIS).withFixedOffsetZone())
+                .messageCreatedAt(message.getMessageCreatedAt().truncatedTo(ChronoUnit.MILLIS).withFixedOffsetZone())
                 .traceId(message.getTraceId())
                 .messageData(Set.of())
                 .relatedOriginTaskIds(Set.of())
@@ -532,6 +534,7 @@ class ProcessInstanceJpaRepositoryTest {
                 .messageData(messageData)
                 .originTaskIds(originTaskIds)
                 .createdAt(ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS))
+                .messageCreatedAt(ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS))
                 .traceId(traceId)
                 .build();
         return messageRepository.save(message);

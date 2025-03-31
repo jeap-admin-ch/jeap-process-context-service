@@ -88,6 +88,7 @@ public final class ProcessInstanceStubs {
                 .idempotenceId("idempotenceId")
                 .messageName("messageName1")
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build());
         processInstance.planDomainEventTask(taskType, "taskId", ZonedDateTime.now(), null);
         return processInstance;
@@ -167,6 +168,7 @@ public final class ProcessInstanceStubs {
                 .messageData(Set.of(messageData))
                 .messageName("sourceEventName")
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build());
         processInstance.evaluateRelations();
         return processInstance;
@@ -195,6 +197,7 @@ public final class ProcessInstanceStubs {
                 .idempotenceId("idempotenceId")
                 .messageName("messageNamePlan")
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build());
         processInstance.planDomainEventTask(dynamicTaskType, "taskId", ZonedDateTime.now(), null);
         return processInstance;

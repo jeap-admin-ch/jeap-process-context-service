@@ -60,6 +60,7 @@
   "i18n.process.milestone.state.UNKNOWN": "Inconnu",
   "i18n.process.milestone.reachedAt": "Atteint le",
   "i18n.process.message.title": "Messages",
+  "i18n.process.message.createdAt": "Créé le",
   "i18n.process.message.receivedAt": "Reçu le",
   "i18n.process.message.relatedOriginTaskIds": "Relation avec les tâches",
   "i18n.process.message.show-log": "Afficher le journal",

@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +49,7 @@ class ProcessInstanceProcessDataMessageDataMigrationIT extends ProcessInstanceMo
                     .messageId("eventId")
                     .idempotenceId("idempotenceId")
                     .messageName("Test1Event")
+                    .messageCreatedAt(ZonedDateTime.now())
                     .messageData(Set.of(MessageData.builder().key("correlationEventDataKey")
                             .value("value")
                             .templateName("migrationFullTest")
