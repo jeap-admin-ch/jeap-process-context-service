@@ -48,6 +48,7 @@ export interface TaskDTO {
 	originTaskId: string;
 	name: I18n;
 	state: TaskState;
+	createdAt: string;
 	plannedAt: string;
 	completedAt: string | null;
 	lifecycle: string;

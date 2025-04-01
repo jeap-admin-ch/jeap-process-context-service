@@ -81,6 +81,7 @@
   "i18n.process.relation.objectType": "Type d'objet",
   "i18n.process.relation.objectId": "Identifiant de l'objet",
   "i18n.process.task.id":"Identifiant de la tâche",
+  "i18n.process.task.created":"Créé",
   "i18n.process.task.planned":"Planifiée",
   "i18n.process.task.completed":"Terminée",
   "i18n.process.task.template.view": "Tous",

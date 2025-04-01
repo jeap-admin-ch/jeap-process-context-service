@@ -1,7 +1,7 @@
 <table mat-table [dataSource]="tasks" class="ob-table ob-table-sm ob-table-cicd">
-	<ng-container matColumnDef="plannedAt">
-		<th *matHeaderCellDef mat-header-cell>{{ "i18n.process.task.planned" | translate }}</th>
-		<td *matCellDef="let row" mat-cell>{{ row.plannedAt | date : "dd.MM.yyyy HH:mm:ss" }}</td>
+	<ng-container matColumnDef="createdAt">
+		<th *matHeaderCellDef mat-header-cell>{{ "i18n.process.task.created" | translate }}</th>
+		<td *matCellDef="let row" mat-cell>{{ row.createdAt | date : "dd.MM.yyyy HH:mm:ss" }}</td>
 	</ng-container>
 
 	<ng-container matColumnDef="name">
@@ -22,8 +22,8 @@
 		</td>
 	</ng-container>
 
-	<tr *matHeaderRowDef="['plannedAt', 'name', 'state' ]" mat-header-row></tr>
-	<tr *matRowDef="let row; let i = index; columns: ['plannedAt', 'name', 'state']"
+	<tr *matHeaderRowDef="['createdAt', 'name', 'state' ]" mat-header-row></tr>
+	<tr *matRowDef="let row; let i = index; columns: ['createdAt', 'name', 'state']"
 		(click)="selectTask(i)"
 		[class.selected]="i === selectedTaskIndex"
 		mat-row>
