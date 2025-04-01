@@ -11,6 +11,10 @@
 
     <artifactId>jeap-process-context-domain-test</artifactId>
 
+    <properties>
+        <sonar.skip>true</sonar.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>ch.admin.bit.jeap</groupId>
