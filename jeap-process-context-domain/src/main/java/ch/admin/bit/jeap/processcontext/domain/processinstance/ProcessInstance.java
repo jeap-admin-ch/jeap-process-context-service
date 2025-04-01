@@ -237,6 +237,7 @@ public class ProcessInstance extends MutableDomainEntity {
                 .messageReferenceId(messageReferenceId)
                 .messageId(message.getId())
                 .messageName(message.getMessageName())
+                .messageCreatedAt(message.getMessageCreatedAt())
                 .messageReceivedAt(message.getReceivedAt())
                 .messageData(toDto(message.getMessageData(processTemplateName)))
                 .relatedOriginTaskIds(toRelatedOriginTaskIds(message.getOriginTaskIds(processTemplateName)))

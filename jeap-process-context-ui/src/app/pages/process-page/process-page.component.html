@@ -155,6 +155,11 @@
 						<td *matCellDef="let row" mat-cell>{{ row.name }}</td>
 					</ng-container>
 
+					<ng-container matColumnDef="createdAt">
+						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.createdAt' | translate }}</th>
+						<td *matCellDef="let row" mat-cell>{{ row.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+					</ng-container>
+
 					<ng-container matColumnDef="receivedAt">
 						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.receivedAt' | translate }}</th>
 						<td *matCellDef="let row" mat-cell>{{ row.receivedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
@@ -207,8 +212,8 @@
 						</td>
 					</ng-container>
 
-					<tr *matHeaderRowDef="['name','receivedAt','traceId','relatedOriginTaskIds','messageData']" mat-header-row></tr>
-					<tr *matRowDef="let row; columns: ['name','receivedAt','traceId','relatedOriginTaskIds','messageData'];" mat-row></tr>
+					<tr *matHeaderRowDef="['name','createdAt','receivedAt','traceId','relatedOriginTaskIds','messageData']" mat-header-row></tr>
+					<tr *matRowDef="let row; columns: ['name','createdAt','receivedAt','traceId','relatedOriginTaskIds','messageData'];" mat-row></tr>
 				</table>
 				<p *ngIf="process.messages.length == 0">{{ 'i18n.none' | translate }}</p>
 

@@ -11,6 +11,8 @@ interface MessageReferenceMessage {
 
     String getMessageName();
 
+    ZonedDateTime getMessageCreatedAt();
+
     ZonedDateTime getMessageReceivedAt();
 
     String getTraceId();

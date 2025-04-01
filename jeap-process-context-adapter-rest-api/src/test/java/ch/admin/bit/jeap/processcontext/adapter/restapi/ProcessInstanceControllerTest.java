@@ -185,6 +185,7 @@ class ProcessInstanceControllerTest {
                 .andExpect(jsonPath("$.createdAt", not(empty())))
                 .andExpect(jsonPath("$.modifiedAt", not(empty())))
                 .andExpect(jsonPath("$.name", is(name)))
+                .andExpect(jsonPath("$.tasks[0].createdAt", not(empty())))
                 .andExpect(jsonPath("$.tasks[0].lifecycle", is("STATIC")))
                 .andExpect(jsonPath("$.tasks[0].cardinality", is("SINGLE_INSTANCE")))
                 .andExpect(jsonPath("$.tasks[0].state", is("PLANNED")))

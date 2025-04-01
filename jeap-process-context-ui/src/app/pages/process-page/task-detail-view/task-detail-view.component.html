@@ -83,6 +83,11 @@
 						<td *ngIf="!task.originTaskId">-</td>
 					</tr>
 					<tr>
+						<td class="headerColumn">{{ "i18n.process.task.created" | translate }}</td>
+						<td *ngIf="task.createdAt">{{ task.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+						<td *ngIf="!task.createdAt">-</td>
+					</tr>
+					<tr>
 						<td class="headerColumn">{{ "i18n.process.task.state.PLANNED" | translate }}</td>
 						<td *ngIf="task.plannedAt">{{ task.plannedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
 						<td *ngIf="!task.plannedAt">-</td>

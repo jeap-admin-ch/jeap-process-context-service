@@ -32,6 +32,7 @@ public class TaskInstanceDTO {
     String lifecycle;
     String cardinality;
     String state;
+    ZonedDateTime createdAt;
     ZonedDateTime plannedAt;
     ZonedDateTime completedAt;
     Set<MessageUserDataDTO> plannedBy;
@@ -47,6 +48,7 @@ public class TaskInstanceDTO {
                 .lifecycle(taskType.map(t -> t.getLifecycle().name()).orElse(UNKNOWN))
                 .cardinality(taskType.map(t -> t.getCardinality().name()).orElse(UNKNOWN))
                 .state(taskInstance.getState().name())
+                .createdAt(taskInstance.getCreatedAt())
                 .plannedAt(taskInstance.getPlannedAt())
                 .completedAt(taskInstance.getCompletedAt())
                 .plannedBy(getMessageUserDataDTOSet(taskInstance.getPlannedBy(), messageRepository, translateService))
@@ -62,6 +64,7 @@ public class TaskInstanceDTO {
                 .lifecycle(UNKNOWN)
                 .cardinality(UNKNOWN)
                 .state(task.getState())
+                .createdAt(toZonedDateTime(task.getOptionalDateTimeCreated()))
                 .plannedAt(toZonedDateTime(task.getOptionalDateTimePlanned()))
                 .plannedBy(toMessageUserDataDTOSet(task.getPlannedBy(), translateService))
                 .completedAt(toZonedDateTime(task.getOptionalDateTimeCompleted()))

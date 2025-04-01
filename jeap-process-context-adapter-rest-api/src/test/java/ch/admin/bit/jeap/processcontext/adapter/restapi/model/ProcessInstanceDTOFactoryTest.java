@@ -144,14 +144,19 @@ class ProcessInstanceDTOFactoryTest {
     }
 
     @Test
-    void createEvents_sortByReceivedAtThenName() {
-        ZonedDateTime olderTimestamp = ZonedDateTime.now();
-        ZonedDateTime newerTimestamp = olderTimestamp.plusDays(1);
+    void createEvents_sortByCreatedAtThenName() {
+        // This message is older but it was received now
+        ZonedDateTime olderMessageReceivedTimestamp = ZonedDateTime.now();
+        ZonedDateTime olderMessageCreatedTimestamp = olderMessageReceivedTimestamp.minusDays(1);
+
+        // This message is newer, but it was received before the previous message
+        ZonedDateTime newerMessageReceivedTimestamp = olderMessageReceivedTimestamp.minusMinutes(1);
+        ZonedDateTime newerMessageCreatedTimestamp = newerMessageReceivedTimestamp.minusSeconds(10);
         List<MessageReferenceMessageDTO> eventReferences = List.of(
-                createEventReferenceEventDTO(newerTimestamp, "newerB"),
-                createEventReferenceEventDTO(newerTimestamp, "newerA"),
-                createEventReferenceEventDTO(olderTimestamp, "olderB"),
-                createEventReferenceEventDTO(olderTimestamp, "olderA")
+                createEventReferenceEventDTO(newerMessageReceivedTimestamp, newerMessageCreatedTimestamp,"newerB"),
+                createEventReferenceEventDTO(newerMessageReceivedTimestamp, newerMessageCreatedTimestamp, "newerA"),
+                createEventReferenceEventDTO(olderMessageReceivedTimestamp, olderMessageCreatedTimestamp, "olderB"),
+                createEventReferenceEventDTO(olderMessageReceivedTimestamp, olderMessageCreatedTimestamp, "olderA")
         );
         List<MessageDTO> messageDTOS = ProcessInstanceDTOFactory.createMessages(eventReferences);
 
@@ -170,6 +175,7 @@ class ProcessInstanceDTOFactoryTest {
                 .messageData(Set.of(
                         new MessageData(templateName, "planningEvent-message-data-key-1", "planningEvent-message-data-value-1")))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         List<String[]> planningEventUserData = new ArrayList<>();
         planningEventUserData.add(new String[]{"planning-userdata-key1", "planning-userdata-value-1"});
@@ -182,6 +188,7 @@ class ProcessInstanceDTOFactoryTest {
                 .messageData(Set.of(
                         new MessageData(templateName, "completingEvent-message-data-key-1", "completingEvent-message-data-value-1")))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         List<String[]> completingEventUserData = new ArrayList<>();
         completingEventUserData.add(new String[]{"completing-userdata-key1", "completing-userdata-value-1"});
@@ -191,11 +198,12 @@ class ProcessInstanceDTOFactoryTest {
         return List.of(planningMessage, completingMessage);
     }
 
-    private MessageReferenceMessageDTO createEventReferenceEventDTO(ZonedDateTime receivedAt, String eventName) {
+    private MessageReferenceMessageDTO createEventReferenceEventDTO(ZonedDateTime receivedAt, ZonedDateTime createdAt, String eventName) {
         return MessageReferenceMessageDTO.builder()
                 .messageReferenceId(Generators.timeBasedEpochGenerator().generate())
                 .messageId(Generators.timeBasedEpochGenerator().generate())
                 .messageReceivedAt(receivedAt)
+                .messageCreatedAt(createdAt)
                 .messageName(eventName)
                 .messageData(emptySet())
                 .relatedOriginTaskIds(emptySet())

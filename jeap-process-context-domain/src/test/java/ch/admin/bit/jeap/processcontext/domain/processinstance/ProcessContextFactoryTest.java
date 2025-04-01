@@ -32,6 +32,7 @@ class ProcessContextFactoryTest {
                 .originTaskIds(OriginTaskId.from(templateName, taskNames))
                 .messageData(Set.of(new MessageData(templateName, "myKey", "myValue")))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         processInstance.addMessage(domainMessage);
         ReflectionTestUtils.setField(processInstance, "processCompletion", new ProcessCompletion(
@@ -152,6 +153,7 @@ class ProcessContextFactoryTest {
                 .originTaskIds(OriginTaskId.from(templateName, taskNames))
                 .messageData(Set.of(new MessageData(templateName, "myKey", "myValue", "myRole")))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         processInstance.addMessage(domainMessage);
 

@@ -179,6 +179,7 @@ class TaskInstanceDTOTest {
                 messageId(messageId).
                 messageName(messageName).
                 messageReceivedAt(ZonedDateTime.now()).
+                messageCreatedAt(ZonedDateTime.now()).
                 messageData(messageData).
                 relatedOriginTaskIds(Set.of()).
                 build();

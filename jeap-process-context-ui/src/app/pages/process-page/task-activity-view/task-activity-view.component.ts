@@ -60,8 +60,8 @@ export class TaskActivityViewComponent implements OnInit, AfterViewInit, OnDestr
 		});
 
 		plannedTasks.sort((taskA, taskB) => {
-			const dateA = new Date(taskA.plannedAt);
-			const dateB = new Date(taskB.plannedAt);
+			const dateA = new Date(taskA.createdAt);
+			const dateB = new Date(taskB.createdAt);
 			return dateB.getTime() - dateA.getTime();
 		});
 

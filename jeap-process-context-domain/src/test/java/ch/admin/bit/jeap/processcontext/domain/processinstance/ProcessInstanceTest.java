@@ -159,6 +159,7 @@ class ProcessInstanceTest {
                 .messageName(messageName)
                 .originTaskIds(Set.of(OriginTaskId.from("template", originTaskId)))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build());
         processInstance.evaluateCompletedTasks(ZonedDateTime.now());
     }
@@ -267,6 +268,7 @@ class ProcessInstanceTest {
                 .originTaskIds(Set.of())
                 .messageData(Set.of(messageData))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
 
         processInstance.addMessage(domainMessage);
@@ -290,6 +292,7 @@ class ProcessInstanceTest {
                 .messageId("eventId")
                 .messageData(Set.of(messageData))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
 
         processInstance.addMessage(domainMessage);
@@ -311,6 +314,7 @@ class ProcessInstanceTest {
                 .messageId("eventId")
                 .messageData(Set.of(messageData1, messageData2))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         Message domainMessage2 = Message.messageBuilder()
                 .messageName("anotherSourceEventName")
@@ -318,6 +322,7 @@ class ProcessInstanceTest {
                 .messageId("eventId")
                 .messageData(Set.of(messageData3))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
 
         processInstance.addMessage(domainMessage1);
@@ -343,6 +348,7 @@ class ProcessInstanceTest {
                 .idempotenceId("idempotenceId")
                 .messageData(Set.of(messageData1, messageData2))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         Message domainMessage2 = Message.messageBuilder()
                 .messageName("anotherSourceEventName")
@@ -350,6 +356,7 @@ class ProcessInstanceTest {
                 .messageId("eventId")
                 .messageData(Set.of(messageData3))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         processInstance.addMessage(domainMessage1);
         processInstance.addMessage(domainMessage2);
@@ -396,6 +403,7 @@ class ProcessInstanceTest {
                 .idempotenceId("idempotenceId")
                 .messageData(Set.of(messageData1))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         Message domainMessage2 = Message.messageBuilder()
                 .messageName("anotherSourceEventName")
@@ -403,6 +411,7 @@ class ProcessInstanceTest {
                 .messageId("eventId")
                 .messageData(Set.of(messageData3))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         processInstance.addMessage(domainMessage1);
         processInstance.addMessage(domainMessage2);
@@ -433,6 +442,7 @@ class ProcessInstanceTest {
                 .idempotenceId("idempotenceId")
                 .messageData(Set.of(messageData1))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         Message domainMessage2 = Message.messageBuilder()
                 .messageName("anotherSourceEventName")
@@ -440,6 +450,7 @@ class ProcessInstanceTest {
                 .messageId("eventId")
                 .messageData(Set.of(messageData3))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         processInstance.addMessage(domainMessage1);
         processInstance.addMessage(domainMessage2);
@@ -461,6 +472,7 @@ class ProcessInstanceTest {
                 .idempotenceId("idempotenceId")
                 .messageData(Set.of(messageData1))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         Message domainMessage2 = Message.messageBuilder()
                 .messageName("anotherSourceEventName")
@@ -468,6 +480,7 @@ class ProcessInstanceTest {
                 .messageId("eventId")
                 .messageData(Set.of(messageData3))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         processInstance.addMessage(domainMessage1);
         processInstance.addMessage(domainMessage2);
@@ -498,6 +511,7 @@ class ProcessInstanceTest {
                 .idempotenceId("idempotenceId")
                 .messageData(Set.of(messageData1))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         Message domainMessage2 = Message.messageBuilder()
                 .messageName("anotherSourceEventName")
@@ -505,6 +519,7 @@ class ProcessInstanceTest {
                 .messageId("eventId")
                 .messageData(Set.of(messageData3))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         processInstance.addMessage(domainMessage1);
         processInstance.addMessage(domainMessage2);
@@ -525,6 +540,7 @@ class ProcessInstanceTest {
                 .messageId("oldestEvent")
                 .idempotenceId("idempotenceIdOldest")
                 .createdAt(now.minusDays(2))
+                .messageCreatedAt(now.minusDays(2))
                 .build();
         Message domainMessage2 = Message.messageBuilder()
                 .messageName("anotherSourceEventName")
@@ -532,6 +548,7 @@ class ProcessInstanceTest {
                 .idempotenceId("idempotenceIdMiddle")
                 .messageData(Set.of())
                 .createdAt(now.minusDays(1))
+                .messageCreatedAt(now.minusDays(1))
                 .build();
         Message domainMessage3 = Message.messageBuilder()
                 .messageName("anotherSourceEventName")
@@ -539,6 +556,7 @@ class ProcessInstanceTest {
                 .idempotenceId("idempotenceIdNewest")
                 .messageData(Set.of())
                 .createdAt(now)
+                .messageCreatedAt(now)
                 .build();
 
 

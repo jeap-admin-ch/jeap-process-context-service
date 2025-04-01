@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,6 +85,7 @@ class CorrelationByProcessDataLateCorrelationIT extends ProcessInstanceMockS3ITB
                 .messageName(eventName)
                 .messageId(Generators.timeBasedEpochGenerator().generate().toString())
                 .idempotenceId(Generators.timeBasedEpochGenerator().generate().toString())
+                .messageCreatedAt(ZonedDateTime.now())
                 .originTaskIds(OriginTaskId.from(templateName, Set.of("taskId1", "taskId2")))
                 .messageData(Set.of(MessageData.builder()
                         .templateName(templateName)

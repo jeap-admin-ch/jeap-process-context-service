@@ -81,6 +81,7 @@ public class ProcessInstanceStubs {
                 .originTaskIds(OriginTaskId.from(templateName, Set.of("taskId1", "taskId2")))
                 .messageData(Set.of(new MessageData(templateName, "myKey", "myValue")))
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .build();
         processInstance.addMessage(message);
         additionalMessages.forEach(processInstance::addMessage);
@@ -172,6 +173,7 @@ public class ProcessInstanceStubs {
                 .messageId(Generators.timeBasedEpochGenerator().generate().toString())
                 .idempotenceId(Generators.timeBasedEpochGenerator().generate().toString())
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .messageData(Set.of(messageData1, messageData2))
                 .traceId("traceId1")
                 .build());
@@ -180,6 +182,7 @@ public class ProcessInstanceStubs {
                 .messageId(Generators.timeBasedEpochGenerator().generate().toString())
                 .idempotenceId(Generators.timeBasedEpochGenerator().generate().toString())
                 .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
                 .messageData(Set.of(messageData3))
                 .traceId("traceId2")
                 .build());

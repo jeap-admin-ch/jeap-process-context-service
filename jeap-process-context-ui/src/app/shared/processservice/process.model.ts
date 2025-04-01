@@ -48,6 +48,7 @@ export interface TaskDTO {
 	originTaskId: string;
 	name: I18n;
 	state: TaskState;
+	createdAt: string;
 	plannedAt: string;
 	completedAt: string | null;
 	lifecycle: string;
@@ -94,6 +95,7 @@ export interface MilestoneDTO {
 export interface MessageDTO {
 	id: string;
 	name: string;
+	createdAt: string;
 	receivedAt: string;
 	relatedOriginTaskIds: Set<string>[];
 	messageData: MessageDataDTO[];

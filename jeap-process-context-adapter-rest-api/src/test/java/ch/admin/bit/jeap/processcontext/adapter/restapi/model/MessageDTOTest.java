@@ -17,10 +17,13 @@ class MessageDTOTest {
     @Test
     void create() {
         ZonedDateTime receivedAt = ZonedDateTime.now();
-        MessageReferenceMessageDTO messageReferenceMessageDTO = createMessageReferenceMessageDTO(receivedAt, "name");
+        ZonedDateTime createdAt = receivedAt.minusMinutes(5);
+
+        MessageReferenceMessageDTO messageReferenceMessageDTO = createMessageReferenceMessageDTO(receivedAt, createdAt, "name");
         MessageDTO messageDTO = MessageDTO.create(messageReferenceMessageDTO);
         assertEquals("name", messageDTO.getName());
         assertEquals(receivedAt, messageDTO.getReceivedAt());
+        assertEquals(createdAt, messageDTO.getCreatedAt());
         assertEquals("traceId", messageDTO.getTraceId());
         assertFalse(messageDTO.getMessageData().isEmpty());
         ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData messageData = messageDTO.getMessageData().iterator().next();
@@ -31,7 +34,7 @@ class MessageDTOTest {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private MessageReferenceMessageDTO createMessageReferenceMessageDTO(ZonedDateTime receivedAt, String messageName) {
+    private MessageReferenceMessageDTO createMessageReferenceMessageDTO(ZonedDateTime receivedAt, ZonedDateTime createdAt, String messageName) {
         MessageData messageData = MessageData.builder()
                 .templateName("templateName")
                 .key("key")
@@ -42,6 +45,7 @@ class MessageDTOTest {
                 .messageReferenceId(Generators.timeBasedEpochGenerator().generate())
                 .messageId(Generators.timeBasedEpochGenerator().generate())
                 .messageReceivedAt(receivedAt)
+                .messageCreatedAt(createdAt)
                 .messageName(messageName)
                 .messageData(Set.of(MessageReferenceMessageDataDTO.from(messageData)))
                 .relatedOriginTaskIds(Set.of("t1", "t2"))
