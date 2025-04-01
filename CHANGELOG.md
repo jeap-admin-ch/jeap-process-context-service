@@ -9,7 +9,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Messages in process detail UI are now sorted by message creation time instead of reception time
+- Messages and tasks in process detail UI are now sorted by message creation time instead of reception time
+
+## [13.2.2] - 2025-04-01
+
+### Changed
+
+- Update parent from 26.35.0 to 26.41.3 (update was missing in last version)
 
 ## [13.2.1] - 2025-03-28
 
