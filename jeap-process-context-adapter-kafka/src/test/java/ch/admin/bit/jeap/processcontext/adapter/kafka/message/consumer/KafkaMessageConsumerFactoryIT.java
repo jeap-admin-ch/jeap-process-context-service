@@ -18,12 +18,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-class KafkaDomainMessageConsumerFactoryIT extends KafkaAdapterIntegrationTestBase {
+class KafkaMessageConsumerFactoryIT extends KafkaAdapterIntegrationTestBase {
 
     private static final String TOPIC_NAME = "my-custom-topic";
 
     @Autowired
-    private KafkaMessageConsumerFactory kafkaDomainEventConsumerFactory;
+    private KafkaMessageConsumerFactory kafkaMessageConsumerFactory;
 
     @Test
     void startConsumer() {
@@ -38,7 +38,7 @@ class KafkaDomainMessageConsumerFactoryIT extends KafkaAdapterIntegrationTestBas
 
         // Start consumer
         ConcurrentMessageListenerContainer<AvroMessageKey, AvroMessage> container =
-                ReflectionTestUtils.invokeMethod(kafkaDomainEventConsumerFactory, "startConsumer", TOPIC_NAME, event.getType().getName(), null, listener);
+                ReflectionTestUtils.invokeMethod(kafkaMessageConsumerFactory, "startConsumer", TOPIC_NAME, event.getType().getName(), null, listener);
 
         // wait for listener to be active
         assertThat(container).isNotNull();

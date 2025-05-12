@@ -1,0 +1,5 @@
+jeap:
+  processcontext:
+    kafka:
+      filters:
+        Test1CreatingProcessInstanceEvent: ch.admin.bit.jeap.processcontext.testevent.Test1CreatingProcessInstanceEventMessageFilter
