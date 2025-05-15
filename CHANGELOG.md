@@ -85,6 +85,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Dropped foreign key constraint `task_instance_completed_by_fkey` from the table `task_instance`.
 - Changed the default batch size for the housekeeping queries [pages] from `100` to `500`
 
+**Note:** In cases where the database contains large volumes of event data, Flyway may not be able to acquire the necessary lock time during operational hours to perform the database migration.
+This can result in the service being unable to start properly.
+**Recommendation:** Perform the database migration during a planned service downtime on a single instance, if you have a large amount of event data.
+
 ## [12.0.0] - 2025-02-12
 
 ### Changed
