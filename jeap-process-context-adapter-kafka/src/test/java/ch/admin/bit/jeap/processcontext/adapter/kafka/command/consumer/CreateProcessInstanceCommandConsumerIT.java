@@ -32,7 +32,7 @@ class CreateProcessInstanceCommandConsumerIT extends KafkaAdapterIntegrationTest
                 .build();
 
         // when
-        kafkaTemplate.send(topicConfiguration.getCreateProcessInstance(), command);
+        sendSync(topicConfiguration.getCreateProcessInstance(), command);
 
         // then
         Mockito.verify(processInstanceService, Mockito.timeout(TEST_TIMEOUT)).createProcessInstance(
@@ -54,7 +54,7 @@ class CreateProcessInstanceCommandConsumerIT extends KafkaAdapterIntegrationTest
                 .build();
 
         // when
-        kafkaTemplate.send(topicConfiguration.getCreateProcessInstance(), command);
+        sendSync(topicConfiguration.getCreateProcessInstance(), command);
 
         // then
         Mockito.verify(processInstanceService, Mockito.timeout(TEST_TIMEOUT)).createProcessInstance(
