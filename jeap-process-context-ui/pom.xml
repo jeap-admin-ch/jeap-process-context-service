@@ -10,6 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>jeap-process-context-ui</artifactId>
+	<name>${project.groupId}:${project.artifactId}</name>
 
 	<properties>
 		<exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>

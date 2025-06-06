@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jeap-process-context-domain-test</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>
         <sonar.skip>true</sonar.skip>

@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jeap-process-context-domain</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>
         <pas-avro-maven-plugin.version>8.2.0</pas-avro-maven-plugin.version>
