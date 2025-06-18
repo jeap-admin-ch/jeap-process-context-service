@@ -17,7 +17,7 @@ class InternalMessageFactory {
     @Value("${jeap.messaging.kafka.system-name}")
     private String systemName;
 
-    @Value("${jeap.messaging.kafka.system-name}")
+    @Value("${jeap.messaging.kafka.service-name}")
     private String serviceName;
 
     ProcessContextStateChangedEvent processContextStateChangedEvent(String originProcessId) {
