@@ -519,6 +519,7 @@ public class ProcessTemplateDeserializer {
                 .joinType(joinType)
                 .subjectSelector(subjectSelector)
                 .objectSelector(objectSelector)
+                .featureFlag(relationPatternDefinition.getFeatureFlag())
                 .build();
     }
 

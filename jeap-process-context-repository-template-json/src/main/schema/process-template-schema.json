@@ -281,6 +281,9 @@
         "joinType": {
           "type": "string",
           "enum": ["byValue", "byRole"]
+        },
+        "featureFlag": {
+          "type": "string"
         }
       },
       "additionalProperties": false,

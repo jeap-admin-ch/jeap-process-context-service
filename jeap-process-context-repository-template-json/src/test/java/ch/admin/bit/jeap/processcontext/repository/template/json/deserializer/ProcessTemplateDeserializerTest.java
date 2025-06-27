@@ -74,6 +74,7 @@ class ProcessTemplateDeserializerTest {
         RelationPatternDefinition relationPatternDefinition = new RelationPatternDefinition();
         relationPatternDefinition.setPredicateType("some relation");
         relationPatternDefinition.setJoinType(RelationPatternDefinition.JOIN_BY_ROLE);
+        relationPatternDefinition.setFeatureFlag("myFeatureFlag");
 
         RelationNodeDefinition relationNodeDefinition = new RelationNodeDefinition();
         relationNodeDefinition.setType("some_type");
@@ -138,6 +139,7 @@ class ProcessTemplateDeserializerTest {
         RelationPattern relationPattern = template.getRelationPatterns().getFirst();
         assertEquals(RelationPatternDefinition.JOIN_BY_ROLE, relationPattern.getJoinType());
         assertEquals("some relation", relationPattern.getPredicateType());
+        assertEquals("myFeatureFlag", relationPattern.getFeatureFlag());
         RelationNodeSelector objectSelector = relationPattern.getObjectSelector();
         assertEquals("some_type", objectSelector.getType());
         assertEquals("processDataKey", objectSelector.getProcessDataKey());

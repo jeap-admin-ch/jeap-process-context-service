@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.12.0] - 2025-06-30
+
+### Changed
+
+- relation listener supports feature flags for relation patterns
+- Update parent from 26.62.0 to 26.65.0
+
 ## [13.11.0] - 2025-06-19
 
 ### Changed

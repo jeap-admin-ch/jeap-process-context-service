@@ -10,12 +10,14 @@ public class RelationPattern {
     String joinType;
     RelationNodeSelector subjectSelector;
     RelationNodeSelector objectSelector;
+    String featureFlag;
 
     @Builder
-    private RelationPattern(@NonNull String predicateType, String joinType, @NonNull RelationNodeSelector subjectSelector, @NonNull RelationNodeSelector objectSelector) {
+    private RelationPattern(@NonNull String predicateType, String joinType, @NonNull RelationNodeSelector subjectSelector, @NonNull RelationNodeSelector objectSelector, String featureFlag) {
         this.predicateType = predicateType;
         this.joinType = joinType;
         this.subjectSelector = subjectSelector;
         this.objectSelector = objectSelector;
+        this.featureFlag = featureFlag;
     }
 }

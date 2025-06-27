@@ -79,3 +79,10 @@ server:
     context-path: /process-context
   compression:
     enabled: true
+
+togglz:
+  features:
+    FEATURE_FLAG_2:
+      enabled: true
+    FEATURE_FLAG_3:
+      enabled: true

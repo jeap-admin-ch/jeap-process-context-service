@@ -1,0 +1,75 @@
+{
+  "name": "relations_feature_flags_both_active",
+  "tasks": [
+    {
+      "name": "mandatory",
+      "completedBy": {
+        "domainEvent": "Test1Event"
+      }
+    }
+  ],
+  "events": [
+    {
+      "eventName": "Test1Event",
+      "topicName": "topic.test1",
+      "referenceExtractor": "ch.admin.bit.jeap.processcontext.testevent.RelationTestEventExtractor"
+    },
+    {
+      "eventName": "Test2Event",
+      "topicName": "topic.test2",
+      "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.RelationTestEventExtractor"
+    }
+  ],
+  "milestones": [],
+  "processData": [
+    {
+      "key": "subjectKey",
+      "source": {
+        "eventName": "Test1Event",
+        "eventDataKey": "theSubject"
+      }
+    },
+    {
+      "key": "objectKey",
+      "source": {
+        "eventName": "Test2Event",
+        "eventDataKey": "theObject"
+      }
+    }
+  ],
+  "relationSystemId": "ch.test.System",
+  "relationPatterns": [
+    {
+      "object": {
+        "type": "ch.test.Object",
+        "selector": {
+          "processDataKey": "objectKey"
+        }
+      },
+      "subject": {
+        "type": "ch.test.Subject",
+        "selector": {
+          "processDataKey": "subjectKey"
+        }
+      },
+      "predicateType": "ch.test.predicate.Knows",
+      "featureFlag": "FEATURE_FLAG_3"
+    },
+    {
+      "subject": {
+        "type": "ch.test.Object",
+        "selector": {
+          "processDataKey": "objectKey"
+        }
+      },
+      "object": {
+        "type": "ch.test.Subject",
+        "selector": {
+          "processDataKey": "subjectKey"
+        }
+      },
+      "predicateType": "ch.test.predicate.Knows",
+      "featureFlag": "FEATURE_FLAG_3"
+    }
+  ]
+}

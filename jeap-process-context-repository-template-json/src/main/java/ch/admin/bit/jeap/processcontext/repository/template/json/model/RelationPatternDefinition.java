@@ -12,5 +12,6 @@ public class RelationPatternDefinition {
     private String joinType;
     private RelationNodeDefinition subject;
     private RelationNodeDefinition object;
+    private String featureFlag;
 }
 

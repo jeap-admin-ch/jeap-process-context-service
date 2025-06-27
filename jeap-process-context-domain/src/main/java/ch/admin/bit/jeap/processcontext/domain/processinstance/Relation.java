@@ -57,16 +57,19 @@ public class Relation {
     @EqualsAndHashCode.Exclude
     private UUID idempotenceId;
 
+    private String featureFlag;
+
     @Builder(access = PACKAGE)
     private Relation(@NonNull String systemId, @NonNull String subjectType, @NonNull String subjectId,
                      @NonNull String objectType, @NonNull String objectId,
-                     @NonNull String predicateType) {
+                     @NonNull String predicateType, String featureFlag) {
         this.systemId = systemId;
         this.subjectType = subjectType;
         this.subjectId = subjectId;
         this.objectType = objectType;
         this.objectId = objectId;
         this.predicateType = predicateType;
+        this.featureFlag = featureFlag;
     }
 
     void onPrePersist() {

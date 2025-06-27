@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.togglz.core.context.FeatureContext;
+import org.togglz.core.util.NamedFeature;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -79,6 +81,7 @@ public class ProcessEventService {
 
     private void produceRelationNotifications(String originProcessId, Map<EventType, List<ProcessEvent>> producedEvents, ProcessInstance processInstance, List<ProcessEvent> events) {
         Map<String, Relation> relations = processInstance.getRelations().stream()
+                .filter(this::isFeatureFlagActive)
                 .collect(toMap(r -> r.getIdempotenceId().toString(), r -> r));
         Set<String> notifiedRelations = producedEvents.getOrDefault(EventType.RELATION_ADDED, List.of()).stream()
                 .map(ProcessEvent::getName)
@@ -91,6 +94,15 @@ public class ProcessEventService {
                             relations.values().stream().map(relation -> RelationMapper.toApiObject(originProcessId, relation)).toList()));
             events.addAll(relations.values().stream().map(relation -> ProcessEvent.createRelationAdded(originProcessId, relation.getIdempotenceId())).toList());
         }
+    }
+
+    private boolean isFeatureFlagActive(Relation relation) {
+        if (relation.getFeatureFlag() != null) {
+            boolean active = FeatureContext.getFeatureManager().isActive(new NamedFeature(relation.getFeatureFlag()));
+            log.debug("FeatureFlag={} relation={} state={}", relation.getFeatureFlag(), relation.getId(), active);
+            return active;
+        }
+        return true;
     }
 
     private void produceMilestoneNotifications(String originProcessId, Map<EventType, List<ProcessEvent>> producedEvents, ProcessInstance processInstance, List<ProcessEvent> events) {

@@ -58,14 +58,14 @@ class RelationFactory {
         for (RelationNode object : objects) {
             for (RelationNode subject : subjects) {
                 if (relationPattern.getJoinType() == null) {
-                    relations.add(createRelation(systemId, relationPattern.getPredicateType(), object, subject));
+                    relations.add(createRelation(systemId, relationPattern.getPredicateType(), object, subject, relationPattern.getFeatureFlag()));
                 } else if ("byRole".equals(relationPattern.getJoinType())) {
                     if (object.getRole() != null && object.getRole().equals(subject.getRole())) {
-                        relations.add(createRelation(systemId, relationPattern.getPredicateType(), object, subject));
+                        relations.add(createRelation(systemId, relationPattern.getPredicateType(), object, subject, relationPattern.getFeatureFlag()));
                     }
                 } else if ("byValue".equals(relationPattern.getJoinType())) {
                     if (object.getId() != null && object.getId().equals(subject.getId())) {
-                        relations.add(createRelation(systemId, relationPattern.getPredicateType(), object, subject));
+                        relations.add(createRelation(systemId, relationPattern.getPredicateType(), object, subject, relationPattern.getFeatureFlag()));
                     }
                 }
             }
@@ -73,7 +73,7 @@ class RelationFactory {
         return relations;
     }
 
-    private Relation createRelation(String systemId, String predicateType, RelationNode object, RelationNode subject) {
+    private Relation createRelation(String systemId, String predicateType, RelationNode object, RelationNode subject, String featureFlag) {
         return Relation.builder()
                 .systemId(systemId)
                 .subjectType(subject.getType())
@@ -81,6 +81,7 @@ class RelationFactory {
                 .objectType(object.getType())
                 .objectId(object.getId())
                 .predicateType(predicateType)
+                .featureFlag(featureFlag)
                 .build();
     }
 
