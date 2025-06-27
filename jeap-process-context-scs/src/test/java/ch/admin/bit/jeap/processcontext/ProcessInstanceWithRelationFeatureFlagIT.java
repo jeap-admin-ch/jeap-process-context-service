@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.processcontext.event.test1.Test1EventReferences;
 import ch.admin.bit.jeap.processcontext.plugin.api.relation.Relation;
 import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
 import ch.admin.bit.jeap.processcontext.testevent.Test2EventBuilder;
+import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
@@ -75,4 +76,8 @@ class ProcessInstanceWithRelationFeatureFlagIT extends ProcessInstanceMockS3ITBa
         sendSync("topic.test2", Test2EventBuilder.createForProcessId(originProcessId).objectId(s).build());
     }
 
+    @Override
+    public JeapAuthenticationToken viewAndCreateRoleToken() {
+        return super.viewAndCreateRoleToken();
+    }
 }

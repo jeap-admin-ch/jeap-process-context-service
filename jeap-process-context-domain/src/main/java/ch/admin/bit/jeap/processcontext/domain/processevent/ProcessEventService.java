@@ -80,13 +80,18 @@ public class ProcessEventService {
     }
 
     private void produceRelationNotifications(String originProcessId, Map<EventType, List<ProcessEvent>> producedEvents, ProcessInstance processInstance, List<ProcessEvent> events) {
-        Map<String, Relation> relations = processInstance.getRelations().stream()
-                .filter(this::isFeatureFlagActive)
-                .collect(toMap(r -> r.getIdempotenceId().toString(), r -> r));
         Set<String> notifiedRelations = producedEvents.getOrDefault(EventType.RELATION_ADDED, List.of()).stream()
                 .map(ProcessEvent::getName)
                 .collect(toSet());
-        relations.keySet().removeAll(notifiedRelations);
+        Set<Relation> processInstanceRelations = processInstance.getRelations();
+        log.debug("Found {} relations for process {}", processInstanceRelations.size(), originProcessId);
+        processInstanceRelations = processInstanceRelations.stream()
+                .filter(r -> !notifiedRelations.contains(r.getIdempotenceId().toString())).collect(Collectors.toSet());
+        log.debug("Found {} new relations for process {}", processInstanceRelations.size(), originProcessId);
+        Map<String, Relation> relations = processInstanceRelations.stream()
+                .filter(this::isFeatureFlagActive)
+                .collect(toMap(r -> r.getIdempotenceId().toString(), r -> r));
+
         if (!relations.isEmpty()) {
             log.debug("Notifying relation listener, relations added: {}", relations);
             metricsListener.timed("jeap_pcs_notify_relations_added", Map.of("relationsCount", Integer.toString(relations.size())), () ->
