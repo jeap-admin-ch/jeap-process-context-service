@@ -56,4 +56,8 @@ public class ProcessEvent extends MutableDomainEntity {
     public static ProcessEvent createSnapshotCreated(String originProcessId, String snapshotVersion) {
         return new ProcessEvent(Generators.timeBasedEpochGenerator().generate(), originProcessId, EventType.SNAPSHOT_CREATED, snapshotVersion);
     }
+
+    public static ProcessEvent createRelationProhibited(String originProcessId, UUID idempotenceId) {
+        return new ProcessEvent(Generators.timeBasedEpochGenerator().generate(), originProcessId, EventType.RELATION_PROHIBITED, idempotenceId.toString());
+    }
 }

@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.togglz.core.manager.FeatureManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,13 +37,15 @@ class ProcessMessageServiceTest {
     private RelationListener relationListener;
     @Captor
     private ArgumentCaptor<List<ProcessEvent>> processEventsCaptor;
+    @Mock
+    private FeatureManager featureManager;
 
     private ProcessEventService target;
 
     @BeforeEach
     void setUp() {
         MetricsListener metricsListener = new StubMetricsListener();
-        target = new ProcessEventService(processInstanceQueryRepository, processEventRepository, processInstanceEventProducer, relationListener, metricsListener);
+        target = new ProcessEventService(processInstanceQueryRepository, processEventRepository, processInstanceEventProducer, relationListener, metricsListener, featureManager);
     }
 
     @Test

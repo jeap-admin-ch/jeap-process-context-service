@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.togglz.core.context.FeatureContext;
+import org.togglz.core.manager.FeatureManager;
 import org.togglz.core.util.NamedFeature;
 
 import java.util.*;
@@ -27,6 +27,7 @@ public class ProcessEventService {
     private final ProcessInstanceEventProducer processInstanceEventProducer;
     private final RelationListener relationListener;
     private final MetricsListener metricsListener;
+    private final FeatureManager featureManager;
 
     @Transactional
     @Timed(value = "jeap_pcs_react_to_process_state_change", description = "Produce new process events", percentiles = {0.5, 0.8, 0.95, 0.99})
@@ -80,30 +81,44 @@ public class ProcessEventService {
     }
 
     private void produceRelationNotifications(String originProcessId, Map<EventType, List<ProcessEvent>> producedEvents, ProcessInstance processInstance, List<ProcessEvent> events) {
+        Set<Relation> processInstanceRelations = processInstance.getRelations();
+        log.debug("Found {} relations for process {}", processInstanceRelations.size(), originProcessId);
+
         Set<String> notifiedRelations = producedEvents.getOrDefault(EventType.RELATION_ADDED, List.of()).stream()
                 .map(ProcessEvent::getName)
                 .collect(toSet());
-        Set<Relation> processInstanceRelations = processInstance.getRelations();
-        log.debug("Found {} relations for process {}", processInstanceRelations.size(), originProcessId);
         processInstanceRelations = processInstanceRelations.stream()
                 .filter(r -> !notifiedRelations.contains(r.getIdempotenceId().toString())).collect(Collectors.toSet());
-        log.debug("Found {} new relations for process {}", processInstanceRelations.size(), originProcessId);
-        Map<String, Relation> relations = processInstanceRelations.stream()
-                .filter(this::isFeatureFlagActive)
-                .collect(toMap(r -> r.getIdempotenceId().toString(), r -> r));
 
-        if (!relations.isEmpty()) {
-            log.debug("Notifying relation listener, relations added: {}", relations);
-            metricsListener.timed("jeap_pcs_notify_relations_added", Map.of("relationsCount", Integer.toString(relations.size())), () ->
+        Set<String> prohibitedRelations = producedEvents.getOrDefault(EventType.RELATION_PROHIBITED, List.of()).stream()
+                .map(ProcessEvent::getName)
+                .collect(toSet());
+        processInstanceRelations = processInstanceRelations.stream()
+                .filter(r -> !prohibitedRelations.contains(r.getIdempotenceId().toString())).collect(Collectors.toSet());
+
+        log.debug("Found {} new relations for process {}, already notified {}, prohibited {}", processInstanceRelations.size(), originProcessId, notifiedRelations.size(), prohibitedRelations.size());
+
+        Map<Boolean, List<Relation>> relationsByFeatureFlag = processInstanceRelations.stream().collect(Collectors.partitioningBy(this::isFeatureFlagActive));
+        Map<String, Relation> newRelationsWithFeatureFlagActive = relationsByFeatureFlag.get(true).stream().collect(toMap(r -> r.getIdempotenceId().toString(), r -> r));
+        Map<String, Relation> newRelationsWithFeatureFlagNotActive = relationsByFeatureFlag.get(false).stream().collect(toMap(r -> r.getIdempotenceId().toString(), r -> r));
+
+        if (!newRelationsWithFeatureFlagActive.isEmpty()) {
+            log.debug("Notifying relation listener, relations added: {}", newRelationsWithFeatureFlagActive);
+            metricsListener.timed("jeap_pcs_notify_relations_added", Map.of("relationsCount", Integer.toString(newRelationsWithFeatureFlagActive.size())), () ->
                     relationListener.relationsAdded(
-                            relations.values().stream().map(relation -> RelationMapper.toApiObject(originProcessId, relation)).toList()));
-            events.addAll(relations.values().stream().map(relation -> ProcessEvent.createRelationAdded(originProcessId, relation.getIdempotenceId())).toList());
+                            newRelationsWithFeatureFlagActive.values().stream().map(relation -> RelationMapper.toApiObject(originProcessId, relation)).toList()));
+            events.addAll(newRelationsWithFeatureFlagActive.values().stream().map(relation -> ProcessEvent.createRelationAdded(originProcessId, relation.getIdempotenceId())).toList());
+        }
+
+        if (!newRelationsWithFeatureFlagNotActive.isEmpty()) {
+            log.debug("Not notifying relation listener for prohibited relations: {}", newRelationsWithFeatureFlagNotActive);
+            events.addAll(newRelationsWithFeatureFlagNotActive.values().stream().map(relation -> ProcessEvent.createRelationProhibited(originProcessId, relation.getIdempotenceId())).toList());
         }
     }
 
     private boolean isFeatureFlagActive(Relation relation) {
         if (relation.getFeatureFlag() != null) {
-            boolean active = FeatureContext.getFeatureManager().isActive(new NamedFeature(relation.getFeatureFlag()));
+            boolean active = featureManager.isActive(new NamedFeature(relation.getFeatureFlag()));
             log.debug("FeatureFlag={} relation={} state={}", relation.getFeatureFlag(), relation.getId(), active);
             return active;
         }

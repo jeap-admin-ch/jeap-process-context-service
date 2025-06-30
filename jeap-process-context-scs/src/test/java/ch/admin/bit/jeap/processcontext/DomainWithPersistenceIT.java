@@ -34,6 +34,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.transaction.TestTransaction;
+import org.togglz.core.manager.FeatureManager;
 
 import java.lang.reflect.Method;
 import java.util.Set;
@@ -82,6 +83,8 @@ class DomainWithPersistenceIT {
     private ProcessInstanceService processInstanceService;
     @MockitoBean
     private ContractsValidator contractsValidator;
+    @MockitoBean
+    private FeatureManager featureManager;
 
     @Autowired
     private MessageReceiver messageReceiver;
