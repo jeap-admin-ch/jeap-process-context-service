@@ -30,6 +30,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Update parent from 26.57.0 to 26.61.0
+- update guava from 33.4.0-jre to 33.4.8-jre
+- update testcontainers from 1.20.4 to 1.21.3
 
 ## [13.9.0] - 2025-06-13
 
