@@ -1,0 +1,44 @@
+publiccodeYmlVersion: 0.4.0
+name: jeap-process-context-service
+applicationSuite: jEAP
+softwareVersion: 13.16.0
+releaseDate: 2025-08-08
+url: "https://github.com/jeap-admin-ch/jeap-process-context-service.git"
+landingURL: "https://github.com/jeap-admin-ch/jeap"
+platforms:
+  - web
+categories:
+  - application-development
+developmentStatus: stable
+softwareType: library
+description:
+  en:
+    localisedName: jeap-process-context-service
+    shortDescription: Service template library for observing distributed business processes in event-driven architectures without central orchestration.
+    longDescription: >
+      The jEAP Process Context Service enables microservices to share and maintain a distributed view
+      of long-running business processes. Instead of using a central process engine, it applies a
+      choreography-based approach where process definitions are modeled as JSON templates. These templates
+      specify tasks, milestones, correlations, and completion conditions. The service observes domain events
+      from Kafka, correlates them to process instances, updates process state, and triggers events when
+      milestones are reached or processes complete. It also supports advanced features such as optional and
+      conditional task instantiation, process data correlation, relation tracking between business objects,
+      and snapshot creation for auditability. Integrated with jEAP Messaging, it provides
+      both runtime monitoring via a UI and REST APIs, and generates process events for downstream consumers,
+      enabling transparency, traceability, and analytics across distributed systems.
+    features:
+      - JSON-based process templates with tasks, milestones, and correlation rules
+      - Event-driven state tracking, milestone events, and process completion handling
+      - Support for process snapshots, relation patterns, and UI-based process monitoring
+      - Extensible using a plugin system
+legal:
+  license: Apache-2.0
+maintenance:
+  type: internal
+  contacts:
+    - name: Federal Office of Information Technology, Systems and Telecommunication FOITT
+      email: jeap-community@bit.admin.ch
+localisation:
+  localisationReady: false
+  availableLanguages:
+    - en
