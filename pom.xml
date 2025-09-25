@@ -169,33 +169,5 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-        <plugins>
-            <!-- Disable all license plugin executions from the parent to avoid instances of the service
-                       inheriting these plugin executions. -->
-            <plugin>
-                <groupId>org.honton.chas</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default-cli</id>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default-cli</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>add-third-party</id>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
     </build>
 </project>
