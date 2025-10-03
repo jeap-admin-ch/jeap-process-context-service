@@ -40,7 +40,7 @@
 
     <properties>
         <maven.javadoc.skip>false</maven.javadoc.skip>
-        <guava.version>33.4.8-jre</guava.version>
+        <guava.version>33.5.0-jre</guava.version>
         <testcontainers.version>1.21.3</testcontainers.version>
         <maven-plugin-plugin.version>3.15.1</maven-plugin-plugin.version>
     </properties>
