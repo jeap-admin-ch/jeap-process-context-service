@@ -3,9 +3,10 @@ import {TaskDTO} from '../../../shared/processservice/process.model';
 import {TranslateService} from '@ngx-translate/core';
 
 @Component({
-	selector: 'app-task-detail-view',
-	templateUrl: './task-detail-view.component.html',
-	styleUrl: './task-detail-view.component.scss'
+    selector: 'app-task-detail-view',
+    templateUrl: './task-detail-view.component.html',
+    styleUrl: './task-detail-view.component.scss',
+    standalone: false
 })
 export class TaskDetailViewComponent {
 	@Input() task: TaskDTO | null = null;

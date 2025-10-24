@@ -10,9 +10,10 @@ import {LogDeepLinkService} from '../../shared/logdeeplink/logdeeplink.service';
 import {TaskTemplateViewComponent} from "./task-template-view/task-template-view.component";
 
 @Component({
-	selector: 'app-exam-page',
-	templateUrl: './process-page.component.html',
-	styleUrls: ['./process-page.component.css']
+    selector: 'app-exam-page',
+    templateUrl: './process-page.component.html',
+    styleUrls: ['./process-page.component.css'],
+    standalone: false
 })
 export class ProcessPageComponent implements OnInit, OnDestroy, AfterViewInit {
 	process: ProcessDTO | undefined;

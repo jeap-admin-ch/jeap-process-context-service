@@ -26,9 +26,19 @@ Change log is available at [CHANGELOG.md](./CHANGELOG.md)
 
 ## Local Cypress Component Tests
 
-- Open terminal and cd jeap-process-context-ui
-- Testing in Browser with UI: npx cypress open --port 7000
-- Testing in Console: npm run cypress:run
+### Testing in Browser with UI:
+
+```bash
+cd jeap-process-context-ui
+npx cypress open --port 7000
+```
+
+### Testing in Console:
+
+```bash
+cd jeap-process-context-ui
+npm run cypress:run
+```
 
 ## Note
 

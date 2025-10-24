@@ -6,9 +6,10 @@ import {MatTableDataSource} from '@angular/material/table';
 import {ProcessRelationsListenerService} from '../../../shared/process-relations-listener.service';
 
 @Component({
-	selector: 'app-process-relations',
-	templateUrl: './process-relations.component.html',
-	styleUrls: []
+    selector: 'app-process-relations',
+    templateUrl: './process-relations.component.html',
+    styleUrls: [],
+    standalone: false
 })
 export class ProcessRelationsComponent implements OnInit, AfterViewInit, OnChanges {
 	@Input() processRelations: ProcessRelationDTO[];

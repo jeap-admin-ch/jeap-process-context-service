@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
 import {TaskDTO, TaskState} from '../../../shared/processservice/process.model';
 import {TranslateService} from '@ngx-translate/core';
 import {MatSort} from '@angular/material/sort';
@@ -7,11 +7,12 @@ import {Subscription} from 'rxjs';
 import {ProcessRelationsListenerService} from '../../../shared/process-relations-listener.service';
 
 @Component({
-	selector: 'app-task-activity-view',
-	templateUrl: './task-activity-view.component.html',
-	styleUrls: []
+    selector: 'app-task-activity-view',
+    templateUrl: './task-activity-view.component.html',
+    styleUrls: [],
+    standalone: false
 })
-export class TaskActivityViewComponent implements OnInit, AfterViewInit, OnDestroy {
+export class TaskActivityViewComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
 	@Input() tasks: TaskDTO[] = [];
 	@Output() taskSelected = new EventEmitter<TaskDTO>();
 
@@ -44,6 +45,12 @@ export class TaskActivityViewComponent implements OnInit, AfterViewInit, OnDestr
 	refreshTable(): void {
 		this.sortedTasks = this.generateActivityTasks(this.tasks);
 		this.dataSource = new MatTableDataSource(this.sortedTasks);
+	}
+
+	ngOnChanges(changes: SimpleChanges): void {
+		if (changes['tasks']) {
+			this.refreshTable();
+		}
 	}
 
 	private generateActivityTasks(tasks: TaskDTO[]): TaskDTO[] {

@@ -1,7 +1,7 @@
 import {MockProvider} from 'ng-mocks';
 import {TranslateService} from '@ngx-translate/core';
-import {of} from 'rxjs';
-import {EventEmitter} from '@angular/core';
+import {of, Subject} from 'rxjs';
+
 
 export function getTranslationServiceMockProvider(currentLang: string) {
 	return MockProvider(TranslateService, {
@@ -9,10 +9,10 @@ export function getTranslationServiceMockProvider(currentLang: string) {
 			return currentLang;
 		},
 		get(key: any): any {
-			return of(key);
+			return of(`[${currentLang}] ${key}`);
 		},
-		onLangChange: new EventEmitter<any>(),
-		onTranslationChange: new EventEmitter<any>(),
-		onDefaultLangChange: new EventEmitter<any>()
+		onLangChange: new Subject<any>(),
+		onTranslationChange: new Subject<any>(),
+		onDefaultLangChange: new Subject<any>()
 	});
 }

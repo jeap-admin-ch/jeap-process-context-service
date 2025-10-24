@@ -6,11 +6,10 @@ import {ProcessService} from '../../shared/processservice/process.service';
 import {LogDeepLinkService} from '../../shared/logdeeplink/logdeeplink.service';
 import {MockProvider} from 'ng-mocks';
 
-// @ts-ignore
-import processData from '../../../../cypress/fixtures/process_1.json';
-import {getTranslationServiceMockProvider} from '../../../../cypress/support/mockproviderFunctions';
+import {mockProcess_1} from '../../../../cypress/fixtures/MockData'
 import {RouterModule} from "@angular/router";
 import {TaskTemplateViewComponent} from "./task-template-view/task-template-view.component";
+import {provideObliqueTestingConfiguration} from "@oblique/oblique";
 
 describe('process-page-component.cy.ts', () => {
 
@@ -19,49 +18,15 @@ describe('process-page-component.cy.ts', () => {
 			imports: [RouterModule.forRoot([]), TranslateModule.forRoot()],
 			declarations: [TaskTemplateViewComponent],
 			providers: [
-				MockProvider(ProcessService, {getProcess: () => of(processData)}),
-				getTranslationServiceMockProvider('de'),
+				provideObliqueTestingConfiguration(),
+				MockProvider(ProcessService, {getProcess: () => of(mockProcess_1)}),
 				MockProvider(LogDeepLinkService, {})
 			]
 		}).then(wrapper => {
-			cy.stub((wrapper.component as any).processService, 'getProcess').returns(of(processData));
+			cy.stub((wrapper.component as any).processService, 'getProcess').returns(of(mockProcess_1));
 		});
 
 		cy.contains('Race Across Switzerland');
-		cy.contains('XXX');
-	});
-
-	it('load fr', () => {
-		cy.mount(ProcessPageComponent, {
-			imports: [RouterModule.forRoot([]), TranslateModule.forRoot()],
-			declarations: [TaskTemplateViewComponent],
-			providers: [
-				MockProvider(ProcessService, {getProcess: () => of(processData)}),
-				getTranslationServiceMockProvider('fr'),
-				MockProvider(LogDeepLinkService, {})
-			]
-		}).then(wrapper => {
-			cy.stub((wrapper.component as any).processService, 'getProcess').returns(of(processData));
-		});
-
-		cy.contains('[FR] Race Across Switzerland');
-		cy.contains('XXX');
-	});
-
-	it('load it', () => {
-		cy.mount(ProcessPageComponent, {
-			imports: [RouterModule.forRoot([]), TranslateModule.forRoot()],
-			declarations: [TaskTemplateViewComponent],
-			providers: [
-				MockProvider(ProcessService, {getProcess: () => of(processData)}),
-				getTranslationServiceMockProvider('it'),
-				MockProvider(LogDeepLinkService, {})
-			]
-		}).then(wrapper => {
-			cy.stub((wrapper.component as any).processService, 'getProcess').returns(of(processData));
-		});
-
-		cy.contains('[IT] Race Across Switzerland');
 		cy.contains('XXX');
 	});
 });

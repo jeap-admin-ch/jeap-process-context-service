@@ -54,7 +54,7 @@ export interface TaskDTO {
 	lifecycle: string;
 	cardinality: string;
 	plannedBy: UserData[];
-	completedBy: UserData[];
+	completedBy: UserData[] | null;
 	taskData: TaskDataDto[];
 }
 
@@ -111,7 +111,7 @@ export interface MessageDataDTO {
 export interface ProcessInstanceLightDto {
 	originProcessId: string;
 	createdAt: string;
-	processTemplate: string;
+	name: any;
 	state: string;
 	lastMessageCreatedAt: string;
 }

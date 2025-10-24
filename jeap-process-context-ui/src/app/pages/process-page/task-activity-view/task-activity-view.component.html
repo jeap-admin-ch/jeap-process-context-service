@@ -1,32 +1,45 @@
-<table mat-table [dataSource]="dataSource" matSort class="ob-table ob-table-sm ob-table-cicd" *ngIf="sortedTasks.length">
-	<ng-container matColumnDef="name">
-		<th *matHeaderCellDef mat-header-cell>{{ "i18n.process.task.name" | translate }}</th>
-		<td *matCellDef="let row" mat-cell>{{ row?.name[this.translate.currentLang] }}</td>
-	</ng-container>
-
-	<ng-container matColumnDef="state">
-		<th *matHeaderCellDef mat-header-cell mat-sort-header>{{ "i18n.process.task.state" | translate }}</th>
-		<td *matCellDef="let row" mat-cell>
-			<span *ngIf="row.state === 'NOT_PLANNED'"><mat-icon svgIcon="help-circle" style="color: blue" class="custom-icon-style"></mat-icon></span>
-			<span *ngIf="row.state === 'PLANNED'"
-				><mat-icon svgIcon="calendar" class="custom-icon-style" style="color: #00813a" class="custom-icon-style"></mat-icon
-			></span>
-			<span *ngIf="row.state === 'COMPLETED'"
-				><mat-icon svgIcon="checkmark-circle" class="custom-icon-style" style="color: #00813a" class="custom-icon-style"></mat-icon
-			></span>
-			<span *ngIf="row.state === 'NOT_REQUIRED'"><mat-icon svgIcon="ban" style="color: #b4b4b4" class="custom-icon-style"></mat-icon></span>
-			<span *ngIf="row.state === 'UNKNOWN'"><mat-icon svgIcon="help-circle" style="color: #b4b4b4" class="custom-icon-style"></mat-icon></span>
-			<span *ngIf="row.state === 'DELETED'"><mat-icon svgIcon="cancel-circle" style="color: #de3510" class="custom-icon-style"></mat-icon></span>
-			{{ "i18n.process.task.state." + row.state | translate }}
-		</td>
-	</ng-container>
-
-	<ng-container matColumnDef="createdAt">
-		<th *matHeaderCellDef mat-header-cell mat-sort-header>{{ "i18n.process.task.created" | translate }}</th>
-		<td *matCellDef="let row" mat-cell>{{ row.createdAt | date : "dd.MM.yyyy HH:mm:ss" }}</td>
-	</ng-container>
-
-	<tr *matHeaderRowDef="['createdAt', 'name', 'state']" mat-header-row></tr>
-	<tr *matRowDef="let row; columns: ['createdAt', 'name', 'state']" (click)="selectTask(row)" mat-row></tr>
-</table>
-<p *ngIf="sortedTasks.length === 0">{{ "i18n.none.tasks" | translate }}</p>
+@if (sortedTasks.length) {
+  <table mat-table [dataSource]="dataSource" matSort class="ob-table ob-table-sm ob-table-cicd">
+    <ng-container matColumnDef="name">
+      <th *matHeaderCellDef mat-header-cell>{{ "i18n.process.task.name" | translate }}</th>
+      <td *matCellDef="let row" mat-cell>{{ row?.name[this.translate.currentLang] }}</td>
+    </ng-container>
+    <ng-container matColumnDef="state">
+      <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ "i18n.process.task.state" | translate }}</th>
+      <td *matCellDef="let row" mat-cell>
+        @if (row.state === 'NOT_PLANNED') {
+          <span><mat-icon svgIcon="help-circle" style="color: blue" class="custom-icon-style"></mat-icon></span>
+        }
+        @if (row.state === 'PLANNED') {
+          <span
+            ><mat-icon svgIcon="calendar" class="custom-icon-style" style="color: #00813a" class="custom-icon-style"></mat-icon
+          ></span>
+        }
+        @if (row.state === 'COMPLETED') {
+          <span
+            ><mat-icon svgIcon="checkmark-circle" class="custom-icon-style" style="color: #00813a" class="custom-icon-style"></mat-icon
+          ></span>
+        }
+        @if (row.state === 'NOT_REQUIRED') {
+          <span><mat-icon svgIcon="ban" style="color: #b4b4b4" class="custom-icon-style"></mat-icon></span>
+        }
+        @if (row.state === 'UNKNOWN') {
+          <span><mat-icon svgIcon="help-circle" style="color: #b4b4b4" class="custom-icon-style"></mat-icon></span>
+        }
+        @if (row.state === 'DELETED') {
+          <span><mat-icon svgIcon="cancel-circle" style="color: #de3510" class="custom-icon-style"></mat-icon></span>
+        }
+        {{ "i18n.process.task.state." + row.state | translate }}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="createdAt">
+      <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ "i18n.process.task.created" | translate }}</th>
+      <td *matCellDef="let row" mat-cell>{{ row.createdAt | date : "dd.MM.yyyy HH:mm:ss" }}</td>
+    </ng-container>
+    <tr *matHeaderRowDef="['createdAt', 'name', 'state']" mat-header-row></tr>
+    <tr *matRowDef="let row; columns: ['createdAt', 'name', 'state']" (click)="selectTask(row)" mat-row></tr>
+  </table>
+}
+@if (sortedTasks.length === 0) {
+  <p>{{ "i18n.none.tasks" | translate }}</p>
+}

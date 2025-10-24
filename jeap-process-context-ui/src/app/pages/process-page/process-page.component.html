@@ -1,313 +1,333 @@
-<div *ngIf="process" class="default-layout">
-	<mat-accordion multi="true">
-
-		<!-- Process Instance-->
-		<mat-expansion-panel expanded="true" togglePosition="before">
-			<mat-expansion-panel-header [collapsedHeight]="'auto'" [expandedHeight]="'auto'">
-				<mat-panel-title><h4>{{ process.name[this.translate.currentLang] }}</h4></mat-panel-title>
-			</mat-expansion-panel-header>
-			<mat-panel-description>
-				<div class="process-div" style="padding-right: 10px">
-					<mat-card>
-						<mat-card-content>
-							<h5>{{ 'i18n.process.informations' | translate }}</h5>
-							<table class="ob-table ob-table-sm process-table">
-								<tr *ngIf="snapshot">
-									<td class="headerColumn">{{ 'i18n.process.snapshot' | translate }}</td>
-									<td>
-										<div>
-											{{ 'i18n.process.snapshotDescription' | translate }}
-											<mat-icon class="custom-icon-style" style="color: #ec8932" svgIcon="archive"></mat-icon>
-										</div>
-									</td>
-								</tr>
-								<tr *ngIf="snapshot">
-									<td class="headerColumn">{{ 'i18n.process.snapshotCreatedAt' | translate }}</td>
-									<td>{{ process.snapshotCreatedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-								</tr>
-								<tr>
-									<td class="headerColumn">{{ 'i18n.process.state' | translate }}</td>
-									<td>
-										<div *ngIf="process.state == 'COMPLETED' && process.processCompletion?.conclusion == 'SUCCEEDED'">
-											{{ 'i18n.process.state.' + process.state | translate }}
-											<mat-icon class="custom-icon-style" style="color: #008800" svgIcon="checkmark-circle"></mat-icon>
-										</div>
-
-										<div *ngIf="process.state == 'COMPLETED' && process.processCompletion?.conclusion != 'SUCCEEDED'">
-											{{ 'i18n.process.state.' + process.state | translate }}
-											<mat-icon class="custom-icon-style" style="color: red" svgIcon="stop"></mat-icon>
-										</div>
-
-										<div *ngIf="process.state != 'COMPLETED'">
-											{{ 'i18n.process.state.' + process.state | translate }}
-											<mat-icon class="custom-icon-style" style="color: #008800" svgIcon="play"></mat-icon>
-										</div>
-
-									</td>
-								</tr>
-								<tr>
-									<td class="headerColumn">{{ 'i18n.process.id' | translate }}</td>
-									<td> {{ process.originProcessId }}</td>
-								</tr>
-								<tr *ngIf="process.processCompletion">
-									<td class="headerColumn">{{ 'i18n.process.completion.conclusion' | translate }}</td>
-									<td>{{ 'i18n.process.completion.conclusion.' + process.processCompletion.conclusion | translate }}</td>
-								</tr>
-								<tr *ngIf="process.processCompletion">
-									<td class="headerColumn">{{ 'i18n.process.completion.reason' | translate }}</td>
-									<td>{{ process.processCompletion.reason[this.translate.currentLang] }}</td>
-								</tr>
-								<tr>
-									<td class="headerColumn">{{ 'i18n.process.createdAt' | translate }}</td>
-									<td>{{ process.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-								</tr>
-								<tr *ngIf="process.processCompletion">
-									<td class="headerColumn">{{ 'i18n.process.completion.completedAt' | translate }}</td>
-									<td>{{ process.processCompletion.completedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-								</tr>
-								<tr>
-									<td class="headerColumn">{{ 'i18n.process.modifiedAt' | translate }}</td>
-									<td>{{ process.modifiedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-								</tr>
-							</table>
-						</mat-card-content>
-					</mat-card>
-				</div>
-
-				<div class="process-div">
-					<mat-card>
-						<mat-card-content>
-							<app-process-relations [processRelations]="processRelations"></app-process-relations>
-						</mat-card-content>
-					</mat-card>
-				</div>
-			</mat-panel-description>
-		</mat-expansion-panel>
-
-		<!-- Tasks-->
-		<mat-expansion-panel expanded="true" togglePosition="before">
-			<mat-expansion-panel-header>
-				<mat-panel-title>
-					<h4>{{ 'i18n.process.task.title' | translate }}</h4>
-				</mat-panel-title>
-				<h2></h2>
-			</mat-expansion-panel-header>
-
-			<mat-radio-group (change)="taskViewRadioButtonGroupChange($event)" [(ngModel)]="userTaskViewType">
-				<mat-radio-button class="radio-button" value='1'>{{ 'i18n.process.task.template.view' | translate }}</mat-radio-button>
-				<mat-radio-button value='2'>{{ 'i18n.process.task.activity.view' | translate }}</mat-radio-button>
-			</mat-radio-group>
-			<h2></h2>
-			<div class="task-layout">
-				<div class="task-list">
-					<app-task-template-view *ngIf="userTaskViewType == '1'" [tasks]="process.tasks" (taskSelected)="onTaskSelected($event)"></app-task-template-view>
-					<app-task-activity-view *ngIf="userTaskViewType == '2'" [tasks]="process.tasks" (taskSelected)="onTaskSelected($event)"></app-task-activity-view>
-				</div>
-				<div class="task-detail">
-						<mat-card>
-							<mat-card-content>
-								<app-task-detail-view [task]="selectedTask"></app-task-detail-view>
-							</mat-card-content>
-						</mat-card>
-				</div>
-			</div>
-		</mat-expansion-panel>
-
-
-		<!-- Process Data-->
-		<mat-expansion-panel togglePosition="before">
-			<mat-expansion-panel-header>
-				<mat-panel-title><h4>{{ 'i18n.process.processData.title' | translate }}</h4></mat-panel-title>
-			</mat-expansion-panel-header>
-			<mat-panel-description>
-				<table *ngIf="process.processData.length" [dataSource]="process.processData" class="ob-table ob-table-sm ob-table-cicd" mat-table>
-					<ng-container matColumnDef="key">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.processData.key' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row.key }}</td>
-					</ng-container>
-
-					<ng-container matColumnDef="value">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.processData.value' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row.value ? row.value : '-' }}</td>
-					</ng-container>
-
-					<ng-container matColumnDef="role">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.processData.role' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row.role ? row.role : '-' }}</td>
-					</ng-container>
-
-					<tr *matHeaderRowDef="['key','value', 'role']" mat-header-row></tr>
-					<tr *matRowDef="let row; columns: ['key','value', 'role'];" mat-row></tr>
-				</table>
-				<p *ngIf="process.processData.length == 0">{{ 'i18n.none' | translate }}</p>
-			</mat-panel-description>
-		</mat-expansion-panel>
-
-		<!-- Messages -->
-		<mat-expansion-panel togglePosition="before" *ngIf="!snapshot">
-			<mat-expansion-panel-header>
-				<mat-panel-title><h4>{{ 'i18n.process.message.title' | translate }}</h4></mat-panel-title>
-			</mat-expansion-panel-header>
-			<mat-panel-description>
-				<table *ngIf="process.messages.length" [dataSource]="process.messages" class="ob-table ob-table-sm ob-table-cicd" mat-table>
-					<ng-container matColumnDef="name">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.task.name' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row.name }}</td>
-					</ng-container>
-
-					<ng-container matColumnDef="createdAt">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.createdAt' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-					</ng-container>
-
-					<ng-container matColumnDef="receivedAt">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.receivedAt' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row.receivedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-					</ng-container>
-
-					<ng-container matColumnDef="traceId">
-						<th *matHeaderCellDef mat-header-cell>Trace Id</th>
-						<td *matCellDef="let row" mat-cell>
-							{{ row.traceId }}
-							<a (click)="openDeepLink(row.traceId)" *ngIf="row.traceId" [href]="logDeepLink"
-							   [matTooltip]="'i18n.process.message.show-log' | translate"
-							   id="log-deep-link-btn" mat-icon-button obButton="secondary"
-							   target="_blank">
-								<mat-icon style="font-size: 10px;" svgIcon="external"></mat-icon>
-							</a>
-						</td>
-					</ng-container>
-
-					<ng-container matColumnDef="relatedOriginTaskIds">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.relatedOriginTaskIds' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row.relatedOriginTaskIds.length ? row.relatedOriginTaskIds : '-' }}</td>
-					</ng-container>
-
-					<ng-container matColumnDef="messageData">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.messageData' | translate }}</th>
-						<td *matCellDef="let innerRow" mat-cell>
-
-							<!-- Inner Table for messageData-->
-							<table *ngIf="innerRow.messageData.length" [dataSource]="innerRow.messageData" class="ob-table ob-table-sm" mat-table>
-								<ng-container matColumnDef="key">
-									<th *matHeaderCellDef mat-header-cell style="background-color: white">{{ 'i18n.process.processData.key' | translate }}</th>
-									<td *matCellDef="let element" mat-cell>{{ element.key }}</td>
-								</ng-container>
-
-								<ng-container matColumnDef="value">
-									<th *matHeaderCellDef mat-header-cell style="background-color: white">{{ 'i18n.process.processData.value' | translate }}
-									</th>
-									<td *matCellDef="let element" mat-cell>{{ element.value }}</td>
-								</ng-container>
-
-								<ng-container matColumnDef="role">
-									<th *matHeaderCellDef mat-header-cell style="background-color: white">{{ 'i18n.process.processData.role' | translate }}</th>
-									<td *matCellDef="let element" mat-cell>{{ element.role }}</td>
-								</ng-container>
-
-								<tr *matHeaderRowDef="['key', 'value', 'role']" mat-header-row></tr>
-								<tr *matRowDef="let innerRow; columns: ['key', 'value', 'role'];" mat-row></tr>
-							</table>
-							<div *ngIf="innerRow.messageData.length == 0">-</div>
-						</td>
-					</ng-container>
-
-					<tr *matHeaderRowDef="['name','createdAt','receivedAt','traceId','relatedOriginTaskIds','messageData']" mat-header-row></tr>
-					<tr *matRowDef="let row; columns: ['name','createdAt','receivedAt','traceId','relatedOriginTaskIds','messageData'];" mat-row></tr>
-				</table>
-				<p *ngIf="process.messages.length == 0">{{ 'i18n.none' | translate }}</p>
-
-			</mat-panel-description>
-		</mat-expansion-panel>
-
-		<!-- Milestones-->
-		<mat-expansion-panel togglePosition="before" *ngIf="!snapshot">
-			<mat-expansion-panel-header>
-				<mat-panel-title><h4>{{ 'i18n.process.milestone.title' | translate }}</h4></mat-panel-title>
-			</mat-expansion-panel-header>
-			<mat-panel-description>
-				<table *ngIf="process.milestones.length" [dataSource]="process.milestones" class="ob-table ob-table-sm ob-table-cicd" mat-table>
-					<ng-container matColumnDef="name">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.task.name' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row?.labels[this.translate.currentLang] }}</td>
-					</ng-container>
-
-					<ng-container matColumnDef="reached">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.milestone.state' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>
-							<span *ngIf="row.state == 'NOT_REACHED'"><mat-icon class="custom-icon-style" style="color: #006699"
-																			   svgIcon="chevron-line-right"></mat-icon></span>
-							<span *ngIf="row.state == 'REACHED'"><mat-icon class="custom-icon-style" style="color: #00813a"
-																		   svgIcon="checkmark-circle"></mat-icon></span>
-							<span *ngIf="row.state == 'UNKNOWN'"><mat-icon class="custom-icon-style" style="color: #b4b4b4"
-																		   svgIcon="help-circle"></mat-icon></span>
-							<span *ngIf="row.state == 'DELETED'"><mat-icon class="custom-icon-style" style="color: #de3510" svgIcon="cancel-circle"></mat-icon></span>
-							{{ 'i18n.process.milestone.state.' + row.state | translate }}
-						</td>
-					</ng-container>
-
-					<ng-container matColumnDef="reachedAt">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.milestone.reachedAt' | translate }}</th>
-						<td *matCellDef="let row"
-							mat-cell>{{ row.reachedAt ? (row.reachedAt | date:'dd.MM.yyyy HH:mm:ss') : '-' }}
-						</td>
-					</ng-container>
-
-					<tr *matHeaderRowDef="['name','reached','reachedAt']" mat-header-row></tr>
-					<tr *matRowDef="let row; columns: ['name','reached','reachedAt'];" mat-row></tr>
-				</table>
-				<p *ngIf="process.milestones.length == 0">{{ 'i18n.none' | translate }}</p>
-			</mat-panel-description>
-		</mat-expansion-panel>
-
-		<!-- Relations -->
-		<mat-expansion-panel togglePosition="before" *ngIf="!snapshot">
-			<mat-expansion-panel-header>
-				<mat-panel-title><h4>{{ 'i18n.process.relations.title' | translate }}</h4></mat-panel-title>
-			</mat-expansion-panel-header>
-			<mat-panel-description>
-				<table *ngIf="process.relations.length" [dataSource]="process.relations" class="ob-table ob-table-sm ob-table-cicd" mat-table>
-
-					<ng-container matColumnDef="predicateType">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.predicateType' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row.predicateType }}</td>
-					</ng-container>
-
-					<ng-container matColumnDef="createdAt">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.createdAt' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-					</ng-container>
-
-					<ng-container matColumnDef="subjectType">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.subjectType' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row.subjectType }}</td>
-					</ng-container>
-
-					<ng-container matColumnDef="subjectId">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.subjectId' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row.subjectId }}</td>
-					</ng-container>
-
-					<ng-container matColumnDef="objectType">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.objectType' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row.objectType }}</td>
-					</ng-container>
-
-					<ng-container matColumnDef="objectId">
-						<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.objectId' | translate }}</th>
-						<td *matCellDef="let row" mat-cell>{{ row.objectId }}</td>
-					</ng-container>
-
-
-					<tr *matHeaderRowDef="[ 'createdAt', 'predicateType', 'subjectType', 'subjectId', 'objectType', 'objectId']" mat-header-row></tr>
-					<tr *matRowDef="let row; columns: ['createdAt', 'predicateType',  'subjectType', 'subjectId', 'objectType', 'objectId'];" mat-row></tr>
-				</table>
-				<p *ngIf="process.processData.length == 0">{{ 'i18n.none' | translate }}</p>
-			</mat-panel-description>
-		</mat-expansion-panel>
-	</mat-accordion>
-
-	<button (click)="reload()" class="reload-button" color="primary"
-			mat-flat-button>{{ 'i18n.process.reload' | translate }}
-	</button>
-</div>
+@if (process) {
+  <div class="default-layout">
+    <mat-accordion multi="true">
+      <!-- Process Instance-->
+      <mat-expansion-panel expanded="true" togglePosition="before">
+        <mat-expansion-panel-header [collapsedHeight]="'auto'" [expandedHeight]="'auto'">
+          <mat-panel-title><h4>{{ process.name[this.translate.currentLang] }}</h4></mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-panel-description>
+          <div class="process-div" style="padding-right: 10px">
+            <mat-card>
+              <mat-card-content>
+                <h5>{{ 'i18n.process.informations' | translate }}</h5>
+                <table class="ob-table ob-table-sm process-table">
+                  @if (snapshot) {
+                    <tr>
+                      <td class="headerColumn">{{ 'i18n.process.snapshot' | translate }}</td>
+                      <td>
+                        <div>
+                          {{ 'i18n.process.snapshotDescription' | translate }}
+                          <mat-icon class="custom-icon-style" style="color: #ec8932" svgIcon="archive"></mat-icon>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                  @if (snapshot) {
+                    <tr>
+                      <td class="headerColumn">{{ 'i18n.process.snapshotCreatedAt' | translate }}</td>
+                      <td>{{ process.snapshotCreatedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+                    </tr>
+                  }
+                  <tr>
+                    <td class="headerColumn">{{ 'i18n.process.state' | translate }}</td>
+                    <td>
+                      @if (process.state == 'COMPLETED' && process.processCompletion.conclusion == 'SUCCEEDED') {
+                        <div>
+                          {{ 'i18n.process.state.' + process.state | translate }}
+                          <mat-icon class="custom-icon-style" style="color: #008800" svgIcon="checkmark-circle"></mat-icon>
+                        </div>
+                      }
+                      @if (process.state == 'COMPLETED' && process.processCompletion.conclusion != 'SUCCEEDED') {
+                        <div>
+                          {{ 'i18n.process.state.' + process.state | translate }}
+                          <mat-icon class="custom-icon-style" style="color: red" svgIcon="stop"></mat-icon>
+                        </div>
+                      }
+                      @if (process.state != 'COMPLETED') {
+                        <div>
+                          {{ 'i18n.process.state.' + process.state | translate }}
+                          <mat-icon class="custom-icon-style" style="color: #008800" svgIcon="play"></mat-icon>
+                        </div>
+                      }
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="headerColumn">{{ 'i18n.process.id' | translate }}</td>
+                    <td> {{ process.originProcessId }}</td>
+                  </tr>
+                  @if (process.processCompletion) {
+                    <tr>
+                      <td class="headerColumn">{{ 'i18n.process.completion.conclusion' | translate }}</td>
+                      <td>{{ 'i18n.process.completion.conclusion.' + process.processCompletion.conclusion | translate }}</td>
+                    </tr>
+                  }
+                  @if (process.processCompletion) {
+                    <tr>
+                      <td class="headerColumn">{{ 'i18n.process.completion.reason' | translate }}</td>
+                      <td>{{ process.processCompletion.reason[this.translate.currentLang] }}</td>
+                    </tr>
+                  }
+                  <tr>
+                    <td class="headerColumn">{{ 'i18n.process.createdAt' | translate }}</td>
+                    <td>{{ process.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+                  </tr>
+                  @if (process.processCompletion) {
+                    <tr>
+                      <td class="headerColumn">{{ 'i18n.process.completion.completedAt' | translate }}</td>
+                      <td>{{ process.processCompletion.completedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+                    </tr>
+                  }
+                  <tr>
+                    <td class="headerColumn">{{ 'i18n.process.modifiedAt' | translate }}</td>
+                    <td>{{ process.modifiedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+                  </tr>
+                </table>
+              </mat-card-content>
+            </mat-card>
+          </div>
+          <div class="process-div">
+            <mat-card>
+              <mat-card-content>
+                <app-process-relations [processRelations]="processRelations"></app-process-relations>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-panel-description>
+      </mat-expansion-panel>
+      <!-- Tasks-->
+      <mat-expansion-panel expanded="true" togglePosition="before">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <h4>{{ 'i18n.process.task.title' | translate }}</h4>
+          </mat-panel-title>
+          <h2></h2>
+        </mat-expansion-panel-header>
+        <mat-radio-group (change)="taskViewRadioButtonGroupChange($event)" [(ngModel)]="userTaskViewType">
+          <mat-radio-button class="radio-button" value='1'>{{ 'i18n.process.task.template.view' | translate }}</mat-radio-button>
+          <mat-radio-button value='2'>{{ 'i18n.process.task.activity.view' | translate }}</mat-radio-button>
+        </mat-radio-group>
+        <h2></h2>
+        <div class="task-layout">
+          <div class="task-list">
+            @if (userTaskViewType == '1') {
+              <app-task-template-view [tasks]="process.tasks" (taskSelected)="onTaskSelected($event)"></app-task-template-view>
+            }
+            @if (userTaskViewType == '2') {
+              <app-task-activity-view [tasks]="process.tasks" (taskSelected)="onTaskSelected($event)"></app-task-activity-view>
+            }
+          </div>
+          <div class="task-detail">
+            <mat-card>
+              <mat-card-content>
+                <app-task-detail-view [task]="selectedTask"></app-task-detail-view>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+      </mat-expansion-panel>
+      <!-- Process Data-->
+      <mat-expansion-panel togglePosition="before">
+        <mat-expansion-panel-header>
+          <mat-panel-title><h4>{{ 'i18n.process.processData.title' | translate }}</h4></mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-panel-description>
+          @if (process.processData.length) {
+            <table [dataSource]="process.processData" class="ob-table ob-table-sm ob-table-cicd" mat-table>
+              <ng-container matColumnDef="key">
+                <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.processData.key' | translate }}</th>
+                <td *matCellDef="let row" mat-cell>{{ row.key }}</td>
+              </ng-container>
+              <ng-container matColumnDef="value">
+                <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.processData.value' | translate }}</th>
+                <td *matCellDef="let row" mat-cell>{{ row.value ? row.value : '-' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="role">
+                <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.processData.role' | translate }}</th>
+                <td *matCellDef="let row" mat-cell>{{ row.role ? row.role : '-' }}</td>
+              </ng-container>
+              <tr *matHeaderRowDef="['key','value', 'role']" mat-header-row></tr>
+              <tr *matRowDef="let row; columns: ['key','value', 'role'];" mat-row></tr>
+            </table>
+          }
+          @if (process.processData.length == 0) {
+            <p>{{ 'i18n.none' | translate }}</p>
+          }
+        </mat-panel-description>
+      </mat-expansion-panel>
+      <!-- Messages -->
+      @if (!snapshot) {
+        <mat-expansion-panel togglePosition="before">
+          <mat-expansion-panel-header>
+            <mat-panel-title><h4>{{ 'i18n.process.message.title' | translate }}</h4></mat-panel-title>
+          </mat-expansion-panel-header>
+          <mat-panel-description>
+            @if (process.messages.length) {
+              <table [dataSource]="process.messages" class="ob-table ob-table-sm ob-table-cicd" mat-table>
+                <ng-container matColumnDef="name">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.task.name' | translate }}</th>
+                  <td *matCellDef="let row" mat-cell>{{ row.name }}</td>
+                </ng-container>
+                <ng-container matColumnDef="createdAt">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.createdAt' | translate }}</th>
+                  <td *matCellDef="let row" mat-cell>{{ row.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="receivedAt">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.receivedAt' | translate }}</th>
+                  <td *matCellDef="let row" mat-cell>{{ row.receivedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="traceId">
+                  <th *matHeaderCellDef mat-header-cell>Trace Id</th>
+                  <td *matCellDef="let row" mat-cell>
+                    {{ row.traceId }}
+                    @if (row.traceId) {
+                      <a (click)="openDeepLink(row.traceId)" [href]="logDeepLink"
+                        [matTooltip]="'i18n.process.message.show-log' | translate"
+                        id="log-deep-link-btn" mat-icon-button obButton="secondary"
+                        target="_blank">
+                        <mat-icon style="font-size: 10px;" svgIcon="external"></mat-icon>
+                      </a>
+                    }
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="relatedOriginTaskIds">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.relatedOriginTaskIds' | translate }}</th>
+                  <td *matCellDef="let row" mat-cell>{{ row.relatedOriginTaskIds.length ? row.relatedOriginTaskIds : '-' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="messageData">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.messageData' | translate }}</th>
+                  <td *matCellDef="let innerRow" mat-cell>
+                    <!-- Inner Table for messageData-->
+                    @if (innerRow.messageData.length) {
+                      <table [dataSource]="innerRow.messageData" class="ob-table ob-table-sm" mat-table>
+                        <ng-container matColumnDef="key">
+                          <th *matHeaderCellDef mat-header-cell style="background-color: white">{{ 'i18n.process.processData.key' | translate }}</th>
+                          <td *matCellDef="let element" mat-cell>{{ element.key }}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="value">
+                          <th *matHeaderCellDef mat-header-cell style="background-color: white">{{ 'i18n.process.processData.value' | translate }}
+                          </th>
+                          <td *matCellDef="let element" mat-cell>{{ element.value }}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="role">
+                          <th *matHeaderCellDef mat-header-cell style="background-color: white">{{ 'i18n.process.processData.role' | translate }}</th>
+                          <td *matCellDef="let element" mat-cell>{{ element.role }}</td>
+                        </ng-container>
+                        <tr *matHeaderRowDef="['key', 'value', 'role']" mat-header-row></tr>
+                        <tr *matRowDef="let innerRow; columns: ['key', 'value', 'role'];" mat-row></tr>
+                      </table>
+                    }
+                    @if (innerRow.messageData.length == 0) {
+                      <div>-</div>
+                    }
+                  </td>
+                </ng-container>
+                <tr *matHeaderRowDef="['name','createdAt','receivedAt','traceId','relatedOriginTaskIds','messageData']" mat-header-row></tr>
+                <tr *matRowDef="let row; columns: ['name','createdAt','receivedAt','traceId','relatedOriginTaskIds','messageData'];" mat-row></tr>
+              </table>
+            }
+            @if (process.messages.length == 0) {
+              <p>{{ 'i18n.none' | translate }}</p>
+            }
+          </mat-panel-description>
+        </mat-expansion-panel>
+      }
+      <!-- Milestones-->
+      @if (!snapshot) {
+        <mat-expansion-panel togglePosition="before">
+          <mat-expansion-panel-header>
+            <mat-panel-title><h4>{{ 'i18n.process.milestone.title' | translate }}</h4></mat-panel-title>
+          </mat-expansion-panel-header>
+          <mat-panel-description>
+            @if (process.milestones.length) {
+              <table [dataSource]="process.milestones" class="ob-table ob-table-sm ob-table-cicd" mat-table>
+                <ng-container matColumnDef="name">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.task.name' | translate }}</th>
+                  <td *matCellDef="let row" mat-cell>{{ row?.labels[this.translate.currentLang] }}</td>
+                </ng-container>
+                <ng-container matColumnDef="reached">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.milestone.state' | translate }}</th>
+                  <td *matCellDef="let row" mat-cell>
+                    @if (row.state == 'NOT_REACHED') {
+                      <span><mat-icon class="custom-icon-style" style="color: #006699"
+                      svgIcon="chevron-line-right"></mat-icon></span>
+                    }
+                    @if (row.state == 'REACHED') {
+                      <span><mat-icon class="custom-icon-style" style="color: #00813a"
+                      svgIcon="checkmark-circle"></mat-icon></span>
+                    }
+                    @if (row.state == 'UNKNOWN') {
+                      <span><mat-icon class="custom-icon-style" style="color: #b4b4b4"
+                      svgIcon="help-circle"></mat-icon></span>
+                    }
+                    @if (row.state == 'DELETED') {
+                      <span><mat-icon class="custom-icon-style" style="color: #de3510" svgIcon="cancel-circle"></mat-icon></span>
+                    }
+                    {{ 'i18n.process.milestone.state.' + row.state | translate }}
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="reachedAt">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.milestone.reachedAt' | translate }}</th>
+                  <td *matCellDef="let row"
+                    mat-cell>{{ row.reachedAt ? (row.reachedAt | date:'dd.MM.yyyy HH:mm:ss') : '-' }}
+                  </td>
+                </ng-container>
+                <tr *matHeaderRowDef="['name','reached','reachedAt']" mat-header-row></tr>
+                <tr *matRowDef="let row; columns: ['name','reached','reachedAt'];" mat-row></tr>
+              </table>
+            }
+            @if (process.milestones.length == 0) {
+              <p>{{ 'i18n.none' | translate }}</p>
+            }
+          </mat-panel-description>
+        </mat-expansion-panel>
+      }
+      <!-- Relations -->
+      @if (!snapshot) {
+        <mat-expansion-panel togglePosition="before">
+          <mat-expansion-panel-header>
+            <mat-panel-title><h4>{{ 'i18n.process.relations.title' | translate }}</h4></mat-panel-title>
+          </mat-expansion-panel-header>
+          <mat-panel-description>
+            @if (process.relations.length) {
+              <table [dataSource]="process.relations" class="ob-table ob-table-sm ob-table-cicd" mat-table>
+                <ng-container matColumnDef="predicateType">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.predicateType' | translate }}</th>
+                  <td *matCellDef="let row" mat-cell>{{ row.predicateType }}</td>
+                </ng-container>
+                <ng-container matColumnDef="createdAt">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.createdAt' | translate }}</th>
+                  <td *matCellDef="let row" mat-cell>{{ row.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="subjectType">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.subjectType' | translate }}</th>
+                  <td *matCellDef="let row" mat-cell>{{ row.subjectType }}</td>
+                </ng-container>
+                <ng-container matColumnDef="subjectId">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.subjectId' | translate }}</th>
+                  <td *matCellDef="let row" mat-cell>{{ row.subjectId }}</td>
+                </ng-container>
+                <ng-container matColumnDef="objectType">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.objectType' | translate }}</th>
+                  <td *matCellDef="let row" mat-cell>{{ row.objectType }}</td>
+                </ng-container>
+                <ng-container matColumnDef="objectId">
+                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.objectId' | translate }}</th>
+                  <td *matCellDef="let row" mat-cell>{{ row.objectId }}</td>
+                </ng-container>
+                <tr *matHeaderRowDef="[ 'createdAt', 'predicateType', 'subjectType', 'subjectId', 'objectType', 'objectId']" mat-header-row></tr>
+                <tr *matRowDef="let row; columns: ['createdAt', 'predicateType',  'subjectType', 'subjectId', 'objectType', 'objectId'];" mat-row></tr>
+              </table>
+            }
+            @if (process.processData.length == 0) {
+              <p>{{ 'i18n.none' | translate }}</p>
+            }
+          </mat-panel-description>
+        </mat-expansion-panel>
+      }
+    </mat-accordion>
+    <button (click)="reload()" class="reload-button" color="primary"
+      mat-flat-button>{{ 'i18n.process.reload' | translate }}
+    </button>
+  </div>
+}

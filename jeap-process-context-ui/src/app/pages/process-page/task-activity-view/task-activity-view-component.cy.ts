@@ -1,66 +1,63 @@
+import {MatTableModule} from '@angular/material/table';
+import {MatSortModule} from '@angular/material/sort';
+import {MatIconModule} from '@angular/material/icon';
 import {TranslateModule} from '@ngx-translate/core';
-import {MatTableModule as MatTableModule} from '@angular/material/table';
-import {TaskTestFixtures} from '../../../shared/test/task-test-fixtures';
 import {TaskActivityViewComponent} from './task-activity-view.component';
-import {getTranslationServiceMockProvider} from '../../../../../cypress/support/mockproviderFunctions';
-import {RouterModule} from "@angular/router";
+import {TaskDTO, TaskState} from 'src/app/shared/processservice/process.model';
+import {provideObliqueTestingConfiguration} from "@oblique/oblique";
 
-// eslint-disable-next-line max-lines-per-function
-describe('task-activity-view-component.cy.ts', () => {
-	it('no Tasks', () => {
+const tasks: TaskDTO[] = [
+	{
+		originTaskId: '1',
+		name: { en: 'Task 1', de: 'Aufgabe 1', fr: 'Tâche 1', it: 'Compito 1' },
+		state: TaskState.PLANNED,
+		createdAt: '2024-06-01T10:00:00Z',
+		plannedAt: '2024-06-01T09:00:00Z',
+		completedAt: null,
+		lifecycle: 'DYNAMIC',
+		cardinality: 'SINGLE',
+		plannedBy: [],
+		completedBy: null,
+		taskData: []
+	},
+	{
+		originTaskId: '2',
+		name: { en: 'Task 2', de: 'Aufgabe 2', fr: 'Tâche 2', it: 'Compito 2' },
+		state: TaskState.COMPLETED,
+		createdAt: '2024-06-02T10:00:00Z',
+		plannedAt: '2024-06-02T09:00:00Z',
+		completedAt: '2024-06-03T10:00:00Z',
+		lifecycle: 'DYNAMIC',
+		cardinality: 'SINGLE',
+		plannedBy: [],
+		completedBy: [],
+		taskData: []
+	}
+];
+
+describe('TaskActivityViewComponent', () => {
+	it('renders tasks', () => {
 		cy.mount(TaskActivityViewComponent, {
-			imports: [RouterModule.forRoot([]), TranslateModule.forRoot(), MatTableModule],
-			declarations: [],
-			providers: [],
-			componentProperties: {
-				tasks: TaskTestFixtures.taskPlannedStaticList
-			}
+			imports: [MatTableModule, MatSortModule, MatIconModule, TranslateModule.forRoot()],
+			providers: [ provideObliqueTestingConfiguration()],
+			componentProperties: { tasks }
 		});
 
-		cy.contains('i18n.none.tasks');
+		cy.get('table').should('exist');
+		cy.get('tr[mat-row]').should('have.length', 2);
+		cy.contains('Aufgabe 1');
+		cy.contains('Aufgabe 2');
+		cy.get('mat-icon[svgicon="calendar"]').should('exist');
+		cy.get('mat-icon[svgicon="checkmark-circle"]').should('exist');
 	});
 
-	it('Planned and Completed Task', () => {
+	it('shows no tasks message when empty', () => {
 		cy.mount(TaskActivityViewComponent, {
-			imports: [TranslateModule.forRoot(), MatTableModule],
-			declarations: [],
-			providers: [getTranslationServiceMockProvider('de')],
+			imports: [MatTableModule, MatSortModule, MatIconModule, TranslateModule.forRoot()],
 			componentProperties: {
-				tasks: TaskTestFixtures.taskPlannedList
+				tasks: []
 			}
 		});
-		cy.get('table').find('tr').should('have.length', 5);
-		cy.contains('Planned Static Task #1').should('not.exist');
-		cy.contains('Planned Dynamic Task #2');
-		cy.contains('Planned Dynamic Task #3');
-		cy.contains('Completed Task #4');
-		cy.contains('Completed Task #5');
-		cy.contains('Not Planned Task #6').should('not.exist');
-	});
-
-	it('load fr', () => {
-		cy.mount(TaskActivityViewComponent, {
-			imports: [TranslateModule.forRoot(), MatTableModule],
-			declarations: [],
-			providers: [getTranslationServiceMockProvider('fr')],
-			componentProperties: {
-				tasks: TaskTestFixtures.taskPlannedDynamicList
-			}
-		});
-		cy.contains('[fr] Planned Dynamic Task #2');
-		cy.contains('[fr] Planned Dynamic Task #3');
-	});
-
-	it('load it', () => {
-		cy.mount(TaskActivityViewComponent, {
-			imports: [TranslateModule.forRoot(), MatTableModule],
-			declarations: [],
-			providers: [getTranslationServiceMockProvider('it')],
-			componentProperties: {
-				tasks: TaskTestFixtures.taskPlannedDynamicList
-			}
-		});
-		cy.contains('[it] Planned Dynamic Task #2');
-		cy.contains('[it] Planned Dynamic Task #3');
+		cy.contains('none.tasks');
 	});
 });

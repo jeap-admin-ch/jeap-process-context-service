@@ -12,8 +12,7 @@ import {
 	ObHttpApiInterceptor,
 	ObIconModule,
 	ObMasterLayoutConfig,
-	ObMasterLayoutModule,
-	multiTranslateLoader
+	ObMasterLayoutModule, provideObliqueConfiguration
 } from '@oblique/oblique';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {CommonModule, DatePipe, JsonPipe, NgForOf, NgIf, registerLocaleData} from '@angular/common';
@@ -37,7 +36,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatSortModule} from '@angular/material/sort';
 
 import {StartPageComponent} from './pages/start-page/start-page.component';
-import {QdAuthModule, QdConfigService} from '@quadrel-services/qd-auth';
+
 import {ProcessPageComponent} from './pages/process-page/process-page.component';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {MatListItem, MatListItemLine, MatListModule} from '@angular/material/list';
@@ -49,7 +48,9 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {ForbiddenPageComponent} from './pages/error-pages/forbidden-page/forbidden-page.component';
 import {TaskDetailViewComponent} from './pages/process-page/task-detail-view/task-detail-view.component';
 import {TaskDetailsNodataRowComponent} from './pages/process-page/task-detail-view/task-details-nodata-row/task-details-nodata-row.component';
-import {QdShellHeaderWidgetEnvironment} from '@quadrel-services/qd-auth/lib/config/model/config.model';
+import {QdAuthModule, QdConfigService} from "@quadrel-services/qd-auth";
+
+export type QdShellHeaderWidgetEnvironment = 'DEV' | 'TEST' | 'REF' | 'ABN' | 'PROD';
 
 registerLocaleData(localeDECH);
 registerLocaleData(localeFRCH);
@@ -86,8 +87,7 @@ registerLocaleData(localeITCH);
 		ObButtonModule,
 		MatTooltipModule,
 		QdAuthModule.forRoot(appSetup, authConfig),
-		ObIconModule.forRoot(),
-		TranslateModule.forRoot(multiTranslateLoader()),
+		TranslateModule.forRoot(),
 		MatButtonModule,
 		MatCardModule,
 		MatIconModule,
@@ -115,7 +115,18 @@ registerLocaleData(localeITCH);
 			useFactory: (appModule: AppModule) => appModule.getObPamsEnvironment(),
 			deps: [AppModule]
 		},
-		provideHttpClient(withInterceptorsFromDi())
+		provideHttpClient(withInterceptorsFromDi()),
+		provideObliqueConfiguration({
+			accessibilityStatement: {
+				createdOn: new Date('2025-10-23'),
+				conformity: 'none',
+				applicationName: "Process Context Service",
+				applicationOperator: '-',
+				contact: [
+					{email: 'nobody@bit.admin.ch'}
+				]
+			}
+		})
 	]
 })
 export class AppModule {

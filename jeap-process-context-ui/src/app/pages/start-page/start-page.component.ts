@@ -11,8 +11,9 @@ import {MatPaginator as MatPaginator} from '@angular/material/paginator';
 import {TranslateService} from '@ngx-translate/core';
 
 @Component({
-	selector: 'app-start-page',
-	templateUrl: './start-page.component.html'
+    selector: 'app-start-page',
+    templateUrl: './start-page.component.html',
+    standalone: false
 })
 export class StartPageComponent implements AfterViewInit, OnInit {
 

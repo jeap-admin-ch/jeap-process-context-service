@@ -35,7 +35,7 @@
 
 	<ng-container [matColumnDef]="COLUMN_NAME_PROCESS_TEMPLATE">
 		<th mat-header-cell *matHeaderCellDef>{{ 'i18n.process.processTemplate' | translate }}</th>
-		<td mat-cell *matCellDef="let element" title="{{ 'i18n.process.processTemplate' | translate }}"> {{element?.name[this.translate.currentLang]}} </td>
+		<td mat-cell *matCellDef="let element" title="{{ 'i18n.process.processTemplate' | translate }}"> {{element?.name[this.translate.getCurrentLang()]}} </td>
 	</ng-container>
 
 	<ng-container [matColumnDef]="COLUMN_NAME_STATE">

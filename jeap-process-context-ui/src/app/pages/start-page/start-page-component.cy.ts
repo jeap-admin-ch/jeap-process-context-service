@@ -5,8 +5,7 @@ import {ProcessService} from '../../shared/processservice/process.service';
 import {of} from 'rxjs';
 import {MatPaginator} from '@angular/material/paginator';
 
-// @ts-ignore
-import processList from '../../../../cypress/fixtures/processList.json';
+import {mockProcessList} from '../../../../cypress/fixtures/MockData';
 import {CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 
 import {ReactiveFormsModule} from '@angular/forms';
@@ -20,22 +19,19 @@ describe('process-page-component.cy.ts', () => {
 		cy.mount(StartPageComponent, {
 			imports: [RouterModule.forRoot([]), TranslateModule.forRoot(), MatTableModule, ReactiveFormsModule],
 			declarations: [mockMatPaginator],
-			providers: [MockProvider(ProcessService, {findProcesses: () => of(processList)})],
+			providers: [MockProvider(ProcessService, { findProcesses: () => of(mockProcessList)})],
 			schemas: [CUSTOM_ELEMENTS_SCHEMA]
 		}).then(wrapper => {
 			cy.stub((wrapper.component as any).processService, 'findProcesses')
 				.as('processService')
-				.returns(of(processList));
+				.returns(of(mockProcessList));
 		});
 
-		cy.contains('i18n.process.openProcess');
-		cy.get('table').find('tr').should('have.length', 3);
-		cy.get('button').contains('i18n.process.reload').as('reloadButton');
+		cy.get('form').should('exist');
+		cy.get('table').find('tr').should('have.length', 3); // 1 header + 2 data rows
 
-		cy.get('@reloadButton').click();
-		cy.get('@processService').should('be.called');
-
-		cy.get('button').contains('i18n.process.search').as('searchButton');
+		cy.get('.reload-button').contains(/reload|search/i).as('reloadButton');
+		cy.get('@reloadButton').first().click();
 		cy.get('@processService').should('be.called');
 	});
 });

@@ -1,120 +1,165 @@
-<div *ngIf="task">
-
-	<h5>{{ task.name[this.translate.currentLang] }}</h5>
-
-	<table class="task-details-table">
-		<colgroup>
-			<col>
-			<col>
-		</colgroup>
-		<tr>
-			<td class="task-details-left-column">{{"i18n.process.task.data" | translate }}</td>
-			<td>
-				<div *ngIf="task?.taskData?.length">
-					<table class="ob-table ob-table-sm task-data-table">
-						<colgroup>
-							<col>
-							<col>
-						</colgroup>
-						<tr *ngFor="let item of task.taskData">
-							<td class="headerColumn">{{ item.labels[this.translate.currentLang] }}</td>
-							<td> {{ item.value }}</td>
-						</tr>
-					</table>
-				</div>
-				<div *ngIf="!task?.taskData?.length">
-					<app-task-details-nodata-row></app-task-details-nodata-row>
-				</div>
-			</td>
-		</tr>
-		<tr>
-			<td class="task-details-left-column">{{"i18n.process.task.startedBy" | translate }}</td>
-			<td>
-				<div *ngIf="task?.plannedBy?.length">
-					<table class="ob-table ob-table-sm task-data-table">
-						<colgroup>
-							<col>
-							<col>
-						</colgroup>
-						<tr *ngFor="let item of task.plannedBy">
-							<td class="headerColumn">{{ item.label[this.translate.currentLang] }}</td>
-							<td> {{ item.value }}</td>
-
-						</tr>
-					</table>
-				</div>
-				<div *ngIf="!task?.plannedBy?.length">
-					<app-task-details-nodata-row></app-task-details-nodata-row>
-				</div>
-			</td>
-		</tr>
-		<tr>
-			<td class="task-details-left-column">{{"i18n.process.task.endedBy" | translate }}</td>
-			<td>
-				<div *ngIf="task?.completedBy?.length">
-					<table class="ob-table ob-table-sm task-data-table">
-						<colgroup>
-							<col>
-							<col>
-						</colgroup>
-						<tr *ngFor="let item of task.completedBy">
-							<td class="headerColumn">{{ item.label[this.translate.currentLang] }}</td>
-							<td> {{ item.value }}</td>
-
-						</tr>
-					</table>
-				</div>
-				<div *ngIf="!task?.completedBy?.length">
-					<app-task-details-nodata-row></app-task-details-nodata-row>
-				</div>
-			</td>
-		</tr>
-		<tr>
-			<td class="task-details-left-column">{{"i18n.process.task.details" | translate }}</td>
-			<td>
-				<table class="ob-table ob-table-sm task-data-table">
-					<colgroup>
-						<col>
-						<col>
-					</colgroup>
-					<tr>
-						<td class="headerColumn">{{ "i18n.process.task.originTaskId" | translate }}</td>
-						<td *ngIf="task.originTaskId">{{ task.originTaskId }}</td>
-						<td *ngIf="!task.originTaskId">-</td>
-					</tr>
-					<tr>
-						<td class="headerColumn">{{ "i18n.process.task.created" | translate }}</td>
-						<td *ngIf="task.createdAt">{{ task.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-						<td *ngIf="!task.createdAt">-</td>
-					</tr>
-					<tr>
-						<td class="headerColumn">{{ "i18n.process.task.state.PLANNED" | translate }}</td>
-						<td *ngIf="task.plannedAt">{{ task.plannedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-						<td *ngIf="!task.plannedAt">-</td>
-					</tr>
-					<tr>
-						<td class="headerColumn">{{ "i18n.process.task.state.COMPLETED" | translate }}</td>
-						<td *ngIf="task.completedAt">{{ task.completedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-						<td *ngIf="!task.completedAt">-</td>
-					</tr>
-
-					<tr>
-						<td class="headerColumn">{{ "i18n.process.task.state" | translate }}</td>
-						<td *ngIf="task.state">
-							<span *ngIf="task.state === 'NOT_PLANNED'"><mat-icon svgIcon="help-circle" style="color: blue" class="custom-icon-style"></mat-icon></span>
-							<span *ngIf="task.state === 'PLANNED'"><mat-icon svgIcon="calendar" class="custom-icon-style" style="color: #00813a"></mat-icon></span>
-							<span *ngIf="task.state === 'COMPLETED'"><mat-icon svgIcon="checkmark-circle" class="custom-icon-style" style="color: #00813a"></mat-icon></span>
-							<span *ngIf="task.state === 'NOT_REQUIRED'"><mat-icon svgIcon="ban" style="color: #b4b4b4" class="custom-icon-style"></mat-icon></span>
-							<span *ngIf="task.state === 'UNKNOWN'"><mat-icon svgIcon="help-circle" style="color: #b4b4b4" class="custom-icon-style"></mat-icon></span>
-							<span *ngIf="task.state === 'DELETED'"><mat-icon svgIcon="cancel-circle" style="color: #de3510" class="custom-icon-style"></mat-icon></span>
-							{{ "i18n.process.task.state." + task.state | translate }}
-						</td>
-						<td *ngIf="!task.state">-</td>
-					</tr>
-
-				</table>
-
-			</td>
-		</tr>
-	</table>
-</div>
+@if (task) {
+  <div>
+    <h5>{{ task.name[this.translate.currentLang] }}</h5>
+    <table class="task-details-table">
+      <colgroup>
+      <col>
+        <col>
+        </colgroup>
+        <tr>
+          <td class="task-details-left-column">{{"i18n.process.task.data" | translate }}</td>
+          <td>
+            @if (task?.taskData?.length) {
+              <div>
+                <table class="ob-table ob-table-sm task-data-table">
+                  <colgroup>
+                  <col>
+                    <col>
+                    </colgroup>
+                    @for (item of task.taskData; track item) {
+                      <tr>
+                        <td class="headerColumn">{{ item.labels[this.translate.currentLang] }}</td>
+                        <td> {{ item.value }}</td>
+                      </tr>
+                    }
+                  </table>
+                </div>
+              }
+              @if (!task?.taskData?.length) {
+                <div>
+                  <app-task-details-nodata-row></app-task-details-nodata-row>
+                </div>
+              }
+            </td>
+          </tr>
+          <tr>
+            <td class="task-details-left-column">{{"i18n.process.task.startedBy" | translate }}</td>
+            <td>
+              @if (task?.plannedBy?.length) {
+                <div>
+                  <table class="ob-table ob-table-sm task-data-table">
+                    <colgroup>
+                    <col>
+                      <col>
+                      </colgroup>
+                      @for (item of task.plannedBy; track item) {
+                        <tr>
+                          <td class="headerColumn">{{ item.label[this.translate.currentLang] }}</td>
+                          <td> {{ item.value }}</td>
+                        </tr>
+                      }
+                    </table>
+                  </div>
+                }
+                @if (!task?.plannedBy?.length) {
+                  <div>
+                    <app-task-details-nodata-row></app-task-details-nodata-row>
+                  </div>
+                }
+              </td>
+            </tr>
+            <tr>
+              <td class="task-details-left-column">{{"i18n.process.task.endedBy" | translate }}</td>
+              <td>
+                @if (task?.completedBy?.length) {
+                  <div>
+                    <table class="ob-table ob-table-sm task-data-table">
+                      <colgroup>
+                      <col>
+                        <col>
+                        </colgroup>
+                        @for (item of task.completedBy; track item) {
+                          <tr>
+                            <td class="headerColumn">{{ item.label[this.translate.currentLang] }}</td>
+                            <td> {{ item.value }}</td>
+                          </tr>
+                        }
+                      </table>
+                    </div>
+                  }
+                  @if (!task?.completedBy?.length) {
+                    <div>
+                      <app-task-details-nodata-row></app-task-details-nodata-row>
+                    </div>
+                  }
+                </td>
+              </tr>
+              <tr>
+                <td class="task-details-left-column">{{"i18n.process.task.details" | translate }}</td>
+                <td>
+                  <table class="ob-table ob-table-sm task-data-table">
+                    <colgroup>
+                    <col>
+                      <col>
+                      </colgroup>
+                      <tr>
+                        <td class="headerColumn">{{ "i18n.process.task.originTaskId" | translate }}</td>
+                        @if (task.originTaskId) {
+                          <td>{{ task.originTaskId }}</td>
+                        }
+                        @if (!task.originTaskId) {
+                          <td>-</td>
+                        }
+                      </tr>
+                      <tr>
+                        <td class="headerColumn">{{ "i18n.process.task.created" | translate }}</td>
+                        @if (task.createdAt) {
+                          <td>{{ task.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+                        }
+                        @if (!task.createdAt) {
+                          <td>-</td>
+                        }
+                      </tr>
+                      <tr>
+                        <td class="headerColumn">{{ "i18n.process.task.state.PLANNED" | translate }}</td>
+                        @if (task.plannedAt) {
+                          <td>{{ task.plannedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+                        }
+                        @if (!task.plannedAt) {
+                          <td>-</td>
+                        }
+                      </tr>
+                      <tr>
+                        <td class="headerColumn">{{ "i18n.process.task.state.COMPLETED" | translate }}</td>
+                        @if (task.completedAt) {
+                          <td>{{ task.completedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+                        }
+                        @if (!task.completedAt) {
+                          <td>-</td>
+                        }
+                      </tr>
+                      <tr>
+                        <td class="headerColumn">{{ "i18n.process.task.state" | translate }}</td>
+                        @if (task.state) {
+                          <td>
+                            @if (task.state === 'NOT_PLANNED') {
+                              <span><mat-icon svgIcon="help-circle" style="color: blue" class="custom-icon-style"></mat-icon></span>
+                            }
+                            @if (task.state === 'PLANNED') {
+                              <span><mat-icon svgIcon="calendar" class="custom-icon-style" style="color: #00813a"></mat-icon></span>
+                            }
+                            @if (task.state === 'COMPLETED') {
+                              <span><mat-icon svgIcon="checkmark-circle" class="custom-icon-style" style="color: #00813a"></mat-icon></span>
+                            }
+                            @if (task.state === 'NOT_REQUIRED') {
+                              <span><mat-icon svgIcon="ban" style="color: #b4b4b4" class="custom-icon-style"></mat-icon></span>
+                            }
+                            @if (task.state === 'UNKNOWN') {
+                              <span><mat-icon svgIcon="help-circle" style="color: #b4b4b4" class="custom-icon-style"></mat-icon></span>
+                            }
+                            @if (task.state === 'DELETED') {
+                              <span><mat-icon svgIcon="cancel-circle" style="color: #de3510" class="custom-icon-style"></mat-icon></span>
+                            }
+                            {{ "i18n.process.task.state." + task.state | translate }}
+                          </td>
+                        }
+                        @if (!task.state) {
+                          <td>-</td>
+                        }
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          }
