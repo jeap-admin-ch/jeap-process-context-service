@@ -1,5 +1,17 @@
 {
   "exceptions": {
+    "caniuse-lite@*": {
+      "reason": "CC-BY-4.0; see: https://github.com/browserslist/caniuse-lite"
+    },
+    "chownr@*": {
+      "reason": "BlueOak-1.0.0; Dev dependency, see: https://github.com/isaacs/chownr"
+    },
+    "type-fest@*": {
+      "reason": "(MIT OR CC0-1.0); see: https://github.com/sindresorhus/type-fest"
+    },
+    "yallist@*": {
+      "reason": "BlueOak-1.0.0; Dev dependency, see: https://github.com/isaacs/yallist"
+    },
     "@ngx-translate/core@15.0.0": {
       "reason": "MIT; see: https://github.com/ngx-translate/core"
     },
