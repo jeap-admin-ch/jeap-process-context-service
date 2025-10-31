@@ -3,7 +3,7 @@
     "@ngx-translate/core@15.0.0": {
       "reason": "MIT; see: https://github.com/ngx-translate/core"
     },
-    "@quadrel-services/qd-auth@16.1.10": {
+    "@quadrel-services/qd-auth@19.0.12": {
       "reason": "UNKNOWN; BIT internal package"
     },
     "argparse@2.0.1": {
@@ -11,6 +11,9 @@
     },
     "caniuse-lite@1.0.30001701": {
       "reason": "CC-BY-4.0; see: https://github.com/browserslist/caniuse-lite"
+    },
+    "minimatch@10.1.1": {
+      "reason": "BlueOak-1.0.0; Dev dependency, see: https://github.com/isaacs/minimatch"
     },
     "jackspeak@3.4.3": {
       "reason": "BlueOak-1.0.0; Dev dependency, see: https://github.com/isaacs/jackspeak"
