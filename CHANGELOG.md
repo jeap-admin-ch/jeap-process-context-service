@@ -9,6 +9,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Update maven-plugin-plugin to 3.15.2 for Java 25 compatibility
+
+## [14.1.0] - 2025-11-14
+
+### Changed
+
 - Update parent from 27.4.0 to 28.3.0
 
 ## [14.0.0] - 2025-11-06
