@@ -23,4 +23,8 @@ public interface ProcessTemplateRepository {
                 findAny().isPresent();
     }
 
+    /**
+     * @return <code>true</code> if any process template has events correlated by process data (correlatedBy definition), <code>false</code> otherwise.
+     */
+    boolean isAnyTemplateHasEventsCorrelatedByProcessData();
 }

@@ -55,6 +55,13 @@ class JsonProcessTemplateRepositoryTest {
     }
 
     @Test
+    void isAnyTemplateHasEventsCorrelatedByProcessData() {
+        assertTrue(jsonProcessTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData());
+        assertTrue(jsonProcessTemplateRepository.findByName(SERIALIZER_MESSAGE_PROCESS_TEMPLATE_NAME).orElseThrow().isAnyEventCorrelatedByProcessData());
+        assertFalse(jsonProcessTemplateRepository.findByName(ADDITIONAL_PROCESS_TEMPLATE_NAME).orElseThrow().isAnyEventCorrelatedByProcessData());
+    }
+
+    @Test
     void testConsumerContractValidationByTemplate() {
         verify(mockValidator, times(5)).validateContract(any(ProcessTemplate.class));
     }

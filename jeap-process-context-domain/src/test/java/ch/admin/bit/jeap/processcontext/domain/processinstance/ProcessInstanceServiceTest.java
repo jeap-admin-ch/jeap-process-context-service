@@ -6,8 +6,8 @@ import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.port.InternalMessageProducer;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
-import ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateQueryRepository;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateRepository;
@@ -620,7 +620,11 @@ class ProcessInstanceServiceTest {
         ProcessUpdate processUpdate = mock(ProcessUpdate.class);
         Message message = mock(Message.class);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
+        ProcessInstanceTemplate processInstanceTemplate = mock(ProcessInstanceTemplate.class);
+        when(processInstanceTemplate.getTemplateName()).thenReturn("templateName");
+        when(processInstanceRepository.findProcessInstanceTemplate(originProcessId)).thenReturn(Optional.of(processInstanceTemplate));
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
+        when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData()).thenReturn(true);
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.PROCESS_CREATED);
         when(processUpdate.getMessageReference()).thenReturn(Optional.of(eventReference));
 
@@ -682,6 +686,7 @@ class ProcessInstanceServiceTest {
                         .build()))
                 .build();
 
+        when(processTemplateRepository.findByName("templateName")).thenReturn(Optional.of(processTemplate));
         when(processInstance.getProcessTemplate()).thenReturn(processTemplate);
         when(processInstance.getProcessTemplateName()).thenReturn(processTemplate.getName());
 
@@ -694,6 +699,56 @@ class ProcessInstanceServiceTest {
         verify(processUpdateRepository, times(2)).save(any());
 
         verify(internalMessageProducer).produceProcessContextOutdatedEventSynchronously(originProcessId);
+    }
+
+    @Test
+    void updateProcessState_correlateEvents_noEventCorrelatedByProcessDataInThisTemplate() {
+        String originProcessId = "originProcessId";
+        ProcessUpdate processUpdate = mock(ProcessUpdate.class);
+        doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
+        ProcessInstanceTemplate processInstanceTemplate = mock(ProcessInstanceTemplate.class);
+        when(processInstanceTemplate.getTemplateName()).thenReturn("templateName");
+        when(processInstanceRepository.findProcessInstanceTemplate(originProcessId)).thenReturn(Optional.of(processInstanceTemplate));
+        when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData()).thenReturn(true);
+        when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.PROCESS_CREATED);
+
+        ProcessTemplate processTemplate = ProcessTemplate.builder()
+                .name("templateName")
+                .templateHash("hash")
+                .messageReferences(List.of(
+                        MessageReference.builder()
+                                .messageName("eventName")
+                                .topicName("topicName")
+                                .correlationProvider(new MessageProcessIdCorrelationProvider())
+                                .payloadExtractor(new EmptySetPayloadExtractor())
+                                .referenceExtractor(new EmptySetReferenceExtractor())
+                                .processInstantiationCondition(new NeverProcessInstantiationCondition())
+                                .build()))
+                .taskTypes(List.of(TaskType.builder()
+                        .name("task").cardinality(TaskCardinality.SINGLE_INSTANCE).lifecycle(TaskLifecycle.STATIC)
+                        .build()))
+                .build();
+        when(processTemplateRepository.findByName("templateName")).thenReturn(Optional.of(processTemplate));
+
+        target.updateProcessState(originProcessId);
+
+        verify(processUpdateRepository, never()).save(any());
+        verify(internalMessageProducer, never()).produceProcessContextOutdatedEventSynchronously(originProcessId);
+    }
+
+    @Test
+    void updateProcessState_correlateEvents_noCorrelationByProcessDataInAnyTemplate() {
+        String originProcessId = "originProcessId";
+        ProcessInstance processInstance = mock(ProcessInstance.class);
+        ProcessUpdate processUpdate = mock(ProcessUpdate.class);
+        doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
+        when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData()).thenReturn(false);
+        doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
+
+        target.updateProcessState(originProcessId);
+
+        verify(processUpdateRepository, never()).save(any());
+        verify(internalMessageProducer, never()).produceProcessContextOutdatedEventSynchronously(originProcessId);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

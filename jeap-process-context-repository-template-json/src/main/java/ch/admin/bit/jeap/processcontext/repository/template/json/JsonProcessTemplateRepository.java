@@ -33,6 +33,7 @@ class JsonProcessTemplateRepository implements ProcessTemplateRepository {
 
     @Value("${jeap.processcontext.consumer-contract-validator.enabled:true}")
     private boolean consumerContractValidatorEnabled = true;
+    private boolean anyTemplateHasEventsCorrelatedByProcessData = false;
 
     private static Map<String, ProcessTemplate> getTemplatesFromClasspath() throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
@@ -55,25 +56,31 @@ class JsonProcessTemplateRepository implements ProcessTemplateRepository {
         return domainEventReferencesByEventNameThenTemplateName.getOrDefault(messageName, emptyMap());
     }
 
+    @Override
+    public boolean isAnyTemplateHasEventsCorrelatedByProcessData() {
+        return anyTemplateHasEventsCorrelatedByProcessData;
+    }
+
     @PostConstruct
     void loadTemplates() throws IOException {
         this.templatesByName = getTemplatesFromClasspath();
-        templatesByName.entrySet().forEach(entry ->
-                entry.getValue().getMessageReferences().forEach(reference ->
-                        domainEventReferencesByEventNameThenTemplateName.compute(reference.getMessageName(), (eventName, referencesByTemplateName) -> {
-                            if (referencesByTemplateName == null) {
-                                referencesByTemplateName = new HashMap<>();
-                            }
-                            referencesByTemplateName.put(entry.getKey(), reference);
-                            return referencesByTemplateName;
-                        })
-                )
-        );
+        templatesByName.forEach((key, value) -> value.getMessageReferences().forEach(reference ->
+                domainEventReferencesByEventNameThenTemplateName.compute(reference.getMessageName(), (eventName, referencesByTemplateName) -> {
+                    if (referencesByTemplateName == null) {
+                        referencesByTemplateName = new HashMap<>();
+                    }
+                    referencesByTemplateName.put(key, reference);
+                    return referencesByTemplateName;
+                })
+        ));
 
         this.templatesByName.values().forEach(this::validateTemplateTranslations);
         if (consumerContractValidatorEnabled) {
             this.templatesByName.values().forEach(jsonProcessTemplateConsumerContractValidator::validateContract);
         }
+
+        anyTemplateHasEventsCorrelatedByProcessData = templatesByName.values().stream()
+                .anyMatch(ProcessTemplate::isAnyEventCorrelatedByProcessData);
     }
 
     private void validateTemplateTranslations(ProcessTemplate processTemplate) {

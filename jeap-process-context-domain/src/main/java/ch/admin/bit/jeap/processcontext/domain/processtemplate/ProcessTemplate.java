@@ -56,6 +56,8 @@ public final class ProcessTemplate {
 
     private final List<ProcessSnapshotCondition> processSnapshotConditions;
 
+    private final boolean anyEventCorrelatedByProcessData;
+
     @Builder
     private ProcessTemplate(@NonNull String name, @NonNull String templateHash,
                             @NonNull List<TaskType> taskTypes,
@@ -89,6 +91,8 @@ public final class ProcessTemplate {
         }
         this.processRelationPatterns = processRelationPatterns;
         this.processSnapshotConditions = processSnapshotConditions != null ? processSnapshotConditions : List.of();
+        this.anyEventCorrelatedByProcessData = this.messageReferences.stream()
+                .anyMatch(ref -> ref.getCorrelatedByProcessData() != null);
     }
 
     public List<TaskType> getTaskTypes() {
@@ -156,4 +160,7 @@ public final class ProcessTemplate {
         return Collections.unmodifiableList(processSnapshotConditions);
     }
 
+    public boolean isAnyEventCorrelatedByProcessData() {
+        return anyEventCorrelatedByProcessData;
+    }
 }

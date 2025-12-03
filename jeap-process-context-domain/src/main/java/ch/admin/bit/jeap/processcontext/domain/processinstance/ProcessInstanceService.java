@@ -5,8 +5,8 @@ import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.port.InternalMessageProducer;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
-import ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateQueryRepository;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateRepository;
@@ -88,7 +88,7 @@ public class ProcessInstanceService {
         if (transactions.withinNewTransactionWithResult(() -> processInstanceRepository.existsByOriginProcessId(originProcessId))) {
             internalMessageProducer.produceProcessContextStateChangedEventSynchronously(originProcessId);
         }
-        metricsListener.timed("jeap_pcs_late_correlate_message", Collections.emptyMap(),
+        metricsListener.timed("jeap_pcs_late_correlate_message", Map.of(),
                 () -> correlateMessagesByProcessData(originProcessId));
     }
 
@@ -281,7 +281,7 @@ public class ProcessInstanceService {
         processInstance.getProcessTemplate().getTaskTypes().stream()
                 .filter(taskType ->
                         (TaskLifecycle.OBSERVED == taskType.getLifecycle()) &&
-                        (processUpdate.getMessageName().equals(taskType.getObservesDomainEvent())))
+                                (processUpdate.getMessageName().equals(taskType.getObservesDomainEvent())))
                 .forEach(taskType -> {
                     TaskInstantiationCondition instantiationCondition = taskType.getInstantiationCondition();
                     if (instantiationCondition == null || instantiationCondition.instantiate(createMessage(messageReferenceMessageDTO))) {
@@ -291,7 +291,20 @@ public class ProcessInstanceService {
     }
 
     private void correlateMessagesByProcessData(String originProcessId) {
+        // Optimization: If no process templates define any event correlation by process data, we exit early here to avoid costly correlation queries
+        if (!processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData()) {
+            return;
+        }
+
         boolean newEventsCorrelated = transactions.withinNewTransactionWithResult(() -> {
+            // Optimization: Most PCS process templates do not define any event correlation by process data, so we exit early here to avoid costly correlation queries
+            Optional<ProcessInstanceTemplate> processInstanceTemplate = processInstanceRepository.findProcessInstanceTemplate(originProcessId);
+            boolean anyEventsCorrelatedByProcessData = isAnyEventsCorrelatedByProcessData(processInstanceTemplate);
+            if (!anyEventsCorrelatedByProcessData) {
+                log.trace("Process template of process with originProcessId '{}' does not define any event correlation by process data", originProcessId);
+                return false;
+            }
+
             Optional<ProcessInstance> processInstance = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId);
             if (processInstance.isPresent()) {
                 return correlateMessagesByProcessData(processInstance.get());
@@ -303,6 +316,14 @@ public class ProcessInstanceService {
         if (newEventsCorrelated) {
             internalMessageProducer.produceProcessContextOutdatedEventSynchronously(originProcessId);
         }
+    }
+
+    private boolean isAnyEventsCorrelatedByProcessData(Optional<ProcessInstanceTemplate> processInstanceTemplate) {
+        return processInstanceTemplate
+                .map(ProcessInstanceTemplate::getTemplateName)
+                .flatMap(processTemplateRepository::findByName)
+                .map(ProcessTemplate::isAnyEventCorrelatedByProcessData)
+                .orElse(false);
     }
 
     private boolean correlateMessagesByProcessData(ProcessInstance processInstance) {
