@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Update parent from 30.3.0 to 30.4.0
+- Add jakarta.validation-api to jeap-process-context-plugin-api for @NotNull instead of using codehaus @NotNull  
 
 ## [14.8.0] - 2025-12-16
 

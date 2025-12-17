@@ -1,11 +1,11 @@
 package ch.admin.bit.jeap.processcontext.plugin.api.condition;
 
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import org.codehaus.commons.nullanalysis.NotNull;
 
 import java.util.Optional;
 
