@@ -1,7 +1,5 @@
 package ch.admin.bit.jeap.processcontext.adapter.restapi;
 
-import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ExternalReferenceDTO;
-import ch.admin.bit.jeap.processcontext.adapter.restapi.model.NewProcessInstanceDTO;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
@@ -29,13 +27,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.util.Collections.emptySet;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -50,8 +45,6 @@ class ProcessInstanceControllerTest {
     private ObjectMapper objectMapper;
     @MockitoBean
     private ProcessInstanceQueryRepository repository;
-    @MockitoBean
-    private ProcessInstanceService processInstanceService;
     @MockitoBean
     private ProcessRelationsService processRelationsService;
     @MockitoBean
@@ -71,93 +64,11 @@ class ProcessInstanceControllerTest {
             .operation("view")
             .build();
 
-    private static final SemanticApplicationRole CREATE_ROLE = SemanticApplicationRole.builder()
-            .system("jme")
-            .resource("processinstance")
-            .operation("create")
-            .build();
-
     private static final SemanticApplicationRole FOO_ROLE = SemanticApplicationRole.builder()
             .system("jme")
             .resource("processinstance")
             .operation("foo")
             .build();
-
-    @Test
-    void putNewProcessInstance_whenValid_thenReturnsCreated() throws Exception {
-        String originProcessId = "123";
-        String processTemplateName = "my-template";
-        ProcessData processData1 = new ProcessData("name1", "value1");
-        ProcessData processData2 = new ProcessData("name2", "value2");
-        Set<ProcessData> processData = Set.of(processData1, processData2);
-        NewProcessInstanceDTO newProcessInstanceDTO = new NewProcessInstanceDTO();
-        newProcessInstanceDTO.setProcessTemplateName(processTemplateName);
-        Set<ExternalReferenceDTO> externalReferenceDTOs = Set.of(
-                new ExternalReferenceDTO(processData1.getKey(), processData1.getValue()),
-                new ExternalReferenceDTO(processData2.getKey(), processData2.getValue()));
-        newProcessInstanceDTO.setExternalReferences(externalReferenceDTOs);
-
-        mockMvc.perform(
-                        put("/api/processes/{originProcessId}", originProcessId)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(newProcessInstanceDTO))
-                                .with(csrf()) // needed because in this test no bearer token is provided, just the final Spring authentication
-                                .with(authentication(createAuthenticationForUserRoles(CREATE_ROLE))))
-                .andExpect(status().isCreated());
-
-        verify(processInstanceService).createProcessInstance(originProcessId, processTemplateName, processData);
-    }
-
-    @Test
-    void putNewProcessInstance_whenValidWithNoProcessData_thenReturnsCreated() throws Exception {
-        String originProcessId = "123";
-        String processTemplateName = "my-template";
-        NewProcessInstanceDTO newProcessInstanceDTO = new NewProcessInstanceDTO();
-        newProcessInstanceDTO.setProcessTemplateName(processTemplateName);
-
-        mockMvc.perform(
-                        put("/api/processes/{originProcessId}", originProcessId)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(newProcessInstanceDTO))
-                                .with(csrf()) // needed because in this test no bearer token is provided, just the final Spring authentication
-                                .with(authentication(createAuthenticationForUserRoles(CREATE_ROLE))))
-                .andExpect(status().isCreated());
-
-        verify(processInstanceService).createProcessInstance(originProcessId, processTemplateName, emptySet());
-    }
-
-    @Test
-    void putNewProcessInstance_whenProcessInstantiationExceptionIsThrown_thenReturnsBadRequest() throws Exception {
-        String originProcessId = "123";
-        String processTemplateName = "my-template";
-        NewProcessInstanceDTO newProcessInstanceDTO = new NewProcessInstanceDTO();
-        newProcessInstanceDTO.setProcessTemplateName(processTemplateName);
-
-        doThrow(TaskPlanningException.class).when(processInstanceService)
-                .createProcessInstance(originProcessId, processTemplateName, emptySet());
-
-        mockMvc.perform(put("/api/processes/{originProcessId}", originProcessId)
-                        .with(csrf()) // needed because in this test no bearer token is provided, just the final Spring authentication
-                        .with(authentication(createAuthenticationForUserRoles(CREATE_ROLE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newProcessInstanceDTO)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void putNewProcessInstance_whenInvalid_thenReturnsBadRequest() throws Exception {
-        String originProcessId = "123";
-        NewProcessInstanceDTO newProcessInstanceDTO = new NewProcessInstanceDTO();
-
-        mockMvc.perform(put("/api/processes/{originProcessId}", originProcessId)
-                        .with(csrf()) // needed because in this test no bearer token is provided, just the final Spring authentication
-                        .with(authentication(createAuthenticationForUserRoles(CREATE_ROLE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newProcessInstanceDTO)))
-                .andExpect(status().isBadRequest());
-
-        verifyNoInteractions(processInstanceService);
-    }
 
     @Test
     void testGetProcessInstanceByOriginProcessId_whenFound_thenReturnProcessInstanceResource() throws Exception {
@@ -218,22 +129,6 @@ class ProcessInstanceControllerTest {
                         .with(authentication(createAuthenticationForUserRoles(FOO_ROLE)))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void putNewProcessInstance_whenNoWriteRole_thenReturnsForbidden() throws Exception {
-        String originProcessId = "123";
-        NewProcessInstanceDTO newProcessInstanceDTO = new NewProcessInstanceDTO();
-        newProcessInstanceDTO.setProcessTemplateName("my-template");
-
-        mockMvc.perform(put("/api/processes/{originProcessId}", originProcessId)
-                        .with(csrf()) // needed because in this test no bearer token is provided, just the final Spring authentication
-                        .with(authentication(createAuthenticationForUserRoles(FOO_ROLE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newProcessInstanceDTO)))
-                .andExpect(status().isForbidden());
-
-        verifyNoInteractions(processInstanceService);
     }
 
     @Test
