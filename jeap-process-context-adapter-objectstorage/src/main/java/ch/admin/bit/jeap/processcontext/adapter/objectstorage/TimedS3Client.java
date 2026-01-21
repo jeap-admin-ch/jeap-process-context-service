@@ -5,10 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.auth.signer.AwsS3V4Signer;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.http.urlconnection.ProxyConfiguration;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -17,7 +15,6 @@ import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.*;
 
 import java.net.URI;
-import java.util.Map;
 
 import static org.springframework.util.StringUtils.hasText;
 
@@ -39,8 +36,6 @@ public class TimedS3Client {
         }
 
         ClientOverrideConfiguration.Builder overrideConfig = ClientOverrideConfiguration.builder();
-        overrideConfig.advancedOptions(Map.of(SdkAdvancedClientOption.SIGNER, AwsS3V4Signer.create()));
-
         S3ClientBuilder s3ClientBuilder = S3Client.builder()
                 .region(connectionProperties.getRegion())
                 .forcePathStyle(true)

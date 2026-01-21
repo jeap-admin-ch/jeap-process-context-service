@@ -34,7 +34,7 @@ import static org.hamcrest.Matchers.is;
 @Slf4j
 class ProcessSnapshotWithS3IT extends ProcessInstanceITBase {
 
-    private static final String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-13T22-53-53Z";
+    private static final String MINIO_IMAGE = "minio/minio:RELEASE.2025-09-07T16-13-09Z";
     private static final String TEST_BUCKET_NAME = "test-bucket";
 
     private static final MinIOContainer MINIO_CONTAINER = new MinIOContainer(MINIO_IMAGE);

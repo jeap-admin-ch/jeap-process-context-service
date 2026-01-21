@@ -1,11 +1,6 @@
 package ch.admin.bit.jeap.processcontext.adapter.objectstorage;
 
-import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessData;
-import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessSnapshot;
-import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.Task;
-import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.TaskData;
-import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.User;
-import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.UserData;
+import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.*;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessSnapshotArchiveData;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessSnapshotMetadata;
 import lombok.SneakyThrows;
@@ -38,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Testcontainers
 class S3ProcessSnapshotRepositoryIT {
 
-    private static final String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-13T22-53-53Z";
+    private static final String MINIO_IMAGE = "minio/minio:RELEASE.2025-09-07T16-13-09Z";
     private static final String TEST_BUCKET_NAME = "test-bucket";
     private static final int SNAPSHOT_RETENTION_DAYS = 2;
 
