@@ -32,13 +32,6 @@ public class ProcessInstanceDTOFactory {
     private static final Comparator<Task> TASK_SNAPSHOT_COMPARATOR = Comparator
             .comparing(Task::getDateTimeCreated);
 
-    /**
-     * Reached milestones first, by date. Then unreached milestones.
-     */
-    private static final Comparator<Milestone> MILESTONE_COMPARATOR = Comparator
-            .comparing(Milestone::isReached).reversed()
-            .thenComparing(Milestone::getName);
-
     private static final Comparator<MessageReferenceMessageDTO> MESSAGE_COMPARATOR = Comparator
             .comparing(MessageReferenceMessageDTO::getMessageCreatedAt).reversed()
             .thenComparing(MessageReferenceMessageDTO::getMessageName);
@@ -56,7 +49,6 @@ public class ProcessInstanceDTOFactory {
                                                                MessageRepository messageRepository) {
         List<MessageDTO> messages = createMessages(processInstance.getMessageReferences());
         List<TaskInstanceDTO> tasks = createTasks(processInstance.getTasks(), messages, processInstance.getProcessTemplate().getName(), translateService, messageRepository);
-        List<MilestoneDTO> milestones = createMilestones(processInstance.getMilestones(), processInstance.getProcessTemplate().getName(), translateService);
         List<RelationDTO> relations = createRelations(processInstance.getRelations());
         List<ProcessRelationDTO> processRelations = createProcessRelations(processInstance, processRelationsService);
         List<ProcessDataDTO> processDataDTOList = createProcessData(processInstance.getProcessData());
@@ -67,7 +59,6 @@ public class ProcessInstanceDTOFactory {
                 .name(translateService.translateProcessTemplateName(processInstance.getProcessTemplate().getName()))
                 .state(processInstance.getState().name())
                 .tasks(tasks)
-                .milestones(milestones)
                 .messages(messages)
                 .processData(processDataDTOList)
                 .relations(relations)
@@ -95,7 +86,6 @@ public class ProcessInstanceDTOFactory {
                 .createdAt(toZonedDateTime(snap.getOptionalDateTimeCreated()))
                 .modifiedAt(toZonedDateTime(snap.getOptionalDateTimeModified()))
                 .processCompletion(processCompletion)
-                .milestones(List.of())
                 .messages(List.of())
                 .relations(List.of())
                 .snapshot(true)
@@ -116,13 +106,6 @@ public class ProcessInstanceDTOFactory {
         return tasks.stream()
                 .sorted(TASK_INSTANCE_COMPARATOR)
                 .map(t -> TaskInstanceDTO.create(t, messages, processTemplateName, translateService, messageRepository))
-                .toList();
-    }
-
-    static List<MilestoneDTO> createMilestones(List<Milestone> milestones, String processTemplateName, TranslateService translateService) {
-        return milestones.stream()
-                .sorted(MILESTONE_COMPARATOR)
-                .map(m -> MilestoneDTO.create(m, processTemplateName, translateService))
                 .toList();
     }
 

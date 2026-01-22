@@ -5,101 +5,94 @@ import {
 	ProcessInstanceListDto,
 	TaskDTO,
 	TaskState
-} from "../../src/app/shared/processservice/process.model";
+} from '../../src/app/shared/processservice/process.model';
 
 const mockProcess_1: ProcessDTO = {
-	originProcessId: "XXX",
-	processTemplate: "", // Not present in JSON
+	originProcessId: 'XXX',
+	processTemplate: '', // Not present in JSON
 	name: {
-		de: "Race Across Switzerland",
-		it: "[IT] Race Across Switzerland",
-		fr: "[FR] Race Across Switzerland"
+		de: 'Race Across Switzerland',
+		it: '[IT] Race Across Switzerland',
+		fr: '[FR] Race Across Switzerland'
 	},
-	state: "STARTED",
+	state: 'STARTED',
 	processCompletion: {
-		conclusion: "conc",
-		reason: "reson",
-		completedAt: ""
+		conclusion: 'conc',
+		reason: 'reson',
+		completedAt: ''
 	} as ProcessCompletionDTO,
-	createdAt: "2023-06-27T10:19:09.786578+02:00",
-	modifiedAt: "2023-06-27T10:19:10.431462+02:00",
+	createdAt: '2023-06-27T10:19:09.786578+02:00',
+	modifiedAt: '2023-06-27T10:19:10.431462+02:00',
 	tasks: [
 		{
-			originTaskId: "1",
+			originTaskId: '1',
 			name: {
-				de: "Rennen starten",
-				it: "[IT] Rennen starten",
-				fr: "[FR] Rennen starten"
+				de: 'Rennen starten',
+				it: '[IT] Rennen starten',
+				fr: '[FR] Rennen starten'
 			},
-			lifecycle: "STATIC",
-			cardinality: "SINGLE_INSTANCE",
+			lifecycle: 'STATIC',
+			cardinality: 'SINGLE_INSTANCE',
 			state: TaskState.PLANNED,
-			createdAt: "", // Not present in JSON
-			plannedAt: "2023-06-27T10:19:09.763437+02:00",
+			createdAt: '', // Not present in JSON
+			plannedAt: '2023-06-27T10:19:09.763437+02:00',
 			completedAt: null,
 			plannedBy: [],
 			completedBy: null,
 			taskData: []
 		} as TaskDTO,
 		{
-			originTaskId: "2",
+			originTaskId: '2',
 			name: {
-				de: "Ziel passieren",
-				it: "[IT] Ziel passieren",
-				fr: "[FR] Ziel passieren"
+				de: 'Ziel passieren',
+				it: '[IT] Ziel passieren',
+				fr: '[FR] Ziel passieren'
 			},
-			lifecycle: "STATIC",
-			cardinality: "SINGLE_INSTANCE",
+			lifecycle: 'STATIC',
+			cardinality: 'SINGLE_INSTANCE',
 			state: TaskState.PLANNED,
-			createdAt: "",
-			plannedAt: "2023-06-27T10:19:09.763482+02:00",
+			createdAt: '',
+			plannedAt: '2023-06-27T10:19:09.763482+02:00',
 			completedAt: null,
 			plannedBy: [],
 			completedBy: null,
 			taskData: []
 		} as TaskDTO,
 		{
-			originTaskId: "3",
+			originTaskId: '3',
 			name: {
-				de: "Rennstrecke validieren",
-				it: "[IT] Rennstrecke validieren",
-				fr: "[FR] Rennstrecke validieren"
+				de: 'Rennstrecke validieren',
+				it: '[IT] Rennstrecke validieren',
+				fr: '[FR] Rennstrecke validieren'
 			},
-			lifecycle: "STATIC",
-			cardinality: "SINGLE_INSTANCE",
+			lifecycle: 'STATIC',
+			cardinality: 'SINGLE_INSTANCE',
 			state: TaskState.PLANNED,
-			createdAt: "",
-			plannedAt: "2023-06-27T10:19:09.763496+02:00",
+			createdAt: '',
+			plannedAt: '2023-06-27T10:19:09.763496+02:00',
 			completedAt: null,
 			plannedBy: [],
 			completedBy: null,
 			taskData: []
 		} as TaskDTO
 	],
-	milestones: [
-		{
-			name: "AllControlPointsPassed",
-			state: "NOT_REACHED",
-			reachedAt: "2023-06-27T10:19:09.763496+02:00"
-		}
-	],
 	messages: [],
 	relations: [],
 	processRelations: [],
 	processData: [
 		{
-			key: "race-car-number",
-			value: "string",
-			role: "some-role"
+			key: 'race-car-number',
+			value: 'string',
+			role: 'some-role'
 		},
 		{
-			key: "race-id",
-			value: "New Race Across Switzerland",
-			role: "some-role"
+			key: 'race-id',
+			value: 'New Race Across Switzerland',
+			role: 'some-role'
 		}
 	],
 	snapshot: false,
-	snapshotCreatedAt: ""
+	snapshotCreatedAt: ''
 };
 
 const mockProcessList: ProcessInstanceListDto = {

@@ -111,10 +111,6 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
     void deleteEventReferenceByProcessInstanceIds(@Param("processInstanceIds") Iterable<? extends UUID> processInstanceIds);
 
     @Modifying
-    @Query(nativeQuery = true, value = "DELETE FROM milestone m WHERE m.process_instance_id in (:processInstanceIds) ")
-    void deleteMilestoneByProcessInstanceIds(@Param("processInstanceIds") Iterable<? extends UUID> processInstanceIds);
-
-    @Modifying
     @Query(nativeQuery = true, value = "DELETE FROM process_instance_process_data p WHERE p.process_instance_id in (:processInstanceIds) ")
     void deleteProcessDataByProcessInstanceIds(@Param("processInstanceIds") Iterable<? extends UUID> processInstanceIds);
 

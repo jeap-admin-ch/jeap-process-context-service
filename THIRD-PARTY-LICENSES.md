@@ -50,7 +50,6 @@ Apache License Version 2.0
  * create-process-instance-command - ch.admin.bit.jeap.messagetype.jeap:create-process-instance-command
  * process-instance-completed-event - ch.admin.bit.jeap.messagetype.jeap:process-instance-completed-event
  * process-instance-created-event - ch.admin.bit.jeap.messagetype.jeap:process-instance-created-event
- * process-milestone-reached-event - ch.admin.bit.jeap.messagetype.jeap:process-milestone-reached-event
  * process-snapshot-created-event - ch.admin.bit.jeap.messagetype.jeap:process-snapshot-created-event
  * jeap-initializer-simple-test-event - ch.admin.jeap.messaging.test.messagetype.jeap:jeap-initializer-simple-test-event
  * AWS SDK for Java - Core - [com.amazonaws:aws-java-sdk-core](https://aws.amazon.com/sdkforjava)

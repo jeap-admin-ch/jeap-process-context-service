@@ -5,7 +5,6 @@ import ch.admin.bit.jeap.processcontext.EventListenerStub;
 import ch.admin.bit.jeap.processcontext.RelationListenerStub;
 import ch.admin.bit.jeap.processcontext.event.process.instance.completed.ProcessInstanceCompletedEvent;
 import ch.admin.bit.jeap.processcontext.event.process.instance.created.ProcessInstanceCreatedEvent;
-import ch.admin.bit.jeap.processcontext.event.process.milestone.reached.ProcessMilestoneReachedEvent;
 import ch.admin.bit.jeap.processcontext.event.process.snapshot.created.ProcessSnapshotCreatedEvent;
 import ch.admin.bit.jeap.processcontext.plugin.api.relation.RelationListener;
 import org.springframework.context.annotation.Bean;
@@ -37,11 +36,6 @@ public class KafkaIntegrationTestConfig {
     @Bean
     RelationListener relationListener() {
         return new RelationListenerStub();
-    }
-
-    @Bean
-    EventListenerStub<ProcessMilestoneReachedEvent> processMilestoneReachedEventListener() {
-        return new EventListenerStub<>();
     }
 
     @Bean

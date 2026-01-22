@@ -12,7 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.togglz.core.manager.FeatureManager;
 import org.togglz.core.util.NamedFeature;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
@@ -49,9 +52,6 @@ public class ProcessEventService {
         List<ProcessEvent> events = new ArrayList<>();
         metricsListener.timed("jeap_pcs_produce_process_state_changed_events", Map.of(), () ->
                 produceProcessStateEvents(originProcessId, producedEvents, processInstance, processName, events));
-
-        metricsListener.timed("jeap_pcs_produce_milestone_events", Map.of(), () ->
-                produceMilestoneNotifications(originProcessId, producedEvents, processInstance, events));
 
         metricsListener.timed("jeap_pcs_produce_relation_events", Map.of(), () ->
                 produceRelationNotifications(originProcessId, producedEvents, processInstance, events));
@@ -123,22 +123,6 @@ public class ProcessEventService {
             return active;
         }
         return true;
-    }
-
-    private void produceMilestoneNotifications(String originProcessId, Map<EventType, List<ProcessEvent>> producedEvents, ProcessInstance processInstance, List<ProcessEvent> events) {
-        Set<String> reachedMilestones = processInstance.getReachedMilestones();
-        Set<String> milestonesWithProducedEvent = producedEvents.getOrDefault(EventType.MILESTONE_REACHED, List.of()).stream()
-                .map(ProcessEvent::getName)
-                .collect(toSet());
-
-        Set<String> milestonesRequiringEvent = new HashSet<>(reachedMilestones);
-        milestonesRequiringEvent.removeAll(milestonesWithProducedEvent);
-        milestonesRequiringEvent.forEach(milestoneName -> {
-            log.debug("Producing milestone reached event for milestone {} in process {}", milestoneName, originProcessId);
-            metricsListener.milestoneReached(processInstance.getProcessTemplate(), milestoneName);
-            processInstanceEventProducer.produceProcessMilestoneReachedEventSynchronously(originProcessId, milestoneName);
-            events.add(ProcessEvent.createMilestoneReached(originProcessId, milestoneName));
-        });
     }
 
     private void produceSnapshotNotifications(String originProcessId, Map<EventType, List<ProcessEvent>> producedEvents, ProcessInstance processInstance, List<ProcessEvent> events) {

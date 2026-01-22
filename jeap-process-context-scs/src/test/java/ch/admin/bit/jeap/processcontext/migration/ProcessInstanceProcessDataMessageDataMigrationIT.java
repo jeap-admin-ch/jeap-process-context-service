@@ -79,7 +79,6 @@ class ProcessInstanceProcessDataMessageDataMigrationIT extends ProcessInstanceMo
             final ProcessInstanceDTO processInstanceByOriginProcessId = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
             assertThat(processInstanceByOriginProcessId.getProcessData()).hasSize(1);
             assertThat(processInstanceByOriginProcessId.getMessages()).hasSize(1);
-            assertThat(processInstanceByOriginProcessId.getMilestones().get(0).getState()).isEqualTo("DELETED");
         });
     }
 

@@ -5,7 +5,6 @@ import ch.admin.bit.jeap.processcontext.adapter.kafka.KafkaAdapterIntegrationTes
 import ch.admin.bit.jeap.processcontext.domain.port.ProcessInstanceEventProducer;
 import ch.admin.bit.jeap.processcontext.event.process.instance.completed.ProcessInstanceCompletedEvent;
 import ch.admin.bit.jeap.processcontext.event.process.instance.created.ProcessInstanceCreatedEvent;
-import ch.admin.bit.jeap.processcontext.event.process.milestone.reached.ProcessMilestoneReachedEvent;
 import ch.admin.bit.jeap.processcontext.event.process.snapshot.created.ProcessSnapshotCreatedEvent;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -18,15 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ProcessInstanceMessageProducerIT extends KafkaAdapterIntegrationTestBase {
     private static final String TEST_ORIGIN_ID = "test-origin-id";
-    private static final String MILESTONE_NAME = "milestone";
     private static final int SNAPSHOT_VERSION = 2;
 
     @Captor
     ArgumentCaptor<ProcessInstanceCreatedEvent> processInstanceCreatedEventCaptor;
     @Captor
     ArgumentCaptor<ProcessInstanceCompletedEvent> processInstanceCompletedEventCaptor;
-    @Captor
-    ArgumentCaptor<ProcessMilestoneReachedEvent> processMilestoneReachedEventCaptor;
     @Captor
     ArgumentCaptor<ProcessSnapshotCreatedEvent> processSnapshotCreatedEventCaptor;
     @Autowired
@@ -35,8 +31,6 @@ class ProcessInstanceMessageProducerIT extends KafkaAdapterIntegrationTestBase {
     private MessageListener<ProcessInstanceCreatedEvent> processInstanceCreatedEventListener;
     @MockitoBean
     private MessageListener<ProcessInstanceCompletedEvent> processInstanceCompletedEventListener;
-    @MockitoBean
-    private MessageListener<ProcessMilestoneReachedEvent> processMilestoneReachedEventListener;
     @MockitoBean
     private MessageListener<ProcessSnapshotCreatedEvent> processSnapshotCreatedEventListener;
 
@@ -60,17 +54,6 @@ class ProcessInstanceMessageProducerIT extends KafkaAdapterIntegrationTestBase {
         assertEquals(TEST_ORIGIN_ID, processInstanceCompletedEventCaptor.getValue().getOptionalProcessId().orElseThrow());
         assertEquals(TEST_ORIGIN_ID + "-completed", processInstanceCompletedEventCaptor.getValue().getIdentity().getIdempotenceId());
         Mockito.verifyNoMoreInteractions(processInstanceCompletedEventListener);
-    }
-
-    @Test
-    void testProduceProcessMilestoneReachedEventSynchronously() {
-        processInstanceEventProducer.produceProcessMilestoneReachedEventSynchronously(TEST_ORIGIN_ID, MILESTONE_NAME);
-
-        Mockito.verify(processMilestoneReachedEventListener, Mockito.timeout(TEST_TIMEOUT)).receive(processMilestoneReachedEventCaptor.capture());
-        assertEquals(TEST_ORIGIN_ID, processMilestoneReachedEventCaptor.getValue().getOptionalProcessId().orElseThrow());
-        assertEquals(MILESTONE_NAME, processMilestoneReachedEventCaptor.getValue().getPayload().getMilestoneName());
-        assertEquals(TEST_ORIGIN_ID + "-milestone-reached-" + MILESTONE_NAME, processMilestoneReachedEventCaptor.getValue().getIdentity().getIdempotenceId());
-        Mockito.verifyNoMoreInteractions(processMilestoneReachedEventListener);
     }
 
     @Test

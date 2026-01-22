@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import static ch.admin.bit.jeap.processcontext.TaskInstanceAssertionDto.task;
 import static ch.admin.bit.jeap.processcontext.TaskInstanceAssertionDto.taskWithoutOriginTaskId;
 
-class ProcessInstanceWithTasksCompletedAndMilestonesReachedByDomainEventsIT extends ProcessInstanceMockS3ITBase {
+class ProcessInstanceWithTasksCompletedByDomainEventsIT extends ProcessInstanceMockS3ITBase {
 
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
@@ -38,7 +38,7 @@ class ProcessInstanceWithTasksCompletedAndMilestonesReachedByDomainEventsIT exte
                 task("id-multiple-2", "domainEvents.task.multiple", "DYNAMIC", "MULTI_INSTANCE", "PLANNED"),
                 task("id-multiple-3", "domainEvents.task.multiple", "DYNAMIC", "MULTI_INSTANCE", "PLANNED"));
 
-        // Produce event 1, which is expected to complete the 'mandatory' task, which should lead to 2 milestones being reached
+        // Produce event 1, which is expected to complete the 'mandatory' task
         Test1Event event1 = Test1EventBuilder.createForProcessId(originProcessId)
                 .build();
         sendSync("topic.test1", event1);
@@ -48,9 +48,8 @@ class ProcessInstanceWithTasksCompletedAndMilestonesReachedByDomainEventsIT exte
                 task("id-multiple-1", "domainEvents.task.multiple", "DYNAMIC", "MULTI_INSTANCE", "PLANNED"),
                 task("id-multiple-2", "domainEvents.task.multiple", "DYNAMIC", "MULTI_INSTANCE", "PLANNED"),
                 task("id-multiple-3", "domainEvents.task.multiple", "DYNAMIC", "MULTI_INSTANCE", "PLANNED"));
-        assertMilestoneReachedEvents("Test1EventReceived", "MandatoryTaskCompleted");
 
-        // Produce event 2, which is expected to complete the 'optional' task, leading to another milestone being reached
+        // Produce event 2, which is expected to complete the 'optional' task
         Test2Event event2 = Test2EventBuilder.createForProcessId(originProcessId)
                 .taskIds("id-optional")
                 .build();
@@ -65,7 +64,6 @@ class ProcessInstanceWithTasksCompletedAndMilestonesReachedByDomainEventsIT exte
                 task("id-multiple-1", "domainEvents.task.multiple", "DYNAMIC", "MULTI_INSTANCE", "PLANNED"),
                 task("id-multiple-2", "domainEvents.task.multiple", "DYNAMIC", "MULTI_INSTANCE", "PLANNED"),
                 task("id-multiple-3", "domainEvents.task.multiple", "DYNAMIC", "MULTI_INSTANCE", "PLANNED"));
-        assertMilestoneReachedEvents("OptionalTaskCompleted");
 
         // Produce event 3, which is expected to complete the first two 'multiple' tasks
         Test3Event event3WithTwoTaskIds = Test3EventBuilder.createForProcessId(originProcessId)
@@ -93,7 +91,6 @@ class ProcessInstanceWithTasksCompletedAndMilestonesReachedByDomainEventsIT exte
                 task("id-multiple-2", "domainEvents.task.multiple", "DYNAMIC", "MULTI_INSTANCE", "COMPLETED"),
                 task("id-multiple-3", "domainEvents.task.multiple", "DYNAMIC", "MULTI_INSTANCE", "COMPLETED"));
 
-        assertMilestoneReachedEvents("AllMultipleTaskInstancesCompleted");
         assertProcessInstanceCompleted(originProcessId);
         assertProcessInstanceCompletedEvent(originProcessId);
     }

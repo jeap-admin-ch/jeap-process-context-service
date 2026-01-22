@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
  * using the (optional) processId field on {@link Message#getOptionalProcessId() Message}. If no process
  * ID is found, the event will be ignored.
  * <br>
- * Using this implementation is mostly useful for milestone or task completion conditions that rely on certain events
+ * Using this implementation is mostly useful for task completion conditions that rely on certain events
  * to be present in the process context, without correlating them to a specific task.
  */
 @EqualsAndHashCode

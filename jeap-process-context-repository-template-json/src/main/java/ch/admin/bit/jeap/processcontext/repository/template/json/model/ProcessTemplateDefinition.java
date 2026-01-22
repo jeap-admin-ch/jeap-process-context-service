@@ -13,7 +13,6 @@ public class ProcessTemplateDefinition {
     @JsonAlias("events")
     private List<MessageReferenceDefinition> messages = new ArrayList<>();
     private List<TaskTypeDefinition> tasks = new ArrayList<>();
-    private List<MilestoneDefinition> milestones = new ArrayList<>();
     private List<ProcessDataDefinition> processData = new ArrayList<>();
     private String relationSystemId;
     private List<RelationPatternDefinition> relationPatterns = new ArrayList<>();

@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import static ch.admin.bit.jeap.processcontext.repository.template.json.model.RelationPatternDefinition.JOIN_BY_ROLE;
 import static ch.admin.bit.jeap.processcontext.repository.template.json.model.RelationPatternDefinition.JOIN_BY_VALUE;
-import static java.util.stream.Collectors.toMap;
 import static org.springframework.util.StringUtils.hasText;
 
 @RequiredArgsConstructor
@@ -49,7 +48,6 @@ public class ProcessTemplateDeserializer {
                 .templateHash(templateHash)
                 .messageReferences(messageReferences())
                 .taskTypes(taskTypes())
-                .milestones(milestones())
                 .processDataTemplates(processDatas())
                 .relationSystemId(relationSystemId)
                 .relationPatterns(relationPatterns)
@@ -205,29 +203,6 @@ public class ProcessTemplateDeserializer {
                 .processDataKey(definition.getProcessDataKey())
                 .messageDataKey(definition.getMessageDataKey())
                 .build();
-    }
-
-    private MilestoneCondition toMilestoneCondition(MilestoneDefinition milestoneDefinition) {
-        MilestoneConditionDefinition reachedWhen = milestoneDefinition.getReachedWhen();
-        if (reachedWhen == null) {
-            throw TemplateDefinitionException.missingMilestoneConditionDefinition(milestoneDefinition.getName());
-        }
-
-        Set<String> tasksCompleted = reachedWhen.getTasksCompleted() == null ? Set.of() : reachedWhen.getTasksCompleted();
-        String condition = reachedWhen.getCondition();
-
-        if (tasksCompleted.isEmpty() && !hasText(condition)) {
-            throw TemplateDefinitionException.emptyMilestoneConditionDefinition();
-        }
-        if (!tasksCompleted.isEmpty() && hasText(condition)) {
-            throw TemplateDefinitionException.invalidMilestoneConditionDefinition();
-        }
-
-        if (!tasksCompleted.isEmpty()) {
-            return new TasksCompletedMilestoneCondition(tasksCompleted);
-        } else {
-            return ProcessTemplateUtils.newInstance(condition);
-        }
     }
 
     private String toTaskCompletedByDomainEvent(TaskCompletionConditionDefinition definition) {
@@ -424,22 +399,6 @@ public class ProcessTemplateDeserializer {
         ProcessTemplateUtils.validateUniqueNames("task", taskTypeList.stream().map(TaskType::getName));
         ProcessTemplateUtils.validateEventReferences(templateDefinition);
         return taskTypeList;
-    }
-
-    private Map<String, MilestoneCondition> milestones() {
-        List<MilestoneDefinition> milestones = templateDefinition.getMilestones();
-        ProcessTemplateUtils.validateUniqueNames("milestone", milestones.stream().map(MilestoneDefinition::getName));
-        return milestones.stream()
-                .collect(toMap(MilestoneDefinition::getName, this::createValidatedMilestoneCondition));
-    }
-
-    private MilestoneCondition createValidatedMilestoneCondition(MilestoneDefinition milestoneDefinition) {
-        MilestoneCondition milestoneCondition = toMilestoneCondition(milestoneDefinition);
-        if (milestoneCondition instanceof TasksCompletedMilestoneCondition tasksCompletedMilestoneCondition) {
-            Set<String> referencedTaskNames = tasksCompletedMilestoneCondition.getTaskNames();
-            ProcessTemplateUtils.validateTasksExist(templateDefinition, referencedTaskNames, milestoneDefinition.getName());
-        }
-        return milestoneCondition;
     }
 
     private List<MessageReference> messageReferences() {

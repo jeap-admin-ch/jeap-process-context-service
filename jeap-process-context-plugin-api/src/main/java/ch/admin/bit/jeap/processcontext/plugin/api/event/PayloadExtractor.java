@@ -11,7 +11,7 @@ public interface PayloadExtractor<E extends MessagePayload> {
      * Returns event related data from payload of an event.
      * <p>
      * This information will be persisted in the process instance and will be available in the API Plugin.
-     * It can then be used in the implementation of a custom completion condition or a milestone condition.
+     * It can then be used in the implementation of a custom completion condition.
      * <p>
      * @see ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext
      * @see ch.admin.bit.jeap.processcontext.plugin.api.context.Message
@@ -30,7 +30,7 @@ public interface PayloadExtractor<E extends MessagePayload> {
      * Returns message related data from payload of a message.
      * <p>
      * This information will be persisted in the process instance and will be available in the API Plugin.
-     * It can then be used in the implementation of a custom completion condition or a milestone condition.
+     * It can then be used in the implementation of a custom completion condition.
      * <p>
      *
      * @param payload MessagePayload

@@ -6,7 +6,5 @@ public interface ProcessInstanceEventProducer {
 
     void produceProcessInstanceCompletedEventSynchronously(String originProcessId);
 
-    void produceProcessMilestoneReachedEventSynchronously(String originProcessId, String milestoneName);
-
     void produceProcessSnapshotCreatedEventSynchronously(String originProcessId, int snapshotVersion);
 }

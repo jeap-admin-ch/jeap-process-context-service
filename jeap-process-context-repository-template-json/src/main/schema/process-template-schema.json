@@ -57,12 +57,6 @@
             "$ref": "#/definitions/message"
           }
         },
-        "milestones": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/milestone"
-          }
-        },
         "processData": {
           "type": "array",
           "items": {
@@ -96,22 +90,6 @@
         "tasks"
       ],
       "additionalProperties": false
-    },
-    "milestone": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "reachedWhen": {
-          "$ref": "#/definitions/reachedWhen"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "reachedWhen"
-      ]
     },
     "processData": {
       "type": "object",

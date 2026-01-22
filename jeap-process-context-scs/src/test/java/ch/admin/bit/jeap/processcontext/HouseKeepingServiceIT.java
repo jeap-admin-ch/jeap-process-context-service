@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -232,7 +231,6 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
                 .templateHash("hash")
                 .taskTypes(List.of(
                         taskType))
-                .milestones(emptyMap())
                 .build();
         String originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
         ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate, Collections.emptySet());
@@ -260,7 +258,6 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
                 .templateHash("hash")
                 .taskTypes(List.of(
                         taskType))
-                .milestones(emptyMap())
                 .build();
         String originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
         ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate, Collections.emptySet());

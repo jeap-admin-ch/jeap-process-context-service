@@ -2,10 +2,15 @@ package ch.admin.bit.jeap.processcontext.repository.template.json;
 
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
-import ch.admin.bit.jeap.processcontext.plugin.api.condition.*;
+import ch.admin.bit.jeap.processcontext.plugin.api.condition.AllTasksInFinalStateProcessCompletionCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.condition.MessageProcessCompletionCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessCompletionProcessSnapshotCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
 import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageProcessIdCorrelationProvider;
-import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.*;
+import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider;
+import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestPayloadExtractor;
+import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestProcessSnapshotCondition;
+import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestReferenceExtractor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
@@ -119,8 +124,8 @@ class JsonProcessTemplateRepositoryTest {
         assertSame(TaskCardinality.MULTI_INSTANCE, taskTypeObservedWithCondition.getCardinality());
 
         assertEquals("TestEvent", completedByDomainEvent.getCompletedByDomainEvent());
-        assertTrue(taskTypePlannedByDomainEventOrMessageWithCondition.getInstantiationCondition() instanceof TestTaskInstantiationCondition);
-        assertTrue(taskTypeObservedWithCondition.getInstantiationCondition() instanceof TestTaskInstantiationCondition);
+        assertInstanceOf(TestTaskInstantiationCondition.class, taskTypePlannedByDomainEventOrMessageWithCondition.getInstantiationCondition());
+        assertInstanceOf(TestTaskInstantiationCondition.class, taskTypeObservedWithCondition.getInstantiationCondition());
 
         assertEquals(1, taskTypePlannedByDomainEventOrMessage.getTaskData().size());
         TaskData taskDataPlanned = taskTypePlannedByDomainEventOrMessage.getTaskData().iterator().next();
@@ -132,27 +137,17 @@ class JsonProcessTemplateRepositoryTest {
         assertEquals("TestEvent", taskDataCompleted.getSourceMessage());
         assertEquals(Set.of("foo"), taskDataCompleted.getMessageDataKeys());
 
-        Optional<MilestoneCondition> customMilestoneCondition = template.getMilestoneConditionByMilestoneName("BorderCrossed");
-        assertTrue(customMilestoneCondition.isPresent());
-        assertTrue(customMilestoneCondition.get() instanceof TestMilestoneCondition);
-
-        Optional<MilestoneCondition> multiTaskCompletedMilestoneCondition = template.getMilestoneConditionByMilestoneName("MultiTasks");
-        assertTrue(multiTaskCompletedMilestoneCondition.isPresent());
-        assertTrue(multiTaskCompletedMilestoneCondition.get() instanceof TasksCompletedMilestoneCondition);
-        TasksCompletedMilestoneCondition multiTasksCondition = (TasksCompletedMilestoneCondition) multiTaskCompletedMilestoneCondition.get();
-        assertEquals(Set.of("completedByDomainEvent"), multiTasksCondition.getTaskNames());
-
         assertEquals(2, template.getProcessCompletionConditions().size());
-        assertTrue(template.getProcessCompletionConditions().get(0) instanceof AllTasksInFinalStateProcessCompletionCondition);
-        assertTrue(template.getProcessCompletionConditions().get(1) instanceof MessageProcessCompletionCondition);
+        assertInstanceOf(AllTasksInFinalStateProcessCompletionCondition.class, template.getProcessCompletionConditions().get(0));
+        assertInstanceOf(MessageProcessCompletionCondition.class, template.getProcessCompletionConditions().get(1));
         MessageProcessCompletionCondition messageProcessCompletionCondition = (MessageProcessCompletionCondition) template.getProcessCompletionConditions().get(1);
         assertEquals("TestEvent4", messageProcessCompletionCondition.getMessageName());
         assertEquals(ProcessCompletionConclusion.CANCELLED, messageProcessCompletionCondition.getConclusion());
         assertThat(messageProcessCompletionCondition.getName()).isEqualTo("Cancelled because of TestEvent4");
 
         assertEquals(2, template.getProcessSnapshotConditions().size());
-        assertTrue(template.getProcessSnapshotConditions().get(0) instanceof TestProcessSnapshotCondition);
-        assertTrue(template.getProcessSnapshotConditions().get(1) instanceof ProcessCompletionProcessSnapshotCondition);
+        assertInstanceOf(TestProcessSnapshotCondition.class, template.getProcessSnapshotConditions().get(0));
+        assertInstanceOf(ProcessCompletionProcessSnapshotCondition.class, template.getProcessSnapshotConditions().get(1));
         ProcessCompletionProcessSnapshotCondition completionSnapshotCondition = (ProcessCompletionProcessSnapshotCondition) template.getProcessSnapshotConditions().get(1);
         assertNull(completionSnapshotCondition.getTriggeringConclusion());
 
@@ -162,16 +157,16 @@ class JsonProcessTemplateRepositoryTest {
         MessageReference event1 = messageReferences.getFirst();
         assertEquals("TestEvent", event1.getMessageName());
         assertEquals("test.topic", event1.getTopicName());
-        assertTrue(event1.getCorrelationProvider() instanceof TestCorrelationProvider);
+        assertInstanceOf(TestCorrelationProvider.class, event1.getCorrelationProvider());
         // TestEvent 2
         MessageReference event2 = messageReferences.get(1);
-        assertTrue(event2.getCorrelationProvider() instanceof MessageProcessIdCorrelationProvider);
+        assertInstanceOf(MessageProcessIdCorrelationProvider.class, event2.getCorrelationProvider());
         // Test Event 3
         MessageReference event3 = messageReferences.get(2);
-        assertTrue(event3.getPayloadExtractor() instanceof TestPayloadExtractor);
+        assertInstanceOf(TestPayloadExtractor.class, event3.getPayloadExtractor());
         // Test Event 4
         MessageReference event4 = messageReferences.get(3);
-        assertTrue(event4.getReferenceExtractor() instanceof TestReferenceExtractor);
+        assertInstanceOf(TestReferenceExtractor.class, event4.getReferenceExtractor());
     }
 
     @Test

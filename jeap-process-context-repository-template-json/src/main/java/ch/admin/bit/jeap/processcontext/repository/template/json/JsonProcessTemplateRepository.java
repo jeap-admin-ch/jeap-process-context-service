@@ -98,12 +98,6 @@ class JsonProcessTemplateRepository implements ProcessTemplateRepository {
 
         });
 
-        processTemplate.getMilestoneNames().forEach(milestoneName ->
-        {
-            log.info("Validating milestoneName {}", milestoneName);
-            translateService.translateMilestoneName(processTemplate.getName(), milestoneName);
-        });
-
         processTemplate.getProcessCompletionConditions().forEach(completionCondition ->
         {
             if (completionCondition instanceof MessageProcessCompletionCondition messageProcessCompletionCondition) {

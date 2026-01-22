@@ -5,28 +5,22 @@ import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
-import ch.admin.bit.jeap.processcontext.plugin.api.condition.MilestoneCondition;
 import com.fasterxml.uuid.Generators;
 import lombok.experimental.UtilityClass;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 @UtilityClass
 @SuppressWarnings("java:S115") // constant names deliberately kept lowercase
 public class ProcessInstanceStubs {
     public final String task = "task";
-    public final String milestone = "milestone";
-    public final String neverReachedMilestone = "neverReachedMilestone";
     public final String event = "event";
-
-    private final MilestoneCondition alwaysTrueMilestoneCondition = processContext -> true;
-    private final MilestoneCondition neverTrueMilestoneCondition = processContext -> false;
 
     public ProcessInstance createProcessWithSingleTaskInstance() {
         return createProcessWithSingleTaskInstance("template", emptySet());
@@ -43,20 +37,19 @@ public class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(singletonList(
                         taskType))
-                .milestones(emptyMap())
                 .build();
         return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processData);
     }
 
-    public ProcessInstance createProcessWithSingleTaskInstanceAndReachedMilestoneAndEvent() {
-        return createProcessWithSingleTaskInstanceAndReachedMilestoneAndEvent(emptySet());
+    public ProcessInstance createProcessWithSingleTaskInstanceAndEvent() {
+        return createProcessWithSingleTaskInstanceAndEvent(emptySet());
     }
 
-    public ProcessInstance createProcessWithSingleTaskInstanceAndReachedMilestoneAndEvent(Set<ProcessData> processData) {
-        return createProcessWithSingleTaskInstanceAndReachedMilestoneAndEventWithAdditionalMessages("template", Set.of(), processData, List.of());
+    public ProcessInstance createProcessWithSingleTaskInstanceAndEvent(Set<ProcessData> processData) {
+        return createProcessWithSingleTaskInstanceAndEventWithAdditionalMessages("template", Set.of(), processData, List.of());
     }
 
-    public ProcessInstance createProcessWithSingleTaskInstanceAndReachedMilestoneAndEventWithAdditionalMessages(
+    public ProcessInstance createProcessWithSingleTaskInstanceAndEventWithAdditionalMessages(
             String templateName, Set<TaskData> taskData, Set<ProcessData> processData, List<Message> additionalMessages) {
         TaskType taskType = TaskType.builder()
                 .name(task)
@@ -69,9 +62,6 @@ public class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(singletonList(
                         taskType))
-                .milestones(Map.of(
-                        milestone, alwaysTrueMilestoneCondition,
-                        neverReachedMilestone, neverTrueMilestoneCondition))
                 .build();
         ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processData);
         Message message = Message.messageBuilder()
@@ -85,16 +75,7 @@ public class ProcessInstanceStubs {
                 .build();
         processInstance.addMessage(message);
         additionalMessages.forEach(processInstance::addMessage);
-        processInstance.evaluateReachedMilestones();
         return processInstance;
-    }
-
-    public Milestone createMilestone(String name, boolean reached) {
-        Milestone milestone = Milestone.createNew(name, alwaysTrueMilestoneCondition, createProcessWithSingleTaskInstance());
-        if (reached) {
-            milestone.evaluateIfReached(null);
-        }
-        return milestone;
     }
 
     public TaskInstance createTaskInstance(String name, int index, String originTaskId) {

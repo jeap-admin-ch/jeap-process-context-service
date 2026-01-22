@@ -86,16 +86,6 @@ class TranslateServiceTest {
     }
 
     @Test
-    void translateMilestoneName() {
-        TranslateService translateService = new TranslateService();
-        Map<String, String> labels = translateService.translateMilestoneName(processName, "myMilestone");
-        assertThat(labels)
-                .containsEntry("de", "[de]My Milestone")
-                .containsEntry("fr", "[fr]My Milestone")
-                .containsEntry("it", "[it]My Milestone");
-    }
-
-    @Test
     void translateTaskTypeName() {
         TranslateService translateService = new TranslateService();
         Map<String, String> labels = translateService.translateTaskTypeName(processName, "myTaskName");

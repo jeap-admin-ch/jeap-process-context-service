@@ -106,48 +106,6 @@ class ProcessMessageServiceTest {
     }
 
     @Test
-    void reactToMilestoneReached_shouldProduceEvent() {
-        String originProcessId = "originProcessId";
-        List<ProcessEvent> previouslyProducedEvents = List.of(ProcessEvent.createProcessStarted(originProcessId));
-        String milestone1 = "milestone-1";
-        String milestone2 = "milestone-2";
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoReachedMilestonesAndOneUnreached(milestone1, milestone2);
-        doReturn(Optional.of(processInstance)).when(processInstanceQueryRepository).findByOriginProcessIdWithoutLoadingMessages(originProcessId);
-        doReturn(previouslyProducedEvents).when(processEventRepository).findByOriginProcessId(originProcessId);
-        doNothing().when(processEventRepository).saveAll(processEventsCaptor.capture());
-
-        target.reactToProcessStateChange(originProcessId);
-
-        List<ProcessEvent> processEvents = processEventsCaptor.getValue();
-        assertEquals(2, processEvents.size());
-        assertSame(EventType.MILESTONE_REACHED, processEvents.get(0).getEventType());
-        assertSame(EventType.MILESTONE_REACHED, processEvents.get(1).getEventType());
-        verify(processInstanceEventProducer).produceProcessMilestoneReachedEventSynchronously(originProcessId, milestone1);
-        verify(processInstanceEventProducer).produceProcessMilestoneReachedEventSynchronously(originProcessId, milestone2);
-    }
-
-    @Test
-    void reactToMilestoneReached_shouldNotProduceEventIfAlreadyProduced() {
-        String originProcessId = "originProcessId";
-        String milestone1 = "milestone-1";
-        String milestone2 = "milestone-2";
-        List<ProcessEvent> previouslyProducedEvents = List.of(
-                ProcessEvent.createProcessStarted(originProcessId),
-                ProcessEvent.createMilestoneReached(originProcessId, milestone1));
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoReachedMilestonesAndOneUnreached(milestone1, milestone2);
-        doReturn(Optional.of(processInstance)).when(processInstanceQueryRepository).findByOriginProcessIdWithoutLoadingMessages(originProcessId);
-        doReturn(previouslyProducedEvents).when(processEventRepository).findByOriginProcessId(originProcessId);
-        doNothing().when(processEventRepository).saveAll(processEventsCaptor.capture());
-
-        target.reactToProcessStateChange(originProcessId);
-
-        List<ProcessEvent> processEvents = processEventsCaptor.getValue();
-        assertEquals(1, processEvents.size());
-        assertSame(EventType.MILESTONE_REACHED, processEvents.get(0).getEventType());
-        verify(processInstanceEventProducer).produceProcessMilestoneReachedEventSynchronously(originProcessId, milestone2);
-    }
-
-    @Test
     void reactToAddedRelation_shouldProduceEvent() {
         String originProcessId = "originProcessId";
         List<ProcessEvent> previouslyProducedEvents = List.of(ProcessEvent.createProcessStarted(originProcessId));

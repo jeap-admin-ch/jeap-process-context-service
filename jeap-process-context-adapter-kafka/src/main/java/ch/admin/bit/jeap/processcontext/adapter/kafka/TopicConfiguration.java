@@ -25,7 +25,6 @@ import java.util.concurrent.ExecutionException;
 public class TopicConfiguration {
     public static final String PROCESS_INSTANCE_CREATED_EVENT_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-instance-created}";
     public static final String PROCESS_INSTANCE_COMPLETED_EVENT_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-instance-completed}";
-    public static final String PROCESS_MILESTONE_REACHED_EVENT_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-milestone-reached}";
     public static final String PROCESS_OUTDATED_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-outdated-internal}";
     public static final String PROCESS_STATE_CHANGED_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-changed-internal}";
     public static final String CREATE_PROCESS_INSTANCE_TOPIC_NAME = "${jeap.processcontext.kafka.topic.create-process-instance}";
@@ -52,11 +51,6 @@ public class TopicConfiguration {
      * Name of topic where process instance completed events will be published
      */
     private String processInstanceCompleted;
-
-    /**
-     * Name of topic where process milestone reached events will be published
-     */
-    private String processMilestoneReached;
 
     /**
      * Name of topic where create process instance commands will be published
@@ -90,7 +84,6 @@ public class TopicConfiguration {
                         topicConfiguration.getProcessOutdatedInternal(),
                         topicConfiguration.getProcessInstanceCreated(),
                         topicConfiguration.getProcessInstanceCompleted(),
-                        topicConfiguration.getProcessMilestoneReached(),
                         topicConfiguration.getCreateProcessInstance(),
                         eventProcessingFailedTopicName));
                 if (processTemplateRepository.hasProcessSnapshotsConfigured()) {
@@ -130,11 +123,6 @@ public class TopicConfiguration {
         @Bean
         public NewTopic processInstanceCompletedTopic() {
             return new NewTopic(topicConfiguration.getProcessInstanceCompleted(), 1, (short) 1);
-        }
-
-        @Bean
-        public NewTopic processMilestoneReachedTopic() {
-            return new NewTopic(topicConfiguration.getProcessMilestoneReached(), 1, (short) 1);
         }
 
         @Bean

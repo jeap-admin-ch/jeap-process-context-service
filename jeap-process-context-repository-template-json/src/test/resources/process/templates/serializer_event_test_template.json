@@ -104,22 +104,6 @@
       ]
     }
   ],
-  "milestones": [
-    {
-      "name": "BorderCrossed",
-      "reachedWhen": {
-        "condition": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestMilestoneCondition"
-      }
-    },
-    {
-      "name": "MultiTasks",
-      "reachedWhen": {
-        "tasksCompleted": [
-          "completedByDomainEvent"
-        ]
-      }
-    }
-  ],
   "processData": [
     {
       "key": "processDataKey",

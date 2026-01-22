@@ -18,7 +18,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
                 "jeap.processcontext.kafka.topic.process-outdated-internal=outdated",
                 "jeap.processcontext.kafka.topic.process-instance-created=process-instance-created",
                 "jeap.processcontext.kafka.topic.process-instance-completed=process-instance-completed",
-                "jeap.processcontext.kafka.topic.process-milestone-reached=process-milestone-reached",
                 "jeap.processcontext.kafka.topic.process-snapshot-created=process-snapshot-created",
                 "jeap.processcontext.kafka.topic.create-process-instance=create-process-instance",
                 "jeap.messaging.kafka.error-topic-name=error",

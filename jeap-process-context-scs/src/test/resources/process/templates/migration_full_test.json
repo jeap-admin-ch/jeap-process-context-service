@@ -27,14 +27,6 @@
       }
     }
   ],
-  "milestones": [
-    {
-      "name": "milestone",
-      "reachedWhen": {
-        "condition": "ch.admin.bit.jeap.processcontext.milestone.Task1And2CompletedCondition"
-      }
-    }
-  ],
   "processData": [
     {
       "key": "correlationProcessData",

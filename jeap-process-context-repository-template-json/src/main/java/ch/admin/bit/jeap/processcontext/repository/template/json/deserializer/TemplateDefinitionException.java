@@ -55,22 +55,6 @@ class TemplateDefinitionException extends RuntimeException {
         return new TemplateDefinitionException("Invalid property combination in task instantiation condition");
     }
 
-    static TemplateDefinitionException emptyMilestoneConditionDefinition() {
-        return new TemplateDefinitionException("Milestone with empty condition definition");
-    }
-
-    static TemplateDefinitionException invalidMilestoneConditionDefinition() {
-        return new TemplateDefinitionException("Invalid property combination in milestone condition definition");
-    }
-
-    static TemplateDefinitionException invalidTaskReferenceForMilestone(String referencedTaskName, String milestoneName) {
-        return new TemplateDefinitionException("Task " + referencedTaskName + " referenced in milestone " + milestoneName + " not found");
-    }
-
-    static TemplateDefinitionException missingMilestoneConditionDefinition(String milestoneName) {
-        return new TemplateDefinitionException("Milestone " + milestoneName + " is missing a reachedWhen condition");
-    }
-
     static TemplateDefinitionException undefinedEventReference(Set<String> undefinedEventNames) {
         return new TemplateDefinitionException("No domain event reference found for event(s) used in completion condition: " + undefinedEventNames);
     }

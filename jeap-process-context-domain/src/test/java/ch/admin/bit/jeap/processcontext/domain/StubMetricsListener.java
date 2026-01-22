@@ -45,11 +45,6 @@ public class StubMetricsListener implements MetricsListener {
     }
 
     @Override
-    public void milestoneReached(ProcessTemplate template, String milestoneName) {
-        // stub method
-    }
-
-    @Override
     public void processCompleted(ProcessTemplate template) {
         // stub method
     }

@@ -47,10 +47,6 @@ public class TranslateService {
         return retrieveLabelsWithDefault(processTemplateName + ".label", processTemplateLabel);
     }
 
-    public Map<String, String> translateMilestoneName(@NonNull String processTemplate, @NonNull String milestoneName) {
-        return retrieveLabels(processTemplate + ".milestone." + milestoneName);
-    }
-
     public Map<String, String> translateTaskTypeName(@NonNull String processTemplate, @NonNull String taskTypeName) {
         return retrieveLabels(processTemplate + TASK + taskTypeName);
     }

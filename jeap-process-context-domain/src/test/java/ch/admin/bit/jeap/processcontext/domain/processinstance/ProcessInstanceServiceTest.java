@@ -150,7 +150,6 @@ class ProcessInstanceServiceTest {
 
         verify(processInstance, never()).addMessage(any());
         verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
-        verify(processInstance, never()).evaluateReachedMilestones();
     }
 
     @Test
@@ -184,7 +183,7 @@ class ProcessInstanceServiceTest {
         target.updateProcessState(originProcessId);
 
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasksAndReachedMilestones(now);
+        verify(processInstance).evaluateCompletedTasks(now);
         verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
@@ -225,7 +224,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance).planDomainEventTask(eq(taskType), eq(null), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasksAndReachedMilestones(now);
+        verify(processInstance).evaluateCompletedTasks(now);
         verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
@@ -267,7 +266,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance).planDomainEventTask(eq(taskType), eq(null), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasksAndReachedMilestones(now);
+        verify(processInstance).evaluateCompletedTasks(now);
         verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
@@ -309,7 +308,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).planDomainEventTask(any(), any(), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasksAndReachedMilestones(now);
+        verify(processInstance).evaluateCompletedTasks(now);
         verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
@@ -351,7 +350,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(2)).planDomainEventTask(eq(taskType), anyString(), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasksAndReachedMilestones(now);
+        verify(processInstance).evaluateCompletedTasks(now);
         verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
@@ -394,7 +393,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(2)).planDomainEventTask(eq(taskType), anyString(), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasksAndReachedMilestones(now);
+        verify(processInstance).evaluateCompletedTasks(now);
         verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
@@ -437,7 +436,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).planDomainEventTask(eq(taskType), anyString(), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasksAndReachedMilestones(now);
+        verify(processInstance).evaluateCompletedTasks(now);
         verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
@@ -478,7 +477,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).planDomainEventTask(any(), any(), any(), eq(null));
         verify(processInstance).addObservationTask(eq(taskType), eq(null), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasksAndReachedMilestones(now);
+        verify(processInstance).evaluateCompletedTasks(now);
         verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
@@ -520,7 +519,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).planDomainEventTask(any(), any(), any(), eq(null));
         verify(processInstance).addObservationTask(eq(taskType), eq(null), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasksAndReachedMilestones(now);
+        verify(processInstance).evaluateCompletedTasks(now);
         verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
@@ -562,7 +561,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).planDomainEventTask(any(), any(), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasksAndReachedMilestones(now);
+        verify(processInstance).evaluateCompletedTasks(now);
         verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 

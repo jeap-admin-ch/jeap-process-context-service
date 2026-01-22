@@ -1,18 +1,22 @@
 package ch.admin.bit.jeap.processcontext.repository.template.json.deserializer;
 
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
-import ch.admin.bit.jeap.processcontext.plugin.api.condition.*;
+import ch.admin.bit.jeap.processcontext.plugin.api.condition.AllTasksInFinalStateProcessCompletionCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.condition.MessageProcessCompletionCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessCompletionProcessSnapshotCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.condition.TaskInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
 import ch.admin.bit.jeap.processcontext.plugin.api.event.AlwaysProcessInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageProcessIdCorrelationProvider;
 import ch.admin.bit.jeap.processcontext.plugin.api.event.NeverProcessInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.repository.template.json.TestProcessInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.repository.template.json.model.*;
-import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.*;
+import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider;
+import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestPayloadExtractor;
+import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestProcessSnapshotCondition;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,18 +52,6 @@ class ProcessTemplateDeserializerTest {
         processTemplateDefinition.setMessages(List.of(messageReferenceDefinitionOne, messageReference2));
         processTemplateDefinition.setTasks(List.of(taskTypeDefinition));
         processTemplateDefinition.setName("name");
-
-        MilestoneConditionDefinition milestoneConditionDefinition1 = new MilestoneConditionDefinition();
-        milestoneConditionDefinition1.setCondition(TestMilestoneCondition.class.getName());
-        MilestoneDefinition milestoneDefinition1 = new MilestoneDefinition();
-        milestoneDefinition1.setReachedWhen(milestoneConditionDefinition1);
-        milestoneDefinition1.setName("milestone1");
-        MilestoneDefinition milestoneDefinition2 = new MilestoneDefinition();
-        MilestoneConditionDefinition milestoneConditionDefinition2 = new MilestoneConditionDefinition();
-        milestoneConditionDefinition2.setTasksCompleted(Set.of("taskName"));
-        milestoneDefinition2.setReachedWhen(milestoneConditionDefinition2);
-        milestoneDefinition2.setName("milestone2");
-        processTemplateDefinition.setMilestones(List.of(milestoneDefinition1, milestoneDefinition2));
 
         // ProcessData
         ProcessDataSourceDefinition processDataSourceDefinition = new ProcessDataSourceDefinition();
@@ -128,13 +120,6 @@ class ProcessTemplateDeserializerTest {
         assertEquals("messageName", taskData.getSourceMessage());
         assertEquals(Set.of("foo","bar"), taskData.getMessageDataKeys());
 
-        assertEquals(2, template.getMilestoneNames().size());
-        Optional<MilestoneCondition> condition1 = template.getMilestoneConditionByMilestoneName("milestone1");
-        assertTrue(condition1.isPresent());
-        assertTrue(condition1.get() instanceof TestMilestoneCondition);
-        Optional<MilestoneCondition> condition2 = template.getMilestoneConditionByMilestoneName("milestone2");
-        assertTrue(condition2.isPresent());
-        assertTrue(condition2.get() instanceof TasksCompletedMilestoneCondition);
         assertEquals(1, template.getRelationPatterns().size());
         RelationPattern relationPattern = template.getRelationPatterns().getFirst();
         assertEquals(RelationPatternDefinition.JOIN_BY_ROLE, relationPattern.getJoinType());
@@ -322,42 +307,6 @@ class ProcessTemplateDeserializerTest {
                 deserializer::toProcessTemplate);
 
         assertTrue(ex.getMessage().contains("Unsupported relation join type 'UNSUPPORTED!'"), ex::getMessage);
-    }
-
-    @Test
-    void toTemplate_duplicateMilestoneNames() {
-        ProcessTemplateDefinition processTemplateDefinition = new ProcessTemplateDefinition();
-        processTemplateDefinition.setName("name");
-        MilestoneConditionDefinition milestoneConditionDefinition = new MilestoneConditionDefinition();
-        milestoneConditionDefinition.setCondition(TestMilestoneCondition.class.getName());
-        MilestoneDefinition milestoneDefinition = new MilestoneDefinition();
-        milestoneDefinition.setReachedWhen(milestoneConditionDefinition);
-        milestoneDefinition.setName("milestone");
-        processTemplateDefinition.setMilestones(List.of(milestoneDefinition, milestoneDefinition));
-        ProcessTemplateDeserializer deserializer = new ProcessTemplateDeserializer(processTemplateDefinition, "hash");
-
-        TemplateDefinitionException ex = assertThrows(TemplateDefinitionException.class,
-                deserializer::toProcessTemplate);
-
-        assertTrue(ex.getMessage().contains("Duplicate milestone"), ex::getMessage);
-    }
-
-    @Test
-    void toTemplate_invalidTaskReferenceForMilestone() {
-        ProcessTemplateDefinition processTemplateDefinition = new ProcessTemplateDefinition();
-        processTemplateDefinition.setName("name");
-        MilestoneConditionDefinition milestoneConditionDefinition = new MilestoneConditionDefinition();
-        milestoneConditionDefinition.setTasksCompleted(Set.of("t"));
-        MilestoneDefinition milestoneDefinition = new MilestoneDefinition();
-        milestoneDefinition.setReachedWhen(milestoneConditionDefinition);
-        milestoneDefinition.setName("m");
-        processTemplateDefinition.setMilestones(List.of(milestoneDefinition));
-        ProcessTemplateDeserializer deserializer = new ProcessTemplateDeserializer(processTemplateDefinition, "hash");
-
-        TemplateDefinitionException ex = assertThrows(TemplateDefinitionException.class,
-                deserializer::toProcessTemplate);
-
-        assertTrue(ex.getMessage().contains("Task t referenced in milestone m not found"), ex::getMessage);
     }
 
     @Test

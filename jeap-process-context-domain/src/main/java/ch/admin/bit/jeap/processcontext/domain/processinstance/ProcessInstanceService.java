@@ -207,7 +207,7 @@ public class ProcessInstanceService {
                     () -> updateProcessInstance(processInstance, update, messageReferenceMessageDTO, message));
             timestamp = message.getMessageCreatedAt();
         }
-        processInstance.evaluateCompletedTasksAndReachedMilestones(timestamp);
+        processInstance.evaluateCompletedTasks(timestamp);
         createProcessSnapshotIfTriggered(processInstance);
     }
 

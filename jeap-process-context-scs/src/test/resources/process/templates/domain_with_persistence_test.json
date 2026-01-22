@@ -24,7 +24,6 @@
       "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.RelationTestEventExtractor"
     }
   ],
-  "milestones": [],
   "processData": [
     {
       "key": "dossierKey",

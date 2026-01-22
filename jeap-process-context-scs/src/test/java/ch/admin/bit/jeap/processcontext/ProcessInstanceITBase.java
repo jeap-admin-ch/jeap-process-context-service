@@ -12,7 +12,6 @@ import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateQueryRepository;
 import ch.admin.bit.jeap.processcontext.event.process.instance.completed.ProcessInstanceCompletedEvent;
 import ch.admin.bit.jeap.processcontext.event.process.instance.created.ProcessInstanceCreatedEvent;
-import ch.admin.bit.jeap.processcontext.event.process.milestone.reached.ProcessMilestoneReachedEvent;
 import ch.admin.bit.jeap.processcontext.event.process.snapshot.created.ProcessSnapshotCreatedEvent;
 import ch.admin.bit.jeap.security.resource.semanticAuthentication.SemanticApplicationRole;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
@@ -51,7 +50,6 @@ import static org.mockito.Mockito.when;
         value = {
                 "jeap.processcontext.kafka.topic.process-instance-created=process-instance-created",
                 "jeap.processcontext.kafka.topic.process-instance-completed=process-instance-completed",
-                "jeap.processcontext.kafka.topic.process-milestone-reached=process-milestone-reached",
                 "jeap.processcontext.kafka.topic.process-snapshot-created=process-snapshot-created",
                 "jeap.processcontext.kafka.topic.process-outdated-internal=outdated",
                 "jeap.processcontext.kafka.topic.process-changed-internal=changed",
@@ -76,8 +74,6 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
     protected ProcessInstanceController processInstanceController;
     @Autowired
     protected ProcessUpdateQueryRepository processUpdateQueryRepository;
-    @Autowired
-    protected EventListenerStub<ProcessMilestoneReachedEvent> processMilestoneReachedEventListener;
     @Autowired
     protected EventListenerStub<ProcessInstanceCreatedEvent> processInstanceCreatedEventEventListener;
     @Autowired
@@ -120,7 +116,6 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
     void clearDatabase() {
         originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
         jdbcTemplate.update("DELETE FROM task_instance");
-        jdbcTemplate.update("DELETE FROM milestone");
         jdbcTemplate.update("DELETE FROM process_update");
         jdbcTemplate.update("DELETE FROM process_event");
         jdbcTemplate.update("DELETE FROM process_instance_process_data");
@@ -194,14 +189,6 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
                 .atMost(TIMEOUT)
                 .until(() -> processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getState(),
                         is(equalTo(ProcessState.COMPLETED.name())));
-    }
-
-    protected void assertMilestoneReachedEvents(String... milestones) {
-        for (String milestone : milestones) {
-            processMilestoneReachedEventListener
-                    .awaitEvent(e -> originProcessId.equals(e.getProcessId()) &&
-                            milestone.equals(e.getPayload().getMilestoneName()));
-        }
     }
 
     protected void assertSnapshotCreatedEvents(int... snapshotVersions) {

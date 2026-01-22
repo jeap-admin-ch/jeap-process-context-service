@@ -31,9 +31,6 @@ public class ProcessEvent extends MutableDomainEntity {
     @Getter
     private EventType eventType;
 
-    /**
-     * e.g. Milestone name
-     */
     @Getter
     private String name;
 
@@ -43,10 +40,6 @@ public class ProcessEvent extends MutableDomainEntity {
 
     static ProcessEvent createProcessCompleted(String originProcessId) {
         return new ProcessEvent(Generators.timeBasedEpochGenerator().generate(), originProcessId, EventType.PROCESS_COMPLETED, null);
-    }
-
-    static ProcessEvent createMilestoneReached(String originProcessId, String milestoneName) {
-        return new ProcessEvent(Generators.timeBasedEpochGenerator().generate(), originProcessId, EventType.MILESTONE_REACHED, milestoneName);
     }
 
     public static ProcessEvent createRelationAdded(String originProcessId, UUID idempotenceId) {

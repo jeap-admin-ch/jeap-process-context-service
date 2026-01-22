@@ -20,16 +20,6 @@
       "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.RelationTestEventExtractor"
     }
   ],
-  "milestones": [
-    {
-      "name": "MandatoryTaskCompleted",
-      "reachedWhen": {
-        "tasksCompleted": [
-          "mandatory"
-        ]
-      }
-    }
-  ],
   "processData": [
     {
       "key": "subjectKey",

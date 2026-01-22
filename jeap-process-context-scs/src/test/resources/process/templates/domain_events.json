@@ -45,31 +45,5 @@
       "topicName": "topic.test4",
       "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.TaskTest4EventCorrelationProvider"
     }
-  ],
-  "milestones": [
-    {
-      "name": "MandatoryTaskCompleted",
-      "reachedWhen": {
-        "tasksCompleted": "mandatory"
-      }
-    },
-    {
-      "name": "OptionalTaskCompleted",
-      "reachedWhen": {
-        "tasksCompleted": "optional"
-      }
-    },
-    {
-      "name": "AllMultipleTaskInstancesCompleted",
-      "reachedWhen": {
-        "tasksCompleted": "multiple"
-      }
-    },
-    {
-      "name": "Test1EventReceived",
-      "reachedWhen": {
-        "condition": "ch.admin.bit.jeap.processcontext.milestone.Test1EventReceivedCondition"
-      }
-    }
   ]
 }

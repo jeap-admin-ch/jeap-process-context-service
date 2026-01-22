@@ -7,7 +7,6 @@ export interface ProcessDTO {
 	createdAt: string;
 	modifiedAt: string;
 	tasks: TaskDTO[];
-	milestones: MilestoneDTO[];
 	messages: MessageDTO[];
 	relations: RelationDTO[];
 	processRelations: ProcessRelationDTO[];
@@ -84,12 +83,6 @@ export enum TaskState {
 	NOT_REQUIRED = "NOT_REQUIRED",
 	DELETED = "DELETED",
 	UNKNOWN = "UNKNOWN"
-}
-
-export interface MilestoneDTO {
-	name: string;
-	state: string;
-	reachedAt: string;
 }
 
 export interface MessageDTO {

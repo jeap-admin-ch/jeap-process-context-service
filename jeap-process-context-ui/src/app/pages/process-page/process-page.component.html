@@ -232,56 +232,6 @@
           </mat-panel-description>
         </mat-expansion-panel>
       }
-      <!-- Milestones-->
-      @if (!snapshot) {
-        <mat-expansion-panel togglePosition="before">
-          <mat-expansion-panel-header>
-            <mat-panel-title><h4>{{ 'i18n.process.milestone.title' | translate }}</h4></mat-panel-title>
-          </mat-expansion-panel-header>
-          <mat-panel-description>
-            @if (process.milestones.length) {
-              <table [dataSource]="process.milestones" class="ob-table ob-table-sm ob-table-cicd" mat-table>
-                <ng-container matColumnDef="name">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.task.name' | translate }}</th>
-                  <td *matCellDef="let row" mat-cell>{{ row?.labels[this.translate.currentLang] }}</td>
-                </ng-container>
-                <ng-container matColumnDef="reached">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.milestone.state' | translate }}</th>
-                  <td *matCellDef="let row" mat-cell>
-                    @if (row.state == 'NOT_REACHED') {
-                      <span><mat-icon class="custom-icon-style" style="color: #006699"
-                      svgIcon="chevron-line-right"></mat-icon></span>
-                    }
-                    @if (row.state == 'REACHED') {
-                      <span><mat-icon class="custom-icon-style" style="color: #00813a"
-                      svgIcon="checkmark-circle"></mat-icon></span>
-                    }
-                    @if (row.state == 'UNKNOWN') {
-                      <span><mat-icon class="custom-icon-style" style="color: #b4b4b4"
-                      svgIcon="help-circle"></mat-icon></span>
-                    }
-                    @if (row.state == 'DELETED') {
-                      <span><mat-icon class="custom-icon-style" style="color: #de3510" svgIcon="cancel-circle"></mat-icon></span>
-                    }
-                    {{ 'i18n.process.milestone.state.' + row.state | translate }}
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="reachedAt">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.milestone.reachedAt' | translate }}</th>
-                  <td *matCellDef="let row"
-                    mat-cell>{{ row.reachedAt ? (row.reachedAt | date:'dd.MM.yyyy HH:mm:ss') : '-' }}
-                  </td>
-                </ng-container>
-                <tr *matHeaderRowDef="['name','reached','reachedAt']" mat-header-row></tr>
-                <tr *matRowDef="let row; columns: ['name','reached','reachedAt'];" mat-row></tr>
-              </table>
-            }
-            @if (process.milestones.length == 0) {
-              <p>{{ 'i18n.none' | translate }}</p>
-            }
-          </mat-panel-description>
-        </mat-expansion-panel>
-      }
       <!-- Relations -->
       @if (!snapshot) {
         <mat-expansion-panel togglePosition="before">

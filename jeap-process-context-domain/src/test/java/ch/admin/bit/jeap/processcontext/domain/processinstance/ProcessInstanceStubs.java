@@ -3,16 +3,13 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
-import ch.admin.bit.jeap.processcontext.plugin.api.condition.MilestoneCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessSnapshotCondition;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.TaskState;
 import com.fasterxml.uuid.Generators;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,9 +24,6 @@ public final class ProcessInstanceStubs {
     static final String dynamicTaskName = "dynamic";
     static final String task1 = "task1";
     static final String task2 = "task2";
-    static final String milestone1 = "milestone1";
-    static final String milestone2 = "milestone2";
-    static final String milestoneDone = "milestoneDone";
 
     public static ProcessInstance createSimpleProcess() {
         ProcessTemplate processTemplate = createSimpleProcessTemplate();
@@ -46,7 +40,6 @@ public final class ProcessInstanceStubs {
                 .name(template)
                 .templateHash("hash")
                 .taskTypes(List.of(taskType))
-                .milestones(Map.of())
                 .build();
     }
 
@@ -60,7 +53,6 @@ public final class ProcessInstanceStubs {
                 .name("template")
                 .templateHash("hash")
                 .taskTypes(List.of(taskType))
-                .milestones(Map.of())
                 .build();
         ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, Set.of());
         processInstance.getTasks().getFirst().complete(ZonedDateTime.now());
@@ -80,7 +72,6 @@ public final class ProcessInstanceStubs {
                 .name("template")
                 .templateHash("hash")
                 .taskTypes(List.of(taskType))
-                .milestones(Map.of(milestone1, processContext -> true))
                 .build();
         ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, Set.of());
         processInstance.addMessage(Message.messageBuilder()
@@ -105,29 +96,8 @@ public final class ProcessInstanceStubs {
                 .name("template")
                 .templateHash("hash")
                 .taskTypes(List.of(taskType))
-                .milestones(Map.of(milestone1, processContext -> true))
                 .build();
         return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, Set.of());
-    }
-
-    public static ProcessInstance createProcessWithTwoReachedMilestonesAndOneUnreached(String milestoneName1, String milestoneName2) {
-        TaskType taskType = TaskType.builder()
-                .name(singleTaskName)
-                .lifecycle(TaskLifecycle.STATIC)
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .build();
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name("template")
-                .templateHash("hash")
-                .taskTypes(List.of(taskType))
-                .milestones(
-                        Map.of(milestoneName1, processContext -> true,
-                                milestoneName2, processContext -> true,
-                                "unreachedMilestone", processContext -> false))
-                .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, Set.of());
-        processInstance.evaluateReachedMilestones();
-        return processInstance;
     }
 
     public static ProcessInstance createProcessWithRelation() {
@@ -140,7 +110,6 @@ public final class ProcessInstanceStubs {
                 .name("template")
                 .templateHash("hash")
                 .taskTypes(List.of(taskType))
-                .milestones(Map.of())
                 .processDataTemplates(List.of(ProcessDataTemplate.builder()
                         .key("targetKeyName")
                         .sourceMessageName("sourceEventName")
@@ -228,46 +197,6 @@ public final class ProcessInstanceStubs {
         processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-1", ZonedDateTime.now(), null);
         processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-2", ZonedDateTime.now(), null);
         return processInstance;
-    }
-
-    /**
-     * Creates a process instance stub with
-     * <ul>
-     *     Task task1
-     *     Task task2
-     *     Milestone milestone1, reached when task1 is complete
-     *     Milestone milestone2, reached when task2 is complete
-     *     Milestone milestoneDepends, reached when milestone1 and milestone 2 are reached
-     * </ul>
-     */
-    static ProcessInstance createProcessWithTwoTasksAndThreeMilestoneConditions() {
-        TaskType first = TaskType.builder()
-                .name(task1)
-                .lifecycle(TaskLifecycle.STATIC)
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .completedByDomainEvent("messageName")
-                .build();
-        TaskType second = TaskType.builder()
-                .name(task2)
-                .lifecycle(TaskLifecycle.STATIC)
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .completedByDomainEvent("messageName2")
-                .build();
-        MilestoneCondition condition1 = processContext -> processContext.isTasksInState(task1, TaskState.COMPLETED);
-        MilestoneCondition condition2 = processContext -> processContext.isTasksInState(task2, TaskState.COMPLETED);
-        MilestoneCondition dependentCondition = processContext ->
-                processContext.isTasksInState(task2, TaskState.COMPLETED) &&
-                        processContext.isTasksInState(task1, TaskState.COMPLETED);
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name("template")
-                .templateHash("hash")
-                .taskTypes(List.of(first, second))
-                .milestones(Map.of(
-                        milestone1, condition1,
-                        milestone2, condition2,
-                        milestoneDone, dependentCondition))
-                .build();
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, emptySet());
     }
 
     /**

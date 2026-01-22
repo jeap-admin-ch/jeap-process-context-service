@@ -31,7 +31,6 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
     @Override
     public void deleteAllById(Set<UUID> ids) {
         processInstanceJpaRepository.deleteEventReferenceByProcessInstanceIds(ids);
-        processInstanceJpaRepository.deleteMilestoneByProcessInstanceIds(ids);
         processInstanceJpaRepository.deleteProcessDataByProcessInstanceIds(ids);
         processInstanceJpaRepository.deleteProcessRelationsByProcessInstanceIds(ids);
         processInstanceJpaRepository.deleteProcessInstanceProcessRelationsByProcessInstanceIds(ids);

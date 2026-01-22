@@ -34,14 +34,6 @@ public class NotFoundException extends RuntimeException {
                 originProcessId), false);
     }
 
-    static Supplier<NotFoundException> milestoneNotFound(String milestoneName, String processTemplateName, String originProcessId) {
-        return () -> new NotFoundException(format(
-                "Milestone %s not found in process template %s while loading process %s",
-                milestoneName,
-                processTemplateName,
-                originProcessId), false);
-    }
-
     static Supplier<NotFoundException> taskNotFoundInProcessContext(UUID id, String originProcessId) {
         return () -> new NotFoundException(format(
                 "Task with ID %s not found in process context for process %s",

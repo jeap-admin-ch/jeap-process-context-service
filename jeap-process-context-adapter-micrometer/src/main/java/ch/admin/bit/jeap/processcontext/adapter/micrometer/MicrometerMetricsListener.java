@@ -25,7 +25,6 @@ public class MicrometerMetricsListener implements MetricsListener {
     private static final String PCS_COMMAND_RECEIVED = "pcs_commands_received";
     private static final String PCS_PROCESS_UPDATE_PROCESSED = "pcs_process_updates_processed";
     private static final String PCS_PROCESS_EVENT_CREATED = "pcs_process_events_created";
-    private static final String PCS_MILESTONE_REACHED = "pcs_milestones_reached";
     private static final String PCS_PROCESS_COMPLETED = "pcs_processes_completed";
     private static final String PCS_SNAPSHOT_CREATED = "pcs_snapshot_created";
 
@@ -87,16 +86,6 @@ public class MicrometerMetricsListener implements MetricsListener {
                 .description("Created process events")
                 .tag("process_template", template.getName())
                 .tag("event_type", eventType.name())
-                .register(meterRegistry)
-                .increment();
-    }
-
-    @Override
-    public void milestoneReached(ProcessTemplate template, String milestoneName) {
-        Counter.builder(PCS_MILESTONE_REACHED)
-                .description("Reached milestones")
-                .tag("process_template", template.getName())
-                .tag("milestone_name", milestoneName)
                 .register(meterRegistry)
                 .increment();
     }

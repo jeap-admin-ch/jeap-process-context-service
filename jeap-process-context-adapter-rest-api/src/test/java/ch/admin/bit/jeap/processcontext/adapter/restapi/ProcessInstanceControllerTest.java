@@ -7,7 +7,6 @@ import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsS
 import ch.admin.bit.jeap.security.resource.semanticAuthentication.SemanticApplicationRole;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.JeapAuthenticationTestTokenBuilder;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,14 +72,8 @@ class ProcessInstanceControllerTest {
     @Test
     void testGetProcessInstanceByOriginProcessId_whenFound_thenReturnProcessInstanceResource() throws Exception {
         String originProcessId = "123";
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstanceAndReachedMilestoneAndEvent();
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstanceAndEvent();
         doReturn(Optional.of(processInstance)).when(repository).findByOriginProcessIdLoadingMessages(originProcessId);
-
-        Milestone milestone1 = processInstance.getMilestones().stream()
-                .filter(Milestone::isReached).findFirst().orElseThrow();
-        Milestone milestone2 = processInstance.getMilestones().stream()
-                .filter(ms -> !ms.isReached()).findFirst().orElseThrow();
-        String milestone1ReachedAt = formatDateTime(milestone1);
 
         Map<String, String> name = Map.of("de", processInstance.getProcessTemplate().getName(),
                 "fr", processInstance.getProcessTemplate().getName(),
@@ -100,13 +93,6 @@ class ProcessInstanceControllerTest {
                 .andExpect(jsonPath("$.tasks[0].lifecycle", is("STATIC")))
                 .andExpect(jsonPath("$.tasks[0].cardinality", is("SINGLE_INSTANCE")))
                 .andExpect(jsonPath("$.tasks[0].state", is("PLANNED")))
-                .andExpect(jsonPath("$.milestones", hasSize(2)))
-                .andExpect(jsonPath("$.milestones[0].name", is(milestone1.getName())))
-                .andExpect(jsonPath("$.milestones[0].state", is(milestone1.getState().name())))
-                .andExpect(jsonPath("$.milestones[0].reachedAt", is(milestone1ReachedAt)))
-                .andExpect(jsonPath("$.milestones[1].name", is(milestone2.getName())))
-                .andExpect(jsonPath("$.milestones[1].state", is(milestone2.getState().name())))
-                .andExpect(jsonPath("$.milestones[1].reachedAt", nullValue()))
                 .andExpect(jsonPath("$.messages[0].name", is(ProcessInstanceStubs.event)))
                 .andExpect(jsonPath("$.messages[0].relatedOriginTaskIds", hasSize(2)));
     }
@@ -173,10 +159,6 @@ class ProcessInstanceControllerTest {
 
     private JeapAuthenticationToken createAuthenticationForUserRoles(SemanticApplicationRole... userroles) {
         return JeapAuthenticationTestTokenBuilder.create().withUserRoles(userroles).build();
-    }
-
-    private String formatDateTime(Milestone milestone) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(milestone.getReachedAt()).replace("\"", "");
     }
 
     @Test

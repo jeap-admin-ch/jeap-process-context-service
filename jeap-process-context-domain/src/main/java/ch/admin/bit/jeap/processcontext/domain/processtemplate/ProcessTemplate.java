@@ -1,7 +1,6 @@
 package ch.admin.bit.jeap.processcontext.domain.processtemplate;
 
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.AllTasksInFinalStateProcessCompletionCondition;
-import ch.admin.bit.jeap.processcontext.plugin.api.condition.MilestoneCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessCompletionCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessSnapshotCondition;
 import lombok.Builder;
@@ -39,8 +38,6 @@ public final class ProcessTemplate {
 
     private final Map<String, TaskType> taskTypesByName;
 
-    private final Map<String, MilestoneCondition> milestones;
-
     private final List<ProcessCompletionCondition> processCompletionConditions;
 
     private final List<ProcessDataTemplate> processDataTemplates;
@@ -62,7 +59,6 @@ public final class ProcessTemplate {
     private ProcessTemplate(@NonNull String name, @NonNull String templateHash,
                             @NonNull List<TaskType> taskTypes,
                             List<MessageReference> messageReferences,
-                            Map<String, MilestoneCondition> milestones,
                             List<ProcessDataTemplate> processDataTemplates,
                             String relationSystemId,
                             List<RelationPattern> relationPatterns,
@@ -77,7 +73,6 @@ public final class ProcessTemplate {
         this.taskTypes = taskTypes;
         this.taskTypesByName = taskTypes.stream()
                 .collect(toMap(TaskType::getName, Function.identity()));
-        this.milestones = Objects.requireNonNullElseGet(milestones, Collections::emptyMap);
         this.messageReferences = Objects.requireNonNullElseGet(messageReferences, List::of);
         this.processDataTemplates = Objects.requireNonNullElseGet(processDataTemplates, List::of);
         this.processDataTemplatesBySourceEventName = this.processDataTemplates.stream()
@@ -105,14 +100,6 @@ public final class ProcessTemplate {
 
     public Optional<TaskType> getTaskTypeByName(String taskTypeName) {
         return Optional.ofNullable(taskTypesByName.get(taskTypeName));
-    }
-
-    public Set<String> getMilestoneNames() {
-        return Set.copyOf(milestones.keySet());
-    }
-
-    public Optional<MilestoneCondition> getMilestoneConditionByMilestoneName(String name) {
-        return Optional.ofNullable(milestones.get(name));
     }
 
     public List<ProcessCompletionCondition> getProcessCompletionConditions() {

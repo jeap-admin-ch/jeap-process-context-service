@@ -80,7 +80,7 @@ public class HouseKeepingService {
         return resultPage.hasNext();
     }
 
-    // Process Instances (process_instance, process_instance_process_data, process_instance_relations, event_reference, milestone, task_instance)
+    // Process Instances (process_instance, process_instance_process_data, process_instance_relations, event_reference, task_instance)
     private void deleteProcessInstances(Set<UUID> ids) {
         log.info("Housekeeping: delete processInstances...");
         if (!ids.isEmpty()) {

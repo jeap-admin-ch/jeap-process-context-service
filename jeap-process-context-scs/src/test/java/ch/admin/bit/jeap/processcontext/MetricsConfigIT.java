@@ -53,7 +53,6 @@ class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessId);
         assertProcessInstanceCompletedEvent(originProcessId);
-        assertMilestoneReachedEvents("MandatoryTaskCompleted");
         assertSnapshotCreatedEvents(1);
         Awaitility.await()
                 .atMost(TIMEOUT)
@@ -67,7 +66,6 @@ class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
                 .statusCode(200)
                 .body(containsString("pcs_process_instances"))
                 .body(containsString("pcs_processes_completed_total"))
-                .body(containsString("pcs_milestones_reached_total"))
                 .body(containsString("pcs_snapshot_total"))
                 .body(containsString("pcs_process_events_total"))
                 .body(containsString("pcs_messages_received_total"))
@@ -82,13 +80,11 @@ class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
                 .body(containsString("jeap_pcs_late_correlate_message"))
                 .body(containsString("jeap_pcs_react_to_process_state_change"))
                 .body(containsString("jeap_pcs_produce_process_state_changed_events"))
-                .body(containsString("jeap_pcs_produce_milestone_events"))
                 .body(containsString("jeap_pcs_produce_relation_events"))
                 .body(containsString("jeap_pcs_produce_snapshot_events"))
                 .body(containsString("jeap_pcs_notify_relations_added"))
                 .body(containsString("jeap_pcs_produce_process_instance_created_event"))
                 .body(containsString("jeap_pcs_produce_process_instance_completed_event"))
-                .body(containsString("jeap_pcs_produce_process_milestone_reached_event"))
                 .body(containsString("jeap_pcs_produce_process_snapshot_created_event"))
                 .body(containsString("pcs_process_instances_total"));
     }

@@ -50,17 +50,6 @@ class ProcessTemplateUtils {
         }
     }
 
-    void validateTasksExist(ProcessTemplateDefinition templateDefinition, Set<String> referencedTaskNames, String milestoneName) {
-        Set<String> existingTasks = templateDefinition.getTasks().stream()
-                .map(TaskTypeDefinition::getName)
-                .collect(toSet());
-        referencedTaskNames.forEach(referencedTaskName -> {
-            if (!existingTasks.contains(referencedTaskName)) {
-                throw TemplateDefinitionException.invalidTaskReferenceForMilestone(referencedTaskName, milestoneName);
-            }
-        });
-    }
-
     static void validateEventName(List<MessageReferenceDefinition> events, List<ProcessDataDefinition> processDataDefinitions) {
          Set<String> eventNamesFromProcessData = processDataDefinitions.stream()
                  .map(processDataDefinition -> processDataDefinition.getSource().getMessage())

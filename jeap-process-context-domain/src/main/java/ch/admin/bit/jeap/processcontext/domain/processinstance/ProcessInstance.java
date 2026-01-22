@@ -4,7 +4,10 @@ import ch.admin.bit.jeap.processcontext.domain.MutableDomainEntity;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
-import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessDataTemplate;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationPattern;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessCompletionConditionResult;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessSnapshotConditionResult;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
@@ -90,9 +93,6 @@ public class ProcessInstance extends MutableDomainEntity {
     @Transient
     private List<MessageReferenceMessageDTO> messageReferenceMessageDTOS = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "processInstance")
-    private List<Milestone> milestones = new ArrayList<>();
-
     @Getter
     private int latestSnapshotVersion = 0;
 
@@ -117,7 +117,6 @@ public class ProcessInstance extends MutableDomainEntity {
     public static ProcessInstance startProcess(String originProcessId, ProcessTemplate processTemplate, Set<ProcessData> processData) {
         ProcessInstance processInstance = new ProcessInstance(originProcessId, processTemplate, processData);
         processInstance.planInitialTasks();
-        processInstance.createMilestones();
         return processInstance;
     }
 
@@ -128,13 +127,6 @@ public class ProcessInstance extends MutableDomainEntity {
 
     public void registerSnapshot(String snapshotName) {
         snapshotNames.add(snapshotName);
-    }
-
-    private void createMilestones() {
-        processTemplate.getMilestoneNames().forEach(milestoneName -> milestones.add(Milestone.createNew(milestoneName,
-                processTemplate.getMilestoneConditionByMilestoneName(milestoneName)
-                        .orElseThrow(NotFoundException.milestoneNotFound(milestoneName, processTemplateName, originProcessId)),
-                this)));
     }
 
     private void planInitialTasks() {
@@ -171,14 +163,6 @@ public class ProcessInstance extends MutableDomainEntity {
     }
 
     /**
-     * Create process context & apply all milestone conditions (unless the milestone has already been reached)
-     */
-    void evaluateReachedMilestones() {
-        ProcessContext processContext = ProcessContextFactory.createProcessContext(this);
-        milestones.forEach(milestone -> milestone.evaluateIfReached(processContext));
-    }
-
-    /**
      * Evaluate the snapshot conditions defined for this process and for every condition that
      * triggers a new snapshot return the name of the snapshot triggered.
      * @return The names of newly triggered snapshots as determined by the snapshot conditions.
@@ -205,17 +189,6 @@ public class ProcessInstance extends MutableDomainEntity {
 
     public List<TaskInstance> getOpenTasks() {
         return getTasks().stream().filter(t -> !t.getState().isFinalState()).toList();
-    }
-
-    public List<Milestone> getMilestones() {
-        return unmodifiableList(milestones);
-    }
-
-    public Set<String> getReachedMilestones() {
-        return milestones.stream()
-                .filter(Milestone::isReached)
-                .map(Milestone::getName)
-                .collect(toSet());
     }
 
     public List<MessageReferenceMessageDTO> getMessageReferences() {
@@ -275,7 +248,6 @@ public class ProcessInstance extends MutableDomainEntity {
         }
         this.processTemplate = processTemplate;
         tasks.forEach(task -> task.setTaskTypeFromTemplate(processTemplate));
-        milestones.forEach(milestone -> milestone.setMilestoneConditionFromTemplate(processTemplate));
     }
 
     private void updateProcessState() {
@@ -441,18 +413,10 @@ public class ProcessInstance extends MutableDomainEntity {
             this.deleteTaskInstancesForDeletedTaskTypes();
             this.planTaskInstancesForNewTaskTypes();
 
-            this.deleteMilestonesForDeletedMilestonesFromTemplate();
-            this.createNewMilestonesForNewMilestonesFromTemplate();
-
             this.updateTemplateHash();
 
-            this.evaluateCompletedTasksAndReachedMilestones(ZonedDateTime.now());
+            this.evaluateCompletedTasks(ZonedDateTime.now());
         }
-    }
-
-    void evaluateCompletedTasksAndReachedMilestones(ZonedDateTime timestamp) {
-        this.evaluateCompletedTasks(timestamp);
-        this.evaluateReachedMilestones();
     }
 
     private boolean isTemplateChanged() {
@@ -490,32 +454,6 @@ public class ProcessInstance extends MutableDomainEntity {
             } else {
                 log.info("Migration - Task '{}' does not need upfront planning.", taskName);
             }
-        }
-    }
-
-    private void deleteMilestonesForDeletedMilestonesFromTemplate() {
-        final List<Milestone> openMilestones = this.getMilestones().stream().filter(t -> !t.isReached()).toList();
-        log.debug("Migration - Found {} open milestones in processInstance '{}'", openMilestones.size(), this.getOriginProcessId());
-        final Set<String> allMilestones = this.getProcessTemplate().getMilestoneNames();
-        final List<Milestone> milestonesToDelete = openMilestones.stream().filter(openMilestone -> !allMilestones.contains(openMilestone.getName())).toList();
-        log.debug("Migration - Found {} open milestones to set as deleted", milestonesToDelete.size());
-        for (Milestone milestone : milestonesToDelete) {
-            log.info("Migration - Set State DELETED for Milestone '{}'", milestone.getName());
-            milestone.delete();
-        }
-    }
-
-    private void createNewMilestonesForNewMilestonesFromTemplate() {
-        final Set<String> milestonesFromInstance = this.getMilestones().stream().map(Milestone::getName).collect(Collectors.toUnmodifiableSet());
-        final Set<String> milestoneNames = this.getProcessTemplate().getMilestoneNames();
-        log.debug("Migration - Found {} milestones in process template '{}'", milestonesFromInstance.size(), this.getProcessTemplate().getName());
-        final Set<String> newMilestoneNames = milestoneNames.stream().filter(milestone -> !milestonesFromInstance.contains(milestone)).collect(Collectors.toUnmodifiableSet());
-        log.debug("Migration - Found {} new milestones", milestoneNames.size());
-        for (String newMilestone : newMilestoneNames) {
-            log.info("Migration - Create new milestone '{}'", newMilestone);
-            this.milestones.add(Milestone.createNewUnknown(newMilestone, this.getProcessTemplate().getMilestoneConditionByMilestoneName(newMilestone)
-                    .orElseThrow(NotFoundException.milestoneNotFound(newMilestone, processTemplate.getName(), this.getOriginProcessId())),
-                    this));
         }
     }
 

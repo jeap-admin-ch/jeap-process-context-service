@@ -7,14 +7,12 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskCardinality;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskLifecycle;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
-import ch.admin.bit.jeap.processcontext.plugin.api.condition.MilestoneCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessSnapshotCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessSnapshotConditionResult;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletion;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
 import com.fasterxml.uuid.Generators;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.lang.reflect.Field;
@@ -26,7 +24,6 @@ import static ch.admin.bit.jeap.processcontext.domain.processinstance.TaskState.
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 class ProcessInstanceTest {
 
@@ -42,12 +39,10 @@ class ProcessInstanceTest {
                 .lifecycle(TaskLifecycle.DYNAMIC)
                 .cardinality(TaskCardinality.MULTI_INSTANCE)
                 .build();
-        MilestoneCondition milestoneCondition = Mockito.mock(MilestoneCondition.class);
         ProcessTemplate processTemplate = ProcessTemplate.builder()
                 .name("template")
                 .templateHash("hash")
                 .taskTypes(List.of(mandatoryTaskType, multipleTaskType))
-                .milestones(Map.of("milestone", milestoneCondition))
                 .build();
 
         ProcessInstance processInstance = ProcessInstance.startProcess("id", processTemplate, emptySet());
@@ -58,10 +53,6 @@ class ProcessInstanceTest {
         assertEquals(processInstance, firstTask.getProcessInstance());
         assertEquals(mandatoryTaskType, firstTask.requireTaskType());
         assertEquals(PLANNED, firstTask.getState());
-        assertEquals(1, processInstance.getMilestones().size());
-        Milestone milestone = processInstance.getMilestones().getFirst();
-        assertEquals("milestone", milestone.getName());
-        assertFalse(milestone.isReached());
     }
 
     @Test
@@ -169,33 +160,6 @@ class ProcessInstanceTest {
     }
 
     @Test
-    void evaluateMilestones() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoTasksAndThreeMilestoneConditions();
-        assertEquals(3, processInstance.getMilestones().size());
-
-        // Initially, no milestones should be reached
-        processInstance.evaluateReachedMilestones();
-        assertEquals(3, processInstance.getMilestones().size());
-        assertNoMilestonesReached(processInstance);
-
-        // After completion of task 1, milestone 1 should be reached according to its condition
-        completeTask(processInstance, "1");
-        processInstance.evaluateReachedMilestones();
-        assertMilestonesReached(Set.of(ProcessInstanceStubs.milestone1), processInstance);
-
-        // After completion of task 2, milestone 2 should be reached according to its condition
-        // MilestoneDone, which depends on task 1 & 2 to be complete, should now be reached as well
-        completeTask(processInstance, "2", "messageName2");
-        processInstance.evaluateReachedMilestones();
-        Set<String> expectedMilestoneNames = Set.of(
-                ProcessInstanceStubs.milestone1,
-                ProcessInstanceStubs.milestone2,
-                ProcessInstanceStubs.milestoneDone);
-        assertMilestonesReached(expectedMilestoneNames, processInstance);
-        assertEquals(3, processInstance.getMilestones().size());
-    }
-
-    @Test
     void setProcessTemplate() throws Exception {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
         ProcessTemplate processTemplate = processInstance.getProcessTemplate();
@@ -216,15 +180,6 @@ class ProcessInstanceTest {
                 processInstance.setProcessTemplate(processInstance.getProcessTemplate()));
     }
 
-    private static void assertNoMilestonesReached(ProcessInstance processInstance) {
-        assertTrue(processInstance.getMilestones().stream().noneMatch(Milestone::isReached));
-    }
-
-    private static void assertMilestonesReached(Set<String> expectedMilestoneNames, ProcessInstance processInstance) {
-        Set<String> actualMilestoneNames = processInstance.getReachedMilestones();
-        assertEquals(expectedMilestoneNames, actualMilestoneNames);
-    }
-
     /**
      * Simulate empty template properties after loading the domain object from persistent state
      */
@@ -234,9 +189,6 @@ class ProcessInstanceTest {
         assertNull(processInstance.getProcessTemplate());
         for (TaskInstance task : processInstance.getTasks()) {
             setFieldToOptionalEmpty(task, "taskType");
-        }
-        for (Milestone milestone : processInstance.getMilestones()) {
-            setFieldToNull(milestone, "condition");
         }
     }
 
@@ -614,26 +566,6 @@ class ProcessInstanceTest {
     }
 
     @Test
-    void applyTemplateMigrationIfChanged_milestonesInTemplateChanged_oldMilestonesDeletedNewMilestonesAdded() {
-        ProcessInstance processInstance = createProcessWithOneMilestone();
-        Milestone milestoneDontTouch = Milestone.createNew("dont-touch-milestone", mock(MilestoneCondition.class), processInstance);
-        Milestone milestoneToDelete = Milestone.createNew("to-delete-milestone", mock(MilestoneCondition.class), processInstance);
-        List<Milestone> milestones = new ArrayList<>();
-        milestones.add(milestoneDontTouch);
-        milestones.add(milestoneToDelete);
-        ReflectionTestUtils.setField(processInstance, "processTemplateHash", "new");
-        ReflectionTestUtils.setField(processInstance, "milestones", milestones);
-
-        processInstance.applyTemplateMigrationIfChanged();
-
-        assertThat(processInstance.getMilestones()).hasSize(3);
-        assertThat((processInstance.getMilestones().stream().filter(t -> t.getName().equals(milestoneDontTouch.getName()) && t.getState() == MilestoneState.NOT_REACHED).count())).isEqualTo(1L);
-        assertThat((processInstance.getMilestones().stream().filter(t -> t.getName().equals(milestoneToDelete.getName()) && t.getState() == MilestoneState.DELETED).count())).isEqualTo(1L);
-        assertThat((processInstance.getMilestones().stream().filter(t -> t.getName().equals("new-added-milestone") && t.getState() == MilestoneState.UNKNOWN).count())).isEqualTo(1L);
-
-    }
-
-    @Test
     void testEvaluateSnapshotConditions() {
         ProcessSnapshotCondition alwaysTrueProcessSnapshotCondition = new AlwaysTrueProcessSnapshotCondition();
         ProcessInstance processInstance = createProcessWithProcessSnapshotCondition(alwaysTrueProcessSnapshotCondition);
@@ -684,23 +616,6 @@ class ProcessInstanceTest {
         return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processData);
     }
 
-    static ProcessInstance createProcessWithOneMilestone() {
-        Map<String, MilestoneCondition> milestones = new HashMap<>();
-        milestones.put("dont-touch-milestone", Mockito.mock(MilestoneCondition.class));
-        milestones.put("new-added-milestone", Mockito.mock(MilestoneCondition.class));
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name("template")
-                .templateHash("hash")
-                .taskTypes(List.of(TaskType.builder().name("dont-touch-task-type").cardinality(TaskCardinality.SINGLE_INSTANCE)
-                        .lifecycle(TaskLifecycle.STATIC).build()))
-                .milestones(milestones)
-                .build();
-        Set<ProcessData> processData = Set.of(
-                new ProcessData("key1", "value1"),
-                new ProcessData("key1", "value2"));
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processData);
-    }
-
     private TaskInstance createTaskInstance(String name, ProcessInstance processInstance, TaskState taskState) {
         final TaskInstance taskInstance = TaskInstance.createInitialTaskInstance(TaskType.builder().name(name)
                 .cardinality(TaskCardinality.SINGLE_INSTANCE).lifecycle(TaskLifecycle.STATIC).build(), processInstance, ZonedDateTime.now());
@@ -708,5 +623,4 @@ class ProcessInstanceTest {
         return taskInstance;
 
     }
-
 }

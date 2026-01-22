@@ -20,7 +20,6 @@ public class ProcessInstanceDTO {
     ZonedDateTime createdAt;
     ZonedDateTime modifiedAt;
     List<TaskInstanceDTO> tasks;
-    List<MilestoneDTO> milestones;
     List<MessageDTO> messages;
     List<ProcessDataDTO> processData;
     List<RelationDTO> relations;

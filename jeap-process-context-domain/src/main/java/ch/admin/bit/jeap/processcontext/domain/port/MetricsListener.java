@@ -33,8 +33,6 @@ public interface MetricsListener {
 
     void processEventCreated(ProcessTemplate template, EventType eventType);
 
-    void milestoneReached(ProcessTemplate template, String milestoneName);
-
     void processCompleted(ProcessTemplate template);
 
     void snapshotCreated(ProcessTemplate template);

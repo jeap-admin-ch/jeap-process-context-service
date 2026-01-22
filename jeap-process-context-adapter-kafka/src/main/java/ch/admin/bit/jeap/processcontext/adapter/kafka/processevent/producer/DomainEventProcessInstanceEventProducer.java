@@ -8,11 +8,9 @@ import ch.admin.bit.jeap.processcontext.adapter.kafka.TopicConfiguration;
 import ch.admin.bit.jeap.processcontext.domain.port.ProcessInstanceEventProducer;
 import ch.admin.bit.jeap.processcontext.event.ProcessInstanceCompletedEventBuilder;
 import ch.admin.bit.jeap.processcontext.event.ProcessInstanceCreatedEventBuilder;
-import ch.admin.bit.jeap.processcontext.event.ProcessMilestoneReachedEventBuilder;
 import ch.admin.bit.jeap.processcontext.event.ProcessSnapshotCreatedEventBuilder;
 import ch.admin.bit.jeap.processcontext.event.process.instance.completed.ProcessInstanceCompletedEvent;
 import ch.admin.bit.jeap.processcontext.event.process.instance.created.ProcessInstanceCreatedEvent;
-import ch.admin.bit.jeap.processcontext.event.process.milestone.reached.ProcessMilestoneReachedEvent;
 import ch.admin.bit.jeap.processcontext.event.process.snapshot.created.ProcessSnapshotCreatedEvent;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +25,6 @@ public class DomainEventProcessInstanceEventProducer implements ProcessInstanceE
 
     private static final String CREATED_EVENT_IDEMPOTENCE_SUFFIX = "-created";
     private static final String COMPLETED_EVENT_IDEMPOTENCE_SUFFIX = "-completed";
-    private static final String MILESTONE_REACHED_EVENT_IDEMPOTENCE_INFIX = "-milestone-reached-";
     private static final String SNAPSHOT_CREATED_EVENT_IDEMPOTENCE_INFIX = "-snapshot-created-";
 
     private final TopicConfiguration topicConfiguration;
@@ -59,20 +56,6 @@ public class DomainEventProcessInstanceEventProducer implements ProcessInstanceE
                 .build();
 
         sendEventSynchronously(completedEvent, topicConfiguration.getProcessInstanceCompleted());
-    }
-
-    @Override
-    @Timed(value = "jeap_pcs_produce_process_milestone_reached_event", percentiles = {0.5, 0.8, 0.95, 0.99})
-    public void produceProcessMilestoneReachedEventSynchronously(String originProcessId, String milestoneName) {
-        ProcessMilestoneReachedEvent milestoneReachedEvent = ProcessMilestoneReachedEventBuilder.create()
-                .idempotenceId(originProcessId + MILESTONE_REACHED_EVENT_IDEMPOTENCE_INFIX + milestoneName)
-                .processId(originProcessId)
-                .systemName(kafkaProperties.getSystemName())
-                .serviceName(kafkaProperties.getServiceName())
-                .milestoneName(milestoneName)
-                .build();
-
-        sendEventSynchronously(milestoneReachedEvent, topicConfiguration.getProcessMilestoneReached());
     }
 
     @Override

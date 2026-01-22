@@ -22,7 +22,6 @@ public class ProcessContextContractsValidator extends DefaultContractsValidator 
             "ProcessContextStateChangedEvent",
             "MessageProcessingFailedEvent",
             "ProcessInstanceCreatedEvent",
-            "ProcessMilestoneReachedEvent",
             "ProcessInstanceCompletedEvent",
             "ProcessSnapshotCreatedEvent");
 

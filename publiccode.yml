@@ -22,16 +22,16 @@ description:
       The jEAP Process Context Service enables microservices to share and maintain a distributed view
       of long-running business processes. Instead of using a central process engine, it applies a
       choreography-based approach where process definitions are modeled as JSON templates. These templates
-      specify tasks, milestones, correlations, and completion conditions. The service observes domain events
+      specify tasks, correlations, and completion conditions. The service observes domain events
       from Kafka, correlates them to process instances, updates process state, and triggers events when
-      milestones are reached or processes complete. It also supports advanced features such as optional and
+      processes are started or completed. It also supports advanced features such as optional and
       conditional task instantiation, process data correlation, relation tracking between business objects,
       and snapshot creation for auditability. Integrated with jEAP Messaging, it provides
       both runtime monitoring via a UI and REST APIs, and generates process events for downstream consumers,
       enabling transparency, traceability, and analytics across distributed systems.
     features:
-      - JSON-based process templates with tasks, milestones, and correlation rules
-      - Event-driven state tracking, milestone events, and process completion handling
+      - JSON-based process templates with tasks, data, relations and correlation rules
+      - Event-driven state tracking and process completion handling
       - Support for process snapshots, relation patterns, and UI-based process monitoring
       - Extensible using a plugin system
 legal:

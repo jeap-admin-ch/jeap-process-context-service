@@ -28,19 +28,14 @@ class ProcessMessageJpaRepositoryTest {
     @Test
     void persistedSuccessfully() {
         String processId = Generators.timeBasedEpochGenerator().generate().toString();
-        String milestone = "milestone";
         ProcessEvent savedCompletedEvent = ProcessEventStubs.createProcessCompleted(processId);
-        ProcessEvent savedMilestoneEvent = ProcessEventStubs.createMilestoneReached(processId, milestone);
-        repository.saveAll(List.of(savedCompletedEvent, savedMilestoneEvent));
+        repository.saveAll(List.of(savedCompletedEvent));
 
         List<ProcessEvent> processEvents = repository.findByOriginProcessId(processId);
-        assertEquals(2, processEvents.size());
-        ProcessEvent completedEvent = processEvents.get(0);
+        assertEquals(1, processEvents.size());
+        ProcessEvent completedEvent = processEvents.getFirst();
         assertSame(EventType.PROCESS_COMPLETED, completedEvent.getEventType());
         assertNull(completedEvent.getName());
-        ProcessEvent milestoneEvent = processEvents.get(1);
-        assertSame(EventType.MILESTONE_REACHED, milestoneEvent.getEventType());
-        assertEquals(milestone, milestoneEvent.getName());
     }
 
 }

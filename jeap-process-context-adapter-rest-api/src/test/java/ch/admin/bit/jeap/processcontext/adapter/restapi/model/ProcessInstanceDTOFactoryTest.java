@@ -68,7 +68,7 @@ class ProcessInstanceDTOFactoryTest {
                         build()).
                 collect(Collectors.toSet());
         ProcessInstance processInstance = ProcessInstanceStubs.
-                createProcessWithSingleTaskInstanceAndReachedMilestoneAndEventWithAdditionalMessages(templateName, taskData, processData, messages);
+                createProcessWithSingleTaskInstanceAndEventWithAdditionalMessages(templateName, taskData, processData, messages);
         ReflectionTestUtils.setField(processInstance, "processCompletion", new ProcessCompletion(
                 ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion.SUCCEEDED, "all good", ZonedDateTime.now()));
         TaskInstance expectedTask = processInstance.getTasks().getFirst();
@@ -106,13 +106,6 @@ class ProcessInstanceDTOFactoryTest {
         assertThat(taskDTO.getTaskData()).isEqualTo(expectedTaskDataDTOs);
         assertEquals(3, processInstanceDTO.getMessages().size());
         assertEquals(ProcessInstanceStubs.event, processInstanceDTO.getMessages().getFirst().getName());
-        assertEquals(2, processInstanceDTO.getMilestones().size());
-        MilestoneDTO reachedMilestone = processInstanceDTO.getMilestones().stream()
-                .filter(ms -> ms.getState().equals("REACHED")).findFirst().orElseThrow();
-        MilestoneDTO notReachedMilestone = processInstanceDTO.getMilestones().stream()
-                .filter(ms -> !ms.getState().equals("REACHED")).findFirst().orElseThrow();
-        assertEquals(ProcessInstanceStubs.milestone, reachedMilestone.getName());
-        assertEquals(ProcessInstanceStubs.neverReachedMilestone, notReachedMilestone.getName());
         ProcessCompletionDTO processCompletion = processInstanceDTO.getProcessCompletion();
         assertNotNull(processCompletion);
         assertEquals(processInstance.getProcessCompletion().get().getConclusion().name(), processCompletion.getConclusion());
@@ -124,23 +117,6 @@ class ProcessInstanceDTOFactoryTest {
         return processData.stream()
                 .map(pd -> new ProcessDataDTO(pd.getKey(), pd.getValue(), pd.getRole()))
                 .toArray(ProcessDataDTO[]::new);
-    }
-
-    @Test
-    void createMilestones_sortByReachedAtThenByName() {
-        List<Milestone> milestones = List.of(
-                ProcessInstanceStubs.createMilestone("notReachedB", false),
-                ProcessInstanceStubs.createMilestone("reachedB", true),
-                ProcessInstanceStubs.createMilestone("notReachedA", false),
-                ProcessInstanceStubs.createMilestone("reachedA", true)
-        );
-
-        List<MilestoneDTO> milestoneDTOs = ProcessInstanceDTOFactory.createMilestones(milestones, "process", translateService);
-
-        assertEquals("reachedA", milestoneDTOs.get(0).getName());
-        assertEquals("reachedB", milestoneDTOs.get(1).getName());
-        assertEquals("notReachedA", milestoneDTOs.get(2).getName());
-        assertEquals("notReachedB", milestoneDTOs.get(3).getName());
     }
 
     @Test
