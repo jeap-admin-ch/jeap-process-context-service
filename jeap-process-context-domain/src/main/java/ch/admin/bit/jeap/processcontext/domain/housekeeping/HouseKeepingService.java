@@ -146,8 +146,8 @@ public class HouseKeepingService {
     private void executeInTransactionPerPage(Supplier<Boolean> callback) {
         int pages = 0;
         while (pages < configProperties.getMaxPages()) {
-            boolean hasMorePages = transactionTemplate.execute(status -> callback.get());
-            if (!hasMorePages) {
+            Boolean hasMorePages = transactionTemplate.<Boolean>execute(status -> callback.get());
+            if (hasMorePages == null || !hasMorePages) {
                 break;
             }
             pages++;
