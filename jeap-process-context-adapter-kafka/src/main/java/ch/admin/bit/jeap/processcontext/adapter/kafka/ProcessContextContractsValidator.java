@@ -19,7 +19,6 @@ import java.util.List;
 public class ProcessContextContractsValidator extends DefaultContractsValidator {
     private static final Collection<String> SHARED_EVENTS_ALLOWED_TO_PUBLISH = List.of(
             "ProcessContextOutdatedEvent",
-            "ProcessContextStateChangedEvent",
             "MessageProcessingFailedEvent",
             "ProcessInstanceCreatedEvent",
             "ProcessInstanceCompletedEvent",

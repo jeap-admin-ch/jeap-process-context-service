@@ -86,7 +86,7 @@ public class ProcessInstanceService {
                 batch -> processUpdates(originProcessId, batch)
         );
         if (transactions.withinNewTransactionWithResult(() -> processInstanceRepository.existsByOriginProcessId(originProcessId))) {
-            internalMessageProducer.produceProcessContextStateChangedEventSynchronously(originProcessId);
+            // TODO JEAP-6536 internalMessageProducer.produceProcessContextStateChangedEventSynchronously(originProcessId);
         }
         metricsListener.timed("jeap_pcs_late_correlate_message", Map.of(),
                 () -> correlateMessagesByProcessData(originProcessId));

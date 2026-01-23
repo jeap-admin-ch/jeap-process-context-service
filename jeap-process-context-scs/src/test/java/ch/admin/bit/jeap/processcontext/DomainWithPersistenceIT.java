@@ -8,7 +8,6 @@ import ch.admin.bit.jeap.processcontext.domain.message.MessageReceiver;
 import ch.admin.bit.jeap.processcontext.domain.port.InternalMessageProducer;
 import ch.admin.bit.jeap.processcontext.domain.port.MessageConsumerFactory;
 import ch.admin.bit.jeap.processcontext.domain.port.ProcessInstanceEventProducer;
-import ch.admin.bit.jeap.processcontext.domain.processevent.ProcessEventService;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceService;
@@ -94,9 +93,6 @@ class DomainWithPersistenceIT {
 
     @Autowired
     private ProcessInstanceRepository processInstanceRepository;
-
-    @Autowired
-    ProcessEventService processEventService;
 
     @MockitoBean
     TraceContextProvider traceContextProvider;
@@ -236,7 +232,7 @@ class DomainWithPersistenceIT {
                 .filter(methodName -> methodName.equals("produceProcessContextStateChangedEventSynchronously"))
                 .count();
         for (int i = 0; i < numPcsStateChangesEvents; i++) {
-            processEventService.reactToProcessStateChange(originProcessId);
+            // JEAP-6536 TODO processEventService.reactToProcessStateChange(originProcessId);
         }
 
         // If a change results in additional database statements, the resulting statements
@@ -271,7 +267,7 @@ class DomainWithPersistenceIT {
 
     private void updateAndReact(String originProcessId) {
         processInstanceService.updateProcessState(originProcessId);
-        processEventService.reactToProcessStateChange(originProcessId);
+        // JEAP-6536 TODO processEventService.reactToProcessStateChange(originProcessId);
     }
 
     private void logHibernateStatistics() {

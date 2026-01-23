@@ -1,7 +1,6 @@
 package ch.admin.bit.jeap.processcontext.domain.housekeeping;
 
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
-import ch.admin.bit.jeap.processcontext.domain.processevent.ProcessEventRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceQueryResult;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessState;
@@ -42,9 +41,6 @@ class HouseKeepingServiceTest {
     private ProcessUpdateRepository processUpdateRepository;
 
     @Mock
-    private ProcessEventRepository processEventRepository;
-
-    @Mock
     private MessageRepository messageRepository;
 
     @Mock
@@ -70,7 +66,7 @@ class HouseKeepingServiceTest {
         houseKeepingConfigProperties.setPageSize(5);
         houseKeepingConfigProperties.setMaxPages(100);
 
-        houseKeepingService = new HouseKeepingService(processInstanceRepository, processUpdateRepository, processEventRepository,
+        houseKeepingService = new HouseKeepingService(processInstanceRepository, processUpdateRepository,
                 messageRepository, houseKeepingConfigProperties, transactionManager);
     }
 
@@ -146,7 +142,6 @@ class HouseKeepingServiceTest {
         verify(processInstanceRepository, times(2)).findProcessInstances(any(ProcessState.class), any(ZonedDateTime.class), any(Pageable.class));
         verify(processInstanceRepository, times(2)).deleteAllById(uuidCaptor.capture());
         verify(processUpdateRepository, times(2)).deleteAllByOriginProcessIdIn(processUpdateDeletionCaptor.capture());
-        verify(processEventRepository, times(2)).deleteAllByOriginProcessIdIn(processEventDeletionCaptor.capture());
 
         final List<Set<UUID>> uuidCaptorAllValues = uuidCaptor.getAllValues();
         assertThat(uuidCaptorAllValues.get(0)).isEqualTo(firstSet.stream().map(ProcessInstanceQueryResult::getId).collect(Collectors.toSet()));

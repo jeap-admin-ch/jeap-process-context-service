@@ -26,7 +26,6 @@ public class TopicConfiguration {
     public static final String PROCESS_INSTANCE_CREATED_EVENT_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-instance-created}";
     public static final String PROCESS_INSTANCE_COMPLETED_EVENT_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-instance-completed}";
     public static final String PROCESS_OUTDATED_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-outdated-internal}";
-    public static final String PROCESS_STATE_CHANGED_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-changed-internal}";
     public static final String CREATE_PROCESS_INSTANCE_TOPIC_NAME = "${jeap.processcontext.kafka.topic.create-process-instance}";
     private static final String EVENT_PROCESSING_FAILED_TOPIC_NAME = "${jeap.messaging.kafka.error-topic-name}";
     public static final String PROCESS_SNAPSHOT_CREATED_EVENT_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-snapshot-created}";
@@ -36,11 +35,6 @@ public class TopicConfiguration {
      * Name of the topic for the internal process outdated events
      */
     private String processOutdatedInternal;
-
-    /**
-     * Name of topic for the internal instance changed events
-     */
-    private String processChangedInternal;
 
     /**
      * Name of topic where process instance created events will be published
@@ -80,7 +74,6 @@ public class TopicConfiguration {
         public void checkIfTopicsExist() throws ExecutionException, InterruptedException {
             try (AdminClient adminClient = AdminClient.create(kafkaAdmin.getConfigurationProperties())) {
                 List<String> topicNames = new ArrayList<>(List.of(
-                        topicConfiguration.getProcessChangedInternal(),
                         topicConfiguration.getProcessOutdatedInternal(),
                         topicConfiguration.getProcessInstanceCreated(),
                         topicConfiguration.getProcessInstanceCompleted(),
@@ -104,11 +97,6 @@ public class TopicConfiguration {
 
         @Value(EVENT_PROCESSING_FAILED_TOPIC_NAME)
         private String eventProcessingFailedTopicName;
-
-        @Bean
-        public NewTopic processChangedInternalTopic() {
-            return new NewTopic(topicConfiguration.getProcessChangedInternal(), 1, (short) 1);
-        }
 
         @Bean
         public NewTopic processOutdatedInternalTopic() {

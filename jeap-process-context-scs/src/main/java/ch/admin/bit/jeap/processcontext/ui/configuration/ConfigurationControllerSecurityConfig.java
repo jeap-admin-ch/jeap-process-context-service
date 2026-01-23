@@ -7,7 +7,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 /**
@@ -16,7 +16,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 @Configuration
 class ConfigurationControllerSecurityConfig {
     private static RequestMatcher configurationServiceMatcher() {
-        return new AntPathRequestMatcher("/api/configuration/**", HttpMethod.GET.name());
+        return PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/api/configuration/**");
     }
 
     @Bean

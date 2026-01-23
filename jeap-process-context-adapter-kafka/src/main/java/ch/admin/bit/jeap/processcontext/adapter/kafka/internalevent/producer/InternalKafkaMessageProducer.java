@@ -9,7 +9,6 @@ import org.apache.avro.specific.SpecificRecord;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
@@ -36,14 +35,6 @@ class InternalKafkaMessageProducer implements InternalMessageProducer {
         log.debug("Producing process outdated message for process ID {}", originProcessId);
         String topicName = topicConfiguration.getProcessOutdatedInternal();
         sendSynchronously(topicName, originProcessId, internalMessageFactory::processContextOutdatedEvent);
-    }
-
-    @Override
-    public void produceProcessContextStateChangedEventSynchronously(String originProcessId) {
-        log.debug("Producing process state changed message for process ID {}", originProcessId);
-        String topicName = topicConfiguration.getProcessChangedInternal();
-        metricsListener.timed("jeap_pcs_produce_process_context_state_changed_event", Collections.emptyMap(),
-                () -> sendSynchronously(topicName, originProcessId, internalMessageFactory::processContextStateChangedEvent));
     }
 
     private void sendSynchronously(String topicName, String originProcessId, Function<String, AvroMessage> messageFactory) {

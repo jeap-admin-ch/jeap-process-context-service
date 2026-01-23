@@ -135,7 +135,7 @@ class ProcessInstanceServiceTest {
                 .build();
 
         verify(processInstance, never()).addMessage(any());
-        verify(internalMessageProducer, never()).produceProcessContextStateChangedEventSynchronously(any());
+        // JEAP-6536 verify(internalMessageProducer, never()).produceProcessContextStateChangedEventSynchronously(any());
         verify(processUpdateRepository, never()).markHandlingFailed(update.getId());
     }
 
@@ -149,7 +149,7 @@ class ProcessInstanceServiceTest {
         target.updateProcessState(originProcessId);
 
         verify(processInstance, never()).addMessage(any());
-        verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
+        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -184,7 +184,7 @@ class ProcessInstanceServiceTest {
 
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
+        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -225,7 +225,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
+        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -267,7 +267,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
+        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -309,7 +309,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
+        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -351,7 +351,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
+        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -394,7 +394,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
+        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -437,7 +437,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
+        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -478,7 +478,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance).addObservationTask(eq(taskType), eq(null), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
+        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -520,7 +520,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance).addObservationTask(eq(taskType), eq(null), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
+        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -562,7 +562,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
+        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test

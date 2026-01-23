@@ -1,7 +1,6 @@
 package ch.admin.bit.jeap.processcontext.domain.housekeeping;
 
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
-import ch.admin.bit.jeap.processcontext.domain.processevent.ProcessEventRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceQueryResult;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessState;
@@ -30,7 +29,6 @@ public class HouseKeepingService {
 
     private final ProcessInstanceRepository processInstanceRepository;
     private final ProcessUpdateRepository processUpdateRepository;
-    private final ProcessEventRepository processEventRepository;
     private final MessageRepository messageRepository;
     private final HouseKeepingConfigProperties configProperties;
     private final TransactionTemplate transactionTemplate;
@@ -38,13 +36,11 @@ public class HouseKeepingService {
 
     public HouseKeepingService(ProcessInstanceRepository processInstanceRepository,
                                ProcessUpdateRepository processUpdateRepository,
-                               ProcessEventRepository processEventRepository,
                                MessageRepository messageRepository,
                                HouseKeepingConfigProperties configProperties,
                                PlatformTransactionManager transactionManager) {
         this.processInstanceRepository = processInstanceRepository;
         this.processUpdateRepository = processUpdateRepository;
-        this.processEventRepository = processEventRepository;
         this.messageRepository = messageRepository;
         this.configProperties = configProperties;
         this.pageable = Pageable.ofSize(configProperties.getPageSize());
@@ -76,7 +72,6 @@ public class HouseKeepingService {
 
         final Set<String> originProcessIds = processInstances.stream().map(ProcessInstanceQueryResult::getOriginProcessId).collect(Collectors.toSet());
         deleteProcessUpdates(originProcessIds);
-        deleteProcessEvents(originProcessIds);
         return resultPage.hasNext();
     }
 
@@ -95,13 +90,6 @@ public class HouseKeepingService {
         final long count = processUpdateRepository.countAllByOriginProcessIdIn(originProcessIds);
         processUpdateRepository.deleteAllByOriginProcessIdIn(originProcessIds);
         log.info("Housekeeping: deleted {} processUpdates", count);
-    }
-
-    // Process Events (process_event)
-    private void deleteProcessEvents(Set<String> originProcessIds) {
-        log.info("Housekeeping: delete processEvents...");
-        final long count = processEventRepository.deleteAllByOriginProcessIdIn(originProcessIds);
-        log.info("Housekeeping: deleted {} processEvents", count);
     }
 
     // Messages (events, events_event_data, events_origin_task_ids)

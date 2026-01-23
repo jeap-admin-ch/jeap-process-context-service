@@ -19,7 +19,7 @@ public class ObjectStorageConfiguration {
     @ConditionalOnMissingBean(AwsCredentialsProvider.class)
     public DefaultCredentialsProvider awsCredentialsProvider() {
         log.info("Creating AWS DefaultCredentialsProvider.");
-        return DefaultCredentialsProvider.create();
+        return DefaultCredentialsProvider.builder().build();
     }
 
     @Bean

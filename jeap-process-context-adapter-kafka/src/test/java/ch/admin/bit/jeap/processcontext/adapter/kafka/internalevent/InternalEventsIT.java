@@ -23,13 +23,6 @@ class InternalEventsIT extends KafkaAdapterIntegrationTestBase {
         verifyNoErrorHandlingInteractions(errorHandler);
     }
 
-    @Test
-    void produceAndConsumeProcessContextStateChangedEvent_internalMessageAsDomainEvent() {
-        eventProducer.produceProcessContextStateChangedEventSynchronously("1234");
-        verify(processEventService, timeout(TEST_TIMEOUT)).reactToProcessStateChange("1234");
-        verifyNoErrorHandlingInteractions(errorHandler);
-    }
-
     private void verifyNoErrorHandlingInteractions(CommonErrorHandler errorHandlerMock) {
         verify(errorHandlerMock, never()).handleOne(any(), any(), any(), any());
         verify(errorHandlerMock, never()).handleBatch(any(), any(), any(), any(), any());

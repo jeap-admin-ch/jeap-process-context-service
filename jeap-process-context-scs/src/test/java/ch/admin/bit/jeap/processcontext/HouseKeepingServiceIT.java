@@ -5,8 +5,6 @@ import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
-import ch.admin.bit.jeap.processcontext.domain.processevent.ProcessEvent;
-import ch.admin.bit.jeap.processcontext.domain.processevent.ProcessEventRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessState;
@@ -51,9 +49,6 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
 
     @Autowired
     private ProcessUpdateRepository processUpdateRepository;
-
-    @Autowired
-    private ProcessEventRepository processEventRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -204,7 +199,7 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
     private void assertPresent(List<String> originProcessIds) {
         originProcessIds.forEach(originProcessId -> {
             assertThat(processUpdateRepository.findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, "test", "test")).isPresent();
-            assertThat(processEventRepository.findByOriginProcessId(originProcessId)).hasSize(1);
+            // JEAP-6536 TODO assertThat(processEventRepository.findByOriginProcessId(originProcessId)).hasSize(1);
         });
     }
 
@@ -216,7 +211,7 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
     private void assertNotPresent(List<String> originProcessIds) {
         originProcessIds.forEach(originProcessId -> {
             assertThat(processUpdateRepository.findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, "test", "test")).isNotPresent();
-            assertThat(processEventRepository.findByOriginProcessId(originProcessId)).isEmpty();
+            // JEAP-6536 TODO assertThat(processEventRepository.findByOriginProcessId(originProcessId)).isEmpty();
         });
     }
 
@@ -243,7 +238,7 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
         criteriaUpdate.where(entityManager.getCriteriaBuilder().equal(root.get("id"), processInstance.getId()));
         entityManager.createQuery(criteriaUpdate).executeUpdate();
         processUpdateRepository.save(ProcessUpdate.messageReceived().originProcessId(originProcessId).messageName("test").messageReference(Generators.timeBasedEpochGenerator().generate()).idempotenceId("test").build());
-        processEventRepository.saveAll(Set.of(ProcessEvent.createRelationAdded(originProcessId, Generators.timeBasedEpochGenerator().generate())));
+        // JEAP-6536 TODO processEventRepository.saveAll(Set.of(ProcessEvent.createRelationAdded(originProcessId, Generators.timeBasedEpochGenerator().generate())));
         return processInstance;
     }
 
@@ -265,14 +260,17 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
         processInstanceRepository.save(processInstance);
     }
 
+    @SuppressWarnings("unchecked")
     private void assertCountProcessInstances(int count) {
         assertThat(entityManager.createQuery("select p from ProcessInstance p").getResultList()).hasSize(count);
     }
 
+    @SuppressWarnings("unchecked")
     private void assertCountEvents(int count) {
         assertThat(entityManager.createQuery("select e from events e").getResultList()).hasSize(count);
     }
 
+    @SuppressWarnings("unchecked")
     private void assertCountProcessUpdates(int count) {
         assertThat(entityManager.createQuery("select p from ProcessUpdate p").getResultList()).hasSize(count);
     }
@@ -327,7 +325,6 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
             entityManager.createNativeQuery("DELETE FROM events_origin_task_ids").executeUpdate();
             entityManager.createNativeQuery("DELETE FROM events_event_data").executeUpdate();
             entityManager.createNativeQuery("DELETE FROM events").executeUpdate();
-            entityManager.createNativeQuery("DELETE FROM process_event").executeUpdate();
             entityManager.createNativeQuery("DELETE FROM process_update").executeUpdate();
             processInstanceRepository.deleteAllById(
                     processInstanceRepository.findAll(Pageable.ofSize(100)).stream()

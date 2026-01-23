@@ -2,7 +2,6 @@ package ch.admin.bit.jeap.processcontext.domain.port;
 
 import ch.admin.bit.jeap.messaging.avro.AvroMessageType;
 import ch.admin.bit.jeap.messaging.model.MessageType;
-import ch.admin.bit.jeap.processcontext.domain.processevent.EventType;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
 
@@ -31,10 +30,10 @@ public interface MetricsListener {
 
     void processUpdateProcessed(ProcessTemplate template, boolean successful, int count);
 
-    void processEventCreated(ProcessTemplate template, EventType eventType);
-
+    // TODO JEAP-6536
     void processCompleted(ProcessTemplate template);
 
+    // TODO JEAP-6536
     void snapshotCreated(ProcessTemplate template);
 
     void timed(String name, Map<String, String> tags, Runnable runnable);

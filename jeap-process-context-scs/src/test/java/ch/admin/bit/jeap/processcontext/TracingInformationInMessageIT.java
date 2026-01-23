@@ -28,7 +28,7 @@ class TracingInformationInMessageIT extends ProcessInstanceMockS3ITBase {
     private ProcessInstanceController processInstanceController;
 
     @Autowired
-    private KafkaTemplate kafkaTemplate;
+    private KafkaTemplate<AvroMessageKey, AvroMessage> kafkaTemplate;
 
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
@@ -46,12 +46,12 @@ class TracingInformationInMessageIT extends ProcessInstanceMockS3ITBase {
                 .until(() -> !processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getMessages().isEmpty());
         ProcessInstanceDTO processInstance = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
         assertEquals(1, processInstance.getMessages().size());
-        assertTrue(hasText(processInstance.getMessages().get(0).getTraceId()));
+        assertTrue(hasText(processInstance.getMessages().getFirst().getTraceId()));
 
     }
 
     private void sendMessageAsyncOverKafkaTemplate() {
-        ProducerRecord<AvroMessageKey, AvroMessage> producerRecord = new ProducerRecord("topic.test1", Test1EventBuilder.createForProcessId(originProcessId)
+        ProducerRecord<AvroMessageKey, AvroMessage> producerRecord = new ProducerRecord<>("topic.test1", Test1EventBuilder.createForProcessId(originProcessId)
                 .taskIds("gotcha")
                 .build());
         producerRecord.headers().add(KafkaTestConstants.TEST_PRODUCER_DISABLE_CONTRACT_CHECK_HEADER);

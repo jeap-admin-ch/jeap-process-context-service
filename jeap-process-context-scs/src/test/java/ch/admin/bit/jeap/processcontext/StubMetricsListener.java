@@ -3,7 +3,6 @@ package ch.admin.bit.jeap.processcontext;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageType;
 import ch.admin.bit.jeap.messaging.model.MessageType;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
-import ch.admin.bit.jeap.processcontext.domain.processevent.EventType;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
 import io.micrometer.core.instrument.Timer;
@@ -36,11 +35,6 @@ public class StubMetricsListener implements MetricsListener {
 
     @Override
     public void processUpdateProcessed(ProcessTemplate template, boolean successful, int count) {
-        // stub method
-    }
-
-    @Override
-    public void processEventCreated(ProcessTemplate template, EventType eventType) {
         // stub method
     }
 

@@ -3,7 +3,6 @@ package ch.admin.bit.jeap.processcontext.adapter.micrometer;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageType;
 import ch.admin.bit.jeap.messaging.model.MessageType;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
-import ch.admin.bit.jeap.processcontext.domain.processevent.EventType;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
 import io.micrometer.core.instrument.Counter;
@@ -78,16 +77,6 @@ public class MicrometerMetricsListener implements MetricsListener {
                 .tag("successful", toString(successful))
                 .register(meterRegistry)
                 .increment(count);
-    }
-
-    @Override
-    public void processEventCreated(ProcessTemplate template, EventType eventType) {
-        Counter.builder(PCS_PROCESS_EVENT_CREATED)
-                .description("Created process events")
-                .tag("process_template", template.getName())
-                .tag("event_type", eventType.name())
-                .register(meterRegistry)
-                .increment();
     }
 
     @Override

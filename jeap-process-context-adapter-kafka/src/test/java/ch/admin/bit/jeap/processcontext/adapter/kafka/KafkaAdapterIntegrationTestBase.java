@@ -2,7 +2,6 @@ package ch.admin.bit.jeap.processcontext.adapter.kafka;
 
 import ch.admin.bit.jeap.messaging.kafka.test.KafkaIntegrationTestBase;
 import ch.admin.bit.jeap.processcontext.adapter.test.kafka.config.TestApp;
-import ch.admin.bit.jeap.processcontext.domain.processevent.ProcessEventService;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,8 +28,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 public abstract class KafkaAdapterIntegrationTestBase extends KafkaIntegrationTestBase {
     @MockitoBean
     protected ProcessInstanceService processInstanceService;
-    @MockitoBean
-    protected ProcessEventService processEventService;
     @MockitoBean
     protected ProcessTemplateRepository processTemplateRepository;
 }
