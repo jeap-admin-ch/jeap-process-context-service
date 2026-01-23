@@ -1,0 +1,108 @@
+package ch.admin.bit.jeap.processcontext.domain.processinstance.event;
+
+import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessSnapshot;
+import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
+import ch.admin.bit.jeap.processcontext.domain.port.ProcessInstanceEventProducer;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessSnapshotArchiveData;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessSnapshotMetadata;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ProcessSnapshotEventProducerTest {
+
+    @Mock
+    private MetricsListener metricsListener;
+
+    @Mock
+    private ProcessInstanceEventProducer processInstanceEventProducer;
+
+    @Mock
+    private ProcessTemplate processTemplate;
+
+    @Captor
+    private ArgumentCaptor<Runnable> runnableCaptor;
+
+    private ProcessSnapshotEventProducer target;
+
+    @BeforeEach
+    void setUp() {
+        target = new ProcessSnapshotEventProducer(metricsListener, processInstanceEventProducer);
+    }
+
+    @Test
+    void onSnapshotCreated_shouldProduceSnapshotEventAndRecordMetrics() {
+        String originProcessId = "test-origin-process-id";
+        int snapshotVersion = 3;
+
+        ProcessSnapshot processSnapshot = mock(ProcessSnapshot.class);
+        when(processSnapshot.getOriginProcessId()).thenReturn(originProcessId);
+
+        ProcessSnapshotMetadata metadata = ProcessSnapshotMetadata.builder()
+                .snapshotVersion(snapshotVersion)
+                .schemaName("ProcessSnapshot")
+                .schemaVersion(2)
+                .retentionPeriodMonths(12)
+                .systemName("JEAP")
+                .build();
+
+        ProcessSnapshotArchiveData processSnapshotArchiveData = mock(ProcessSnapshotArchiveData.class);
+        when(processSnapshotArchiveData.getMetadata()).thenReturn(metadata);
+        when(processSnapshotArchiveData.getProcessSnapshot()).thenReturn(processSnapshot);
+
+        doAnswer(invocation -> {
+            Runnable runnable = invocation.getArgument(2);
+            runnable.run();
+            return null;
+        }).when(metricsListener).timed(eq("jeap_pcs_produce_snapshot_events"), eq(Map.of()), any(Runnable.class));
+
+        target.onSnapshotCreated(processSnapshotArchiveData, processTemplate);
+
+        verify(metricsListener).timed(eq("jeap_pcs_produce_snapshot_events"), eq(Map.of()), any(Runnable.class));
+        verify(processInstanceEventProducer).produceProcessSnapshotCreatedEventSynchronously(originProcessId, snapshotVersion);
+        verify(metricsListener).snapshotCreated(processTemplate);
+    }
+
+    @Test
+    void onSnapshotCreated_shouldUseCorrectMetricName() {
+        String originProcessId = "another-process-id";
+        int snapshotVersion = 1;
+
+        ProcessSnapshot processSnapshot = mock(ProcessSnapshot.class);
+        when(processSnapshot.getOriginProcessId()).thenReturn(originProcessId);
+
+        ProcessSnapshotMetadata metadata = ProcessSnapshotMetadata.builder()
+                .snapshotVersion(snapshotVersion)
+                .schemaName("ProcessSnapshot")
+                .schemaVersion(2)
+                .retentionPeriodMonths(6)
+                .systemName("JEAP")
+                .build();
+
+        ProcessSnapshotArchiveData processSnapshotArchiveData = mock(ProcessSnapshotArchiveData.class);
+        when(processSnapshotArchiveData.getMetadata()).thenReturn(metadata);
+        when(processSnapshotArchiveData.getProcessSnapshot()).thenReturn(processSnapshot);
+
+        doAnswer(invocation -> {
+            Runnable runnable = invocation.getArgument(2);
+            runnable.run();
+            return null;
+        }).when(metricsListener).timed(any(), any(), any(Runnable.class));
+
+        target.onSnapshotCreated(processSnapshotArchiveData, processTemplate);
+
+        verify(metricsListener).timed(eq("jeap_pcs_produce_snapshot_events"), eq(Map.of()), runnableCaptor.capture());
+    }
+}

@@ -1,14 +1,16 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
-import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessRelation;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.*;
+import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessRelation;
 import ch.admin.bit.jeap.processcontext.domain.Language;
 import ch.admin.bit.jeap.processcontext.domain.PcsConfigProperties;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.event.ProcessSnapshotEventProducer;
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationView;
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationRoleType;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,8 +25,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProcessSnapshotServiceTest {
@@ -39,6 +42,8 @@ class ProcessSnapshotServiceTest {
     private ProcessRelationsService processRelationsService;
     @Mock
     private MessageRepository messageRepository;
+    @Mock
+    private ProcessSnapshotEventProducer processSnapshotEventProducer;
 
     private PcsConfigProperties pcsConfigProperties;
 
@@ -53,7 +58,8 @@ class ProcessSnapshotServiceTest {
                 Optional.of(processSnapshotRepository),
                 processTemplateRepository,
                 processRelationsService,
-                messageRepository);
+                messageRepository,
+                processSnapshotEventProducer);
     }
 
     @Test
@@ -251,5 +257,34 @@ class ProcessSnapshotServiceTest {
                         "process-label",
                         "COMPLETED")
         );
+    }
+
+    @Test
+    void createAndStoreSnapshot_shouldStoreSnapshotAndProduceEvent() {
+        ProcessInstance processInstance = mock(ProcessInstance.class);
+        ProcessTemplate processTemplate = mock(ProcessTemplate.class);
+
+        pcsConfigProperties.setProcessSnapshotLanguage(Language.FR);
+        pcsConfigProperties.setProcessSnapshotArchiveRetentionPeriodMonths(12);
+
+        final String originProcessId = "test-origin-process-id";
+        final String templateName = "test-template-name";
+        final ZonedDateTime processCreatedAt = ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS);
+
+        when(processInstance.getOriginProcessId()).thenReturn(originProcessId);
+        when(processInstance.getProcessTemplateName()).thenReturn(templateName);
+        when(processInstance.getState()).thenReturn(ProcessState.STARTED);
+        when(processInstance.getCreatedAt()).thenReturn(processCreatedAt);
+        when(processInstance.getProcessData()).thenReturn(Set.of());
+        when(processInstance.getTasks()).thenReturn(List.of());
+        when(processInstance.getProcessTemplate()).thenReturn(processTemplate);
+        when(processInstance.nextSnapshotVersion()).thenReturn(1);
+        when(translateService.translateProcessTemplateName(templateName))
+                .thenReturn(Map.of(Language.FR.name().toLowerCase(), "template-label"));
+
+        target.createAndStoreSnapshot(processInstance);
+
+        verify(processSnapshotRepository).storeSnapshot(any(ProcessSnapshotArchiveData.class));
+        verify(processSnapshotEventProducer).onSnapshotCreated(any(ProcessSnapshotArchiveData.class), eq(processTemplate));
     }
 }

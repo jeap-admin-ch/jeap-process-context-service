@@ -1,10 +1,11 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
-import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessRelation;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.*;
+import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessRelation;
 import ch.admin.bit.jeap.processcontext.domain.PcsConfigProperties;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.event.ProcessSnapshotEventProducer;
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationView;
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
@@ -31,6 +32,7 @@ public class ProcessSnapshotService {
     private final ProcessTemplateRepository processTemplateRepository;
     private final ProcessRelationsService processRelationsService;
     private final MessageRepository messageRepository;
+    private final ProcessSnapshotEventProducer processSnapshotEventProducer;
 
     @SuppressWarnings("java:S112")
     @PostConstruct
@@ -44,6 +46,7 @@ public class ProcessSnapshotService {
     public void createAndStoreSnapshot(ProcessInstance processInstance) {
         ProcessSnapshotArchiveData processSnapshotArchiveData = createProcessSnapshotArchiveData(processInstance);
         processSnapshotRepository.get().storeSnapshot(processSnapshotArchiveData);
+        processSnapshotEventProducer.onSnapshotCreated(processSnapshotArchiveData, processInstance.getProcessTemplate());
     }
 
     ProcessSnapshotArchiveData createProcessSnapshotArchiveData(ProcessInstance processInstance) {

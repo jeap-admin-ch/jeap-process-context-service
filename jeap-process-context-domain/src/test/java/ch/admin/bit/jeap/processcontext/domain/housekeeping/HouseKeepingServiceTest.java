@@ -57,9 +57,6 @@ class HouseKeepingServiceTest {
     @Captor
     private ArgumentCaptor<Set<String>> processUpdateDeletionCaptor;
 
-    @Captor
-    private ArgumentCaptor<Set<String>> processEventDeletionCaptor;
-
     @BeforeEach
     void beforeEach() {
         houseKeepingConfigProperties = new HouseKeepingConfigProperties();
@@ -150,11 +147,6 @@ class HouseKeepingServiceTest {
         final List<Set<String>> processUpdateDeletionCaptorAllValues = processUpdateDeletionCaptor.getAllValues();
         assertThat(processUpdateDeletionCaptorAllValues.get(0)).isEqualTo(firstSet.stream().map(ProcessInstanceQueryResult::getOriginProcessId).collect(Collectors.toSet()));
         assertThat(processUpdateDeletionCaptorAllValues.get(1)).isEqualTo(secondSet.stream().map(ProcessInstanceQueryResult::getOriginProcessId).collect(Collectors.toSet()));
-
-        final List<Set<String>> processEventDeletionCaptorAllValues = processEventDeletionCaptor.getAllValues();
-        assertThat(processEventDeletionCaptorAllValues.get(0)).isEqualTo(firstSet.stream().map(ProcessInstanceQueryResult::getOriginProcessId).collect(Collectors.toSet()));
-        assertThat(processEventDeletionCaptorAllValues.get(1)).isEqualTo(secondSet.stream().map(ProcessInstanceQueryResult::getOriginProcessId).collect(Collectors.toSet()));
-
     }
 
     @RequiredArgsConstructor
