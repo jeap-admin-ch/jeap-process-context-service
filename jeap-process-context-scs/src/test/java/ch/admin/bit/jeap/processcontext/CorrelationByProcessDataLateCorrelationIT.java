@@ -38,7 +38,7 @@ class CorrelationByProcessDataLateCorrelationIT extends ProcessInstanceMockS3ITB
         // Start a new process
         String processTemplateName = "domainEventCorrelatedByProcessDataEarlyCorrelation";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // event which will be correlated
         saveEvent("Test2Event", processTemplateName, "correlationEventDataKey", "correlationEventDataValue", "correlationEventDataRole");

@@ -1,2 +1,1 @@
-DROP
-process_event;
+DROP TABLE process_event;

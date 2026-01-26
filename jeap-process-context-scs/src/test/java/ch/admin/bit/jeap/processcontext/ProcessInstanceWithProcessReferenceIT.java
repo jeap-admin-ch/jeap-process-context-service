@@ -34,8 +34,8 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
         createProcessInstanceFromTemplate(processTemplateNameB, originProcessIdProcessB);
 
         // Check process instance created event published for origin id
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessIdProcessB, processTemplateNameB);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessIdProcessB, processTemplateNameB);
 
         // Produce event 6
         createAndSendTestEvent6(originProcessId, originProcessIdProcessB);
@@ -47,7 +47,7 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
 
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessId);
-        assertProcessInstanceCompletedEvent(originProcessIdProcessB);
+        assertProcessInstanceCompleted(originProcessIdProcessB);
 
         ProcessRelationDTO expectedDtoProcessA = ProcessRelationDTO.builder()
                 .processName(simulateTranslateService("processRelationsB"))
@@ -79,8 +79,8 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
         createProcessInstanceFromTemplate(processTemplateNameB, originProcessIdProcessB);
 
         // Check process instance created event published for origin id
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessIdProcessB, processTemplateNameB);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessIdProcessB, processTemplateNameB);
 
         // Produce event 6
         createAndSendTestEvent6(originProcessId, originProcessIdProcessB);
@@ -92,7 +92,7 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
 
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessId);
-        assertProcessInstanceCompletedEvent(originProcessIdProcessB);
+        assertProcessInstanceCompleted(originProcessIdProcessB);
 
         ProcessRelationDTO expectedDtoProcessA = ProcessRelationDTO.builder()
                 .processName(simulateTranslateService("processRelationsB"))
@@ -119,8 +119,8 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
         createProcessInstanceFromTemplate(processTemplateNameB, originProcessIdProcessB);
 
         // Check process instance created event published for origin id
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessIdProcessB, processTemplateNameB);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessIdProcessB, processTemplateNameB);
 
         // Produce event 6
         createAndSendTestEvent6(originProcessId, originProcessIdProcessB);
@@ -132,7 +132,7 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
 
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessId);
-        assertProcessInstanceCompletedEvent(originProcessIdProcessB);
+        assertProcessInstanceCompleted(originProcessIdProcessB);
 
         ProcessRelationDTO expectedDtoProcessD = ProcessRelationDTO.builder()
                 .processName(simulateTranslateService("processRelationsD"))
@@ -163,9 +163,9 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
         createProcessInstanceFromTemplate(processTemplateNameE, originProcessIdProcessE);
 
         // Check process instance created event published for origin id
-        assertProcessInstanceCreatedEvent(originProcessIdA, processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessIdProcessB, processTemplateNameB);
-        assertProcessInstanceCreatedEvent(originProcessIdProcessE, processTemplateNameE);
+        assertProcessInstanceCreated(originProcessIdA, processTemplateName);
+        assertProcessInstanceCreated(originProcessIdProcessB, processTemplateNameB);
+        assertProcessInstanceCreated(originProcessIdProcessE, processTemplateNameE);
 
         // Produce event 6
         createAndSendTestEvent6(originProcessIdA, originProcessIdProcessB);
@@ -179,8 +179,8 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
 
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessIdA);
-        assertProcessInstanceCompletedEvent(originProcessIdProcessB);
-        assertProcessInstanceCompletedEvent(originProcessIdProcessE);
+        assertProcessInstanceCompleted(originProcessIdProcessB);
+        assertProcessInstanceCompleted(originProcessIdProcessE);
 
         assertProcessInstanceHasNumberOfProcessReference(originProcessIdA, 2);
         assertProcessInstanceHasNumberOfProcessReference(originProcessIdProcessB, 1);

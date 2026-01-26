@@ -46,7 +46,7 @@ class ProcessInstanceCreatedByDomainMessageConditionalIT extends ProcessInstance
         // Send event that meets the condition to trigger a process instantiation
         sendTest5CreatingProcessInstanceEvent(originProcessIdForConditionMet, TestProcessInstantiationCondition.TRIGGER);
 
-        assertProcessInstanceCreatedEvent(originProcessIdForConditionMet, PROCESS_TEMPLATE_NAME);
+        assertProcessInstanceCreated(originProcessIdForConditionMet, PROCESS_TEMPLATE_NAME);
     }
 
     @Test

@@ -135,7 +135,6 @@ class ProcessInstanceServiceTest {
                 .build();
 
         verify(processInstance, never()).addMessage(any());
-        // JEAP-6536 verify(internalMessageProducer, never()).produceProcessContextStateChangedEventSynchronously(any());
         verify(processUpdateRepository, never()).markHandlingFailed(update.getId());
     }
 
@@ -144,12 +143,10 @@ class ProcessInstanceServiceTest {
         String originProcessId = "originProcessId";
         ProcessInstance processInstance = mock(ProcessInstance.class);
         doReturn(List.of()).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
-        when(processInstanceRepository.existsByOriginProcessId(originProcessId)).thenReturn(true);
 
         target.updateProcessState(originProcessId);
 
         verify(processInstance, never()).addMessage(any());
-        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -171,7 +168,6 @@ class ProcessInstanceServiceTest {
 
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
-        doReturn(true).when(processInstanceRepository).existsByOriginProcessId(originProcessId);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
@@ -184,7 +180,6 @@ class ProcessInstanceServiceTest {
 
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -210,7 +205,6 @@ class ProcessInstanceServiceTest {
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
         doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
-        doReturn(true).when(processInstanceRepository).existsByOriginProcessId(originProcessId);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
@@ -225,7 +219,6 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -252,7 +245,6 @@ class ProcessInstanceServiceTest {
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
         doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
-        doReturn(true).when(processInstanceRepository).existsByOriginProcessId(originProcessId);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
@@ -267,7 +259,6 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -294,7 +285,6 @@ class ProcessInstanceServiceTest {
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
         doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
-        doReturn(true).when(processInstanceRepository).existsByOriginProcessId(originProcessId);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
@@ -309,7 +299,6 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -335,7 +324,6 @@ class ProcessInstanceServiceTest {
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
         doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
-        doReturn(true).when(processInstanceRepository).existsByOriginProcessId(originProcessId);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         doReturn(Sets.newHashSet("1", "2")).when(messageReferenceMessageDTO).getRelatedOriginTaskIds();
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
@@ -351,7 +339,6 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -378,7 +365,6 @@ class ProcessInstanceServiceTest {
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
         doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
-        doReturn(true).when(processInstanceRepository).existsByOriginProcessId(originProcessId);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         doReturn(Sets.newHashSet("1", "2")).when(messageReferenceMessageDTO).getRelatedOriginTaskIds();
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
@@ -394,7 +380,6 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -421,7 +406,6 @@ class ProcessInstanceServiceTest {
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
         doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
-        doReturn(true).when(processInstanceRepository).existsByOriginProcessId(originProcessId);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         doReturn(Sets.newHashSet("1", "2")).when(messageReferenceMessageDTO).getRelatedOriginTaskIds();
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
@@ -437,7 +421,6 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -463,7 +446,6 @@ class ProcessInstanceServiceTest {
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
         doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
-        doReturn(true).when(processInstanceRepository).existsByOriginProcessId(originProcessId);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
@@ -478,7 +460,6 @@ class ProcessInstanceServiceTest {
         verify(processInstance).addObservationTask(eq(taskType), eq(null), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -505,7 +486,6 @@ class ProcessInstanceServiceTest {
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
         doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
-        doReturn(true).when(processInstanceRepository).existsByOriginProcessId(originProcessId);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
@@ -520,7 +500,6 @@ class ProcessInstanceServiceTest {
         verify(processInstance).addObservationTask(eq(taskType), eq(null), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -547,7 +526,6 @@ class ProcessInstanceServiceTest {
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
         doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
-        doReturn(true).when(processInstanceRepository).existsByOriginProcessId(originProcessId);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
@@ -562,7 +540,6 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
         verify(processInstance).evaluateCompletedTasks(now);
-        // JEAP-6536 verify(internalMessageProducer).produceProcessContextStateChangedEventSynchronously(originProcessId);
     }
 
     @Test
@@ -598,7 +575,6 @@ class ProcessInstanceServiceTest {
         when(processTemplateRepository.findByName(templateName)).thenReturn(Optional.of(processTemplate));
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
         doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
-        doReturn(true).when(processInstanceRepository).existsByOriginProcessId(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getMessageName()).thenReturn("myDomainEvent");
         ZonedDateTime now = ZonedDateTime.now();

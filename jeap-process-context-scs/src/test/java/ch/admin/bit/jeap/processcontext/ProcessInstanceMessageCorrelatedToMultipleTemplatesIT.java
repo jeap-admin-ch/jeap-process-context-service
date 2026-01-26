@@ -19,10 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProcessInstanceMessageCorrelatedToMultipleTemplatesIT extends ProcessInstanceMockS3ITBase {
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    @Autowired
-    private RelationListenerStub relationListenerStub;
-
     @Autowired
     private MessageQueryRepository messageQueryRepository;
 
@@ -32,7 +28,7 @@ class ProcessInstanceMessageCorrelatedToMultipleTemplatesIT extends ProcessInsta
         // Start a new process
         String processTemplateName = "relations";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Produce an event which is referenced in at least two templates, with different payload extractors
         // and thus different event data definitions. The event is not correlated to a process, and is expected

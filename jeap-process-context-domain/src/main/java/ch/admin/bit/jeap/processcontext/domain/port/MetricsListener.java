@@ -30,10 +30,8 @@ public interface MetricsListener {
 
     void processUpdateProcessed(ProcessTemplate template, boolean successful, int count);
 
-    // TODO JEAP-6536
     void processCompleted(ProcessTemplate template);
 
-    // TODO JEAP-6536
     void snapshotCreated(ProcessTemplate template);
 
     void timed(String name, Map<String, String> tags, Runnable runnable);

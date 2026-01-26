@@ -63,7 +63,7 @@ class ProcessInstancesCompletedBySingleDomainMessageIT extends ProcessInstanceMo
 
     private void createAndAssertProcessInstance(String originProcessId) {
         createProcessInstanceFromTemplate(PROCESS_TEMPLATE_NAME, originProcessId);
-        assertProcessInstanceCreatedEvent(originProcessId, PROCESS_TEMPLATE_NAME);
+        assertProcessInstanceCreated(originProcessId, PROCESS_TEMPLATE_NAME);
         assertTasks(originProcessId, taskWithoutOriginTaskId(MANDATORY_TASK_LABEL, "STATIC", "SINGLE_INSTANCE", "PLANNED"));
     }
 

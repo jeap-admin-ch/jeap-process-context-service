@@ -1,7 +1,7 @@
 {
   "events": [
     {
-      "eventName": "JeapInitializerSimpleTestEvent",
+      "eventName": "JmeDeclarationCreatedEvent",
       "topicName": "topic1"
     }
   ]

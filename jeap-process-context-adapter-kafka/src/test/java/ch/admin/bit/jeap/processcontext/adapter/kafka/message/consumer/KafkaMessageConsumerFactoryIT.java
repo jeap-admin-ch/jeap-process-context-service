@@ -1,9 +1,10 @@
 package ch.admin.bit.jeap.processcontext.adapter.kafka.message.consumer;
 
+import ch.admin.bit.jeap.messaging.annotations.JeapMessageConsumerContract;
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
 import ch.admin.bit.jeap.processcontext.adapter.kafka.KafkaAdapterIntegrationTestBase;
-import ch.admin.bit.jeap.processcontext.event.ProcessInstanceCreatedEventBuilder;
+import ch.admin.bit.jme.test.JmeSimpleTestEvent;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+@JeapMessageConsumerContract(value = JmeSimpleTestEvent.TypeRef.class, topic = "my-custom-topic")
 class KafkaMessageConsumerFactoryIT extends KafkaAdapterIntegrationTestBase {
 
     private static final String TOPIC_NAME = "my-custom-topic";
@@ -43,10 +45,10 @@ class KafkaMessageConsumerFactoryIT extends KafkaAdapterIntegrationTestBase {
         // wait for listener to be active
         assertThat(container).isNotNull();
         ContainerTestUtils.waitForAssignment(container, 1);
-        assertEquals("jeap-process-context-scs_my-custom-topic_ProcessInstanceCreatedEvent", container.getGroupId());
+        assertEquals("jeap-process-context-scs_my-custom-topic_JmeSimpleTestEvent", container.getGroupId());
 
         // publish event
-        kafkaTemplate.send(TOPIC_NAME, event);
+        sendSync(TOPIC_NAME, event);
 
         // expect consumer to receive event
         Awaitility.await()
@@ -55,13 +57,11 @@ class KafkaMessageConsumerFactoryIT extends KafkaAdapterIntegrationTestBase {
         assertEquals(event.getIdentity().getId(), receivedEvent.get().getIdentity().getId());
     }
 
-    static AvroMessage createDomainEvent() {
-        return ProcessInstanceCreatedEventBuilder.create()
-                .processName("process")
-                .systemName("TEST")
-                .serviceName("service")
-                .processId("123")
-                .idempotenceId("idempotenceId1")
+    private static JmeSimpleTestEvent createDomainEvent() {
+        return JmeSimpleTestEventBuilder.create()
+                .idempotenceId("idempotence-id")
+                .message("test")
+                .serviceName("service-name")
                 .build();
     }
 }

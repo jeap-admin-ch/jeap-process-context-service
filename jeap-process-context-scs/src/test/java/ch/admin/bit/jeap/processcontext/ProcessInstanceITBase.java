@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.processcontext;
 import ch.admin.bit.jeap.messaging.kafka.test.KafkaIntegrationTestBase;
 import ch.admin.bit.jeap.messaging.model.Message;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.ProcessInstanceController;
+import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceDTO;
 import ch.admin.bit.jeap.processcontext.command.CreateProcessInstanceCommandBuilder;
 import ch.admin.bit.jeap.processcontext.command.process.instance.create.CreateProcessInstanceCommand;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
@@ -10,8 +11,6 @@ import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessState;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateQueryRepository;
-import ch.admin.bit.jeap.processcontext.event.process.instance.completed.ProcessInstanceCompletedEvent;
-import ch.admin.bit.jeap.processcontext.event.process.instance.created.ProcessInstanceCreatedEvent;
 import ch.admin.bit.jeap.processcontext.event.process.snapshot.created.ProcessSnapshotCreatedEvent;
 import ch.admin.bit.jeap.security.resource.semanticAuthentication.SemanticApplicationRole;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
@@ -28,15 +27,13 @@ import org.springframework.boot.test.autoconfigure.actuate.observability.AutoCon
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
-import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
-import org.springframework.kafka.listener.KafkaMessageListenerContainer;
-import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -48,11 +45,8 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         value = {
-                "jeap.processcontext.kafka.topic.process-instance-created=process-instance-created",
-                "jeap.processcontext.kafka.topic.process-instance-completed=process-instance-completed",
                 "jeap.processcontext.kafka.topic.process-snapshot-created=process-snapshot-created",
                 "jeap.processcontext.kafka.topic.process-outdated-internal=outdated",
-                "jeap.processcontext.kafka.topic.process-changed-internal=changed",
                 "jeap.processcontext.kafka.topic.create-process-instance=create-process-instance",
                 "jeap.messaging.kafka.error-topic-name=errorTopic",
                 "jeap.security.oauth2.resourceserver.authorizationServer.issuer=http://test/",
@@ -74,10 +68,6 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
     protected ProcessInstanceController processInstanceController;
     @Autowired
     protected ProcessUpdateQueryRepository processUpdateQueryRepository;
-    @Autowired
-    protected EventListenerStub<ProcessInstanceCreatedEvent> processInstanceCreatedEventEventListener;
-    @Autowired
-    protected EventListenerStub<ProcessInstanceCompletedEvent> processInstanceCompletedEventEventListener;
     @Autowired
     protected EventListenerStub<ProcessSnapshotCreatedEvent> processSnapshotCreatedEventListener;
     @Autowired
@@ -117,7 +107,6 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
         originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
         jdbcTemplate.update("DELETE FROM task_instance");
         jdbcTemplate.update("DELETE FROM process_update");
-        jdbcTemplate.update("DELETE FROM process_event");
         jdbcTemplate.update("DELETE FROM process_instance_process_data");
         jdbcTemplate.update("DELETE FROM events_event_data");
         jdbcTemplate.update("DELETE FROM event_reference");
@@ -156,15 +145,6 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
                 );
     }
 
-    private String getContainerId(MessageListenerContainer messageListenerContainer) {
-        ConcurrentMessageListenerContainer<?, ?> concurrentMessageListenerContainer = (ConcurrentMessageListenerContainer<?, ?>) messageListenerContainer;
-        KafkaMessageListenerContainer<?, ?> container = concurrentMessageListenerContainer.getContainers().getFirst();
-
-        return "%s %s".formatted(
-                container.getContainerProperties().getTopics()[0],
-                container.getContainerProperties().getGroupId());
-    }
-
     protected void createProcessInstanceFromTemplate(String processTemplateName) {
         createProcessInstanceFromTemplate(processTemplateName, originProcessId);
     }
@@ -180,15 +160,17 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
         sendSync(COMMAND_TOPIC_NAME, createProcessInstanceCommand);
 
         // wait for process instance to be created
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
     }
 
     protected void assertProcessInstanceCompleted(String originProcessId) {
         Awaitility.await()
                 .pollInSameThread()
                 .atMost(TIMEOUT)
-                .until(() -> processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getState(),
-                        is(equalTo(ProcessState.COMPLETED.name())));
+                .until(() -> {
+                    Optional<ProcessInstanceDTO> processInstanceDTO = getProcessInstance(originProcessId);
+                    return processInstanceDTO.isPresent() && ProcessState.COMPLETED.name().equals(processInstanceDTO.get().getState());
+                });
     }
 
     protected void assertSnapshotCreatedEvents(int... snapshotVersions) {
@@ -199,15 +181,23 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
         }
     }
 
-    protected void assertProcessInstanceCreatedEvent(String originProcessId, String processName) {
-        processInstanceCreatedEventEventListener
-                .awaitEvent(e -> originProcessId.equals(e.getProcessId()) &&
-                        processName.equals(e.getPayload().getProcessName()));
+    protected void assertProcessInstanceCreated(String originProcessId, String processName) {
+        Awaitility.await()
+                .pollInSameThread()
+                .atMost(TIMEOUT)
+                .until(() -> {
+                    Optional<ProcessInstanceDTO> processInstanceDTO = getProcessInstance(originProcessId);
+                    return processInstanceDTO.isPresent() &&
+                            processInstanceDTO.get().getTemplateName().equals(processName);
+                });
     }
 
-    protected void assertProcessInstanceCompletedEvent(String originProcessId) {
-        processInstanceCompletedEventEventListener
-                .awaitEvent(e -> originProcessId.equals(e.getProcessId()));
+    private Optional<ProcessInstanceDTO> getProcessInstance(String originProcessId) {
+        try {
+            return Optional.ofNullable(processInstanceController.getProcessInstanceByOriginProcessId(originProcessId));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     public JeapAuthenticationToken viewAndCreateRoleToken() {

@@ -227,7 +227,7 @@ public class ProcessInstance extends MutableDomainEntity {
 
     public Optional<ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletion> getProcessCompletion() {
         ProcessCompletion reportedCompletion = processCompletion;
-        if ((state==ProcessState.COMPLETED) && (reportedCompletion==null)) {
+        if ((state == ProcessState.COMPLETED) && (reportedCompletion == null)) {
             // this is an 'old' process instance that completed without setting completion data -> create derived completion data
             reportedCompletion = new ProcessCompletion(SUCCEEDED, "All tasks completed.", getModifiedAt());
         }
@@ -260,7 +260,7 @@ public class ProcessInstance extends MutableDomainEntity {
                 .map(condition -> condition.isProcessCompleted(processContext))
                 .filter(ProcessCompletionConditionResult::isCompleted)
                 .findFirst()
-                .ifPresent( result -> {
+                .ifPresent(result -> {
                     this.state = ProcessState.COMPLETED;
                     this.processCompletion = new ProcessCompletion(
                             ProcessCompletionConclusion.valueOf(result.getConclusion().get().name()),

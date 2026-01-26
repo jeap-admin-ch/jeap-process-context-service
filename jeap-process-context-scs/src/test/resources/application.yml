@@ -16,6 +16,8 @@ spring:
       - SET NON_KEYWORDS KEY, VALUE
   application:
     name: test
+  main:
+    banner-mode: off
 jeap:
 
   security:

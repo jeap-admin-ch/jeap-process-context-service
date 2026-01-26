@@ -29,12 +29,10 @@ class ProcessInstanceCreatedByDomainMessageWithObservedTaskIT extends ProcessIns
         // Send event that triggers the process instantiation and creates an observed task
         sendTestCreatingProcessInstanceAndTaskEvent();
 
-        assertProcessInstanceCreatedEvent(originProcessId, PROCESS_TEMPLATE_NAME);
+        assertProcessInstanceCreated(originProcessId, PROCESS_TEMPLATE_NAME);
 
         // When the second event got correlated to the process it will complete the process
         assertProcessInstanceCompleted(originProcessId);
-
-        assertProcessEventCount(originProcessId, 2);
 
         Optional<ProcessInstance> processInstance = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId);
 
@@ -51,9 +49,4 @@ class ProcessInstanceCreatedByDomainMessageWithObservedTaskIT extends ProcessIns
     public JeapAuthenticationToken viewAndCreateRoleToken() {
         return super.viewAndCreateRoleToken();
     }
-
-    protected void assertProcessEventCount(String originProcessId, int count) {
-        // JEAP-6536 TODO
-    }
-
 }

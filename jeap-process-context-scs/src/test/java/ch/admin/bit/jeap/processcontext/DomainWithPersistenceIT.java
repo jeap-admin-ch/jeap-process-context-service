@@ -26,7 +26,6 @@ import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -35,12 +34,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.togglz.core.manager.FeatureManager;
 
-import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mockingDetails;
 
 
 @SuppressWarnings("unused")
@@ -159,85 +156,21 @@ class DomainWithPersistenceIT {
         TestTransaction.end();
 
         createProcessInstance(originProcessId);
-        updateAndReact(originProcessId);
+        processInstanceService.updateProcessState(originProcessId);
 
         Stream.of("sub1", "sub2", "sub3", "sub4").forEach(subject -> {
             receiveTest1Event(originProcessId, subject);
-            updateAndReact(originProcessId);
+            processInstanceService.updateProcessState(originProcessId);
         });
 
         Stream.of("obj1", "obj2", "obj3", "obj4").forEach(object -> {
             receiveTest2Event(originProcessId, object);
-            updateAndReact(originProcessId);
+            processInstanceService.updateProcessState(originProcessId);
         });
 
         // If a change results in additional database statements, the resulting statements
         // should be examined and if necessary the expected count should be adjusted accordingly.
         assertThat(CountSqlStatementsInterceptor.getCountTotal()).isLessThanOrEqualTo(368);
-    }
-
-    @Test
-        /*
-         * Simulates the situation when the process update can't keep up with the event ingestion, i.e. one
-         * process outdated event leads to the processing of a lot of pending process updates at once.
-         *
-         * Measurements:
-         *
-         * Initial (1.2.2023):
-         *
-         *   #statements: 461, #selects: 232, #inserts: 194, #updates: 20, #deletes: 15.
-         *   Entities: @inserts: 37, #updates: 19, #fetches: 0, #loads: 129, #deletes: 0.
-         *   Collections: #updates: 24, #fetches: 142, #loads: 158, #removes: 0, #recreates: 21.
-         *   SQL: #queries: 53, #transactions: 47, #preparedStatements: 461.
-         *
-         * After the following changes to the ProcessInstanceService in order to minimize the number of
-         * process instance reads/writes from/to the database (6.2.2023):
-         *
-         *   1) process the process updates available for a process instance together.
-         *   2) replace element collections for relations and process data with one-to-many relationships to entities
-         *   3) enabling hibernate batching
-         *
-         *   #statements: 177, #selects: 132, #inserts: 32, #updates: 13, #deletes: 0.
-         *   Entities: @inserts: 58, #updates: 12, #fetches: 0, #loads: 94, #deletes: 0.
-         *   Collections: #updates: 3, #fetches: 46, #loads: 62, #removes: 0, #recreates: 21.
-         *   SQL: #queries: 44, #transactions: 38, #preparedStatements: 177.
-         *
-         * After fixing the n+1 problems with event data and related origin task ids on event references (by fetching the
-         * event information associated with process instance event references as a whole in three queries) (07.03.2023):
-         *
-         *   #statements: 148, #selects: 103, #inserts: 32, #updates: 13, #deletes: 0.
-         *   Entities: @inserts: 58, #updates: 12, #fetches: 0, #loads: 62, #deletes: 0.
-         *   Collections: #updates: 3, #fetches: 11, #loads: 27, #removes: 0, #recreates: 21.
-         *   SQL: #queries: 50, #transactions: 38, #preparedStatements: 148.
-         */
-    void simulateBatchedTestProcess() {
-        String originProcessId = "456";
-        assertThat(processInstanceRepository.existsByOriginProcessId(originProcessId)).isFalse();
-
-        // let the PCS start the transactions as needed
-        TestTransaction.end();
-
-        createProcessInstance(originProcessId);
-
-        Stream.of("sub1", "sub2", "sub3", "sub4").forEach(
-                subject -> receiveTest1Event(originProcessId, subject));
-
-        Stream.of("obj1", "obj2", "obj3", "obj4").forEach(object ->
-                receiveTest2Event(originProcessId, object));
-
-        processInstanceService.updateProcessState(originProcessId);
-        long numPcsStateChangesEvents = mockingDetails(internalMessageProducer).getInvocations().stream()
-                .map(InvocationOnMock::getMethod)
-                .map(Method::getName)
-                .filter(methodName -> methodName.equals("produceProcessContextStateChangedEventSynchronously"))
-                .count();
-        for (int i = 0; i < numPcsStateChangesEvents; i++) {
-            // JEAP-6536 TODO processEventService.reactToProcessStateChange(originProcessId);
-        }
-
-        // If a change results in additional database statements, the resulting statements
-        // should be examined and if necessary the expected count should be adjusted accordingly.
-        assertThat(CountSqlStatementsInterceptor.getCountTotal()).isLessThanOrEqualTo(148);
     }
 
     private void createProcessInstance(String originProcessId) {
@@ -263,11 +196,6 @@ class DomainWithPersistenceIT {
                 .objectId(objectId)
                 .build();
         messageReceiver.messageReceived(test2Event);
-    }
-
-    private void updateAndReact(String originProcessId) {
-        processInstanceService.updateProcessState(originProcessId);
-        // JEAP-6536 TODO processEventService.reactToProcessStateChange(originProcessId);
     }
 
     private void logHibernateStatistics() {

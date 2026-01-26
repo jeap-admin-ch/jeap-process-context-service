@@ -34,7 +34,7 @@ class ProcessInstanceTaskMigrationIT extends ProcessInstanceMockS3ITBase {
         // Start a new process
         String processTemplateName = "migrationTaskTest";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Update template name for the process instance
         transactions.withinNewTransaction(() -> entityManager
@@ -69,7 +69,7 @@ class ProcessInstanceTaskMigrationIT extends ProcessInstanceMockS3ITBase {
         // Start a new process
         String processTemplateName = "migrationTaskTest";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Update template name for the process instance
         transactions.withinNewTransaction(() -> entityManager
@@ -105,7 +105,7 @@ class ProcessInstanceTaskMigrationIT extends ProcessInstanceMockS3ITBase {
         // Start a new process
         String processTemplateName = "migrationTaskTest";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Update template name for the process instance
         transactions.withinNewTransaction(() -> entityManager

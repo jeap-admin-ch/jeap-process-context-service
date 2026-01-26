@@ -30,7 +30,7 @@ class ProcessInstanceTemplateMigrationIT extends ProcessInstanceMockS3ITBase {
         // Start a new process
         String processTemplateName = "migrationTest";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Force persisted process template hash to be different from current template hash
         transactions.withinNewTransaction(() -> entityManager

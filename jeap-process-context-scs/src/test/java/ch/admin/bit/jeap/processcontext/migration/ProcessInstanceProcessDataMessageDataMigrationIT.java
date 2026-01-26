@@ -43,7 +43,7 @@ class ProcessInstanceProcessDataMessageDataMigrationIT extends ProcessInstanceMo
         String processTemplateName = "migrationFullTest";
 
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
         transactions.withinNewTransaction(() -> {
             final Message message = Message.messageBuilder()
                     .messageId("eventId")

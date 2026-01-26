@@ -23,8 +23,6 @@ import java.util.concurrent.ExecutionException;
 @Data
 @Slf4j
 public class TopicConfiguration {
-    public static final String PROCESS_INSTANCE_CREATED_EVENT_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-instance-created}";
-    public static final String PROCESS_INSTANCE_COMPLETED_EVENT_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-instance-completed}";
     public static final String PROCESS_OUTDATED_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-outdated-internal}";
     public static final String CREATE_PROCESS_INSTANCE_TOPIC_NAME = "${jeap.processcontext.kafka.topic.create-process-instance}";
     private static final String EVENT_PROCESSING_FAILED_TOPIC_NAME = "${jeap.messaging.kafka.error-topic-name}";
@@ -35,16 +33,6 @@ public class TopicConfiguration {
      * Name of the topic for the internal process outdated events
      */
     private String processOutdatedInternal;
-
-    /**
-     * Name of topic where process instance created events will be published
-     */
-    private String processInstanceCreated;
-
-    /**
-     * Name of topic where process instance completed events will be published
-     */
-    private String processInstanceCompleted;
 
     /**
      * Name of topic where create process instance commands will be published
@@ -75,8 +63,6 @@ public class TopicConfiguration {
             try (AdminClient adminClient = AdminClient.create(kafkaAdmin.getConfigurationProperties())) {
                 List<String> topicNames = new ArrayList<>(List.of(
                         topicConfiguration.getProcessOutdatedInternal(),
-                        topicConfiguration.getProcessInstanceCreated(),
-                        topicConfiguration.getProcessInstanceCompleted(),
                         topicConfiguration.getCreateProcessInstance(),
                         eventProcessingFailedTopicName));
                 if (processTemplateRepository.hasProcessSnapshotsConfigured()) {
@@ -101,16 +87,6 @@ public class TopicConfiguration {
         @Bean
         public NewTopic processOutdatedInternalTopic() {
             return new NewTopic(topicConfiguration.getProcessOutdatedInternal(), 1, (short) 1);
-        }
-
-        @Bean
-        public NewTopic processInstanceCreatedTopic() {
-            return new NewTopic(topicConfiguration.getProcessInstanceCreated(), 1, (short) 1);
-        }
-
-        @Bean
-        public NewTopic processInstanceCompletedTopic() {
-            return new NewTopic(topicConfiguration.getProcessInstanceCompleted(), 1, (short) 1);
         }
 
         @Bean

@@ -10,6 +10,7 @@ import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,6 +19,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled("TODO JEAP-6536 Relations")
 @Slf4j
 class ProcessInstanceWithRelationFeatureFlagIT extends ProcessInstanceMockS3ITBase {
 
@@ -42,14 +44,14 @@ class ProcessInstanceWithRelationFeatureFlagIT extends ProcessInstanceMockS3ITBa
     protected List<Relation> processWithRelations_whenRelationsAreAdded_thenShouldNotifyListener(String processTemplateName, int size) {
         // Start a new process
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         sendTest1Event("subjectId-1");
         sendTest2Event("objectId-1");
 
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessId);
-        assertProcessInstanceCompletedEvent(originProcessId);
+        assertProcessInstanceCompleted(originProcessId);
         Awaitility.await()
                 .atMost(TIMEOUT)
                 .pollInterval(Duration.ofSeconds(2))

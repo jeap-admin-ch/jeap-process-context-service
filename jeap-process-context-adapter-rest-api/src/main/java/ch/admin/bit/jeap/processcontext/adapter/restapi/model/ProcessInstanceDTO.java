@@ -16,6 +16,7 @@ public class ProcessInstanceDTO {
 
     String originProcessId;
     Map<String, String> name;
+    String templateName;
     String state;
     ZonedDateTime createdAt;
     ZonedDateTime modifiedAt;

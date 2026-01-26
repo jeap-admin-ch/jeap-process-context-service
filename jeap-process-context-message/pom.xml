@@ -14,8 +14,6 @@
 
     <properties>
         <create-process-instance-command.version>1.0.1</create-process-instance-command.version>
-        <process-instance-completed-event.version>1.0.1</process-instance-completed-event.version>
-        <process-instance-created-event.version>1.0.1</process-instance-created-event.version>
         <process-snapshot-created-event.version>2.0.1</process-snapshot-created-event.version>
     </properties>
 
@@ -29,16 +27,6 @@
             <groupId>ch.admin.bit.jeap.messagetype.jeap</groupId>
             <artifactId>create-process-instance-command</artifactId>
             <version>${create-process-instance-command.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.admin.bit.jeap.messagetype.jeap</groupId>
-            <artifactId>process-instance-completed-event</artifactId>
-            <version>${process-instance-completed-event.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.admin.bit.jeap.messagetype.jeap</groupId>
-            <artifactId>process-instance-created-event</artifactId>
-            <version>${process-instance-created-event.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.admin.bit.jeap.messagetype.jeap</groupId>

@@ -28,8 +28,7 @@ class ProcessInstanceCreatedByCommandIT extends ProcessInstanceMockS3ITBase {
         // Send command that triggers the process instantiation
         sendTestCreateProcessInstanceCommand();
 
-        assertProcessInstanceCreatedEvent(originProcessId, PROCESS_TEMPLATE_NAME);
-        assertProcessEventCount(originProcessId, 2); // 2 = created + completed events
+        assertProcessInstanceCreated(originProcessId, PROCESS_TEMPLATE_NAME);
         assertProcessInstanceCompleted(originProcessId);
     }
 
@@ -40,9 +39,5 @@ class ProcessInstanceCreatedByCommandIT extends ProcessInstanceMockS3ITBase {
 
     public JeapAuthenticationToken viewAndCreateRoleToken() {
         return super.viewAndCreateRoleToken();
-    }
-
-    protected void assertProcessEventCount(String originProcessId, int count) {
-        // JEAP-6536 TODO
     }
 }

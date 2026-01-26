@@ -56,6 +56,7 @@ public class ProcessInstanceDTOFactory {
 
         return ProcessInstanceDTO.builder()
                 .originProcessId(processInstance.getOriginProcessId())
+                .templateName(processInstance.getProcessTemplateName())
                 .name(translateService.translateProcessTemplateName(processInstance.getProcessTemplate().getName()))
                 .state(processInstance.getState().name())
                 .tasks(tasks)
@@ -78,6 +79,7 @@ public class ProcessInstanceDTOFactory {
 
         return ProcessInstanceDTO.builder()
                 .originProcessId(snap.getOriginProcessId())
+                .templateName(snap.getTemplateName())
                 .name(translateService.translateProcessTemplateName(snap.getTemplateName()))
                 .state(snap.getState())
                 .tasks(createTasksFromSnapshot(snap.getTasks(), snap.getTemplateName(), translateService))

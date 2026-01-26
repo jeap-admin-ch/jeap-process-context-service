@@ -199,7 +199,6 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
     private void assertPresent(List<String> originProcessIds) {
         originProcessIds.forEach(originProcessId -> {
             assertThat(processUpdateRepository.findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, "test", "test")).isPresent();
-            // JEAP-6536 TODO assertThat(processEventRepository.findByOriginProcessId(originProcessId)).hasSize(1);
         });
     }
 
@@ -211,7 +210,6 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
     private void assertNotPresent(List<String> originProcessIds) {
         originProcessIds.forEach(originProcessId -> {
             assertThat(processUpdateRepository.findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, "test", "test")).isNotPresent();
-            // JEAP-6536 TODO assertThat(processEventRepository.findByOriginProcessId(originProcessId)).isEmpty();
         });
     }
 
@@ -238,7 +236,6 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
         criteriaUpdate.where(entityManager.getCriteriaBuilder().equal(root.get("id"), processInstance.getId()));
         entityManager.createQuery(criteriaUpdate).executeUpdate();
         processUpdateRepository.save(ProcessUpdate.messageReceived().originProcessId(originProcessId).messageName("test").messageReference(Generators.timeBasedEpochGenerator().generate()).idempotenceId("test").build());
-        // JEAP-6536 TODO processEventRepository.saveAll(Set.of(ProcessEvent.createRelationAdded(originProcessId, Generators.timeBasedEpochGenerator().generate())));
         return processInstance;
     }
 

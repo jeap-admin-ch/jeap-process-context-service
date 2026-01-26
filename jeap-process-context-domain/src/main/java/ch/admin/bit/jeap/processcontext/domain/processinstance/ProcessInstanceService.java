@@ -68,6 +68,7 @@ public class ProcessInstanceService {
 
         log.info("Creating process {} with origin process ID {} from template {}", processInstance.getId(), originProcessId, processTemplateName);
         metricsListener.processInstanceCreated(processTemplateName);
+        countCompletionIfCompleted(processInstance, ProcessState.STARTED);
         return processInstanceRepository.save(processInstance);
     }
 
@@ -85,9 +86,6 @@ public class ProcessInstanceService {
         Lists.partition(processUpdates, pcsConfigProperties.getProcessInstanceUpdateApplicationBatchSize()).forEach(
                 batch -> processUpdates(originProcessId, batch)
         );
-        if (transactions.withinNewTransactionWithResult(() -> processInstanceRepository.existsByOriginProcessId(originProcessId))) {
-            // TODO JEAP-6536 internalMessageProducer.produceProcessContextStateChangedEventSynchronously(originProcessId);
-        }
         metricsListener.timed("jeap_pcs_late_correlate_message", Map.of(),
                 () -> correlateMessagesByProcessData(originProcessId));
     }
@@ -98,11 +96,23 @@ public class ProcessInstanceService {
                 processTemplateRepository.findByName(processInstanceTemplate.getTemplateName()).ifPresent(template -> {
                     if (!template.getTemplateHash().equals(processInstanceTemplate.getTemplateHash())) {
                         processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).ifPresent(
-                                ProcessInstance::applyTemplateMigrationIfChanged);
+                                processInstance -> applyTemplateMigrationsIfRequired(processInstance));
                     }
                 });
             });
         });
+    }
+
+    private void applyTemplateMigrationsIfRequired(ProcessInstance processInstance) {
+        ProcessState stateBeforeMigration = processInstance.getState();
+        processInstance.applyTemplateMigrationIfChanged();
+        countCompletionIfCompleted(processInstance, stateBeforeMigration);
+    }
+
+    private void countCompletionIfCompleted(ProcessInstance processInstance, ProcessState stateBeforeUpdate) {
+        if (stateBeforeUpdate != ProcessState.COMPLETED && processInstance.getState() == ProcessState.COMPLETED) {
+            metricsListener.processCompleted(processInstance.getProcessTemplate());
+        }
     }
 
     private void processUpdates(String originProcessId, List<ProcessUpdate> processUpdates) {
@@ -123,7 +133,7 @@ public class ProcessInstanceService {
                     return List.of();
                 }
 
-                processInstance.applyTemplateMigrationIfChanged();
+                applyTemplateMigrationsIfRequired(processInstance);
                 processUpdates(processInstance, processUpdates);
                 markHandled(processUpdates);
                 metricsListener.processUpdateProcessed(processInstance.getProcessTemplate(), true, processUpdates.size());
@@ -207,7 +217,10 @@ public class ProcessInstanceService {
                     () -> updateProcessInstance(processInstance, update, messageReferenceMessageDTO, message));
             timestamp = message.getMessageCreatedAt();
         }
+        ProcessState stateBeforeUpdate = processInstance.getState();
         processInstance.evaluateCompletedTasks(timestamp);
+        countCompletionIfCompleted(processInstance, stateBeforeUpdate);
+
         createProcessSnapshotIfTriggered(processInstance);
     }
 

@@ -46,7 +46,7 @@ class ProcessInstanceRelationMigrationIT extends ProcessInstanceMockS3ITBase {
         // Start a new process
         String processTemplateName = "relations";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Add events, producing process data
         // Produce two events with reference to be extracted
@@ -58,7 +58,7 @@ class ProcessInstanceRelationMigrationIT extends ProcessInstanceMockS3ITBase {
 
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessId);
-        assertProcessInstanceCompletedEvent(originProcessId);
+        assertProcessInstanceCompleted(originProcessId);
 
         Awaitility.await()
                 .atMost(TIMEOUT)

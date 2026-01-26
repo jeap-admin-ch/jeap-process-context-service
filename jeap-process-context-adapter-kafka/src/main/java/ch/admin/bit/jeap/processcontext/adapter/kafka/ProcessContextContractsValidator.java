@@ -20,8 +20,6 @@ public class ProcessContextContractsValidator extends DefaultContractsValidator 
     private static final Collection<String> SHARED_EVENTS_ALLOWED_TO_PUBLISH = List.of(
             "ProcessContextOutdatedEvent",
             "MessageProcessingFailedEvent",
-            "ProcessInstanceCreatedEvent",
-            "ProcessInstanceCompletedEvent",
             "ProcessSnapshotCreatedEvent");
 
     public ProcessContextContractsValidator(@Value("${spring.application.name}") String appName, ContractsProvider contractsProvider) {

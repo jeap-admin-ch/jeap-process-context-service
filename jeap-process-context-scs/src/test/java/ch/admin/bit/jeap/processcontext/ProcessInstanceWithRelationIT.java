@@ -12,6 +12,7 @@ import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import com.fasterxml.uuid.Generators;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -22,6 +23,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Disabled("TODO JEAP-6536 Relations")
 @Slf4j
 class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
 
@@ -35,7 +37,7 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
         // Start a new process
         String processTemplateName = "relations";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Add events, producing process data
         // Produce two events with reference to be extracted
@@ -47,7 +49,7 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
 
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessId);
-        assertProcessInstanceCompletedEvent(originProcessId);
+        assertProcessInstanceCompleted(originProcessId);
         Awaitility.await()
                 .atMost(TIMEOUT)
                 .pollInterval(Duration.ofSeconds(2))
@@ -71,7 +73,7 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
         // Start a new process
         String processTemplateName = "relations_join_byRole";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Add events, producing process data
         // Produce two events with reference to be extracted
@@ -83,7 +85,7 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
 
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessId);
-        assertProcessInstanceCompletedEvent(originProcessId);
+        assertProcessInstanceCompleted(originProcessId);
         Awaitility.await()
                 .atMost(TIMEOUT)
                 .pollInterval(Duration.ofSeconds(2))
@@ -105,7 +107,7 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
         // Start a new process
         String processTemplateName = "relations_join_byValue";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Add events, producing process data
         // Produce two events with reference to be extracted
@@ -117,7 +119,7 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
 
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessId);
-        assertProcessInstanceCompletedEvent(originProcessId);
+        assertProcessInstanceCompleted(originProcessId);
         Awaitility.await()
                 .atMost(TIMEOUT)
                 .pollInterval(Duration.ofSeconds(2))

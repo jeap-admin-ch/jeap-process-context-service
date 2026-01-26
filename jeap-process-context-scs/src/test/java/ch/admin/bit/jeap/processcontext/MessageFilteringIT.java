@@ -40,7 +40,7 @@ class MessageFilteringIT extends ProcessInstanceMockS3ITBase {
         // Send event that triggers the process instantiation
         sendTest1CreatingProcessInstanceEvent("dontFilter");
 
-        assertProcessInstanceCreatedEvent(originProcessId, PROCESS_TEMPLATE_NAME);
+        assertProcessInstanceCreated(originProcessId, PROCESS_TEMPLATE_NAME);
 
     }
 

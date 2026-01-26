@@ -18,7 +18,7 @@ class ProcessInstanceWithObservationTasksIT extends ProcessInstanceMockS3ITBase 
         // Start a new process
         String processTemplateName = "observationTasksWithDomainEvent";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // OldWay Task exists, but no ObservedTask
         assertTasks(
@@ -40,7 +40,7 @@ class ProcessInstanceWithObservationTasksIT extends ProcessInstanceMockS3ITBase 
         // Start a new process
         String processTemplateName = "observationTasksWithDomainEventConditional";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // OldWay Task exists, but no ObservedTask
         assertTasks(
@@ -61,7 +61,7 @@ class ProcessInstanceWithObservationTasksIT extends ProcessInstanceMockS3ITBase 
         // Start a new process
         String processTemplateName = "observationTasksWithDomainEventConditional";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // OldWay Task exists, but no ObservedTask
         assertTasks(

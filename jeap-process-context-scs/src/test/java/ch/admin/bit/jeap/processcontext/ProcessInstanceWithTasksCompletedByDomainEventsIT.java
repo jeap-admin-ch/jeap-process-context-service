@@ -23,7 +23,7 @@ class ProcessInstanceWithTasksCompletedByDomainEventsIT extends ProcessInstanceM
     void processWithTaskCompletionConditions_whenConditionsAreMet_thenExpectTaskToBeCompleted() throws Exception {
         String processTemplateName = "domainEvents";
         createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreatedEvent(originProcessId, processTemplateName);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
         assertTasks(taskWithoutOriginTaskId("domainEvents.task.mandatory", "STATIC", "SINGLE_INSTANCE", "PLANNED"));
 
         // Plan multi-instance tasks
@@ -92,7 +92,7 @@ class ProcessInstanceWithTasksCompletedByDomainEventsIT extends ProcessInstanceM
                 task("id-multiple-3", "domainEvents.task.multiple", "DYNAMIC", "MULTI_INSTANCE", "COMPLETED"));
 
         assertProcessInstanceCompleted(originProcessId);
-        assertProcessInstanceCompletedEvent(originProcessId);
+        assertProcessInstanceCompleted(originProcessId);
     }
 
     @Override

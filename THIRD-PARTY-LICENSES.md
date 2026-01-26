@@ -48,10 +48,10 @@ Apache License Version 2.0
  * ch.admin.bit.jeap.archivetype.jeap:process-snapshot-v1 - [ch.admin.bit.jeap.archivetype.jeap:process-snapshot-v1](https://github.com/jeap-admin-ch/jeap-archive-type-registry/tree/main)
  * ch.admin.bit.jeap.archivetype.jeap:process-snapshot-v2 - [ch.admin.bit.jeap.archivetype.jeap:process-snapshot-v2](https://github.com/jeap-admin-ch/jeap-archive-type-registry/tree/main)
  * create-process-instance-command - ch.admin.bit.jeap.messagetype.jeap:create-process-instance-command
- * process-instance-completed-event - ch.admin.bit.jeap.messagetype.jeap:process-instance-completed-event
- * process-instance-created-event - ch.admin.bit.jeap.messagetype.jeap:process-instance-created-event
  * process-snapshot-created-event - ch.admin.bit.jeap.messagetype.jeap:process-snapshot-created-event
- * jeap-initializer-simple-test-event - ch.admin.jeap.messaging.test.messagetype.jeap:jeap-initializer-simple-test-event
+ * ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-declaration-created-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-declaration-created-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
+ * ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-messaging-common - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-messaging-common](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
+ * jme-simple-test-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-simple-test-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
  * AWS SDK for Java - Core - [com.amazonaws:aws-java-sdk-core](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK for AWS STS - [com.amazonaws:aws-java-sdk-sts](https://aws.amazon.com/sdkforjava)
  * JMES Path Query library - [com.amazonaws:jmespath-java](https://aws.amazon.com/sdkforjava)
