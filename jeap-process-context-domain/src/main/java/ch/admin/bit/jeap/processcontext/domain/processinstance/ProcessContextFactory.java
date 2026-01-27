@@ -59,7 +59,7 @@ class ProcessContextFactory {
     private List<ch.admin.bit.jeap.processcontext.plugin.api.context.Message> createMessages(ProcessInstance processInstance) {
         return processInstance.getMessageReferences().stream()
                 .map(ProcessContextFactory::createMessage)
-                .collect(toList());
+                .toList();
     }
 
     private Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> toMessageData(Set<MessageReferenceMessageDataDTO> messageReferenceMessageDataDTOS) {

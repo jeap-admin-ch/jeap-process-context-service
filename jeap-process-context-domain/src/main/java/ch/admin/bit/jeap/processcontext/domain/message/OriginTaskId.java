@@ -20,7 +20,7 @@ public class OriginTaskId {
     private String templateName;
 
     @NotNull
-    private String originTaskId;
+    private String originTaskId; // NOSONAR avoid renaming persistent field
 
     OriginTaskId(String templateName, String originTaskId) {
         Objects.requireNonNull(templateName, "Template name is mandatory.");

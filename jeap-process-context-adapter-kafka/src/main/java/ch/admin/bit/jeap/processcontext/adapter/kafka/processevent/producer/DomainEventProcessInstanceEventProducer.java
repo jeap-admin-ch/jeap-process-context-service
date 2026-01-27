@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.domainevent.avro.AvroDomainEvent;
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
+import ch.admin.bit.jeap.processcontext.adapter.kafka.KafkaProducerException;
 import ch.admin.bit.jeap.processcontext.adapter.kafka.TopicConfiguration;
 import ch.admin.bit.jeap.processcontext.domain.port.ProcessInstanceEventProducer;
 import ch.admin.bit.jeap.processcontext.event.ProcessSnapshotCreatedEventBuilder;
@@ -45,9 +46,9 @@ public class DomainEventProcessInstanceEventProducer implements ProcessInstanceE
             kafkaTemplate.send(topic, event).get();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Sending of " + getEventName(event) + " has been interrupted.", e);
+            throw new KafkaProducerException("Sending of " + getEventName(event) + " has been interrupted.", e);
         } catch (ExecutionException e) {
-            throw new RuntimeException("Sending of " + getEventName(event) + " failed with an exception.", e);
+            throw new KafkaProducerException("Sending of " + getEventName(event) + " failed with an exception.", e);
         }
     }
 

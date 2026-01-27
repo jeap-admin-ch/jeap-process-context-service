@@ -161,7 +161,7 @@ class S3ProcessSnapshotRepositoryIT {
 
         // reconfigure the snapshot retention to newSnapshotRetentionDays and apply the new configuration
         final int newSnapshotRetentionDays = 5;
-        assertThat(SNAPSHOT_RETENTION_DAYS).isNotEqualTo(newSnapshotRetentionDays);
+        assertThat(newSnapshotRetentionDays).isNotEqualTo(SNAPSHOT_RETENTION_DAYS);
         s3ObjectStorageProperties.setSnapshotRetentionDays(newSnapshotRetentionDays);
         s3ProcessSnapshotRepository.applySnapshotRetentionConfiguration();
 

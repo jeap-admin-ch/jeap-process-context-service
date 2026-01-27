@@ -1,9 +1,9 @@
 package ch.admin.bit.jeap.processcontext.adapter.kafka.internalevent.producer;
 
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
+import ch.admin.bit.jeap.processcontext.adapter.kafka.KafkaProducerException;
 import ch.admin.bit.jeap.processcontext.adapter.kafka.TopicConfiguration;
 import ch.admin.bit.jeap.processcontext.domain.port.InternalMessageProducer;
-import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecord;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -18,16 +18,13 @@ class InternalKafkaMessageProducer implements InternalMessageProducer {
     private final KafkaTemplate<SpecificRecord, AvroMessage> internalKafkaTemplate;
     private final TopicConfiguration topicConfiguration;
     private final InternalMessageFactory internalMessageFactory;
-    private final MetricsListener metricsListener;
 
     public InternalKafkaMessageProducer(KafkaTemplate<SpecificRecord, AvroMessage> internalKafkaTemplate,
                                         TopicConfiguration topicConfiguration,
-                                        InternalMessageFactory internalMessageFactory,
-                                        MetricsListener metricsListener) {
+                                        InternalMessageFactory internalMessageFactory) {
         this.internalKafkaTemplate = internalKafkaTemplate;
         this.topicConfiguration = topicConfiguration;
         this.internalMessageFactory = internalMessageFactory;
-        this.metricsListener = metricsListener;
     }
 
     @Override
@@ -46,9 +43,9 @@ class InternalKafkaMessageProducer implements InternalMessageProducer {
                     .get();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Cannot send event", e);
+            throw new KafkaProducerException("Cannot send event", e);
         } catch (ExecutionException e) {
-            throw new RuntimeException("Cannot send event", e);
+            throw new KafkaProducerException("Cannot send event", e);
         }
     }
 }

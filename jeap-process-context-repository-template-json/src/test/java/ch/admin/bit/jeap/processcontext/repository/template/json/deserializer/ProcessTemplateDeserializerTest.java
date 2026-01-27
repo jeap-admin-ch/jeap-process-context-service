@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("java:S5961") // This class requires many assertions to make sure the template is correctly deserialized
 class ProcessTemplateDeserializerTest {
 
     @Test

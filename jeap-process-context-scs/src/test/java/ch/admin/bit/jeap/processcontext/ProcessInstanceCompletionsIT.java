@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
 
+@SuppressWarnings("SameParameterValue")
 @TestPropertySource(properties =
         "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/completions.json")
 @Slf4j
@@ -43,7 +44,7 @@ class ProcessInstanceCompletionsIT extends ProcessInstanceMockS3ITBase {
     @WithAuthentication("viewAndCreateRoleToken")
     void processCompletion_whenAllTasksCompleted_thenCompleted() {
         // send Test3Event that completes the single mandatory task
-        sendTest3Event("complete");
+        sendTest3Event();
         assertProcessInstanceCreated(originProcessId, "completions");
 
         // Check that process completes after receiving Test2Event
@@ -66,13 +67,12 @@ class ProcessInstanceCompletionsIT extends ProcessInstanceMockS3ITBase {
         sendSync("topic.test2", event2);
     }
 
-    private void sendTest3Event(String s) {
-        Test3Event event3 = Test3EventBuilder.createForProcessId(originProcessId)
-                .taskIds()
-                .build();
+    private void sendTest3Event() {
+        Test3Event event3 = Test3EventBuilder.createForProcessId(originProcessId).build();
         sendSync("topic.test3", event3);
     }
 
+    @Override
     public JeapAuthenticationToken viewAndCreateRoleToken() {
         return super.viewAndCreateRoleToken();
     }

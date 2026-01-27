@@ -18,14 +18,19 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MicrometerMetricsListener implements MetricsListener {
 
+    static final String SUCCESSFUL = "successful";
     private static final String PCS_FAILED_PROCESS_UPDATES = "pcs_failed_process_updates";
     private static final String PCS_PROCESS_INSTANCE_CREATED = "pcs_process_instances_created";
     private static final String PCS_MESSAGES_RECEIVED = "pcs_messages_received";
     private static final String PCS_COMMAND_RECEIVED = "pcs_commands_received";
     private static final String PCS_PROCESS_UPDATE_PROCESSED = "pcs_process_updates_processed";
-    private static final String PCS_PROCESS_EVENT_CREATED = "pcs_process_events_created";
     private static final String PCS_PROCESS_COMPLETED = "pcs_processes_completed";
     private static final String PCS_SNAPSHOT_CREATED = "pcs_snapshot_created";
+
+    private static final String PROCESS_TEMPLATE_TAG = "process_template";
+    private static final String MESSAGE_TYPE_TAG = "message_type";
+    private static final String FIRST_PROCESSING_TAG = "first_processing";
+    private static final String EVENT_TYPE_TAG = "event_type";
 
     private final MeterRegistry meterRegistry;
     private Counter failedProcessUpdates;
@@ -46,7 +51,7 @@ public class MicrometerMetricsListener implements MetricsListener {
     public void processInstanceCreated(String processTemplateName) {
         Counter.builder(PCS_PROCESS_INSTANCE_CREATED)
                 .description("Created Process instances")
-                .tag("process_template", processTemplateName)
+                .tag(PROCESS_TEMPLATE_TAG, processTemplateName)
                 .register(meterRegistry);
     }
 
@@ -54,8 +59,8 @@ public class MicrometerMetricsListener implements MetricsListener {
     public void messageReceived(MessageType messageType, boolean firstProcessing) {
         Counter.builder(PCS_MESSAGES_RECEIVED)
                 .description("Received messages")
-                .tag("message_type", messageType.getName())
-                .tag("first_processing", firstProcessing ? "true" : "false")
+                .tag(MESSAGE_TYPE_TAG, messageType.getName())
+                .tag(FIRST_PROCESSING_TAG, firstProcessing ? "true" : "false")
                 .register(meterRegistry)
                 .increment();
     }
@@ -64,7 +69,7 @@ public class MicrometerMetricsListener implements MetricsListener {
     public void commandReceived(AvroMessageType eventType) {
         Counter.builder(PCS_COMMAND_RECEIVED)
                 .description("Received commands")
-                .tag("event_type", eventType.getName())
+                .tag(EVENT_TYPE_TAG, eventType.getName())
                 .register(meterRegistry)
                 .increment();
     }
@@ -73,8 +78,8 @@ public class MicrometerMetricsListener implements MetricsListener {
     public void processUpdateProcessed(ProcessTemplate template, boolean successful, int count) {
         Counter.builder(PCS_PROCESS_UPDATE_PROCESSED)
                 .description("Processed process updates")
-                .tag("process_template", template.getName())
-                .tag("successful", toString(successful))
+                .tag(PROCESS_TEMPLATE_TAG, template.getName())
+                .tag(SUCCESSFUL, toString(successful))
                 .register(meterRegistry)
                 .increment(count);
     }
@@ -83,7 +88,7 @@ public class MicrometerMetricsListener implements MetricsListener {
     public void processCompleted(ProcessTemplate template) {
         Counter.builder(PCS_PROCESS_COMPLETED)
                 .description("Completed processes")
-                .tag("process_template", template.getName())
+                .tag(PROCESS_TEMPLATE_TAG, template.getName())
                 .register(meterRegistry)
                 .increment();
     }
@@ -92,7 +97,7 @@ public class MicrometerMetricsListener implements MetricsListener {
     public void snapshotCreated(ProcessTemplate template) {
         Counter.builder(PCS_SNAPSHOT_CREATED)
                 .description("Snapshot created")
-                .tag("process_template", template.getName())
+                .tag(PROCESS_TEMPLATE_TAG, template.getName())
                 .register(meterRegistry)
                 .increment();
     }

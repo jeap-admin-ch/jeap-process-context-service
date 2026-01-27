@@ -19,9 +19,9 @@ class KafkaMessageListener implements AcknowledgingMessageListener<AvroMessageKe
     private final MessageFilter<AvroMessage> messageFilter;
 
     @Override
-    public void onMessage(ConsumerRecord<AvroMessageKey, AvroMessage> record, Acknowledgment acknowledgment) {
+    public void onMessage(ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord, Acknowledgment acknowledgment) {
         try {
-            handleMessage(record.value(), record.topic());
+            handleMessage(consumerRecord.value(), consumerRecord.topic());
         } catch (Exception ex) {
             throw KafkaEventListenerException.from(ex);
         }

@@ -19,6 +19,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -131,10 +132,10 @@ public class HouseKeepingService {
      * queries. A hibernate session flush is forced after every page by using a new transaction. This also reduces
      * transaction size and minimizes the duration of locks during housekeeping.
      */
-    private void executeInTransactionPerPage(Supplier<Boolean> callback) {
+    private void executeInTransactionPerPage(BooleanSupplier callback) {
         int pages = 0;
         while (pages < configProperties.getMaxPages()) {
-            Boolean hasMorePages = transactionTemplate.<Boolean>execute(status -> callback.get());
+            Boolean hasMorePages = transactionTemplate.<Boolean>execute(status -> callback.getAsBoolean());
             if (hasMorePages == null || !hasMorePages) {
                 break;
             }

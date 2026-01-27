@@ -122,10 +122,6 @@ public class ProcessInstanceService {
                 metricsListener.processUpdateProcessed(processInstance.getProcessTemplate(), true, processUpdates.size());
                 return List.of();
             } catch (ProcessUpdateFailedException pufe) {
-                if (txStatus == null) {
-                    pufe.printStackTrace();
-                }
-
                 txStatus.setRollbackOnly();
                 ProcessTemplate processTemplate = createOrLoadProcessInstance(originProcessId, processUpdates)
                         .map(ProcessInstance::getProcessTemplate)
