@@ -8,9 +8,12 @@ import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/domain_event_triggers_process_instance_instantiation.json")
 @ActiveProfiles("message-filter")
 class MessageFilteringIT extends ProcessInstanceMockS3ITBase {
 

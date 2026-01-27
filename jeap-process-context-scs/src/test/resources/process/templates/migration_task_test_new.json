@@ -7,5 +7,12 @@
     {
       "name": "task3"
     }
+  ],
+  "messages": [
+    {
+      "messageName": "Test2Event",
+      "topicName": "topic.test2",
+      "triggersProcessInstantiation": true
+    }
   ]
 }

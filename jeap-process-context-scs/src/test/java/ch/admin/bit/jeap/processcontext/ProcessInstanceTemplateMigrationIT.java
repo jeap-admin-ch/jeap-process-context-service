@@ -3,16 +3,21 @@ package ch.admin.bit.jeap.processcontext;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceQueryRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.migration.ProcessInstanceMigrationService;
 import ch.admin.bit.jeap.processcontext.domain.tx.Transactions;
+import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
+import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 import java.time.ZonedDateTime;
 
 import static org.awaitility.Awaitility.await;
 
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/migration_test.json")
 class ProcessInstanceTemplateMigrationIT extends ProcessInstanceMockS3ITBase {
 
     @Autowired
@@ -29,7 +34,8 @@ class ProcessInstanceTemplateMigrationIT extends ProcessInstanceMockS3ITBase {
     void processWithOptionalAndMandatoryTasks_whenTasksArePlanned_thenExpectCanComplete() {
         // Start a new process
         String processTemplateName = "migrationTest";
-        createProcessInstanceFromTemplate(processTemplateName);
+        Test1Event event1 = Test1EventBuilder.createForProcessId(originProcessId).build();
+        sendSync("topic.test1", event1);
         assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Force persisted process template hash to be different from current template hash

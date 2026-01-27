@@ -4,15 +4,23 @@ import ch.admin.bit.jeap.messaging.model.Message;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.TaskState;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
 import ch.admin.bit.jeap.processcontext.event.test2.Test2Event;
+import ch.admin.bit.jeap.processcontext.event.test3.Test3Event;
+import ch.admin.bit.jeap.processcontext.event.test4.Test4Event;
 import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
 import ch.admin.bit.jeap.processcontext.testevent.Test2EventBuilder;
+import ch.admin.bit.jeap.processcontext.testevent.Test3EventBuilder;
+import ch.admin.bit.jeap.processcontext.testevent.Test4EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
 
 import static ch.admin.bit.jeap.processcontext.TaskInstanceAssertionDto.task;
 import static ch.admin.bit.jeap.processcontext.TaskInstanceAssertionDto.taskWithoutOriginTaskId;
 
+@SuppressWarnings("SameParameterValue")
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/domain_event_triggers_single_instance_task_planned*.json")
 class TaskSingleInstancePlannedByDomainEventIT extends ProcessInstanceMockS3ITBase {
 
     @Test
@@ -20,7 +28,7 @@ class TaskSingleInstancePlannedByDomainEventIT extends ProcessInstanceMockS3ITBa
     void testTaskPlannedByDomainEvent_singleInstance() {
         // Start a new process
         String processTemplateName = "domainEventTriggersSingleInstanceTaskPlanned";
-        createProcessInstanceFromTemplate(processTemplateName);
+        createProcessInstance(processTemplateName);
         assertTasks(taskStateStatic(processTemplateName, TaskState.PLANNED));
 
         // Plan dynamic single instance task by domain event
@@ -44,7 +52,7 @@ class TaskSingleInstancePlannedByDomainEventIT extends ProcessInstanceMockS3ITBa
     void testTaskPlannedByDomainEvent_singleInstance_omitOnDuplicateCreation() {
         // Start a new process
         String processTemplateName = "domainEventTriggersSingleInstanceTaskPlanned";
-        createProcessInstanceFromTemplate(processTemplateName);
+        createProcessInstance(processTemplateName);
         assertTasks(taskStateStatic(processTemplateName, TaskState.PLANNED));
 
         // Plan dynamic single instance task by domain event
@@ -68,7 +76,7 @@ class TaskSingleInstancePlannedByDomainEventIT extends ProcessInstanceMockS3ITBa
     void testTaskPlannedByDomainEvent_singleInstance_completeByName() {
         // Start a new process
         String processTemplateName = "domainEventTriggersSingleInstanceTaskPlanned";
-        createProcessInstanceFromTemplate(processTemplateName);
+        createProcessInstance(processTemplateName);
         assertTasks(taskStateStatic(processTemplateName, TaskState.PLANNED));
 
         // Plan dynamic single instance task by domain event
@@ -89,7 +97,7 @@ class TaskSingleInstancePlannedByDomainEventIT extends ProcessInstanceMockS3ITBa
     void testTaskPlannedByDomainEvent_singleInstanceConditionResolvesToTrue() {
         // Start a new process
         String processTemplateName = "domainEventTriggersSingleInstanceTaskPlannedConditional";
-        createProcessInstanceFromTemplate(processTemplateName);
+        createProcessInstanceForConditionalTemplate(processTemplateName);
         assertTasks(taskStateStatic(processTemplateName, TaskState.PLANNED));
 
         // Plan dynamic single instance task by domain event
@@ -113,7 +121,7 @@ class TaskSingleInstancePlannedByDomainEventIT extends ProcessInstanceMockS3ITBa
     void testTaskPlannedByDomainEvent_singleInstanceConditionResolvesToFalse() {
         // Start a new process
         String processTemplateName = "domainEventTriggersSingleInstanceTaskPlannedConditional";
-        createProcessInstanceFromTemplate(processTemplateName);
+        createProcessInstanceForConditionalTemplate(processTemplateName);
         assertTasks(taskStateStatic(processTemplateName, TaskState.PLANNED));
 
         // Plan dynamic single instance task by domain event
@@ -130,10 +138,6 @@ class TaskSingleInstancePlannedByDomainEventIT extends ProcessInstanceMockS3ITBa
         assertProcessInstanceCompleted(originProcessId);
     }
 
-    public static TaskInstanceAssertionDto taskState(String originTaskId, String name, TaskState state, String lifecycle, String cardinality) {
-        return task(originTaskId, name, lifecycle, cardinality, state.toString());
-    }
-
     private TaskInstanceAssertionDto taskStateStatic(String processTemplateName, TaskState state) {
         return taskWithoutOriginTaskId(processTemplateName + ".task.staticTask", "STATIC", "SINGLE_INSTANCE", state.toString());
     }
@@ -144,7 +148,7 @@ class TaskSingleInstancePlannedByDomainEventIT extends ProcessInstanceMockS3ITBa
 
     private Message sendTest1Event(String... taskIds) {
         Test1Event event1 = Test1EventBuilder.createForProcessId(originProcessId).taskIds(taskIds).build();
-       sendSync("topic.test1", event1);
+        sendSync("topic.test1", event1);
         return event1;
     }
 
@@ -156,6 +160,18 @@ class TaskSingleInstancePlannedByDomainEventIT extends ProcessInstanceMockS3ITBa
     private void sendTest2Event(String... taskIds) {
         Test2Event event2 = Test2EventBuilder.createForProcessId(originProcessId).taskIds(taskIds).build();
         sendSync("topic.test2", event2);
+    }
+
+    private void createProcessInstance(String templateName) {
+        Test3Event event3 = Test3EventBuilder.createForProcessId(originProcessId).build();
+        sendSync("topic.test3", event3);
+        assertProcessInstanceCreated(originProcessId, templateName);
+    }
+
+    private void createProcessInstanceForConditionalTemplate(String templateName) {
+        Test4Event event4 = Test4EventBuilder.createForProcessId(originProcessId).build();
+        sendSync("topic.test4", event4);
+        assertProcessInstanceCreated(originProcessId, templateName);
     }
 
     @Override

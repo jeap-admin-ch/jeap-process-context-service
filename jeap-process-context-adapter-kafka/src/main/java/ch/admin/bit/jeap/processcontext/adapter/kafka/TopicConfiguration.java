@@ -24,20 +24,13 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 public class TopicConfiguration {
     public static final String PROCESS_OUTDATED_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-outdated-internal}";
-    public static final String CREATE_PROCESS_INSTANCE_TOPIC_NAME = "${jeap.processcontext.kafka.topic.create-process-instance}";
     private static final String EVENT_PROCESSING_FAILED_TOPIC_NAME = "${jeap.messaging.kafka.error-topic-name}";
     public static final String PROCESS_SNAPSHOT_CREATED_EVENT_TOPIC_NAME = "${jeap.processcontext.kafka.topic.process-snapshot-created}";
-
 
     /**
      * Name of the topic for the internal process outdated events
      */
     private String processOutdatedInternal;
-
-    /**
-     * Name of topic where create process instance commands will be published
-     */
-    private String createProcessInstance;
 
     /**
      * Name of the topic where process snapshot created events will be published
@@ -63,7 +56,6 @@ public class TopicConfiguration {
             try (AdminClient adminClient = AdminClient.create(kafkaAdmin.getConfigurationProperties())) {
                 List<String> topicNames = new ArrayList<>(List.of(
                         topicConfiguration.getProcessOutdatedInternal(),
-                        topicConfiguration.getCreateProcessInstance(),
                         eventProcessingFailedTopicName));
                 if (processTemplateRepository.hasProcessSnapshotsConfigured()) {
                     // The notification of a snapshot creation requires the following topic
@@ -71,37 +63,6 @@ public class TopicConfiguration {
                 }
                 adminClient.describeTopics(topicNames).allTopicNames().get();
             }
-        }
-    }
-
-    @Configuration
-    @Profile("local")
-    @RequiredArgsConstructor
-    @SuppressWarnings({"unused", "java:S3985"}) // Class is used as spring configuration even if not public
-    private static class TopicConfigurationLocal {
-        private final TopicConfiguration topicConfiguration;
-
-        @Value(EVENT_PROCESSING_FAILED_TOPIC_NAME)
-        private String eventProcessingFailedTopicName;
-
-        @Bean
-        public NewTopic processOutdatedInternalTopic() {
-            return new NewTopic(topicConfiguration.getProcessOutdatedInternal(), 1, (short) 1);
-        }
-
-        @Bean
-        public NewTopic eventProcessingFailedTopic() {
-            return new NewTopic(eventProcessingFailedTopicName, 1, (short) 1);
-        }
-
-        @Bean
-        public NewTopic createProcessInstance() {
-            return new NewTopic(topicConfiguration.getCreateProcessInstance(), 1, (short) 1);
-        }
-
-        @Bean
-        public NewTopic processSnapshotCreatedTopic() {
-            return new NewTopic(topicConfiguration.getProcessSnapshotCreated(), 1, (short) 1);
         }
     }
 }

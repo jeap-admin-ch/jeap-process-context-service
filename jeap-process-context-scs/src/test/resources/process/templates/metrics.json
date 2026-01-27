@@ -12,7 +12,8 @@
     {
       "eventName": "Test1Event",
       "topicName": "topic.test1",
-      "referenceExtractor": "ch.admin.bit.jeap.processcontext.testevent.RelationTestEventExtractor"
+      "referenceExtractor": "ch.admin.bit.jeap.processcontext.testevent.RelationTestEventExtractor",
+      "triggersProcessInstantiation": true
     },
     {
       "eventName": "Test2Event",

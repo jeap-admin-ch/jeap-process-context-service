@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +26,8 @@ import static org.mockito.Mockito.times;
 
 @SuppressWarnings("SameParameterValue")
 @Slf4j
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/snapshots.json")
 class ProcessSnapshotIT extends ProcessInstanceMockS3ITBase {
 
     @MockitoBean
@@ -36,12 +39,9 @@ class ProcessSnapshotIT extends ProcessInstanceMockS3ITBase {
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void testCreateSnapshots() {
-        // Start a new process
-        String processTemplateName = "snapshots";
-        createProcessInstanceFromTemplate(processTemplateName);
-
-        // send Test1Event that fulfills the programmatic snapshot condition
+        // send Test1Event that creates the process and fulfills the programmatic snapshot condition
         sendTest1Event("trigger");
+        assertProcessInstanceCreated(originProcessId, "snapshots");
         assertMessageCount(originProcessId, "Test1Event", 1);
 
         // send Test1Event again that fulfills the programmatic snapshot condition again

@@ -37,6 +37,7 @@ jeap:
       password: user-secret
       securityProtocol: PLAINTEXT
       consume-without-contract-allowed: true
+      silent-ignore-without-contract: true
 
   monitor:
     prometheus:

@@ -13,7 +13,8 @@
     {
       "messageName": "TestEvent3",
       "topicName": "test3.topic",
-      "payloadExtractor": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestPayloadExtractor"
+      "payloadExtractor": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestPayloadExtractor",
+      "triggersProcessInstantiation": true
     },
     {
       "messageName": "TestEvent4",

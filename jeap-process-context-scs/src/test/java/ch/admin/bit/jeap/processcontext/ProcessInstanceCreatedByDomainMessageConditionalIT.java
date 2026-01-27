@@ -13,6 +13,7 @@ import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
 import java.util.Set;
@@ -22,6 +23,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 @Slf4j
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/domain_event_triggers_process_instance_instantiation_conditional.json")
 class ProcessInstanceCreatedByDomainMessageConditionalIT extends ProcessInstanceMockS3ITBase {
 
     private static final String PROCESS_TEMPLATE_NAME = "domainEventTriggersProcessInstantiationConditional";

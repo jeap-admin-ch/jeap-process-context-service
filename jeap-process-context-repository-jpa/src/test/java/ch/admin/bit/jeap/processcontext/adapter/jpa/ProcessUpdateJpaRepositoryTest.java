@@ -49,19 +49,6 @@ class ProcessUpdateJpaRepositoryTest {
     }
 
     @Test
-    void testSaveAndGetProcessCreatedProcessUpdate() {
-        ProcessUpdate processUpdate = ProcessUpdate.processCreated()
-                .originProcessId(ORIGIN_PROCESS_ID)
-                .build();
-
-        ProcessUpdate processUpdateSaved = processUpdateJpaRepository.saveAndFlush(processUpdate);
-
-        entityManager.detach(processUpdateSaved);
-        ProcessUpdate processUpdateRead = processUpdateJpaRepository.getReferenceById(processUpdateSaved.getId());
-        assertProcessUpdateData(processUpdateRead, processUpdateSaved.getId(), ProcessUpdateType.PROCESS_CREATED, null, "createProcessInstance", null, ORIGIN_PROCESS_ID);
-    }
-
-    @Test
     void testFindByOriginProcessIdAndHandledFalse() {
         saveProcessUpdate(IDEMPOTENCE_ID, false);
         saveProcessUpdate("other idempotence id", true);

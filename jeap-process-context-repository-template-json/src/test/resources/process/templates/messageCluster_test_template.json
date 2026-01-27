@@ -4,7 +4,8 @@
     {
       "messageName": "TestEventWithCluster",
       "topicName": "test.topic",
-      "clusterName": "aws"
+      "clusterName": "aws",
+      "triggersProcessInstantiation": true
     },
     {
       "messageName": "TestEventWithoutCluster",

@@ -6,13 +6,15 @@ import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import com.fasterxml.uuid.Generators;
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
+import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
@@ -23,7 +25,11 @@ public class ProcessInstanceStubs {
     public final String event = "event";
 
     public ProcessInstance createProcessWithSingleTaskInstance() {
-        return createProcessWithSingleTaskInstance("template", emptySet());
+        return createProcessWithSingleTaskInstance("template");
+    }
+
+    public ProcessInstance createProcessWithSingleTaskInstance(String templateName) {
+        return createProcessWithSingleTaskInstance(templateName, Set.of());
     }
 
     public ProcessInstance createProcessWithSingleTaskInstance(String processTemplateName, Set<ProcessData> processData) {
@@ -38,15 +44,13 @@ public class ProcessInstanceStubs {
                 .taskTypes(singletonList(
                         taskType))
                 .build();
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processData);
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
+        setProcessData(processInstance, processData);
+        return processInstance;
     }
 
     public ProcessInstance createProcessWithSingleTaskInstanceAndEvent() {
-        return createProcessWithSingleTaskInstanceAndEvent(emptySet());
-    }
-
-    public ProcessInstance createProcessWithSingleTaskInstanceAndEvent(Set<ProcessData> processData) {
-        return createProcessWithSingleTaskInstanceAndEventWithAdditionalMessages("template", Set.of(), processData, List.of());
+        return createProcessWithSingleTaskInstanceAndEventWithAdditionalMessages("template", Set.of(), Set.of(), List.of());
     }
 
     public ProcessInstance createProcessWithSingleTaskInstanceAndEventWithAdditionalMessages(
@@ -63,7 +67,7 @@ public class ProcessInstanceStubs {
                 .taskTypes(singletonList(
                         taskType))
                 .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processData);
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
         Message message = Message.messageBuilder()
                 .messageName(event)
                 .messageId("eventId")
@@ -74,8 +78,17 @@ public class ProcessInstanceStubs {
                 .messageCreatedAt(ZonedDateTime.now())
                 .build();
         processInstance.addMessage(message);
+        setProcessData(processInstance, processData);
         additionalMessages.forEach(processInstance::addMessage);
         return processInstance;
+    }
+
+    @SneakyThrows
+    private static void setProcessData(ProcessInstance processInstance, Set<ProcessData> processData) {
+        processData.forEach(pd -> pd.setProcessInstance(processInstance));
+        Field processDataField = ProcessInstance.class.getDeclaredField("processData");
+        processDataField.setAccessible(true);
+        processDataField.set(processInstance, new HashSet<>(processData));
     }
 
     public TaskInstance createTaskInstance(String name, int index, String originTaskId) {
@@ -143,7 +156,7 @@ public class ProcessInstanceStubs {
                 .relationPatterns(List.of(relationPattern1, relationPattern2))
                 .build();
 
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, emptySet());
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
 
         String templateName = processInstance.getProcessTemplateName();
         MessageData messageData1 = new MessageData(templateName, "sourceEventDataKey", "someValue", "someRole");
@@ -176,8 +189,8 @@ public class ProcessInstanceStubs {
 
     @SuppressWarnings("java:S5960") // this module provides test code to be used in tests
     public static ProcessInstance createCompletedProcessInstance() {
-        ProcessInstance processInstance = createProcessWithSingleTaskInstance("template", emptySet());
-        processInstance.getTasks().get(0).complete(ZonedDateTime.now());
+        ProcessInstance processInstance = createProcessWithSingleTaskInstance("template");
+        processInstance.getTasks().getFirst().complete(ZonedDateTime.now());
         processInstance.evaluateCompletedTasks(ZonedDateTime.now());
         assertSame(ProcessState.COMPLETED, processInstance.getState());
         return processInstance;

@@ -14,14 +14,15 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
-
-import java.time.Duration;
+import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.util.StringUtils.hasText;
 
 @Slf4j
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/completions.json")
 class TracingInformationInMessageIT extends ProcessInstanceMockS3ITBase {
 
     @Autowired
@@ -33,24 +34,21 @@ class TracingInformationInMessageIT extends ProcessInstanceMockS3ITBase {
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void messageTracing_whenMessageIsReceived_thenTracingInformationIsStored() {
-        // Start a new process
-        createProcessInstanceFromTemplate("completions");
+        // Send message using the kafka template with tracing configuration active
+        sendMessageUsingKafkaTemplateWithTracing();
+        assertProcessInstanceCreated(originProcessId, "completions");
 
-        // Over the kafka template will the tracing configuration active
-        sendMessageAsyncOverKafkaTemplate();
-
-        // Wait until a message is found sent to the process instance
+        // Wait until a message has been correlated to the process instance
         Awaitility.await()
-                .atMost(Duration.ofSeconds(30))
+                .atMost(TIMEOUT)
                 .pollInSameThread()
                 .until(() -> !processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getMessages().isEmpty());
         ProcessInstanceDTO processInstance = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
         assertEquals(1, processInstance.getMessages().size());
         assertTrue(hasText(processInstance.getMessages().getFirst().getTraceId()));
-
     }
 
-    private void sendMessageAsyncOverKafkaTemplate() {
+    private void sendMessageUsingKafkaTemplateWithTracing() {
         ProducerRecord<AvroMessageKey, AvroMessage> producerRecord = new ProducerRecord<>("topic.test1", Test1EventBuilder.createForProcessId(originProcessId)
                 .taskIds("gotcha")
                 .build());

@@ -4,8 +4,6 @@ import ch.admin.bit.jeap.messaging.kafka.test.KafkaIntegrationTestBase;
 import ch.admin.bit.jeap.messaging.model.Message;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.ProcessInstanceController;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceDTO;
-import ch.admin.bit.jeap.processcontext.command.CreateProcessInstanceCommandBuilder;
-import ch.admin.bit.jeap.processcontext.command.process.instance.create.CreateProcessInstanceCommand;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessState;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
@@ -47,7 +45,6 @@ import static org.mockito.Mockito.when;
         value = {
                 "jeap.processcontext.kafka.topic.process-snapshot-created=process-snapshot-created",
                 "jeap.processcontext.kafka.topic.process-outdated-internal=outdated",
-                "jeap.processcontext.kafka.topic.create-process-instance=create-process-instance",
                 "jeap.messaging.kafka.error-topic-name=errorTopic",
                 "jeap.security.oauth2.resourceserver.authorizationServer.issuer=http://test/",
                 "jeap.processcontext.housekeeping.pageSize=1",
@@ -61,8 +58,6 @@ import static org.mockito.Mockito.when;
 public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
 
     protected static final Duration TIMEOUT = Duration.ofSeconds(60);
-
-    private static final String COMMAND_TOPIC_NAME = "create-process-instance";
 
     @Autowired
     protected ProcessInstanceController processInstanceController;
@@ -143,24 +138,6 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
                         .map(ProcessUpdate::isHandled)
                         .orElse(false)
                 );
-    }
-
-    protected void createProcessInstanceFromTemplate(String processTemplateName) {
-        createProcessInstanceFromTemplate(processTemplateName, originProcessId);
-    }
-
-    protected void createProcessInstanceFromTemplate(String processTemplateName, String originProcessId) {
-        CreateProcessInstanceCommand createProcessInstanceCommand = CreateProcessInstanceCommandBuilder.create()
-                .systemName("test")
-                .serviceName("test")
-                .processId(originProcessId)
-                .processTemplateName(processTemplateName)
-                .idempotenceId(Generators.timeBasedEpochGenerator().generate().toString())
-                .build();
-        sendSync(COMMAND_TOPIC_NAME, createProcessInstanceCommand);
-
-        // wait for process instance to be created
-        assertProcessInstanceCreated(originProcessId, processTemplateName);
     }
 
     protected void assertProcessInstanceCompleted(String originProcessId) {

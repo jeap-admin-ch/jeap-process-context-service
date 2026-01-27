@@ -38,6 +38,7 @@ class ProcessTemplateDeserializerTest {
         MessageReferenceDefinition messageReference2 = new MessageReferenceDefinition();
         messageReference2.setMessageName("messageName");
         messageReference2.setTopicName("topicName");
+        messageReference2.setTriggersProcessInstantiation(true);
 
         TaskTypeDefinition taskTypeDefinition = new TaskTypeDefinition("taskName");
         TaskCompletionConditionDefinition completedBy = new TaskCompletionConditionDefinition();
@@ -81,7 +82,7 @@ class ProcessTemplateDeserializerTest {
         ProcessCompletionDefinition domainEventProcessCompletionDefinition =
                 createProcessCompletionDefinition(null, "EventOne", ProcessCompletionConclusion.SUCCEEDED, "def1");
         ProcessCompletionDefinition conditionProcessCompletionDefinition =
-                createProcessCompletionDefinition("ch.admin.bit.jeap.processcontext.plugin.api.condition.AllTasksInFinalStateProcessCompletionCondition", null,  null, "def2");
+                createProcessCompletionDefinition("ch.admin.bit.jeap.processcontext.plugin.api.condition.AllTasksInFinalStateProcessCompletionCondition", null, null, "def2");
         processTemplateDefinition.setCompletions(List.of(domainEventProcessCompletionDefinition, conditionProcessCompletionDefinition));
 
         // process relations
@@ -118,7 +119,7 @@ class ProcessTemplateDeserializerTest {
         assertEquals(1, taskType.getTaskData().size());
         TaskData taskData = taskType.getTaskData().iterator().next();
         assertEquals("messageName", taskData.getSourceMessage());
-        assertEquals(Set.of("foo","bar"), taskData.getMessageDataKeys());
+        assertEquals(Set.of("foo", "bar"), taskData.getMessageDataKeys());
 
         assertEquals(1, template.getRelationPatterns().size());
         RelationPattern relationPattern = template.getRelationPatterns().getFirst();
@@ -135,11 +136,11 @@ class ProcessTemplateDeserializerTest {
         assertEquals("some-role", subjectSelector.getProcessDataRole());
         assertEquals(1, template.getProcessRelationPatterns().size());
         assertEquals(2, template.getProcessCompletionConditions().size());
-        assertTrue(template.getProcessCompletionConditions().getFirst() instanceof MessageProcessCompletionCondition);
+        assertInstanceOf(MessageProcessCompletionCondition.class, template.getProcessCompletionConditions().getFirst());
         MessageProcessCompletionCondition messageProcessCompletionCondition = (MessageProcessCompletionCondition) template.getProcessCompletionConditions().get(0);
         assertEquals("EventOne", messageProcessCompletionCondition.getMessageName());
         assertEquals(ProcessCompletionConclusion.SUCCEEDED, messageProcessCompletionCondition.getConclusion());
-        assertTrue(template.getProcessCompletionConditions().get(1) instanceof AllTasksInFinalStateProcessCompletionCondition);
+        assertInstanceOf(AllTasksInFinalStateProcessCompletionCondition.class, template.getProcessCompletionConditions().get(1));
 
         assertEquals(1, template.getProcessRelationPatterns().size());
         ProcessRelationPattern processRelationPattern = template.getProcessRelationPatterns().getFirst();
@@ -153,13 +154,13 @@ class ProcessTemplateDeserializerTest {
         assertEquals("aMessageDataKey", processRelationPattern.getSource().getMessageDataKey());
 
         assertEquals(3, template.getProcessSnapshotConditions().size());
-        assertTrue(template.getProcessSnapshotConditions().getFirst() instanceof ProcessCompletionProcessSnapshotCondition);
+        assertInstanceOf(ProcessCompletionProcessSnapshotCondition.class, template.getProcessSnapshotConditions().getFirst());
         ProcessCompletionProcessSnapshotCondition anySnapshotCompletionCondition = (ProcessCompletionProcessSnapshotCondition) template.getProcessSnapshotConditions().get(0);
         assertNull(anySnapshotCompletionCondition.getTriggeringConclusion());
-        assertTrue(template.getProcessSnapshotConditions().get(1) instanceof ProcessCompletionProcessSnapshotCondition);
+        assertInstanceOf(ProcessCompletionProcessSnapshotCondition.class, template.getProcessSnapshotConditions().get(1));
         ProcessCompletionProcessSnapshotCondition succeededSnapshotCompletionCondition = (ProcessCompletionProcessSnapshotCondition) template.getProcessSnapshotConditions().get(1);
         assertEquals(ProcessCompletionConclusion.SUCCEEDED, succeededSnapshotCompletionCondition.getTriggeringConclusion());
-        assertTrue(template.getProcessSnapshotConditions().get(2) instanceof TestProcessSnapshotCondition);
+        assertInstanceOf(TestProcessSnapshotCondition.class, template.getProcessSnapshotConditions().get(2));
     }
 
     @Test
@@ -246,6 +247,7 @@ class ProcessTemplateDeserializerTest {
         MessageReferenceDefinition messageReference2 = new MessageReferenceDefinition();
         messageReference2.setMessageName("messageName");
         messageReference2.setTopicName("topicName");
+        messageReference2.setTriggersProcessInstantiation(true);
 
         TaskTypeDefinition taskTypeDefinition = new TaskTypeDefinition("taskName");
         TaskCompletionConditionDefinition completedBy = new TaskCompletionConditionDefinition();
@@ -315,6 +317,11 @@ class ProcessTemplateDeserializerTest {
         ProcessTemplateDefinition processTemplateDefinition = new ProcessTemplateDefinition();
         processTemplateDefinition.setTasks(List.of(taskTypeDefinition, taskTypeDefinition));
         processTemplateDefinition.setName("name");
+        MessageReferenceDefinition messageReference = new MessageReferenceDefinition();
+        messageReference.setMessageName("messageName");
+        messageReference.setTopicName("topic2");
+        messageReference.setTriggersProcessInstantiation(true);
+        processTemplateDefinition.setMessages(List.of(messageReference));
         ProcessTemplateDeserializer deserializer = new ProcessTemplateDeserializer(processTemplateDefinition, "hash");
 
         TemplateDefinitionException ex = assertThrows(TemplateDefinitionException.class,
@@ -329,6 +336,13 @@ class ProcessTemplateDeserializerTest {
         ProcessTemplateDefinition processTemplateDefinition = new ProcessTemplateDefinition();
         processTemplateDefinition.setName("name");
         processTemplateDefinition.setTasks(List.of(taskTypeDefinition));
+
+        MessageReferenceDefinition messageReference = new MessageReferenceDefinition();
+        messageReference.setMessageName("messageName");
+        messageReference.setTopicName("topicName");
+        messageReference.setTriggersProcessInstantiation(true);
+        processTemplateDefinition.getMessages().add(messageReference);
+
         ProcessTemplateDeserializer deserializer = new ProcessTemplateDeserializer(processTemplateDefinition, "hash");
 
         ProcessTemplate template = deserializer.toProcessTemplate();
@@ -346,6 +360,7 @@ class ProcessTemplateDeserializerTest {
         MessageReferenceDefinition messageReferenceDefinitionOne = new MessageReferenceDefinition();
         messageReferenceDefinitionOne.setMessageName("EventOne");
         messageReferenceDefinitionOne.setTopicName("TopicNameOne");
+        messageReferenceDefinitionOne.setTriggersProcessInstantiation(true);
 
         MessageReferenceDefinition messageReferenceDefinitionTwo = new MessageReferenceDefinition();
         messageReferenceDefinitionTwo.setMessageName("EventTwo");
@@ -373,10 +388,10 @@ class ProcessTemplateDeserializerTest {
         assertEquals(4, template.getMessageReferences().size());
         assertEquals("EventOne", template.getMessageReferences().getFirst().getMessageName());
         assertEquals("TopicNameOne", template.getMessageReferences().get(0).getTopicName());
-        assertTrue(template.getMessageReferences().get(0).getCorrelationProvider() instanceof MessageProcessIdCorrelationProvider);
-        assertTrue(template.getMessageReferences().get(1).getCorrelationProvider() instanceof TestCorrelationProvider);
-        assertTrue(template.getMessageReferences().get(2).getPayloadExtractor() instanceof TestPayloadExtractor);
-        assertTrue(template.getMessageReferences().get(2).getPayloadExtractor() instanceof TestPayloadExtractor);
+        assertInstanceOf(MessageProcessIdCorrelationProvider.class, template.getMessageReferences().get(0).getCorrelationProvider());
+        assertInstanceOf(TestCorrelationProvider.class, template.getMessageReferences().get(1).getCorrelationProvider());
+        assertInstanceOf(TestPayloadExtractor.class, template.getMessageReferences().get(2).getPayloadExtractor());
+        assertInstanceOf(TestPayloadExtractor.class, template.getMessageReferences().get(2).getPayloadExtractor());
         assertEquals("SomeProcessDataKey", template.getMessageReferences().get(3).getCorrelatedByProcessData().getProcessDataKey());
         assertEquals("SomeEventDataKey", template.getMessageReferences().get(3).getCorrelatedByProcessData().getMessageDataKey());
     }
@@ -422,12 +437,12 @@ class ProcessTemplateDeserializerTest {
 
         ProcessTemplate template = deserializer.toProcessTemplate();
 
-        assertTrue(template.getMessageReferences().get(0).getProcessInstantiationCondition() instanceof AlwaysProcessInstantiationCondition);
-        assertTrue(template.getMessageReferences().get(1).getProcessInstantiationCondition() instanceof TestProcessInstantiationCondition);
-        assertTrue(template.getMessageReferences().get(2).getProcessInstantiationCondition() instanceof NeverProcessInstantiationCondition);
-        assertTrue(template.getMessageReferences().get(3).getProcessInstantiationCondition() instanceof NeverProcessInstantiationCondition);
-        assertTrue(template.getMessageReferences().get(4).getProcessInstantiationCondition() instanceof TestProcessInstantiationCondition);
-        assertTrue(template.getMessageReferences().get(5).getProcessInstantiationCondition() instanceof NeverProcessInstantiationCondition);
+        assertInstanceOf(AlwaysProcessInstantiationCondition.class, template.getMessageReferences().get(0).getProcessInstantiationCondition());
+        assertInstanceOf(TestProcessInstantiationCondition.class, template.getMessageReferences().get(1).getProcessInstantiationCondition());
+        assertInstanceOf(NeverProcessInstantiationCondition.class, template.getMessageReferences().get(2).getProcessInstantiationCondition());
+        assertInstanceOf(NeverProcessInstantiationCondition.class, template.getMessageReferences().get(3).getProcessInstantiationCondition());
+        assertInstanceOf(TestProcessInstantiationCondition.class, template.getMessageReferences().get(4).getProcessInstantiationCondition());
+        assertInstanceOf(NeverProcessInstantiationCondition.class, template.getMessageReferences().get(5).getProcessInstantiationCondition());
     }
 
     @Test
@@ -519,9 +534,9 @@ class ProcessTemplateDeserializerTest {
         ProcessTemplateDeserializer deserializer = new ProcessTemplateDeserializer(new ProcessTemplateDefinition(), "hash");
 
         assertThatThrownBy(() -> deserializer.toTaskType(definition, 0))
-            .isInstanceOf(TemplateDefinitionException.class)
-            .hasMessageContaining("single")
-            .hasMessageContaining("deprecated-with-lifecycle");
+                .isInstanceOf(TemplateDefinitionException.class)
+                .hasMessageContaining("single")
+                .hasMessageContaining("deprecated-with-lifecycle");
     }
 
     @Test
@@ -586,7 +601,7 @@ class ProcessTemplateDeserializerTest {
         TaskType taskType = deserializer.toTaskType(taskTypeDefinition, 0);
         assertNotNull(taskType.getPlannedByDomainEvent());
         assertNotNull(taskType.getInstantiationCondition());
-        assertTrue(taskType.getInstantiationCondition() instanceof TaskInstantiationCondition);
+        assertInstanceOf(TaskInstantiationCondition.class, taskType.getInstantiationCondition());
     }
 
     @Test
@@ -606,6 +621,7 @@ class ProcessTemplateDeserializerTest {
         MessageReferenceDefinition messageReferenceDefinitionOne = new MessageReferenceDefinition();
         messageReferenceDefinitionOne.setMessageName("domainEvent");
         messageReferenceDefinitionOne.setTopicName("TopicNameOne");
+        messageReferenceDefinitionOne.setTriggersProcessInstantiation(true);
 
         processTemplateDefinition.setMessages(List.of(messageReferenceDefinitionOne));
 
@@ -645,7 +661,7 @@ class ProcessTemplateDeserializerTest {
         TaskType taskType = deserializer.toTaskType(taskTypeDefinition, 0);
         assertNotNull(taskType.getObservesDomainEvent());
         assertNotNull(taskType.getInstantiationCondition());
-        assertTrue(taskType.getInstantiationCondition() instanceof TaskInstantiationCondition);
+        assertInstanceOf(TaskInstantiationCondition.class, taskType.getInstantiationCondition());
     }
 
     @Test
@@ -689,11 +705,11 @@ class ProcessTemplateDeserializerTest {
 
         // source message planning the task should not throw
         taskDataDefinition.setSourceMessage("planningMessage");
-        assertDoesNotThrow( () -> deserializer.toTaskType(definition, 0));
+        assertDoesNotThrow(() -> deserializer.toTaskType(definition, 0));
 
         // source message completing the task should not throw
         taskDataDefinition.setSourceMessage("completingMessage");
-        assertDoesNotThrow( () -> deserializer.toTaskType(definition, 0));
+        assertDoesNotThrow(() -> deserializer.toTaskType(definition, 0));
     }
 
     @Test
@@ -719,7 +735,7 @@ class ProcessTemplateDeserializerTest {
 
         // source message observing the task should not throw
         taskDataDefinition.setSourceMessage("observingMessage");
-        assertDoesNotThrow( () -> deserializer.toTaskType(definition, 0));
+        assertDoesNotThrow(() -> deserializer.toTaskType(definition, 0));
     }
 
     @Test
@@ -809,7 +825,7 @@ class ProcessTemplateDeserializerTest {
     void toTemplate_plannedByEventNameNotDefined() {
         // given
         TaskTypeDefinition taskTypeDefinition = new TaskTypeDefinition("task");
-        TaskPlannedByConditionDefinition taskPlannedByCondition= new TaskPlannedByConditionDefinition();
+        TaskPlannedByConditionDefinition taskPlannedByCondition = new TaskPlannedByConditionDefinition();
         taskPlannedByCondition.setMessage("domainEvent");
         taskTypeDefinition.setPlannedBy(taskPlannedByCondition);
         ProcessTemplateDefinition processTemplateDefinition = new ProcessTemplateDefinition();
@@ -831,7 +847,7 @@ class ProcessTemplateDeserializerTest {
     void toTemplate_CompletedByEventNameNotDefined() {
         // given
         TaskTypeDefinition taskTypeDefinition = new TaskTypeDefinition("task");
-        TaskCompletionConditionDefinition taskCompletionCondition= new TaskCompletionConditionDefinition();
+        TaskCompletionConditionDefinition taskCompletionCondition = new TaskCompletionConditionDefinition();
         taskCompletionCondition.setMessage("domainEvent");
         taskTypeDefinition.setCompletedBy(taskCompletionCondition);
         ProcessTemplateDefinition processTemplateDefinition = new ProcessTemplateDefinition();
@@ -891,6 +907,7 @@ class ProcessTemplateDeserializerTest {
         MessageReferenceDefinition messageReferenceDefinitionOne = new MessageReferenceDefinition();
         messageReferenceDefinitionOne.setMessageName("EventOne");
         messageReferenceDefinitionOne.setTopicName("TopicNameOne");
+        messageReferenceDefinitionOne.setTriggersProcessInstantiation(true);
 
         processTemplateDefinition.setMessages(List.of(messageReferenceDefinitionOne));
 
@@ -926,6 +943,7 @@ class ProcessTemplateDeserializerTest {
         MessageReferenceDefinition messageReferenceDefinitionOne = new MessageReferenceDefinition();
         messageReferenceDefinitionOne.setMessageName("EventOne");
         messageReferenceDefinitionOne.setTopicName("TopicNameOne");
+        messageReferenceDefinitionOne.setTriggersProcessInstantiation(true);
 
         processTemplateDefinition.setMessages(List.of(messageReferenceDefinitionOne));
 
@@ -948,9 +966,10 @@ class ProcessTemplateDeserializerTest {
         messageReferenceDefinitionOne.setMessageName("EventOne");
         messageReferenceDefinitionOne.setTopicName("TopicNameOne");
 
-        MessageReferenceDefinition messageReference2= new MessageReferenceDefinition();
+        MessageReferenceDefinition messageReference2 = new MessageReferenceDefinition();
         messageReference2.setMessageName("messageName");
         messageReference2.setTopicName("topic2");
+        messageReference2.setTriggersProcessInstantiation(true);
 
         TaskTypeDefinition taskTypeDefinition = new TaskTypeDefinition("taskName");
         TaskCompletionConditionDefinition completedBy = new TaskCompletionConditionDefinition();
@@ -990,21 +1009,21 @@ class ProcessTemplateDeserializerTest {
     @Test
     void toTemplate_conditionCompletionAndDomainEventCompletionBothProvided() {
         TemplateDefinitionException ex = assertThrows(TemplateDefinitionException.class, () ->
-               deserializeCompletionCondition("some.condition", "SomeEvent", null, true));
-        assertEquals("A process completion must either provide a condition or name a domainevent, but not both at the same time.", ex.getMessage());
+                deserializeCompletionCondition("some.condition", "SomeEvent", null, true));
+        assertEquals("A process completion must either provide a condition or name a message, but not both at the same time.", ex.getMessage());
     }
 
     @Test
     void toTemplate_completionWithoutConditionNorDomainEvent() {
         TemplateDefinitionException ex = assertThrows(TemplateDefinitionException.class, () ->
-                deserializeCompletionCondition(null, null, null, false));
-        assertEquals("A process completion must either provide a condition or name a domainevent, but not both at the same time.", ex.getMessage());
+                deserializeCompletionCondition(null, null, null, true));
+        assertEquals("A process completion must either provide a condition or name a message, but not both at the same time.", ex.getMessage());
     }
 
     @Test
     void toTemplate_conditionCompletionWithAdditionalAttributes() {
         TemplateDefinitionException ex = assertThrows(TemplateDefinitionException.class, () ->
-                deserializeCompletionCondition("some.condition", null, ProcessCompletionConclusion.SUCCEEDED, false));
+                deserializeCompletionCondition("some.condition", null, ProcessCompletionConclusion.SUCCEEDED, true));
         assertEquals("A process completion providing a condition mustn't provide additional attributes.", ex.getMessage());
     }
 
@@ -1040,17 +1059,25 @@ class ProcessTemplateDeserializerTest {
     }
 
 
-    private void deserializeCompletionCondition(String condition, String message, ProcessCompletionConclusion conclusion, boolean addDomainEventReference) {
+    private void deserializeCompletionCondition(String condition, String completionMessage, ProcessCompletionConclusion conclusion, boolean addCompletionMessage) {
         ProcessTemplateDefinition processTemplateDefinition = new ProcessTemplateDefinition();
         processTemplateDefinition.setName("someName");
-        if (addDomainEventReference) {
-            MessageReferenceDefinition messageReferenceDefinition = new MessageReferenceDefinition();
-            messageReferenceDefinition.setMessageName(message);
-            messageReferenceDefinition.setTopicName(message + "-topic");
-            processTemplateDefinition.setMessages(List.of(messageReferenceDefinition));
+
+        if (completionMessage != null && addCompletionMessage) {
+            MessageReferenceDefinition completionMessageDefinition = new MessageReferenceDefinition();
+            completionMessageDefinition.setMessageName(completionMessage);
+            completionMessageDefinition.setTopicName(completionMessage + "-topic");
+            processTemplateDefinition.getMessages().add(completionMessageDefinition);
         }
-        ProcessCompletionDefinition completionDefinition = createProcessCompletionDefinition(condition, message, conclusion, "name");
+        MessageReferenceDefinition instantiationMessageDefinition = new MessageReferenceDefinition();
+        instantiationMessageDefinition.setMessageName("TestMessage");
+        instantiationMessageDefinition.setTopicName("test-topic");
+        instantiationMessageDefinition.setTriggersProcessInstantiation(true);
+        processTemplateDefinition.getMessages().add(instantiationMessageDefinition);
+
+        ProcessCompletionDefinition completionDefinition = createProcessCompletionDefinition(condition, completionMessage, conclusion, "name");
         processTemplateDefinition.setCompletions(List.of(completionDefinition));
+
         ProcessTemplateDeserializer deserializer = new ProcessTemplateDeserializer(processTemplateDefinition, "hash");
         deserializer.toProcessTemplate();
     }
@@ -1079,6 +1106,13 @@ class ProcessTemplateDeserializerTest {
         ProcessTemplateDefinition processTemplateDefinition = new ProcessTemplateDefinition();
         processTemplateDefinition.setName("someName");
         processTemplateDefinition.setSnapshots(List.of(snapshotDefinition));
+
+        MessageReferenceDefinition messageReference = new MessageReferenceDefinition();
+        messageReference.setMessageName("messageName");
+        messageReference.setTopicName("topic");
+        messageReference.setTriggersProcessInstantiation(true);
+        processTemplateDefinition.setMessages(List.of(messageReference));
+
         ProcessTemplateDeserializer deserializer = new ProcessTemplateDeserializer(processTemplateDefinition, "hash");
         deserializer.toProcessTemplate();
     }

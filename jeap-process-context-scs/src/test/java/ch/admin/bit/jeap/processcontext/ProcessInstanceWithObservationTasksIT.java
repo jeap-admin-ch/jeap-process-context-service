@@ -3,13 +3,20 @@ package ch.admin.bit.jeap.processcontext;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.TaskState;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskLifecycle;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
+import ch.admin.bit.jeap.processcontext.event.test3.Test3Event;
+import ch.admin.bit.jeap.processcontext.event.test4.Test4Event;
 import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
+import ch.admin.bit.jeap.processcontext.testevent.Test3EventBuilder;
+import ch.admin.bit.jeap.processcontext.testevent.Test4EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
 
 import static ch.admin.bit.jeap.processcontext.TaskInstanceAssertionDto.task;
 
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/observation_tasks_with_domain_event*.json")
 class ProcessInstanceWithObservationTasksIT extends ProcessInstanceMockS3ITBase {
 
     @Test
@@ -17,7 +24,8 @@ class ProcessInstanceWithObservationTasksIT extends ProcessInstanceMockS3ITBase 
     void completingObservationTasks() {
         // Start a new process
         String processTemplateName = "observationTasksWithDomainEvent";
-        createProcessInstanceFromTemplate(processTemplateName);
+        Test4Event event4 = Test4EventBuilder.createForProcessId(originProcessId).build();
+        sendSync("topic.test4", event4);
         assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // OldWay Task exists, but no ObservedTask
@@ -39,7 +47,8 @@ class ProcessInstanceWithObservationTasksIT extends ProcessInstanceMockS3ITBase 
     void completingObservationTasksWithConditionResolvingToTrue() {
         // Start a new process
         String processTemplateName = "observationTasksWithDomainEventConditional";
-        createProcessInstanceFromTemplate(processTemplateName);
+        Test3Event event3 = Test3EventBuilder.createForProcessId(originProcessId).build();
+        sendSync("topic.test3", event3);
         assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // OldWay Task exists, but no ObservedTask
@@ -60,7 +69,8 @@ class ProcessInstanceWithObservationTasksIT extends ProcessInstanceMockS3ITBase 
     void completingObservationTasksWithConditionResolvingToFalse() {
         // Start a new process
         String processTemplateName = "observationTasksWithDomainEventConditional";
-        createProcessInstanceFromTemplate(processTemplateName);
+        Test3Event event3 = Test3EventBuilder.createForProcessId(originProcessId).build();
+        sendSync("topic.test3", event3);
         assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // OldWay Task exists, but no ObservedTask

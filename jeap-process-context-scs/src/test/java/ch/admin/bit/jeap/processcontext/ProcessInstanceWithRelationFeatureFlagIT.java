@@ -13,6 +13,7 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
 import java.util.List;
@@ -21,6 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Disabled("TODO JEAP-6536 Relations")
 @Slf4j
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/relations_feature_flags*.json")
 class ProcessInstanceWithRelationFeatureFlagIT extends ProcessInstanceMockS3ITBase {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -42,12 +45,9 @@ class ProcessInstanceWithRelationFeatureFlagIT extends ProcessInstanceMockS3ITBa
     }
 
     protected List<Relation> processWithRelations_whenRelationsAreAdded_thenShouldNotifyListener(String processTemplateName, int size) {
-        // Start a new process
-        createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreated(originProcessId, processTemplateName);
-
         sendTest1Event("subjectId-1");
         sendTest2Event("objectId-1");
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessId);

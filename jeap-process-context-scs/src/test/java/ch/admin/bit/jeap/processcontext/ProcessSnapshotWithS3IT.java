@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.MinIOContainer;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
@@ -32,6 +33,8 @@ import static org.hamcrest.Matchers.is;
 
 @SuppressWarnings("SameParameterValue")
 @Slf4j
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/snapshots.json")
 class ProcessSnapshotWithS3IT extends ProcessInstanceITBase {
 
     private static final String MINIO_IMAGE = "minio/minio:RELEASE.2025-09-07T16-13-09Z";
@@ -66,11 +69,9 @@ class ProcessSnapshotWithS3IT extends ProcessInstanceITBase {
     @WithAuthentication("viewAndCreateRoleToken")
     void testCreateSnapshots() {
         // start a new process
-        String processTemplateName = "snapshots";
-        createProcessInstanceFromTemplate(processTemplateName);
-
-        // send Test1Event that fulfills the programmatic snapshot condition
+        // send Test1Event that creates the process and fulfills the programmatic snapshot condition
         sendTest1Event("trigger");
+        assertProcessInstanceCreated(originProcessId, "snapshots");
         assertMessageCount(originProcessId, "Test1Event", 1);
 
         // send Test2Event that complete the only task in the process and thus the process and triggers a snapshot on completion

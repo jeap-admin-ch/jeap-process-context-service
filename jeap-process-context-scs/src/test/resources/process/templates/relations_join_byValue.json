@@ -17,7 +17,8 @@
     {
       "eventName": "Test2Event",
       "topicName": "topic.test2",
-      "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.RelationTestEventExtractor"
+      "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.RelationTestEventExtractor",
+      "triggersProcessInstantiation": true
     }
   ],
   "processData": [

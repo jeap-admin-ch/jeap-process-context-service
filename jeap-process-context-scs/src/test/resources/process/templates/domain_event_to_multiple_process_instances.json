@@ -13,6 +13,11 @@
       "eventName": "ProcessIdsEvent",
       "topicName": "topic.processids",
       "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.ProcessIdsEventCorrelationProvider"
+    },
+    {
+      "eventName": "Test1Event",
+      "topicName": "topic.test1",
+      "triggersProcessInstantiation": true
     }
   ]
 }

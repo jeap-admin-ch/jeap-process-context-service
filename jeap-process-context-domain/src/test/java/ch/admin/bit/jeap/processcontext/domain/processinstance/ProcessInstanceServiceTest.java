@@ -35,9 +35,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static java.util.Collections.emptySet;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,53 +71,6 @@ class ProcessInstanceServiceTest {
         target = new ProcessInstanceService(internalMessageProducer,
                 processUpdateQueryRepository, processInstanceRepository, processTemplateRepository, messageRepository,
                 processUpdateRepository, processSnapshotService, transactions, metricsListener, pcsConfigProperties);
-    }
-
-    @Test
-    void createProcessInstance_alreadyExists() {
-        String originProcessId = "originProcessId";
-        String processTemplateName = "originProcessId";
-        doReturn(true).when(processInstanceRepository).existsByOriginProcessId(originProcessId);
-
-        target.createProcessInstance(originProcessId, processTemplateName, emptySet());
-
-        verify(processInstanceRepository, never()).save(any());
-        verify(processUpdateRepository, never()).save(any());
-        verify(internalMessageProducer).produceProcessContextOutdatedEventSynchronously(originProcessId);
-    }
-
-    @Test
-    void createProcessInstance_notYetExisting() {
-        String originProcessId = "originProcessId";
-        String processTemplateName = "processTemplateName";
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
-        ProcessTemplate processTemplate = processInstance.getProcessTemplate();
-        Set<ProcessData> processData = processInstance.getProcessData();
-
-        ArgumentCaptor<ProcessInstance> processInstanceArgumentCaptor = ArgumentCaptor.forClass(ProcessInstance.class);
-        doReturn(processInstance).when(processInstanceRepository).save(processInstanceArgumentCaptor.capture());
-        doReturn(Optional.of(processTemplate)).when(processTemplateRepository).findByName(processTemplateName);
-
-        target.createProcessInstance(originProcessId, processTemplateName, processData);
-
-        assertEquals(originProcessId, processInstanceArgumentCaptor.getValue().getOriginProcessId());
-        assertEquals(processTemplate, processInstanceArgumentCaptor.getValue().getProcessTemplate());
-        assertEquals(processData, processInstanceArgumentCaptor.getValue().getProcessData());
-        verify(internalMessageProducer).produceProcessContextOutdatedEventSynchronously(originProcessId);
-        verify(processUpdateRepository).save(any());
-    }
-
-    @Test
-    void createProcessInstance_templateNotExisting() {
-        String originProcessId = "originProcessId";
-        String processTemplateName = "processTemplateName";
-        doReturn(Optional.empty()).when(processTemplateRepository).findByName(processTemplateName);
-
-        assertThrows(NotFoundException.class, () -> target.createProcessInstance(originProcessId, processTemplateName, emptySet()));
-
-        verify(processInstanceRepository, never()).save(any());
-        verify(processUpdateRepository, never()).save(any());
-        verify(internalMessageProducer, never()).produceProcessContextOutdatedEventSynchronously(any());
     }
 
     @Test
@@ -600,7 +550,8 @@ class ProcessInstanceServiceTest {
         when(processInstanceRepository.findProcessInstanceTemplate(originProcessId)).thenReturn(Optional.of(processInstanceTemplate));
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData()).thenReturn(true);
-        when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.PROCESS_CREATED);
+        when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
+        when(processUpdate.getMessageName()).thenReturn("eventName");
         when(processUpdate.getMessageReference()).thenReturn(Optional.of(eventReference));
 
         when(message.getId()).thenReturn(Generators.timeBasedEpochGenerator().generate());
@@ -685,7 +636,7 @@ class ProcessInstanceServiceTest {
         when(processInstanceTemplate.getTemplateName()).thenReturn("templateName");
         when(processInstanceRepository.findProcessInstanceTemplate(originProcessId)).thenReturn(Optional.of(processInstanceTemplate));
         when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData()).thenReturn(true);
-        when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.PROCESS_CREATED);
+        when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
 
         ProcessTemplate processTemplate = ProcessTemplate.builder()
                 .name("templateName")
@@ -724,28 +675,5 @@ class ProcessInstanceServiceTest {
 
         verify(processUpdateRepository, never()).save(any());
         verify(internalMessageProducer, never()).produceProcessContextOutdatedEventSynchronously(originProcessId);
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Test
-    void updateProcessState_processCreated() {
-        String originProcessId = "originProcessId";
-        UUID eventReference = Generators.timeBasedEpochGenerator().generate();
-        ProcessInstance processInstance = mock(ProcessInstance.class);
-        ProcessUpdate processUpdateProcessCreated = mock(ProcessUpdate.class);
-        ProcessUpdate processUpdateOther = mock(ProcessUpdate.class);
-        Message message = mock(Message.class);
-        doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
-        doReturn(List.of(processUpdateOther, processUpdateProcessCreated)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
-        when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
-        when(processUpdateProcessCreated.getProcessUpdateType()).thenReturn(ProcessUpdateType.PROCESS_CREATED);
-        when(processUpdateOther.getProcessUpdateType()).thenReturn(ProcessUpdateType.PROCESS_CREATED);
-        when(processUpdateProcessCreated.getMessageReference()).thenReturn(Optional.of(eventReference));
-        when(processUpdateOther.getMessageReference()).thenReturn(Optional.of(eventReference));
-
-        target.updateProcessState(originProcessId);
-
-        InOrder inOrder = inOrder(processUpdateProcessCreated, processUpdateOther);
-        inOrder.verify(processUpdateProcessCreated).getId();
     }
 }

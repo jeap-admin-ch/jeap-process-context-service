@@ -7,7 +7,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
-import java.io.IOException;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,9 +16,9 @@ class JsonProcessTemplateLoaderTest {
 
     @ParameterizedTest
     @CsvSource({"trigger-process-instantiation.json,trigger-process-instantiation-2.json",
-                "trigger-conditional-process-instantiation.json,trigger-conditional-process-instantiation-2.json",
-                "trigger-process-instantiation.json,trigger-conditional-process-instantiation.json",
-                "trigger-conditional-process-instantiation.json,trigger-process-instantiation.json"
+            "trigger-conditional-process-instantiation.json,trigger-conditional-process-instantiation-2.json",
+            "trigger-process-instantiation.json,trigger-conditional-process-instantiation.json",
+            "trigger-conditional-process-instantiation.json,trigger-process-instantiation.json"
     })
     void test_WhenProcessInstantiationDuplicated_ThenExceptionThrown(String resource1Name, String resource2Name) {
         final Resource template1 = new ClassPathResource(resource1Name);
@@ -30,12 +29,8 @@ class JsonProcessTemplateLoaderTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"external-process-instantiation.json,external-process-instantiation-2.json",
-                "external-process-instantiation.json,trigger-process-instantiation.json",
-                "external-process-instantiation.json,trigger-conditional-process-instantiation.json",
-                "trigger-conditional-process-instantiation.json,trigger-conditional-process-instantiation-other.json"
-    })
-    void test_WhenProcessInstantiationNotDuplicated_ThenSuccess(String resource1Name, String resource2Name) throws IOException {
+    @CsvSource({"trigger-conditional-process-instantiation.json,trigger-conditional-process-instantiation-other.json"})
+    void test_WhenProcessInstantiationNotDuplicated_ThenSuccess(String resource1Name, String resource2Name) {
         final Resource template1 = new ClassPathResource(resource1Name);
         final Resource template2 = new ClassPathResource(resource2Name);
 

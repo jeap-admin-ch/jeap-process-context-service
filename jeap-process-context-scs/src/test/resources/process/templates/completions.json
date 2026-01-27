@@ -12,15 +12,18 @@
     {
       "messageName": "Test1Event",
       "topicName": "topic.test1",
-      "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.Test1EventPayloadExtractor"
+      "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.Test1EventPayloadExtractor",
+      "triggersProcessInstantiation": true
     },
     {
       "messageName": "Test2Event",
-      "topicName": "topic.test2"
+      "topicName": "topic.test2",
+      "triggersProcessInstantiation": true
     },
     {
       "messageName": "Test3Event",
-      "topicName": "topic.test3"
+      "topicName": "topic.test3",
+      "triggersProcessInstantiation": true
     }
   ],
   "completions": [

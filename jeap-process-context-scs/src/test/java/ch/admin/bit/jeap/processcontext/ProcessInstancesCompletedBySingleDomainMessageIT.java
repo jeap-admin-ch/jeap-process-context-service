@@ -2,16 +2,22 @@ package ch.admin.bit.jeap.processcontext;
 
 import ch.admin.bit.jeap.processcontext.adapter.restapi.model.MessageDTO;
 import ch.admin.bit.jeap.processcontext.event.processids.ProcessIdsEvent;
+import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
 import ch.admin.bit.jeap.processcontext.testevent.ProcessIdsEventBuilder;
+import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
 
 import static ch.admin.bit.jeap.processcontext.TaskInstanceAssertionDto.taskWithoutOriginTaskId;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/domain_event_to_multiple_process_instances.json")
 class ProcessInstancesCompletedBySingleDomainMessageIT extends ProcessInstanceMockS3ITBase {
 
     private static final String PROCESS_TEMPLATE_NAME = "domainEventToMultipleProcessInstances";
@@ -62,7 +68,8 @@ class ProcessInstancesCompletedBySingleDomainMessageIT extends ProcessInstanceMo
     }
 
     private void createAndAssertProcessInstance(String originProcessId) {
-        createProcessInstanceFromTemplate(PROCESS_TEMPLATE_NAME, originProcessId);
+        Test1Event event1 = Test1EventBuilder.createForProcessId(originProcessId).build();
+        sendSync("topic.test1", event1);
         assertProcessInstanceCreated(originProcessId, PROCESS_TEMPLATE_NAME);
         assertTasks(originProcessId, taskWithoutOriginTaskId(MANDATORY_TASK_LABEL, "STATIC", "SINGLE_INSTANCE", "PLANNED"));
     }
@@ -72,18 +79,20 @@ class ProcessInstancesCompletedBySingleDomainMessageIT extends ProcessInstanceMo
                 .idempotenceId(String.join("-", processIds))
                 .processIds(processIds)
                 .build();
-       sendSync(PROCESS_IDS_EVENT_TOPIC_NAME, processIdsEvent);
+        sendSync(PROCESS_IDS_EVENT_TOPIC_NAME, processIdsEvent);
     }
 
     private void assertProcessIdsEvent(String originProcessId) {
         List<MessageDTO> processInstanceEvents = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getMessages();
-        assertEquals(1, processInstanceEvents.size());
-        assertEquals("ProcessIdsEvent", processInstanceEvents.get(0).getName());
+        assertEquals(2, processInstanceEvents.size());
+        assertThat(processInstanceEvents.stream().map(MessageDTO::getName).toList())
+                .containsExactlyInAnyOrder("Test1Event", "ProcessIdsEvent");
     }
 
     private void assertNoProcessIdsEvent(String originProcessId) {
         List<MessageDTO> processInstance1Events = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getMessages();
-        assertEquals(0, processInstance1Events.size());
+        assertThat(processInstance1Events.stream().map(MessageDTO::getName).toList())
+                .containsOnly("Test1Event");
     }
 
     @Override

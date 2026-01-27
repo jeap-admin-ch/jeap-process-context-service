@@ -30,6 +30,11 @@
       "messageName": "Test6Event",
       "topicName": "topic.test6",
       "referenceExtractor": "ch.admin.bit.jeap.processcontext.testevent.Test6EventReferenceExtractor"
+    },
+    {
+      "messageName": "Test2Event",
+      "topicName": "topic.test2",
+      "processInstantiationCondition": "ch.admin.bit.jeap.processcontext.processinstantiation.relations.InstantiationConditionE"
     }
   ]
 

@@ -8,15 +8,15 @@ import ch.admin.bit.jeap.processcontext.event.test1.Test1EventReferences;
 import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Optional;
+import org.springframework.test.context.TestPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/*_extractor.json")
 class ProcessInstanceMessageCorrelatedToMultipleTemplatesIT extends ProcessInstanceMockS3ITBase {
 
     @Autowired
@@ -25,36 +25,33 @@ class ProcessInstanceMessageCorrelatedToMultipleTemplatesIT extends ProcessInsta
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void expectConsumedEventsToBePersistedIrrespectiveOfCorrelationToProcess() {
-        // Start a new process
-        String processTemplateName = "relations";
-        createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Produce an event which is referenced in at least two templates, with different payload extractors
         // and thus different event data definitions. The event is not correlated to a process, and is expected
         // to be persisted nonetheless.
-        Test1Event sentFirstEvent = sendTest1Event(null);
+        Test1Event sentFirstEvent = sendTest1Event();
 
-        // Trigger process completion / wait for it to complete
-        sendTest1Event(originProcessId);
-        assertProcessInstanceCompleted(originProcessId);
+        Awaitility.await()
+                .pollInSameThread()
+                .atMost(TIMEOUT)
+                .until(() -> messageQueryRepository.findByMessageNameAndIdempotenceId(
+                        sentFirstEvent.getType().getName(), sentFirstEvent.getIdentity().getIdempotenceId()).isPresent());
 
-        // Assert that the first event (not correlated to a specific process instance) as been persisted, along with
+        // Assert that the first event (not correlated to a specific process instance) has been persisted, along with
         // event data from at least two templates
-        Optional<Message> persistedEvent = messageQueryRepository.findByMessageNameAndIdempotenceId(
-                sentFirstEvent.getType().getName(), sentFirstEvent.getIdentity().getIdempotenceId());
-        assertTrue(persistedEvent.isPresent());
+        Message persistedEvent = messageQueryRepository.findByMessageNameAndIdempotenceId(
+                sentFirstEvent.getType().getName(), sentFirstEvent.getIdentity().getIdempotenceId()).orElseThrow();
 
-        assertThat(persistedEvent.get().getMessageData("domainEventsWithPayloadExtractor"))
+        assertThat(persistedEvent.getMessageData("domainEventsWithPayloadExtractor"))
                 .hasSize(1)
                 .allMatch(eventData -> eventData.getKey().equals("key1"));
-        assertThat(persistedEvent.get().getMessageData("domainEventsWithDifferentPayloadExtractor"))
+        assertThat(persistedEvent.getMessageData("domainEventsWithDifferentPayloadExtractor"))
                 .hasSize(1)
                 .allMatch(eventData -> eventData.getKey().equals("differentKey1"));
     }
 
-    private Test1Event sendTest1Event(String originProcessId) {
-        Test1Event event1 = Test1EventBuilder.createForProcessId(originProcessId)
+    private Test1Event sendTest1Event() {
+        Test1Event event1 = Test1EventBuilder.createForProcessId(null)
                 .taskIds("taskId1")
                 .build();
         event1.setReferences(Test1EventReferences.newBuilder()

@@ -3,14 +3,16 @@ package ch.admin.bit.jeap.processcontext;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessRelationDTO;
 import ch.admin.bit.jeap.processcontext.domain.Language;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
+import ch.admin.bit.jeap.processcontext.event.test2.Test2Event;
 import ch.admin.bit.jeap.processcontext.event.test6.Test6Event;
 import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
+import ch.admin.bit.jeap.processcontext.testevent.Test2EventBuilder;
 import ch.admin.bit.jeap.processcontext.testevent.Test6EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
-import lombok.NonNull;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,24 +20,22 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/process_relations_*.json")
 class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase {
 
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void testProcessesRelationsWithVisibilityBoth() {
         // Start a new process A
-        String processTemplateName = "processRelationsA";
+        String processTemplateNameA = "processRelationsA";
         originProcessId = "process-a";
-        createProcessInstanceFromTemplate(processTemplateName);
+        createProcess(originProcessId, processTemplateNameA, "A");
 
         // Start a second process
         String processTemplateNameB = "processRelationsB";
         String originProcessIdProcessB = "process-b";
-        createProcessInstanceFromTemplate(processTemplateNameB, originProcessIdProcessB);
-
-        // Check process instance created event published for origin id
-        assertProcessInstanceCreated(originProcessId, processTemplateName);
-        assertProcessInstanceCreated(originProcessIdProcessB, processTemplateNameB);
+        createProcess(originProcessIdProcessB, processTemplateNameB, "B");
 
         // Produce event 6
         createAndSendTestEvent6(originProcessId, originProcessIdProcessB);
@@ -65,22 +65,26 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
         assertProcessInstanceHasProcessReference(originProcessIdProcessB, expectedDtoProcessB);
     }
 
+    private void createProcess(String processId, String processTemplateName, String objectId) {
+        Test2Event event2 = Test2EventBuilder.createForProcessId(processId)
+                .objectId(objectId)
+                .build();
+        sendSync("topic.test2", event2);
+        assertProcessInstanceCreated(processId, processTemplateName);
+    }
+
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void testProcessesRelationsWithVisibilityOrigin() {
         // Start a new process A
         String processTemplateName = "processRelationsC";
         originProcessId = "process-c";
-        createProcessInstanceFromTemplate(processTemplateName);
+        createProcess(originProcessId, processTemplateName, "C");
 
         // Start a second process
         String processTemplateNameB = "processRelationsB";
         String originProcessIdProcessB = "process-b";
-        createProcessInstanceFromTemplate(processTemplateNameB, originProcessIdProcessB);
-
-        // Check process instance created event published for origin id
-        assertProcessInstanceCreated(originProcessId, processTemplateName);
-        assertProcessInstanceCreated(originProcessIdProcessB, processTemplateNameB);
+        createProcess(originProcessIdProcessB, processTemplateNameB, "B");
 
         // Produce event 6
         createAndSendTestEvent6(originProcessId, originProcessIdProcessB);
@@ -108,19 +112,15 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void testProcessesRelationsWithVisibilityTarget() {
-        // Start a new process A
+        // Start a new process D
         String processTemplateName = "processRelationsD";
-        originProcessId = "process-a";
-        createProcessInstanceFromTemplate(processTemplateName);
+        originProcessId = "process-d";
+        createProcess(originProcessId, processTemplateName, "D");
 
         // Start a second process
         String processTemplateNameB = "processRelationsB";
         String originProcessIdProcessB = "process-b";
-        createProcessInstanceFromTemplate(processTemplateNameB, originProcessIdProcessB);
-
-        // Check process instance created event published for origin id
-        assertProcessInstanceCreated(originProcessId, processTemplateName);
-        assertProcessInstanceCreated(originProcessIdProcessB, processTemplateNameB);
+        createProcess(originProcessIdProcessB, processTemplateNameB, "B");
 
         // Produce event 6
         createAndSendTestEvent6(originProcessId, originProcessIdProcessB);
@@ -150,22 +150,17 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
         // Start a new process A
         String processTemplateName = "processRelationsA";
         String originProcessIdA = "process-a";
-        createProcessInstanceFromTemplate(processTemplateName, originProcessIdA);
+        createProcess(originProcessIdA, processTemplateName, "A");
 
         // Start a second process
         String processTemplateNameB = "processRelationsB";
         String originProcessIdProcessB = "process-b";
-        createProcessInstanceFromTemplate(processTemplateNameB, originProcessIdProcessB);
+        createProcess(originProcessIdProcessB, processTemplateNameB, "B");
 
         // Start a third process
         String processTemplateNameE = "processRelationsE";
         String originProcessIdProcessE = "process-e";
-        createProcessInstanceFromTemplate(processTemplateNameE, originProcessIdProcessE);
-
-        // Check process instance created event published for origin id
-        assertProcessInstanceCreated(originProcessIdA, processTemplateName);
-        assertProcessInstanceCreated(originProcessIdProcessB, processTemplateNameB);
-        assertProcessInstanceCreated(originProcessIdProcessE, processTemplateNameE);
+        createProcess(originProcessIdProcessE, processTemplateNameE, "E");
 
         // Produce event 6
         createAndSendTestEvent6(originProcessIdA, originProcessIdProcessB);
@@ -208,7 +203,7 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
                 .until(() -> !processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getProcessRelations().isEmpty());
 
         List<ProcessRelationDTO> processRelationDTOList = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getProcessRelations();
-        ProcessRelationDTO dto = processRelationDTOList.get(0);
+        ProcessRelationDTO dto = processRelationDTOList.getFirst();
         assertEquals(expectedDto.getProcessName().get("de"), dto.getProcessName().get("de"));
         assertEquals(expectedDto.getProcessState(), dto.getProcessState());
         assertEquals(expectedDto.getRelation(), dto.getRelation());
@@ -229,7 +224,7 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
         return super.viewAndCreateRoleToken();
     }
 
-    private static Map<String, String> simulateTranslateService(@NonNull String value) {
+    private static Map<String, String> simulateTranslateService(String value) {
         Map<String, String> labels = new HashMap<>();
         labels.put(Language.DE.name().toLowerCase(), value);
         return labels;

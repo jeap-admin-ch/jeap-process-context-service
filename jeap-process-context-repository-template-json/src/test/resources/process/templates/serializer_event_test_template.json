@@ -8,7 +8,8 @@
     },
     {
       "eventName": "TestEvent2",
-      "topicName": "test2.topic"
+      "topicName": "test2.topic",
+      "triggersProcessInstantiation": true
     },
     {
       "eventName": "TestEvent3",

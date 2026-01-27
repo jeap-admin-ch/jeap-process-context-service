@@ -9,11 +9,14 @@ import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/domain_event_triggers_process_instance_and_task_instantiation.json")
 class ProcessInstanceCreatedByDomainMessageWithObservedTaskIT extends ProcessInstanceMockS3ITBase {
 
     private static final String PROCESS_TEMPLATE_NAME = "domainEventTriggersProcessAndTaskInstantiation";

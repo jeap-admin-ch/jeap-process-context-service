@@ -44,6 +44,11 @@
       "eventName": "Test4Event",
       "topicName": "topic.test4",
       "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.TaskTest4EventCorrelationProvider"
+    },
+    {
+      "eventName": "Test6Event",
+      "topicName": "topic.test6",
+      "triggersProcessInstantiation": true
     }
   ]
 }

@@ -54,7 +54,7 @@ class JsonProcessTemplateRepositoryTest {
         assertThat(jsonProcessTemplateRepository.getMessageReferencesByTemplateNameForMessageName("TestEvent3"))
                 .containsOnlyKeys(SERIALIZER_PROCESS_TEMPLATE_NAME, SERIALIZER_MESSAGE_PROCESS_TEMPLATE_NAME);
         assertThat(jsonProcessTemplateRepository.getMessageReferencesByTemplateNameForMessageName("TestEvent4"))
-                .containsOnlyKeys(SERIALIZER_PROCESS_TEMPLATE_NAME, SERIALIZER_MESSAGE_PROCESS_TEMPLATE_NAME);
+                .containsOnlyKeys(SERIALIZER_PROCESS_TEMPLATE_NAME, SERIALIZER_MESSAGE_PROCESS_TEMPLATE_NAME, PROCESS_RELATIONS_TEMPLATE_NAME);
         assertThat(jsonProcessTemplateRepository.getMessageReferencesByTemplateNameForMessageName("AdditionalTestEvent"))
                 .containsOnlyKeys(ADDITIONAL_PROCESS_TEMPLATE_NAME);
     }

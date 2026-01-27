@@ -35,12 +35,12 @@ class TemplateDefinitionException extends RuntimeException {
         return new TemplateDefinitionException("Error while creating instance of " + conditionClassName, cause);
     }
 
-    static TemplateDefinitionException emptyEventName() {
-        return new TemplateDefinitionException("Missing mandatory event property 'eventName'");
+    static TemplateDefinitionException emptyMessageName() {
+        return new TemplateDefinitionException("Missing mandatory message property 'messageName'");
     }
 
     static TemplateDefinitionException emptyTopicName() {
-        return new TemplateDefinitionException("Missing mandatory event property 'topicName'");
+        return new TemplateDefinitionException("Missing mandatory message property 'topicName'");
     }
 
     static TemplateDefinitionException emptyTaskCompletionConditionDefinition() {
@@ -140,15 +140,15 @@ class TemplateDefinitionException extends RuntimeException {
     }
 
     static TemplateDefinitionException observesAndPlannedByTaskNotTogether(String templateName, String taskName) {
-        return new TemplateDefinitionException(templateName + ": Task definition is wrong in " + taskName +". Observed and PlannedBy cannot both be defined for the same task");
+        return new TemplateDefinitionException(templateName + ": Task definition is wrong in " + taskName + ". Observed and PlannedBy cannot both be defined for the same task");
     }
 
     static TemplateDefinitionException staticTasksCannotBePlanned(String templateName, String taskName) {
-        return new TemplateDefinitionException(templateName + ": Task definition is wrong in " + taskName +". A static task cannot have a plannedBy section.");
+        return new TemplateDefinitionException(templateName + ": Task definition is wrong in " + taskName + ". A static task cannot have a plannedBy section.");
     }
 
     static TemplateDefinitionException observesAndCompletedByTaskNotTogether(String templateName, String taskName) {
-        return new TemplateDefinitionException(templateName + ": Task definition is wrong in " + taskName +". Observed and CompletedBy cannot both be defined for the same task");
+        return new TemplateDefinitionException(templateName + ": Task definition is wrong in " + taskName + ". Observed and CompletedBy cannot both be defined for the same task");
     }
 
     static TemplateDefinitionException plannedByEventNotDefined(String templateName, Collection<String> eventNames) {
@@ -160,7 +160,7 @@ class TemplateDefinitionException extends RuntimeException {
     }
 
     static TemplateDefinitionException processMustBeCompletedEitherByConditionOrDomainEvent() {
-        return new TemplateDefinitionException("A process completion must either provide a condition or name a domainevent, but not both at the same time.");
+        return new TemplateDefinitionException("A process completion must either provide a condition or name a message, but not both at the same time.");
     }
 
     static TemplateDefinitionException processCompletionByConditionDoesNotSupportAdditionalAttributes() {
@@ -180,7 +180,7 @@ class TemplateDefinitionException extends RuntimeException {
     }
 
     static TemplateDefinitionException emptyProcessRelationProperty(String propertyName) {
-        return new TemplateDefinitionException("Missing mandatory process relation property '" + propertyName +"'");
+        return new TemplateDefinitionException("Missing mandatory process relation property '" + propertyName + "'");
     }
 
     static TemplateDefinitionException emptyProcessRelationRoleType() {
@@ -188,11 +188,11 @@ class TemplateDefinitionException extends RuntimeException {
     }
 
     static TemplateDefinitionException emptyProcessRelationVisibility() {
-        return new TemplateDefinitionException("Missing mandatory process relation property 'visibility'. Allowed are 'origin', 'target' or 'both'" );
+        return new TemplateDefinitionException("Missing mandatory process relation property 'visibility'. Allowed are 'origin', 'target' or 'both'");
     }
 
     static TemplateDefinitionException emptyProcessRelationSource() {
-        return new TemplateDefinitionException("Missing mandatory process relation property 'source'." );
+        return new TemplateDefinitionException("Missing mandatory process relation property 'source'.");
     }
 
     static TemplateDefinitionException processSnapshotMustBeCreatedEitherByConditionOrCompletion() {
@@ -213,9 +213,15 @@ class TemplateDefinitionException extends RuntimeException {
 
     static TemplateDefinitionException taskDataSourceMessagesNotPlanningOrCompletingTheTask(Set<String> illegalSourceMessages) {
         return new TemplateDefinitionException("""
-                   Illegal source message declaration(s) in task data definition. The following messages are \
-                   declared as sources for a task's data but are not planning or completing the task: %s""".
+                Illegal source message declaration(s) in task data definition. The following messages are \
+                declared as sources for a task's data but are not planning or completing the task: %s""".
                 formatted(String.join(", ", illegalSourceMessages)));
     }
 
+    public static TemplateDefinitionException noMessageInstantiatesProcess(String templateName) {
+        return new TemplateDefinitionException("""
+                No message reference in process template '%s' is defined to instantiate the process. The process will \
+                never be started. Please add at least one message reference with the attribute \
+                'triggersProcessInstantiation' or 'processInstantiationCondition'.""".formatted(templateName));
+    }
 }

@@ -10,19 +10,19 @@ import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
 
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/completions.json")
 @Slf4j
 class ProcessInstanceCompletionsIT extends ProcessInstanceMockS3ITBase {
 
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void processCompletion_whenTest1EventFulfillingCompletionConditionReceived_thenCompleted() {
-        // Start a new process
-        String processTemplateName = "completions";
-        createProcessInstanceFromTemplate(processTemplateName);
-
-        // send Test1Event that fulfills the completion condition
+        // send Test1Event that creates the process and fulfills the completion condition
         sendTest1Event("gotcha");
+        assertProcessInstanceCreated(originProcessId, "completions");
 
         // Check that process completes after receiving Test1Event fulfilling the completion condition
         assertProcessInstanceCompleted(originProcessId);
@@ -31,12 +31,9 @@ class ProcessInstanceCompletionsIT extends ProcessInstanceMockS3ITBase {
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void processCompletion_whenTest2EventReceived_thenCompleted() {
-        // Start a new process
-        String processTemplateName = "completions";
-        createProcessInstanceFromTemplate(processTemplateName);
-
-        // send Test2Event that has been registered for process completion
+        // send Test2Event that creates the process and has been registered for process completion
         sendTest2Event("complete");
+        assertProcessInstanceCreated(originProcessId, "completions");
 
         // Check that process completes after receiving Test2Event
         assertProcessInstanceCompleted(originProcessId);
@@ -45,14 +42,12 @@ class ProcessInstanceCompletionsIT extends ProcessInstanceMockS3ITBase {
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void processCompletion_whenAllTasksCompleted_thenCompleted() {
-        // Start a new process
-        String processTemplateName = "completions";
-        createProcessInstanceFromTemplate(processTemplateName);
-
         // send Test3Event that completes the single mandatory task
         sendTest3Event("complete");
+        assertProcessInstanceCreated(originProcessId, "completions");
 
         // Check that process completes after receiving Test2Event
+        sendTest2Event("complete");
         assertProcessInstanceCompleted(originProcessId);
     }
 
@@ -70,6 +65,7 @@ class ProcessInstanceCompletionsIT extends ProcessInstanceMockS3ITBase {
                 .build();
         sendSync("topic.test2", event2);
     }
+
     private void sendTest3Event(String s) {
         Test3Event event3 = Test3EventBuilder.createForProcessId(originProcessId)
                 .taskIds()

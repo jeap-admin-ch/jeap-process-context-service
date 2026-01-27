@@ -3,16 +3,21 @@ package ch.admin.bit.jeap.processcontext;
 import ch.admin.bit.jeap.processcontext.TaskInstanceAssertionDto.TaskDataAssertionDTO;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.TaskState;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
+import ch.admin.bit.jeap.processcontext.event.test2.Test2Event;
 import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
+import ch.admin.bit.jeap.processcontext.testevent.Test2EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.Set;
 
 import static ch.admin.bit.jeap.processcontext.TaskInstanceAssertionDto.task;
 
 @SuppressWarnings("SameParameterValue")
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/domain_event_triggers_task_planned_with_task_data.json")
 class TaskInstancePlannedByDomainWithTaskDataIT extends ProcessInstanceMockS3ITBase {
 
     @Test
@@ -20,7 +25,7 @@ class TaskInstancePlannedByDomainWithTaskDataIT extends ProcessInstanceMockS3ITB
     void testTaskPlannedByDomainEventWithConditionResolvingToTrue() {
         // Start a new process
         String processTemplateName = "domainEventTriggersTaskPlannedWithTaskData";
-        createProcessInstanceFromTemplate(processTemplateName);
+        createProcessInstance(processTemplateName);
 
         // Plan task by domain event with event data named "someField" and value "foo"
         sendTest1EventWithSomeField("foo", "domainEventId");
@@ -46,6 +51,13 @@ class TaskInstancePlannedByDomainWithTaskDataIT extends ProcessInstanceMockS3ITB
     private void sendTest1EventWithSomeField(String someField, String... taskIds) {
         Test1Event event1 = Test1EventBuilder.createForProcessId(originProcessId).someField(someField).taskIds(taskIds).build();
         sendSync("topic.test1", event1);
+    }
+
+    private void createProcessInstance(String processTemplateName) {
+        Test2Event event2 = Test2EventBuilder.createForProcessId(originProcessId)
+                .build();
+        sendSync("topic.test2", event2);
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
     }
 
     @Override

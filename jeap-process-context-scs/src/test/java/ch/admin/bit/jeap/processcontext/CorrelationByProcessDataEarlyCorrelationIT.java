@@ -7,7 +7,10 @@ import ch.admin.bit.jeap.processcontext.testevent.Test2EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
 
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/domain_event_correlated_by_process_data_early_correlation.json")
 class CorrelationByProcessDataEarlyCorrelationIT extends ProcessInstanceMockS3ITBase {
 
     @Test
@@ -16,11 +19,10 @@ class CorrelationByProcessDataEarlyCorrelationIT extends ProcessInstanceMockS3IT
 
         // Start a new process
         String processTemplateName = "domainEventCorrelatedByProcessDataEarlyCorrelation";
-        createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
-        // Send event that adds process data to the process
+        // Send event that instantiates the process and adds process data to the process
         sendTest1Event();
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Sent event that is correlated by the process data added to the process by the first event
         sendTest2Event();

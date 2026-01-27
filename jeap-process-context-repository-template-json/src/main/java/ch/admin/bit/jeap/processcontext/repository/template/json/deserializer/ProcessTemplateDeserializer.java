@@ -42,11 +42,13 @@ public class ProcessTemplateDeserializer {
         validateProcessCompletedByEvents(templateDefinition);
         validateProcessRelations(templateDefinition);
 
+        List<MessageReference> messageReferences = messageReferences();
+        validateAtLeastOneMessageInstantiatesProcess(messageReferences);
 
         return ProcessTemplate.builder()
                 .name(name)
                 .templateHash(templateHash)
-                .messageReferences(messageReferences())
+                .messageReferences(messageReferences)
                 .taskTypes(taskTypes())
                 .processDataTemplates(processDatas())
                 .relationSystemId(relationSystemId)
@@ -55,6 +57,14 @@ public class ProcessTemplateDeserializer {
                 .processCompletionConditions(processCompletionConditions())
                 .processSnapshotConditions(processSnapshotConditions())
                 .build();
+    }
+
+    private void validateAtLeastOneMessageInstantiatesProcess(List<MessageReference> messageReferences) {
+        boolean hasInstantiationCondition = messageReferences.stream()
+                .anyMatch(ref -> !(ref.getProcessInstantiationCondition() instanceof NeverProcessInstantiationCondition));
+        if (!hasInstantiationCondition) {
+            throw TemplateDefinitionException.noMessageInstantiatesProcess(templateDefinition.getName());
+        }
     }
 
     private void validateObserves(ProcessTemplateDefinition processTemplate) {
@@ -145,7 +155,7 @@ public class ProcessTemplateDeserializer {
         CorrelatedByProcessData correlatedByProcessData = toCorrelatedByProcessData(eventRefDefinition.getCorrelatedBy());
 
         if (!hasText(messageName)) {
-            throw TemplateDefinitionException.emptyEventName();
+            throw TemplateDefinitionException.emptyMessageName();
         }
         if (!hasText(topicName)) {
             throw TemplateDefinitionException.emptyTopicName();

@@ -13,6 +13,11 @@
       "eventName": "Test1Event",
       "topicName": "topic.test1",
       "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.Test1EventDifferentPayloadExtractor"
+    },
+    {
+      "eventName": "Test3Event",
+      "topicName": "topic.test3",
+      "triggersProcessInstantiation": true
     }
   ]
 }

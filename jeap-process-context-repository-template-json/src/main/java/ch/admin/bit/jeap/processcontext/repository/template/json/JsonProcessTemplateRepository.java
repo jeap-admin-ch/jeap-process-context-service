@@ -26,18 +26,21 @@ import static java.util.Collections.emptyMap;
 @RequiredArgsConstructor
 class JsonProcessTemplateRepository implements ProcessTemplateRepository {
     private static final String CLASSPATH_LOCATION = "classpath:/process/templates/*.json";
+
     private final TranslateService translateService;
     private final JsonProcessTemplateConsumerContractValidator jsonProcessTemplateConsumerContractValidator;
     private final Map<String, Map<String, MessageReference>> domainEventReferencesByEventNameThenTemplateName = new HashMap<>();
     private Map<String, ProcessTemplate> templatesByName;
 
+    @Value("${jeap.processcontext.template.classpath-location-pattern:" + CLASSPATH_LOCATION + "}")
+    private String templateClasspathLocationPattern = CLASSPATH_LOCATION;
     @Value("${jeap.processcontext.consumer-contract-validator.enabled:true}")
     private boolean consumerContractValidatorEnabled = true;
     private boolean anyTemplateHasEventsCorrelatedByProcessData = false;
 
-    private static Map<String, ProcessTemplate> getTemplatesFromClasspath() throws IOException {
+    private static Map<String, ProcessTemplate> getTemplatesFromClasspath(String locationPattern) throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        Resource[] resources = resolver.getResources(CLASSPATH_LOCATION);
+        Resource[] resources = resolver.getResources(locationPattern);
         return JsonProcessTemplateLoader.loadTemplateResources(resources);
     }
 
@@ -63,7 +66,7 @@ class JsonProcessTemplateRepository implements ProcessTemplateRepository {
 
     @PostConstruct
     void loadTemplates() throws IOException {
-        this.templatesByName = getTemplatesFromClasspath();
+        this.templatesByName = getTemplatesFromClasspath(templateClasspathLocationPattern);
         templatesByName.forEach((key, value) -> value.getMessageReferences().forEach(reference ->
                 domainEventReferencesByEventNameThenTemplateName.compute(reference.getMessageName(), (eventName, referencesByTemplateName) -> {
                     if (referencesByTemplateName == null) {

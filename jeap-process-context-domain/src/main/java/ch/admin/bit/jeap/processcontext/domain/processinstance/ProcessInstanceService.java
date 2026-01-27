@@ -44,27 +44,10 @@ public class ProcessInstanceService {
     private final MetricsListener metricsListener;
     private final PcsConfigProperties pcsConfigProperties;
 
-    public void createProcessInstance(String originProcessId, String processTemplateName, Set<ProcessData> processData) {
-        // Create & persist a process instance unless it already exists (idempotency)
-        // Trigger process instance state update after the DB is committed as the consumer of this message needs it.
-        // The consumer needs to be idempotent, so producing the message twice in case of error will have no effect.
-        transactions.withinNewTransaction(() -> {
-            if (!processInstanceRepository.existsByOriginProcessId(originProcessId)) {
-                createFromTemplate(originProcessId, processTemplateName, processData);
-
-                ProcessUpdate processUpdate = ProcessUpdate.processCreated()
-                        .originProcessId(originProcessId)
-                        .build();
-                processUpdateRepository.save(processUpdate);
-            }
-        });
-        internalMessageProducer.produceProcessContextOutdatedEventSynchronously(originProcessId);
-    }
-
-    private ProcessInstance createFromTemplate(String originProcessId, String processTemplateName, Set<ProcessData> processData) {
+    private ProcessInstance createFromTemplate(String originProcessId, String processTemplateName) {
         ProcessTemplate processTemplate = processTemplateRepository.findByName(processTemplateName)
                 .orElseThrow(NotFoundException.templateNotFound(processTemplateName, originProcessId));
-        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate, processData);
+        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate);
 
         log.info("Creating process {} with origin process ID {} from template {}", processInstance.getId(), originProcessId, processTemplateName);
         metricsListener.processInstanceCreated(processTemplateName);
@@ -139,6 +122,10 @@ public class ProcessInstanceService {
                 metricsListener.processUpdateProcessed(processInstance.getProcessTemplate(), true, processUpdates.size());
                 return List.of();
             } catch (ProcessUpdateFailedException pufe) {
+                if (txStatus == null) {
+                    pufe.printStackTrace();
+                }
+
                 txStatus.setRollbackOnly();
                 ProcessTemplate processTemplate = createOrLoadProcessInstance(originProcessId, processUpdates)
                         .map(ProcessInstance::getProcessTemplate)
@@ -183,7 +170,7 @@ public class ProcessInstanceService {
         Optional<ProcessInstance> pio = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId);
         // Don't create the process instance again, simply return the existing one
         return pio.orElseGet(() ->
-                createFromTemplate(originProcessId, processUpdate.getParams(), Set.of()));
+                createFromTemplate(originProcessId, processUpdate.getParams()));
     }
 
     private void processUpdates(ProcessInstance processInstance, List<ProcessUpdate> processUpdates) {
@@ -241,10 +228,6 @@ public class ProcessInstanceService {
                 createMessageTasks(processUpdate, processInstance, messageReferenceMessageDTO, message);
                 completeObservationTasks(processUpdate, processInstance, messageReferenceMessageDTO, message);
                 processInstance.evaluateCompletedTasks(messageReferenceMessageDTO, message.getMessageCreatedAt());
-                processInstance.evaluateRelations();
-                processInstance.evaluateProcessRelations(message);
-                break;
-            case PROCESS_CREATED:
                 processInstance.evaluateRelations();
                 processInstance.evaluateProcessRelations(message);
                 break;

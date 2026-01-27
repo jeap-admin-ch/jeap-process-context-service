@@ -4,5 +4,12 @@
     {
       "name": "task1"
     }
+  ],
+  "messages": [
+    {
+      "eventName": "Test1Event",
+      "topicName": "topic.test1",
+      "triggersProcessInstantiation": true
+    }
   ]
 }

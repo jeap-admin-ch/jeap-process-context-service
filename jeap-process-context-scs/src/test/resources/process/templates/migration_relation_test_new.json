@@ -1,0 +1,24 @@
+{
+  "name": "migrationRelationTestNew",
+  "tasks": [
+    {
+      "name": "task2"
+    },
+    {
+      "name": "task3"
+    }
+  ],
+  "events": [
+    {
+      "eventName": "Test1Event",
+      "topicName": "topic.test1",
+      "referenceExtractor": "ch.admin.bit.jeap.processcontext.testevent.RelationTestEventExtractor"
+    },
+    {
+      "eventName": "Test2Event",
+      "topicName": "topic.test2",
+      "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.RelationTestEventExtractor",
+      "triggersProcessInstantiation": true
+    }
+  ]
+}

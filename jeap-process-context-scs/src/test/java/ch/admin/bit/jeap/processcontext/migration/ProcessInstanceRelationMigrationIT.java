@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -25,6 +26,8 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @Slf4j
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/migration_relation_test*.json")
 class ProcessInstanceRelationMigrationIT extends ProcessInstanceMockS3ITBase {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -44,13 +47,12 @@ class ProcessInstanceRelationMigrationIT extends ProcessInstanceMockS3ITBase {
     @WithAuthentication("viewAndCreateRoleToken")
     void updateProcessState_whenRelations_thenRelationsAvailableAfterMigration() {
         // Start a new process
-        String processTemplateName = "relations";
-        createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreated(originProcessId, processTemplateName);
+        String processTemplateName = "migrationRelationTest";
 
         // Add events, producing process data
         // Produce two events with reference to be extracted
         sendTest1Event("subjectId-1");
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
         sendTest1Event("subjectId-2");
         // Produce two events with payload to be extracted
         sendTest2Event("objectId-1");
@@ -72,17 +74,16 @@ class ProcessInstanceRelationMigrationIT extends ProcessInstanceMockS3ITBase {
 
         // Update template name for the process instance
         transactions.withinNewTransaction(() -> entityManager
-                .createQuery("UPDATE ProcessInstance p SET p.processTemplateName='migrationFullTestNew' WHERE p.originProcessId='" + originProcessId + "'")
+                .createQuery("UPDATE ProcessInstance p SET p.processTemplateName='migrationRelationTestNew' WHERE p.originProcessId='" + originProcessId + "'")
                 .executeUpdate());
 
         // Trigger migration for process instances with changed template hash
         processInstanceService.updateProcessState(originProcessId);
 
         transactions.withinNewTransaction(() -> {
-            final Optional<ProcessInstance> byOriginProcessId = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId);
+            Optional<ProcessInstance> byOriginProcessId = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId);
             assertThat(byOriginProcessId.orElseThrow().getRelations()).hasSize(4);
         });
-
     }
 
     private void sendTest1Event(String s) {

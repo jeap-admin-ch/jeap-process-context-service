@@ -4,9 +4,11 @@ import ch.admin.bit.jeap.processcontext.event.test1.SubjectReference;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1EventReferences;
 import ch.admin.bit.jeap.processcontext.event.test2.Test2Event;
+import ch.admin.bit.jeap.processcontext.event.test3.Test3Event;
 import ch.admin.bit.jeap.processcontext.plugin.api.relation.Relation;
 import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
 import ch.admin.bit.jeap.processcontext.testevent.Test2EventBuilder;
+import ch.admin.bit.jeap.processcontext.testevent.Test3EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import com.fasterxml.uuid.Generators;
@@ -15,6 +17,7 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -25,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Disabled("TODO JEAP-6536 Relations")
 @Slf4j
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/relations_join*.json")
 class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -34,14 +39,12 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void processWithRelations_whenRelationsAreAdded_thenShouldNotifyListener() {
-        // Start a new process
         String processTemplateName = "relations";
-        createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Add events, producing process data
         // Produce two events with reference to be extracted
         sendTest1Event("subjectId-1");
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
         sendTest1Event("subjectId-2");
         // Produce two events with payload to be extracted
         sendTest2Event("objectId-1");
@@ -72,7 +75,7 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
     void processWithRelations_whenJoinByRole_thenRoleValueShouldBeApplied() {
         // Start a new process
         String processTemplateName = "relations_join_byRole";
-        createProcessInstanceFromTemplate(processTemplateName);
+        sendTest3Event();
         assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Add events, producing process data
@@ -104,10 +107,7 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void processWithRelations_whenJoinByValue_thenValueShouldBeApplied() {
-        // Start a new process
         String processTemplateName = "relations_join_byValue";
-        createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Add events, producing process data
         // Produce two events with reference to be extracted
@@ -115,6 +115,7 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
         sendTest1Event("blue");
         // Produce two events with payload to be extracted
         sendTest2Event("red");
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
         sendTest2Event("green");
 
         // Check that process completes after all tasks have been completed
@@ -172,6 +173,11 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
                 .version(version)
                 .build();
         sendSync("topic.test2", event2_1);
+    }
+
+    private void sendTest3Event() {
+        Test3Event event3 = Test3EventBuilder.createForProcessId(originProcessId).build();
+        sendSync("topic.test3", event3);
     }
 
     private Relation createRelation(String s, String s2) {

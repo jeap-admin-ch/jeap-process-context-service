@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static java.util.Collections.emptySet;
-
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ProcessInstanceStubs {
 
@@ -27,7 +25,7 @@ public final class ProcessInstanceStubs {
 
     public static ProcessInstance createSimpleProcess() {
         ProcessTemplate processTemplate = createSimpleProcessTemplate();
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, Set.of());
+        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
     }
 
     public static ProcessTemplate createSimpleProcessTemplate() {
@@ -54,7 +52,7 @@ public final class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(List.of(taskType))
                 .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, Set.of());
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
         processInstance.getTasks().getFirst().complete(ZonedDateTime.now());
         processInstance.evaluateCompletedTasks(ZonedDateTime.now());
         return processInstance;
@@ -73,7 +71,7 @@ public final class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(List.of(taskType))
                 .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, Set.of());
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
         processInstance.addMessage(Message.messageBuilder()
                 .messageId(UUID.randomUUID().toString())
                 .idempotenceId("idempotenceId")
@@ -97,7 +95,7 @@ public final class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(List.of(taskType))
                 .build();
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, Set.of());
+        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
     }
 
     public static ProcessInstance createProcessWithRelation() {
@@ -128,7 +126,7 @@ public final class ProcessInstanceStubs {
                         .predicateType("ch.admin.bit.test.predicate.Knows")
                         .build()))
                 .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, Set.of());
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
         String templateName = processInstance.getProcessTemplateName();
         MessageData messageData = new MessageData(templateName, "sourceEventDataKey", "someValue", "someRole");
         processInstance.addMessage(Message.messageBuilder()
@@ -160,7 +158,7 @@ public final class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(List.of(mandatoryTaskType, dynamicTaskType))
                 .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, emptySet());
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
         processInstance.addMessage(Message.messageBuilder()
                 .messageId(UUID.randomUUID().toString())
                 .idempotenceId("idempotenceId")
@@ -192,7 +190,7 @@ public final class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(List.of(mandatoryTaskType, dynamicTaskType))
                 .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, emptySet());
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
         processInstance.planDomainEventTask(mandatoryTaskType, "mandatory-id", ZonedDateTime.now(), null);
         processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-1", ZonedDateTime.now(), null);
         processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-2", ZonedDateTime.now(), null);
@@ -267,7 +265,7 @@ public final class ProcessInstanceStubs {
                 .relationPatterns(List.of(relationPattern1, relationPattern2))
                 .build();
 
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, emptySet());
+        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
     }
 
     /**
@@ -325,7 +323,7 @@ public final class ProcessInstanceStubs {
                 .relationPatterns(List.of(relationPattern))
                 .build();
 
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, emptySet());
+        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
     }
 
     /**
@@ -383,7 +381,7 @@ public final class ProcessInstanceStubs {
                 .relationPatterns(List.of(relationPattern))
                 .build();
 
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, emptySet());
+        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
     }
 
     static ProcessInstance createProcessWithProcessSnapshotCondition(ProcessSnapshotCondition processSnapshotCondition) {
@@ -398,7 +396,7 @@ public final class ProcessInstanceStubs {
                 .taskTypes(List.of(taskType))
                 .processSnapshotConditions(List.of(processSnapshotCondition))
                 .build();
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, Set.of());
+        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
     }
 
 }

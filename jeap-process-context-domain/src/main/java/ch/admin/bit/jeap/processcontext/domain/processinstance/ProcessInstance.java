@@ -98,14 +98,13 @@ public class ProcessInstance extends MutableDomainEntity {
 
     @Getter
     @Convert(converter = SnapshotNameSetConverter.class)
-    private LinkedHashSet<String> snapshotNames = new LinkedHashSet<>(); // could be general type SequencedSet with Java 21
+    private SequencedSet<String> snapshotNames = new LinkedHashSet<>();
 
-    private ProcessInstance(String originProcessId, ProcessTemplate processTemplate, Set<ProcessData> processData) {
+    private ProcessInstance(String originProcessId, ProcessTemplate processTemplate) {
         Objects.requireNonNull(originProcessId, "Origin process ID is mandatory");
         Objects.requireNonNull(processTemplate, "Process template is mandatory");
         this.originProcessId = originProcessId;
         this.processData = new HashSet<>();
-        addProcessData(processData);
         this.relations = new HashSet<>();
         this.processRelations = new HashSet<>();
         this.processTemplate = processTemplate;
@@ -114,8 +113,8 @@ public class ProcessInstance extends MutableDomainEntity {
         this.state = ProcessState.STARTED;
     }
 
-    public static ProcessInstance startProcess(String originProcessId, ProcessTemplate processTemplate, Set<ProcessData> processData) {
-        ProcessInstance processInstance = new ProcessInstance(originProcessId, processTemplate, processData);
+    public static ProcessInstance startProcess(String originProcessId, ProcessTemplate processTemplate) {
+        ProcessInstance processInstance = new ProcessInstance(originProcessId, processTemplate);
         processInstance.planInitialTasks();
         return processInstance;
     }
@@ -165,6 +164,7 @@ public class ProcessInstance extends MutableDomainEntity {
     /**
      * Evaluate the snapshot conditions defined for this process and for every condition that
      * triggers a new snapshot return the name of the snapshot triggered.
+     *
      * @return The names of newly triggered snapshots as determined by the snapshot conditions.
      */
     Set<String> evaluateSnapshotConditions() {
@@ -312,13 +312,6 @@ public class ProcessInstance extends MutableDomainEntity {
             processDataItem.setProcessInstance(this);
             log.debug("Added process data to process instance {}: messageName: {}, key: {}, value: {}, role: {}",
                     id, messageName, targetKey, messageData.getValue(), messageData.getRole());
-        }
-    }
-
-    private void addProcessData(Set<ProcessData> processData) {
-        if (processData != null) {
-            processData.forEach(item -> item.setProcessInstance(this));
-            this.processData.addAll(processData);
         }
     }
 

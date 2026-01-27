@@ -29,6 +29,11 @@
       "messageName": "TestEvent",
       "topicName": "test.topic",
       "correlationProvider": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider"
+    },
+    {
+      "messageName": "TestEvent4",
+      "topicName": "test4.topic",
+      "triggersProcessInstantiation": true
     }
   ],
   "tasks": [

@@ -40,7 +40,8 @@
   "events": [
     {
       "eventName": "AnyDomainEvent",
-      "topicName": "any.test.topic"
+      "topicName": "any.test.topic",
+      "triggersProcessInstantiation": true
     }
   ]
 }

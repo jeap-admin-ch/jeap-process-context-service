@@ -25,6 +25,11 @@
       "topicName": "topic.test1",
       "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.TaskTest1EventCorrelationProvider",
       "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.Test1EventPayloadExtractor"
+    },
+    {
+      "eventName": "Test2Event",
+      "topicName": "topic.test2",
+      "triggersProcessInstantiation": true
     }
   ]
  }

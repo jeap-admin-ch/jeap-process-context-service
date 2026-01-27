@@ -22,6 +22,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -29,13 +30,14 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/domain_event_triggers_process_instance_instantiation.json")
 class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
 
     @Autowired
@@ -220,13 +222,13 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
                 .cardinality(TaskCardinality.SINGLE_INSTANCE)
                 .build();
         ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name("domainEvents")
+                .name("domainEventTriggersProcessInstantiation")
                 .templateHash("hash")
                 .taskTypes(List.of(
                         taskType))
                 .build();
         String originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
-        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate, Collections.emptySet());
+        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate);
         processInstanceRepository.save(processInstance);
 
         CriteriaUpdate<ProcessInstance> criteriaUpdate = entityManager.getCriteriaBuilder().createCriteriaUpdate(ProcessInstance.class);
@@ -246,13 +248,13 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
                 .cardinality(TaskCardinality.SINGLE_INSTANCE)
                 .build();
         ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name("domainEvents")
+                .name("domainEventTriggersProcessInstantiation")
                 .templateHash("hash")
                 .taskTypes(List.of(
                         taskType))
                 .build();
         String originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
-        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate, Collections.emptySet());
+        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate);
         processInstance.addMessage(message);
         processInstanceRepository.save(processInstance);
     }

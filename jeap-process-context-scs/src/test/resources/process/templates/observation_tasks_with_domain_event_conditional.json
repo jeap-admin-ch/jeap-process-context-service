@@ -35,6 +35,11 @@
         "processDataKey": "correlationProcessData",
         "eventDataKey": "correlationEventDataKey"
       }
+    },
+    {
+      "eventName": "Test3Event",
+      "topicName": "topic.test3",
+      "triggersProcessInstantiation": true
     }
   ]
 }

@@ -4,17 +4,18 @@ import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
 import ch.admin.bit.jeap.processcontext.event.test2.Test2Event;
 import ch.admin.bit.jeap.processcontext.event.test3.Test3Event;
 import ch.admin.bit.jeap.processcontext.event.test4.Test4Event;
-import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
-import ch.admin.bit.jeap.processcontext.testevent.Test2EventBuilder;
-import ch.admin.bit.jeap.processcontext.testevent.Test3EventBuilder;
-import ch.admin.bit.jeap.processcontext.testevent.Test4EventBuilder;
+import ch.admin.bit.jeap.processcontext.event.test6.Test6Event;
+import ch.admin.bit.jeap.processcontext.testevent.*;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
 
 import static ch.admin.bit.jeap.processcontext.TaskInstanceAssertionDto.task;
 import static ch.admin.bit.jeap.processcontext.TaskInstanceAssertionDto.taskWithoutOriginTaskId;
 
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/domain_events.json")
 class ProcessInstanceWithTasksCompletedByDomainEventsIT extends ProcessInstanceMockS3ITBase {
 
     @Test
@@ -22,7 +23,7 @@ class ProcessInstanceWithTasksCompletedByDomainEventsIT extends ProcessInstanceM
     @SuppressWarnings("java:S2925")
     void processWithTaskCompletionConditions_whenConditionsAreMet_thenExpectTaskToBeCompleted() throws Exception {
         String processTemplateName = "domainEvents";
-        createProcessInstanceFromTemplate(processTemplateName);
+        createAndSendTestEvent6(originProcessId); // This event is expected to create the process instance
         assertProcessInstanceCreated(originProcessId, processTemplateName);
         assertTasks(taskWithoutOriginTaskId("domainEvents.task.mandatory", "STATIC", "SINGLE_INSTANCE", "PLANNED"));
 
@@ -99,4 +100,12 @@ class ProcessInstanceWithTasksCompletedByDomainEventsIT extends ProcessInstanceM
     public JeapAuthenticationToken viewAndCreateRoleToken() {
         return super.viewAndCreateRoleToken();
     }
+
+    private void createAndSendTestEvent6(String originProcessId) {
+        Test6Event test6Event = Test6EventBuilder.createForProcessId(originProcessId)
+                .processReference("test")
+                .build();
+        sendSync("topic.test6", test6Event);
+    }
+
 }

@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 class JsonProcessTemplateLoader {
 
     private static final String DUPLICATED_PROCESS_INSTANTIATION_ERROR_MSG = """
-        There are more than on process templates ({}) configuring the same process instantiation for the event {}.
+            There are more than one process templates ({}) configuring the same process instantiation for the event {}.
         This is not supported as it would result in more than one process instances having the same origin process id.""";
 
     static Map<String, ProcessTemplate> loadTemplateResources(Resource[] resources) {

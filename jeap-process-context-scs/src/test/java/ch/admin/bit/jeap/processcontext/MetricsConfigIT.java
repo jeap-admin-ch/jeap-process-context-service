@@ -14,10 +14,13 @@ import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.hamcrest.Matchers.containsString;
 
+@TestPropertySource(properties =
+        "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/metrics.json")
 class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
 
     @LocalServerPort
@@ -36,12 +39,11 @@ class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
         // given
         // Start a new process
         String processTemplateName = "metrics";
-        createProcessInstanceFromTemplate(processTemplateName);
-        assertProcessInstanceCreated(originProcessId, processTemplateName);
 
         // Add events, producing process data
         // Produce two events with reference to be extracted
         sendTest1Event("subjectId-1");
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
         sendTest1Event("subjectId-2");
         // Produce two events with payload to be extracted
         sendTest2Event("objectId-1");

@@ -1,5 +1,5 @@
 {
-  "name": "relations_feature_flags",
+  "name": "migrationRelationTest",
   "tasks": [
     {
       "name": "mandatory",
@@ -52,24 +52,7 @@
           "processDataKey": "subjectKey"
         }
       },
-      "predicateType": "ch.test.predicate.Knows",
-      "featureFlag": "FEATURE_FLAG_1"
-    },
-    {
-      "subject": {
-        "type": "ch.test.Object",
-        "selector": {
-          "processDataKey": "objectKey"
-        }
-      },
-      "object": {
-        "type": "ch.test.Subject",
-        "selector": {
-          "processDataKey": "subjectKey"
-        }
-      },
-      "predicateType": "ch.test.predicate.Knows",
-      "featureFlag": "FEATURE_FLAG_2"
+      "predicateType": "ch.test.predicate.Knows"
     }
   ]
 }

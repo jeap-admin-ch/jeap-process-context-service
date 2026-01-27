@@ -21,7 +21,6 @@ import java.util.*;
 
 import static ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceStubs.createProcessWithProcessSnapshotCondition;
 import static ch.admin.bit.jeap.processcontext.domain.processinstance.TaskState.*;
-import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,7 +44,7 @@ class ProcessInstanceTest {
                 .taskTypes(List.of(mandatoryTaskType, multipleTaskType))
                 .build();
 
-        ProcessInstance processInstance = ProcessInstance.startProcess("id", processTemplate, emptySet());
+        ProcessInstance processInstance = ProcessInstance.startProcess("id", processTemplate);
 
         TaskInstance firstTask = processInstance.getTasks().getFirst();
         assertEquals(1, processInstance.getTasks().size());
@@ -128,7 +127,7 @@ class ProcessInstanceTest {
                 .templateHash("hash")
                 .taskTypes(List.of(mandatoryTaskType, dynamicTaskType))
                 .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, emptySet());
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
 
         processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-1", ZonedDateTime.now(), null);
         processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-2", ZonedDateTime.now(), null);
@@ -610,10 +609,7 @@ class ProcessInstanceTest {
                         TaskType.builder().name("new-added-single-task-type").cardinality(TaskCardinality.SINGLE_INSTANCE).lifecycle(TaskLifecycle.STATIC).build(),
                         TaskType.builder().name("new-added-dynamic-task-type").cardinality(TaskCardinality.MULTI_INSTANCE).lifecycle(TaskLifecycle.DYNAMIC).build()))
                 .build();
-        Set<ProcessData> processData = Set.of(
-                new ProcessData("key1", "value1"),
-                new ProcessData("key1", "value2"));
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processData);
+        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
     }
 
     private TaskInstance createTaskInstance(String name, ProcessInstance processInstance, TaskState taskState) {

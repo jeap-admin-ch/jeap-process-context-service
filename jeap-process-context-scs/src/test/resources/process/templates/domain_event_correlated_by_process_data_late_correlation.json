@@ -1,14 +1,11 @@
 {
-  "name": "migrationFullTest",
+  "name": "domainEventCorrelatedByProcessDataEarlyCorrelation",
   "tasks": [
     {
       "name": "mandatory",
       "completedBy": {
         "domainEvent": "Test2Event"
       }
-    },
-    {
-      "name": "task2"
     }
   ],
   "events": [

@@ -4,7 +4,8 @@
     {
       "eventName": "TestEvent",
       "topicName": "test.topic",
-      "correlationProvider": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider"
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider",
+      "triggersProcessInstantiation": true
     },
     {
       "eventName": "AdditionalTestEvent",

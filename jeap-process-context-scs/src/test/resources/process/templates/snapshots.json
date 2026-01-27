@@ -8,13 +8,14 @@
       }
     }
   ],
-  "events": [
+  "messages": [
     {
-      "eventName": "Test1Event",
-      "topicName": "topic.test1"
+      "messageName": "Test1Event",
+      "topicName": "topic.test1",
+      "triggersProcessInstantiation": true
     },
     {
-      "eventName": "Test2Event",
+      "messageName": "Test2Event",
       "topicName": "topic.test2"
     }
   ],

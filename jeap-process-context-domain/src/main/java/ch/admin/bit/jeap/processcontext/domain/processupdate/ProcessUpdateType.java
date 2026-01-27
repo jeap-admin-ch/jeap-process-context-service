@@ -5,9 +5,9 @@ import lombok.Getter;
 
 @AllArgsConstructor
 public enum ProcessUpdateType {
-    DOMAIN_EVENT(1), PROCESS_CREATED(0), CREATE_PROCESS(0);
+    DOMAIN_EVENT(1), CREATE_PROCESS(0);
 
     @Getter
-    int priority;
+    final int priority;
 
 }

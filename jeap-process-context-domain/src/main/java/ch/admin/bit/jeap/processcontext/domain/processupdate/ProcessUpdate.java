@@ -71,11 +71,6 @@ public class ProcessUpdate extends MutableDomainEntity {
         return new ProcessUpdate(Generators.timeBasedEpochGenerator().generate(), ProcessUpdateType.CREATE_PROCESS, false, false, originProcessId, template, messageReference, null, messageName, idempotenceId);
     }
 
-    @Builder(builderMethodName = "processCreated", builderClassName = "ProcessUpdateProcessCreatedBuilder")
-    private static ProcessUpdate createProcessCreated(@NonNull String originProcessId) {
-        return new ProcessUpdate(Generators.timeBasedEpochGenerator().generate(), ProcessUpdateType.PROCESS_CREATED, false, false, originProcessId, null, null, null, "createProcessInstance", originProcessId);
-    }
-
     /**
      * Mark this update as handled
      */
