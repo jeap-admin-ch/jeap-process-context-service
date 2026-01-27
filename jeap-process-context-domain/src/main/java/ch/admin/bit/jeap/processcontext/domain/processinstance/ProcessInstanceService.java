@@ -96,7 +96,7 @@ public class ProcessInstanceService {
                 processTemplateRepository.findByName(processInstanceTemplate.getTemplateName()).ifPresent(template -> {
                     if (!template.getTemplateHash().equals(processInstanceTemplate.getTemplateHash())) {
                         processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).ifPresent(
-                                processInstance -> applyTemplateMigrationsIfRequired(processInstance));
+                                this::applyTemplateMigrationsIfRequired);
                     }
                 });
             });
