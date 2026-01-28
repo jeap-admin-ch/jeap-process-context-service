@@ -5,6 +5,7 @@ import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.port.InternalMessageProducer;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
@@ -40,6 +41,7 @@ public class ProcessInstanceService {
     private final MessageRepository messageRepository;
     private final ProcessUpdateRepository processUpdateRepository;
     private final ProcessSnapshotService processSnapshotService;
+    private final RelationService relationService;
     private final Transactions transactions;
     private final MetricsListener metricsListener;
     private final PcsConfigProperties pcsConfigProperties;
@@ -198,7 +200,7 @@ public class ProcessInstanceService {
 
             AddedMessage addedMessage = processInstance.addMessage(message);
             MessageReferenceMessageDTO messageReferenceMessageDTO = addedMessage.messageReference();
-            // TODO JEAP-6536 Create relations for added process data
+            relationService.onNewProcessData(processInstance, addedMessage.newProcessData());
 
             metricsListener.timed("pcs_process_single_update", Map.of("updateType", update.getProcessUpdateType().name()),
                     () -> updateProcessInstance(processInstance, update, messageReferenceMessageDTO, message));

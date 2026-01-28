@@ -59,7 +59,7 @@ public class Relation {
 
     private String featureFlag;
 
-    @Builder(access = PACKAGE)
+    @Builder
     private Relation(@NonNull String systemId, @NonNull String subjectType, @NonNull String subjectId,
                      @NonNull String objectType, @NonNull String objectId,
                      @NonNull String predicateType, String featureFlag) {

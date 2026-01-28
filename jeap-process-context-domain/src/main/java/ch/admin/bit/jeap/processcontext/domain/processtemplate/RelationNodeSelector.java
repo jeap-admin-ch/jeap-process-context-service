@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.domain.processtemplate;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -15,5 +16,10 @@ public class RelationNodeSelector {
         this.type = type;
         this.processDataKey = processDataKey;
         this.processDataRole = processDataRole;
+    }
+
+    public boolean matches(ProcessData processData) {
+        return processData.getKey().equals(processDataKey) &&
+                (processDataRole == null || processDataRole.equals(processData.getRole()));
     }
 }

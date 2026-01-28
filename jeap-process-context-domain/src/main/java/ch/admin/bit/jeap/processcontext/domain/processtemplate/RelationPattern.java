@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.domain.processtemplate;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
