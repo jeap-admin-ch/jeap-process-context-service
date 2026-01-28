@@ -10,9 +10,9 @@ import {
 	ObErrorMessagesModule,
 	ObExternalLinkModule,
 	ObHttpApiInterceptor,
-	ObIconModule,
 	ObMasterLayoutConfig,
-	ObMasterLayoutModule, provideObliqueConfiguration
+	ObMasterLayoutModule,
+	provideObliqueConfiguration
 } from '@oblique/oblique';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {CommonModule, DatePipe, JsonPipe, NgForOf, NgIf, registerLocaleData} from '@angular/common';
@@ -135,7 +135,7 @@ export class AppModule {
 
 	constructor(
 		masterLayoutConfig: ObMasterLayoutConfig,
-		readonly qdConfigService: QdConfigService
+		readonly qdConfigService: QdConfigService,
 	) {
 		this.masterLayoutConfig = masterLayoutConfig;
 		this.configureServiceNavigation();

@@ -35,7 +35,7 @@
                       @if (process.state == 'COMPLETED' && process.processCompletion.conclusion == 'SUCCEEDED') {
                         <div>
                           {{ 'i18n.process.state.' + process.state | translate }}
-                          <mat-icon class="custom-icon-style" style="color: #008800" svgIcon="checkmark-circle"></mat-icon>
+                          <mat-icon class="custom-icon-style" style="color: #008800" svgIcon="checkmark_circle"></mat-icon>
                         </div>
                       }
                       @if (process.state == 'COMPLETED' && process.processCompletion.conclusion != 'SUCCEEDED') {
@@ -185,7 +185,7 @@
                         [matTooltip]="'i18n.process.message.show-log' | translate"
                         id="log-deep-link-btn" mat-icon-button obButton="secondary"
                         target="_blank">
-                        <mat-icon style="font-size: 10px;" svgIcon="external"></mat-icon>
+                        <mat-icon style="font-size: 10px;" svgIcon="link_external"></mat-icon>
                       </a>
                     }
                   </td>

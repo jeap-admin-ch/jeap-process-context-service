@@ -47,8 +47,8 @@ describe('TaskActivityViewComponent', () => {
 		cy.get('tr[mat-row]').should('have.length', 2);
 		cy.contains('Aufgabe 1');
 		cy.contains('Aufgabe 2');
-		cy.get('mat-icon[svgicon="calendar"]').should('exist');
-		cy.get('mat-icon[svgicon="checkmark-circle"]').should('exist');
+		cy.get('mat-icon[svgIcon="calendar"]').should('exist');
+		cy.get('mat-icon[svgIcon="checkmark_circle"]').should('exist');
 	});
 
 	it('shows no tasks message when empty', () => {
