@@ -6,7 +6,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
@@ -20,7 +20,7 @@ class FrontendWebSecurityConfig {
         // protect the API
         // allow public access to frontend resources (i.e. non-/api-routes)
         // permit open access to open API docs & swagger ui as they are only enabled on test environments
-        RequestMatcher antPathMatcher = new AntPathRequestMatcher("/api/**");
+        RequestMatcher antPathMatcher = PathPatternRequestMatcher.withDefaults().matcher("/api/**");
         RequestMatcher matcher = new NegatedRequestMatcher(antPathMatcher);
         http.securityMatcher(matcher)
                 .authorizeHttpRequests(req -> req.anyRequest().permitAll());
