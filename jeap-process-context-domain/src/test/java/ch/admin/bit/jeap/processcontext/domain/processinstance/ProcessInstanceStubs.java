@@ -3,10 +3,12 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.RelationPattern.JoinType;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessSnapshotCondition;
 import com.fasterxml.uuid.Generators;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.assertj.core.condition.Join;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -243,7 +245,7 @@ public final class ProcessInstanceStubs {
      *
      * </pre>
      */
-    public static ProcessInstance createProcessWithEventDataAndJoinByRole() {
+    public static ProcessInstance createProcessWithEventDataAndJoinByRole() { // TODO JEAP-6536 used?
         TaskType firstTask = TaskType.builder()
                 .name(task1)
                 .lifecycle(TaskLifecycle.STATIC)
@@ -269,7 +271,7 @@ public final class ProcessInstanceStubs {
                         .type("ch.admin.bit.entity.Bar")
                         .build())
                 .predicateType("ch.admin.bit.test.predicate.Knows")
-                .joinType("byRole")
+                .joinType(JoinType.BY_ROLE)
                 .build();
         ProcessTemplate processTemplate = ProcessTemplate.builder()
                 .name("template")
@@ -301,7 +303,7 @@ public final class ProcessInstanceStubs {
      *
      * </pre>
      */
-    public static ProcessInstance createProcessWithEventDataAndJoinByValue() {
+    public static ProcessInstance createProcessWithEventDataAndJoinByValue() { // TODO JEAP-6536 used?
         TaskType firstTask = TaskType.builder()
                 .name(task1)
                 .lifecycle(TaskLifecycle.STATIC)
@@ -327,7 +329,7 @@ public final class ProcessInstanceStubs {
                         .type("ch.admin.bit.entity.Bar")
                         .build())
                 .predicateType("ch.admin.bit.test.predicate.Knows")
-                .joinType("byValue")
+                .joinType(JoinType.BY_VALUE)
                 .build();
         ProcessTemplate processTemplate = ProcessTemplate.builder()
                 .name("template")

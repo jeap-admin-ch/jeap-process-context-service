@@ -11,11 +11,14 @@ import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import java.time.Duration;
 
 import static org.hamcrest.Matchers.containsString;
 
@@ -53,12 +56,10 @@ class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
         assertProcessInstanceCompleted(originProcessId);
         assertProcessInstanceCompleted(originProcessId);
         assertSnapshotCreatedEvents(1);
-        /* TODO JEAP-6536 Count relations
         Awaitility.await()
                 .atMost(TIMEOUT)
                 .pollInterval(Duration.ofSeconds(2))
                 .until(() -> relationListenerStub.getRelations(originProcessId).size() == 4);
-        */
 
         // then
         requestWithPrometheusRole()

@@ -26,7 +26,6 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled("TODO JEAP-6536 Relations")
 @Slf4j
 @TestPropertySource(properties =
         "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/relations_join*.json")

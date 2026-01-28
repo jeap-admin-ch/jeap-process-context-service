@@ -485,7 +485,7 @@ public class ProcessTemplateDeserializer {
         RelationNodeSelector objectSelector = toSelector(object);
         return RelationPattern.builder()
                 .predicateType(predicateType)
-                .joinType(joinType)
+                .joinType(RelationPattern.JoinType.of(joinType))
                 .subjectSelector(subjectSelector)
                 .objectSelector(objectSelector)
                 .featureFlag(relationPatternDefinition.getFeatureFlag())

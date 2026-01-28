@@ -20,7 +20,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Disabled("TODO JEAP-6536 Relations")
 @Slf4j
 @TestPropertySource(properties =
         "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/relations_feature_flags*.json")

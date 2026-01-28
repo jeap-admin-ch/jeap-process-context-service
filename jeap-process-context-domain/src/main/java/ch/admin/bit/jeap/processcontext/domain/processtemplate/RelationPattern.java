@@ -1,20 +1,36 @@
 package ch.admin.bit.jeap.processcontext.domain.processtemplate;
 
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
 public class RelationPattern {
+
+    public enum JoinType {
+        BY_VALUE,
+        BY_ROLE;
+
+        public static JoinType of(String joinType) {
+            if (joinType == null) {
+                return null;
+            }
+            return switch (joinType) {
+                case "byValue" -> BY_VALUE;
+                case "byRole" -> BY_ROLE;
+                default -> throw new IllegalArgumentException("Unknown join type: " + joinType);
+            };
+        }
+    }
+
     String predicateType;
-    String joinType;
+    JoinType joinType;
     RelationNodeSelector subjectSelector;
     RelationNodeSelector objectSelector;
     String featureFlag;
 
     @Builder
-    private RelationPattern(@NonNull String predicateType, String joinType, @NonNull RelationNodeSelector subjectSelector, @NonNull RelationNodeSelector objectSelector, String featureFlag) {
+    private RelationPattern(@NonNull String predicateType, JoinType joinType, @NonNull RelationNodeSelector subjectSelector, @NonNull RelationNodeSelector objectSelector, String featureFlag) {
         this.predicateType = predicateType;
         this.joinType = joinType;
         this.subjectSelector = subjectSelector;

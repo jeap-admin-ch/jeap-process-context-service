@@ -57,6 +57,7 @@ public class Relation {
     @EqualsAndHashCode.Exclude
     private UUID idempotenceId;
 
+    @EqualsAndHashCode.Exclude
     private String featureFlag;
 
     @Builder
@@ -72,11 +73,12 @@ public class Relation {
         this.featureFlag = featureFlag;
     }
 
-    void onPrePersist() {
+    public void onPrePersist() {
         if (idempotenceId != null || createdAt != null) {
             throw new IllegalStateException("Modifying idempotenceId/createdAt not allowed for persistent Relation entity");
         }
         idempotenceId = Generators.timeBasedEpochGenerator().generate();
         createdAt = ZonedDateTime.now();
     }
+
 }

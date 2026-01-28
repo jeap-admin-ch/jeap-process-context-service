@@ -1,59 +1,106 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance.relation;
 
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.Relation;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.RelationNodeSelector;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.RelationPattern;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.RelationPattern.JoinType;
+import com.google.common.collect.Streams;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Stream;
 
-// TODO JEAP-6536 feature flags
 @Component
+@RequiredArgsConstructor
 class RelationFactory {
-    public Collection<Relation> createNewRelations(ProcessInstance processInstance, List<ProcessData> newProcessDataList) {
+    private final ProcessDataRepository processDataRepository;
+
+    public Set<Relation> createNewRelations(ProcessInstance processInstance, List<ProcessData> newProcessDataList) {
         if (newProcessDataList.isEmpty()) {
-            return List.of();
+            return Set.of();
         }
 
-        List<Relation> newRelations = new ArrayList<>();
+        Set<Relation> newRelations = new HashSet<>();
         ProcessTemplate processTemplate = processInstance.getProcessTemplate();
         String systemId = processTemplate.getRelationSystemId();
 
-        // 1.) Find all relation patterns defined in the process template where the subject or object pattern matches
-        // the new process data
         for (ProcessData newProcessData : newProcessDataList) {
+            // Find all relation patterns defined in the process template where the object pattern matches the new process data
             List<RelationPattern> matchingObjectPatterns = processTemplate.getRelationPatterns().stream()
                     .filter(pattern -> pattern.getObjectSelector().matches(newProcessData))
                     .toList();
             for (RelationPattern matchingObjectPattern : matchingObjectPatterns) {
-                // Find matching subject in the list of new process data
-                List<Relation> relations = newProcessDataList.stream()
-                        .filter(subjectProcessData -> matchingObjectPattern.getSubjectSelector().matches(subjectProcessData))
-                        .map(subjectProcessData -> createRelation(systemId, matchingObjectPattern, subjectProcessData, newProcessData))
-                        .toList();
-                newRelations.addAll(relations);
+                // Find matching subjects in the list of new process data
+                Stream<ProcessData> matchingNewSubjects = newProcessDataList.stream()
+                        .filter(subjectProcessData -> matchingObjectPattern.getSubjectSelector().matches(subjectProcessData));
 
-                // Find matching subject in previously persisted process data
-                // TODO JEAP-6536
+                // Find matching subjects in previously persisted process data
+                List<ProcessData> matchingPersistentSubjects = processDataRepository.findProcessData(processInstance,
+                        matchingObjectPattern.getSubjectSelector().getProcessDataKey(),
+                        matchingObjectPattern.getSubjectSelector().getProcessDataRole());
+
+                // Now create a relation from the object to each matching subject
+                List<ProcessData> subjects = Streams.concat(matchingNewSubjects, matchingPersistentSubjects.stream()).toList();
+                createRelations(newRelations, systemId, matchingObjectPattern, List.of(newProcessData), subjects);
             }
 
             List<RelationPattern> matchingSubjectPatterns = processTemplate.getRelationPatterns().stream()
                     .filter(pattern -> pattern.getSubjectSelector().matches(newProcessData))
                     .toList();
-            // TODO JEAP-6536
-        }
+            for (RelationPattern matchingSubjectPattern : matchingSubjectPatterns) {
+                // Find matching objects in the list of new process data
+                Stream<ProcessData> matchingNewObjects = newProcessDataList.stream()
+                        .filter(objectProcessData -> matchingSubjectPattern.getObjectSelector().matches(objectProcessData));
 
-        // 2.) For each relation pattern, use RelationFactory to create matching relations
+                // Find matching objects in previously persisted process data
+                List<ProcessData> matchingPersistentObjects = processDataRepository.findProcessData(processInstance,
+                        matchingSubjectPattern.getSubjectSelector().getProcessDataKey(),
+                        matchingSubjectPattern.getSubjectSelector().getProcessDataRole());
+
+                // Now create a relation from the subject to each matching object
+                List<ProcessData> objects = Streams.concat(matchingNewObjects, matchingPersistentObjects.stream()).toList();
+                createRelations(newRelations, systemId, matchingSubjectPattern, objects, List.of(newProcessData));
+            }
+
+        }
 
         return newRelations;
     }
 
-    private Relation createRelation(String systemId, RelationPattern pattern, ProcessData subjectProcessData, ProcessData objectProcessData) {
+    private void createRelations(Set<Relation> newRelations, String systemId, RelationPattern pattern,
+                                 List<ProcessData> objectProcessDataStream, List<ProcessData> subjectProcessDataStream) {
+        for (ProcessData objectProcessData : objectProcessDataStream) {
+            for (ProcessData subjectProcessData : subjectProcessDataStream) {
+                createRelationIfJoinMatches(newRelations, systemId, pattern, objectProcessData, subjectProcessData);
+            }
+        }
+    }
+
+    /**
+     * If no joinType is defined, join each pair.
+     * If the joinTyp is byRole, join only if roles match.
+     * If the joinType is byValue, join only if values match.
+     */
+    private void createRelationIfJoinMatches(Set<Relation> newRelations, String systemId, RelationPattern pattern, ProcessData objectProcessData, ProcessData subjectProcessData) {
+        if (pattern.getJoinType() == null) {
+            newRelations.add(createRelation(systemId, pattern, objectProcessData, subjectProcessData));
+        } else if (JoinType.BY_ROLE == pattern.getJoinType()) {
+            if (objectProcessData.getRole() != null && objectProcessData.getRole().equals(subjectProcessData.getRole())) {
+                newRelations.add(createRelation(systemId, pattern, objectProcessData, subjectProcessData));
+            }
+        } else if (JoinType.BY_VALUE == pattern.getJoinType()) {
+            if (objectProcessData.getValue() != null && objectProcessData.getValue().equals(subjectProcessData.getValue())) {
+                newRelations.add(createRelation(systemId, pattern, objectProcessData, subjectProcessData));
+            }
+        }
+    }
+
+    private Relation createRelation(String systemId, RelationPattern pattern, ProcessData objectProcessData, ProcessData subjectProcessData) {
         return createRelation(
                 systemId,
                 pattern.getPredicateType(),
@@ -76,7 +123,6 @@ class RelationFactory {
     }
 
     private record RelationNode(String type, String id, String role) {
-
         static RelationNode of(ProcessData pd, RelationNodeSelector selector) {
             return new RelationNode(selector.getType(), pd.getValue(), pd.getRole());
         }

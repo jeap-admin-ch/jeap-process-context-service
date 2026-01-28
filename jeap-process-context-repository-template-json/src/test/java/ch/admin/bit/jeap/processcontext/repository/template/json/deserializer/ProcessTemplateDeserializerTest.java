@@ -124,7 +124,7 @@ class ProcessTemplateDeserializerTest {
 
         assertEquals(1, template.getRelationPatterns().size());
         RelationPattern relationPattern = template.getRelationPatterns().getFirst();
-        assertEquals(RelationPatternDefinition.JOIN_BY_ROLE, relationPattern.getJoinType());
+        assertEquals(RelationPattern.JoinType.BY_ROLE, relationPattern.getJoinType());
         assertEquals("some relation", relationPattern.getPredicateType());
         assertEquals("myFeatureFlag", relationPattern.getFeatureFlag());
         RelationNodeSelector objectSelector = relationPattern.getObjectSelector();

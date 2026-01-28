@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.port.InternalMessageProducer;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
@@ -55,6 +56,8 @@ class ProcessInstanceServiceTest {
     private ProcessUpdateRepository processUpdateRepository;
     @Mock
     private ProcessSnapshotService processSnapshotService;
+    @Mock
+    private RelationService relationService;
 
     private PcsConfigProperties pcsConfigProperties;
 
@@ -70,7 +73,7 @@ class ProcessInstanceServiceTest {
         MetricsListener metricsListener = new StubMetricsListener();
         target = new ProcessInstanceService(internalMessageProducer,
                 processUpdateQueryRepository, processInstanceRepository, processTemplateRepository, messageRepository,
-                processUpdateRepository, processSnapshotService, transactions, metricsListener, pcsConfigProperties);
+                processUpdateRepository, processSnapshotService, relationService, transactions, metricsListener, pcsConfigProperties);
     }
 
     @Test
