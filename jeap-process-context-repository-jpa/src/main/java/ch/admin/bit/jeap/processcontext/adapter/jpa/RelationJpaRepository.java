@@ -12,4 +12,8 @@ import java.util.UUID;
 interface RelationJpaRepository extends JpaRepository<Relation, UUID> {
 
     Set<Relation> findByProcessInstance(ProcessInstance processInstance);
+
+    boolean existsByProcessInstanceAndSubjectTypeAndSubjectIdAndObjectTypeAndObjectIdAndPredicateType(
+            ProcessInstance processInstance, String subjectType, String subjectId,
+            String objectType, String objectId, String predicateType);
 }

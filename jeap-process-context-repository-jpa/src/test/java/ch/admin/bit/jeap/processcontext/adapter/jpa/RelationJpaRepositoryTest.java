@@ -214,4 +214,98 @@ class RelationJpaRepositoryTest {
 
         assertThat(result).isEmpty();
     }
+
+    @Test
+    void existsByUniqueConstraint_existingRelation_returnsTrue() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        Relation relation = Relation.builder()
+                .processInstance(processInstance)
+                .systemId("test-system")
+                .subjectType("SubjectType")
+                .subjectId("subject-1")
+                .objectType("ObjectType")
+                .objectId("object-1")
+                .predicateType("relates-to")
+                .build();
+        relation.onPrePersist();
+        ReflectionTestUtils.setField(relation, "processInstance", processInstance);
+        relationJpaRepository.saveAndFlush(relation);
+        entityManager.clear();
+
+        ProcessInstance savedInstance = processInstanceJpaRepository.findByOriginProcessId(processInstance.getOriginProcessId()).orElseThrow();
+        boolean exists = relationJpaRepository.existsByProcessInstanceAndSubjectTypeAndSubjectIdAndObjectTypeAndObjectIdAndPredicateType(
+                savedInstance, "SubjectType", "subject-1", "ObjectType", "object-1", "relates-to");
+
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    void existsByUniqueConstraint_nonExistingRelation_returnsFalse() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        processInstanceJpaRepository.saveAndFlush(processInstance);
+        entityManager.clear();
+
+        ProcessInstance savedInstance = processInstanceJpaRepository.findByOriginProcessId(processInstance.getOriginProcessId()).orElseThrow();
+        boolean exists = relationJpaRepository.existsByProcessInstanceAndSubjectTypeAndSubjectIdAndObjectTypeAndObjectIdAndPredicateType(
+                savedInstance, "SubjectType", "subject-1", "ObjectType", "object-1", "relates-to");
+
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    void existsByUniqueConstraint_differentSubjectId_returnsFalse() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        Relation relation = Relation.builder()
+                .processInstance(processInstance)
+                .systemId("test-system")
+                .subjectType("SubjectType")
+                .subjectId("subject-1")
+                .objectType("ObjectType")
+                .objectId("object-1")
+                .predicateType("relates-to")
+                .build();
+        relation.onPrePersist();
+        ReflectionTestUtils.setField(relation, "processInstance", processInstance);
+        relationJpaRepository.saveAndFlush(relation);
+        entityManager.clear();
+
+        ProcessInstance savedInstance = processInstanceJpaRepository.findByOriginProcessId(processInstance.getOriginProcessId()).orElseThrow();
+        boolean exists = relationJpaRepository.existsByProcessInstanceAndSubjectTypeAndSubjectIdAndObjectTypeAndObjectIdAndPredicateType(
+                savedInstance, "SubjectType", "subject-different", "ObjectType", "object-1", "relates-to");
+
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    void existsByUniqueConstraint_differentProcessInstance_returnsFalse() {
+        ProcessInstance processInstance1 = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        processInstanceJpaRepository.saveAndFlush(processInstance1);
+
+        ProcessInstance processInstance2 = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        processInstanceJpaRepository.saveAndFlush(processInstance2);
+
+        Relation relation = Relation.builder()
+                .processInstance(processInstance1)
+                .systemId("test-system")
+                .subjectType("SubjectType")
+                .subjectId("subject-1")
+                .objectType("ObjectType")
+                .objectId("object-1")
+                .predicateType("relates-to")
+                .build();
+        relation.onPrePersist();
+        ReflectionTestUtils.setField(relation, "processInstance", processInstance1);
+        relationJpaRepository.saveAndFlush(relation);
+        entityManager.clear();
+
+        ProcessInstance savedInstance2 = processInstanceJpaRepository.findByOriginProcessId(processInstance2.getOriginProcessId()).orElseThrow();
+        boolean exists = relationJpaRepository.existsByProcessInstanceAndSubjectTypeAndSubjectIdAndObjectTypeAndObjectIdAndPredicateType(
+                savedInstance2, "SubjectType", "subject-1", "ObjectType", "object-1", "relates-to");
+
+        assertThat(exists).isFalse();
+    }
 }

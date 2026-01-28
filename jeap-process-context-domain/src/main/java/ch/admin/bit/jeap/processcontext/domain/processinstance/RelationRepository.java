@@ -4,7 +4,12 @@ import java.util.Collection;
 import java.util.Set;
 
 public interface RelationRepository {
-    void saveAll(Collection<Relation> relations);
+    /**
+     * Saves all given relations if they do not already exist.
+     * @param relations The relations to save.
+     * @return The relations that were saved and did not already exist.
+     */
+    Set<Relation> saveAll(Collection<Relation> relations);
 
     Set<Relation> findByProcessInstance(ProcessInstance processInstance);
 }
