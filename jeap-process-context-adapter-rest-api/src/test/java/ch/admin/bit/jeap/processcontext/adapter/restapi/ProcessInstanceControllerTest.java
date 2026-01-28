@@ -40,8 +40,6 @@ class ProcessInstanceControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    private ObjectMapper objectMapper;
     @MockitoBean
     private ProcessInstanceQueryRepository repository;
     @MockitoBean
@@ -50,6 +48,8 @@ class ProcessInstanceControllerTest {
     private ProcessSnapshotRepository processSnapshotRepository;
     @MockitoBean
     private MessageRepository messageRepository;
+    @MockitoBean
+    private RelationRepository relationRepository;
     @MockitoBean
     private TranslateService translateService;
 

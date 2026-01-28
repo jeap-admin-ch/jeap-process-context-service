@@ -10,7 +10,6 @@ import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
@@ -32,24 +31,26 @@ class ProcessInstanceWithRelationFeatureFlagIT extends ProcessInstanceMockS3ITBa
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void processWithRelations_whenFeatureFlagNotActive_thenShouldNotNotifyListener() {
-        List<Relation> relations = processWithRelations_whenRelationsAreAdded_thenShouldNotifyListener("relations_feature_flags", 1);
+        sendTest1Event("subjectId-1");
+        assertProcessInstanceCreated(originProcessId, "relations_feature_flags");
+        sendTest2Event("objectId-1");
+
+        List<Relation> relations = processWithRelations_whenRelationsAreAdded_thenShouldNotifyListener(1);
         assertThat(relations).hasSize(1);
     }
 
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void processWithRelations_whenFeatureFlagActive_thenShouldNotifyListener() {
-        List<Relation> relations = processWithRelations_whenRelationsAreAdded_thenShouldNotifyListener("relations_feature_flags_both_active", 2);
+        sendTest2Event("objectId-1");
+        assertProcessInstanceCreated(originProcessId, "relations_feature_flags_both_active");
+        sendTest1Event("subjectId-1");
+
+        List<Relation> relations = processWithRelations_whenRelationsAreAdded_thenShouldNotifyListener(2);
         assertThat(relations).hasSize(2);
     }
 
-    protected List<Relation> processWithRelations_whenRelationsAreAdded_thenShouldNotifyListener(String processTemplateName, int size) {
-        sendTest1Event("subjectId-1");
-        sendTest2Event("objectId-1");
-        assertProcessInstanceCreated(originProcessId, processTemplateName);
-
-        // Check that process completes after all tasks have been completed
-        assertProcessInstanceCompleted(originProcessId);
+    protected List<Relation> processWithRelations_whenRelationsAreAdded_thenShouldNotifyListener(int size) {
         assertProcessInstanceCompleted(originProcessId);
         Awaitility.await()
                 .atMost(TIMEOUT)
