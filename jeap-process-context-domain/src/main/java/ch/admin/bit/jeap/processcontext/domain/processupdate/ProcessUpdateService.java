@@ -28,9 +28,10 @@ public class ProcessUpdateService {
         withinTransaction(() -> createAndSaveCreateProcessIfNeeded(originProcessId, message, template));
 
         internalMessageProducer.produceProcessContextOutdatedEventSynchronously(originProcessId);
-        log.info("CreateProcess message {} for {} received",
+        log.info("CreateProcess message {} for {} received, using template {}",
                 StructuredArguments.keyValue("messageName", message.getMessageName()),
-                StructuredArguments.keyValue("originProcessId", originProcessId));
+                StructuredArguments.keyValue("originProcessId", originProcessId),
+                StructuredArguments.keyValue("template", template));
     }
 
 

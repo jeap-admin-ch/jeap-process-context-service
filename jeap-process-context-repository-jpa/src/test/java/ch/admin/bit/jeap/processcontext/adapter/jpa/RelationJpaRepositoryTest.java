@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceStubs;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.Relation;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.RelationRepository;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -11,8 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -33,6 +34,9 @@ class RelationJpaRepositoryTest {
     private RelationJpaRepository relationJpaRepository;
 
     @Autowired
+    private RelationRepository relationRepository;
+
+    @Autowired
     private ProcessInstanceJpaRepository processInstanceJpaRepository;
 
     @Test
@@ -50,7 +54,6 @@ class RelationJpaRepositoryTest {
                 .predicateType("relates-to")
                 .build();
         relation1.onPrePersist();
-        ReflectionTestUtils.setField(relation1, "processInstance", processInstance);
 
         Relation relation2 = Relation.builder()
                 .processInstance(processInstance)
@@ -63,7 +66,6 @@ class RelationJpaRepositoryTest {
                 .featureFlag("MY_FEATURE")
                 .build();
         relation2.onPrePersist();
-        ReflectionTestUtils.setField(relation2, "processInstance", processInstance);
 
         relationJpaRepository.saveAll(Set.of(relation1, relation2));
         entityManager.flush();
@@ -99,7 +101,6 @@ class RelationJpaRepositoryTest {
                 .featureFlag("FEATURE_FLAG")
                 .build();
         relation.onPrePersist();
-        ReflectionTestUtils.setField(relation, "processInstance", processInstance);
 
         relationJpaRepository.saveAndFlush(relation);
         entityManager.clear();
@@ -132,7 +133,6 @@ class RelationJpaRepositoryTest {
                 .predicateType("relates-to")
                 .build();
         relation1.onPrePersist();
-        ReflectionTestUtils.setField(relation1, "processInstance", processInstance);
 
         Relation relation2 = Relation.builder()
                 .processInstance(processInstance)
@@ -144,7 +144,6 @@ class RelationJpaRepositoryTest {
                 .predicateType("relates-to")
                 .build();
         relation2.onPrePersist();
-        ReflectionTestUtils.setField(relation2, "processInstance", processInstance);
 
         relationJpaRepository.saveAll(Set.of(relation1, relation2));
         entityManager.flush();
@@ -161,7 +160,6 @@ class RelationJpaRepositoryTest {
 
     @Test
     void findByProcessInstance_doesNotReturnRelationsFromOtherProcessInstances() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         ProcessInstance processInstance1 = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         processInstanceJpaRepository.saveAndFlush(processInstance1);
 
@@ -169,7 +167,7 @@ class RelationJpaRepositoryTest {
         processInstanceJpaRepository.saveAndFlush(processInstance2);
 
         Relation relation1 = Relation.builder()
-                .processInstance(processInstance)
+                .processInstance(processInstance1)
                 .systemId("test-system")
                 .subjectType("SubjectType")
                 .subjectId("subject-1")
@@ -178,10 +176,9 @@ class RelationJpaRepositoryTest {
                 .predicateType("relates-to")
                 .build();
         relation1.onPrePersist();
-        ReflectionTestUtils.setField(relation1, "processInstance", processInstance1);
 
         Relation relation2 = Relation.builder()
-                .processInstance(processInstance)
+                .processInstance(processInstance2)
                 .systemId("test-system")
                 .subjectType("SubjectType")
                 .subjectId("subject-2")
@@ -190,7 +187,6 @@ class RelationJpaRepositoryTest {
                 .predicateType("relates-to")
                 .build();
         relation2.onPrePersist();
-        ReflectionTestUtils.setField(relation2, "processInstance", processInstance2);
 
         relationJpaRepository.saveAll(Set.of(relation1, relation2));
         entityManager.flush();
@@ -216,96 +212,95 @@ class RelationJpaRepositoryTest {
     }
 
     @Test
-    void existsByUniqueConstraint_existingRelation_returnsTrue() {
+    void saveAll_withBatching_persistsAllRelationsAcrossMultipleBatches() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         processInstanceJpaRepository.saveAndFlush(processInstance);
 
-        Relation relation = Relation.builder()
+        // Create 150 relations (exceeds BATCH_SIZE of 100, so requires 2 batches)
+        int totalRelations = 150;
+        List<Relation> relations = new ArrayList<>();
+        for (int i = 0; i < totalRelations; i++) {
+            Relation relation = Relation.builder()
+                    .processInstance(processInstance)
+                    .systemId("test-system")
+                    .subjectType("SubjectType")
+                    .subjectId("subject-" + i)
+                    .objectType("ObjectType")
+                    .objectId("object-" + i)
+                    .predicateType("relates-to")
+                    .build();
+            relation.onPrePersist();
+            relations.add(relation);
+        }
+
+        Set<Relation> savedRelations = relationRepository.saveAllNewRelations(relations);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(savedRelations).hasSize(totalRelations);
+
+        List<Relation> allPersistedRelations = relationJpaRepository.findAll();
+        assertThat(allPersistedRelations).hasSize(totalRelations);
+    }
+
+    @Test
+    void saveAll_withBatching_filtersExistingRelationsAcrossBatches() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        // Pre-create some relations that will be in different batches
+        Relation existingInFirstBatch = Relation.builder()
                 .processInstance(processInstance)
                 .systemId("test-system")
                 .subjectType("SubjectType")
-                .subjectId("subject-1")
+                .subjectId("subject-10")
                 .objectType("ObjectType")
-                .objectId("object-1")
+                .objectId("object-10")
                 .predicateType("relates-to")
                 .build();
-        relation.onPrePersist();
-        ReflectionTestUtils.setField(relation, "processInstance", processInstance);
-        relationJpaRepository.saveAndFlush(relation);
-        entityManager.clear();
+        existingInFirstBatch.onPrePersist();
 
-        ProcessInstance savedInstance = processInstanceJpaRepository.findByOriginProcessId(processInstance.getOriginProcessId()).orElseThrow();
-        boolean exists = relationJpaRepository.existsByProcessInstanceAndSubjectTypeAndSubjectIdAndObjectTypeAndObjectIdAndPredicateType(
-                savedInstance, "SubjectType", "subject-1", "ObjectType", "object-1", "relates-to");
-
-        assertThat(exists).isTrue();
-    }
-
-    @Test
-    void existsByUniqueConstraint_nonExistingRelation_returnsFalse() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
-        processInstanceJpaRepository.saveAndFlush(processInstance);
-        entityManager.clear();
-
-        ProcessInstance savedInstance = processInstanceJpaRepository.findByOriginProcessId(processInstance.getOriginProcessId()).orElseThrow();
-        boolean exists = relationJpaRepository.existsByProcessInstanceAndSubjectTypeAndSubjectIdAndObjectTypeAndObjectIdAndPredicateType(
-                savedInstance, "SubjectType", "subject-1", "ObjectType", "object-1", "relates-to");
-
-        assertThat(exists).isFalse();
-    }
-
-    @Test
-    void existsByUniqueConstraint_differentSubjectId_returnsFalse() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
-        processInstanceJpaRepository.saveAndFlush(processInstance);
-
-        Relation relation = Relation.builder()
+        Relation existingInSecondBatch = Relation.builder()
                 .processInstance(processInstance)
                 .systemId("test-system")
                 .subjectType("SubjectType")
-                .subjectId("subject-1")
+                .subjectId("subject-110")
                 .objectType("ObjectType")
-                .objectId("object-1")
+                .objectId("object-110")
                 .predicateType("relates-to")
                 .build();
-        relation.onPrePersist();
-        ReflectionTestUtils.setField(relation, "processInstance", processInstance);
-        relationJpaRepository.saveAndFlush(relation);
+        existingInSecondBatch.onPrePersist();
+
+        relationJpaRepository.saveAll(List.of(existingInFirstBatch, existingInSecondBatch));
+        entityManager.flush();
         entityManager.clear();
 
-        ProcessInstance savedInstance = processInstanceJpaRepository.findByOriginProcessId(processInstance.getOriginProcessId()).orElseThrow();
-        boolean exists = relationJpaRepository.existsByProcessInstanceAndSubjectTypeAndSubjectIdAndObjectTypeAndObjectIdAndPredicateType(
-                savedInstance, "SubjectType", "subject-different", "ObjectType", "object-1", "relates-to");
+        // Now try to save 150 relations including duplicates at positions 10 and 110
+        int totalRelations = 150;
+        List<Relation> relations = new ArrayList<>();
+        for (int i = 0; i < totalRelations; i++) {
+            Relation relation = Relation.builder()
+                    .processInstance(processInstance)
+                    .systemId("test-system")
+                    .subjectType("SubjectType")
+                    .subjectId("subject-" + i)
+                    .objectType("ObjectType")
+                    .objectId("object-" + i)
+                    .predicateType("relates-to")
+                    .build();
+            relation.onPrePersist();
+            relations.add(relation);
+        }
 
-        assertThat(exists).isFalse();
-    }
-
-    @Test
-    void existsByUniqueConstraint_differentProcessInstance_returnsFalse() {
-        ProcessInstance processInstance1 = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
-        processInstanceJpaRepository.saveAndFlush(processInstance1);
-
-        ProcessInstance processInstance2 = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
-        processInstanceJpaRepository.saveAndFlush(processInstance2);
-
-        Relation relation = Relation.builder()
-                .processInstance(processInstance1)
-                .systemId("test-system")
-                .subjectType("SubjectType")
-                .subjectId("subject-1")
-                .objectType("ObjectType")
-                .objectId("object-1")
-                .predicateType("relates-to")
-                .build();
-        relation.onPrePersist();
-        ReflectionTestUtils.setField(relation, "processInstance", processInstance1);
-        relationJpaRepository.saveAndFlush(relation);
+        Set<Relation> newlySavedRelations = relationRepository.saveAllNewRelations(relations);
+        entityManager.flush();
         entityManager.clear();
 
-        ProcessInstance savedInstance2 = processInstanceJpaRepository.findByOriginProcessId(processInstance2.getOriginProcessId()).orElseThrow();
-        boolean exists = relationJpaRepository.existsByProcessInstanceAndSubjectTypeAndSubjectIdAndObjectTypeAndObjectIdAndPredicateType(
-                savedInstance2, "SubjectType", "subject-1", "ObjectType", "object-1", "relates-to");
+        // Should have saved 148 new relations (150 - 2 existing)
+        assertThat(newlySavedRelations).hasSize(totalRelations - 2);
 
-        assertThat(exists).isFalse();
+        // Total in DB should be 150 (2 pre-existing + 148 new)
+        List<Relation> allPersistedRelations = relationJpaRepository.findAll();
+        assertThat(allPersistedRelations).hasSize(totalRelations);
     }
 }

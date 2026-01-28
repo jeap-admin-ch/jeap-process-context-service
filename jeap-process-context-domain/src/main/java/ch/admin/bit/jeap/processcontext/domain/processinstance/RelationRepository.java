@@ -9,7 +9,7 @@ public interface RelationRepository {
      * @param relations The relations to save.
      * @return The relations that were saved and did not already exist.
      */
-    Set<Relation> saveAll(Collection<Relation> relations);
+    Set<Relation> saveAllNewRelations(Collection<Relation> relations);
 
     Set<Relation> findByProcessInstance(ProcessInstance processInstance);
 }

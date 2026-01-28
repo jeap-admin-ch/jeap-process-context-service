@@ -108,13 +108,15 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
     void processWithRelations_whenJoinByValue_thenValueShouldBeApplied() {
         String processTemplateName = "relations_join_byValue";
 
+        // Produce an event to instantiate the process and with payload to be extracted
+        sendTest2Event("red");
+        assertProcessInstanceCreated(originProcessId, processTemplateName);
+
         // Add events, producing process data
         // Produce two events with reference to be extracted
         sendTest1Event("red");
         sendTest1Event("blue");
-        // Produce two events with payload to be extracted
-        sendTest2Event("red");
-        assertProcessInstanceCreated(originProcessId, processTemplateName);
+        // Produce another events with payload to be extracted
         sendTest2Event("green");
 
         // Check that process completes after all tasks have been completed

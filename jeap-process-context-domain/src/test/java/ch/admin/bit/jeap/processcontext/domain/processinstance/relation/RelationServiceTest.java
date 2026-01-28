@@ -61,10 +61,11 @@ class RelationServiceTest {
     void onNewProcessData_emptyRelations_savesNothingAndNotifiesWithEmptyList() {
         List<ProcessData> newProcessData = List.of(new ProcessData("key", "value"));
         when(relationFactory.createNewRelations(processInstance, newProcessData)).thenReturn(Set.of());
+        when(relationRepository.saveAllNewRelations(any())).thenReturn(Set.of());
 
         relationService.onNewProcessData(processInstance, newProcessData);
 
-        verify(relationRepository).saveAll(savedRelationsCaptor.capture());
+        verify(relationRepository).saveAllNewRelations(savedRelationsCaptor.capture());
         assertThat(savedRelationsCaptor.getValue()).isEmpty();
 
         verify(relationListener).relationsAdded(notifiedRelationsCaptor.capture());
@@ -85,6 +86,7 @@ class RelationServiceTest {
                 .build();
 
         when(relationFactory.createNewRelations(processInstance, newProcessData)).thenReturn(Set.of(relation));
+        when(relationRepository.saveAllNewRelations(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         relationService.onNewProcessData(processInstance, newProcessData);
 
@@ -92,7 +94,7 @@ class RelationServiceTest {
         assertThat(relation.getIdempotenceId()).isNotNull();
         assertThat(relation.getCreatedAt()).isNotNull();
 
-        verify(relationRepository).saveAll(savedRelationsCaptor.capture());
+        verify(relationRepository).saveAllNewRelations(savedRelationsCaptor.capture());
         assertThat(savedRelationsCaptor.getValue()).containsExactly(relation);
 
         verify(relationListener).relationsAdded(notifiedRelationsCaptor.capture());
@@ -123,6 +125,7 @@ class RelationServiceTest {
                 .build();
 
         when(relationFactory.createNewRelations(processInstance, newProcessData)).thenReturn(Set.of(relation));
+        when(relationRepository.saveAllNewRelations(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         relationService.onNewProcessData(processInstance, newProcessData);
 
@@ -147,6 +150,7 @@ class RelationServiceTest {
                 .build();
 
         when(relationFactory.createNewRelations(processInstance, newProcessData)).thenReturn(Set.of(relation));
+        when(relationRepository.saveAllNewRelations(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(featureManager.isActive(any(NamedFeature.class))).thenReturn(true);
 
         relationService.onNewProcessData(processInstance, newProcessData);
@@ -171,6 +175,7 @@ class RelationServiceTest {
                 .build();
 
         when(relationFactory.createNewRelations(processInstance, newProcessData)).thenReturn(Set.of(relation));
+        when(relationRepository.saveAllNewRelations(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(featureManager.isActive(any(NamedFeature.class))).thenReturn(false);
 
         relationService.onNewProcessData(processInstance, newProcessData);
@@ -219,6 +224,7 @@ class RelationServiceTest {
 
         when(relationFactory.createNewRelations(processInstance, newProcessData))
                 .thenReturn(Set.of(relationNoFlag, relationActiveFlag, relationInactiveFlag));
+        when(relationRepository.saveAllNewRelations(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(featureManager.isActive(any(NamedFeature.class))).thenAnswer(invocation -> {
             NamedFeature feature = invocation.getArgument(0);
             return "ACTIVE_FEATURE".equals(feature.name());
@@ -227,7 +233,7 @@ class RelationServiceTest {
         relationService.onNewProcessData(processInstance, newProcessData);
 
         // All relations should be saved
-        verify(relationRepository).saveAll(savedRelationsCaptor.capture());
+        verify(relationRepository).saveAllNewRelations(savedRelationsCaptor.capture());
         assertThat(savedRelationsCaptor.getValue()).hasSize(3);
 
         // Only relations without flag or with active flag should be notified
@@ -264,10 +270,11 @@ class RelationServiceTest {
 
         when(relationFactory.createNewRelations(processInstance, newProcessData))
                 .thenReturn(Set.of(relation1, relation2));
+        when(relationRepository.saveAllNewRelations(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         relationService.onNewProcessData(processInstance, newProcessData);
 
-        verify(relationRepository).saveAll(savedRelationsCaptor.capture());
+        verify(relationRepository).saveAllNewRelations(savedRelationsCaptor.capture());
         assertThat(savedRelationsCaptor.getValue()).hasSize(2);
 
         verify(relationListener).relationsAdded(notifiedRelationsCaptor.capture());

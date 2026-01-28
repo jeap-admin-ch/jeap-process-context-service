@@ -27,7 +27,7 @@ public class RelationService {
         Set<Relation> relations = relationFactory.createNewRelations(processInstance, newProcessData);
 
         relations.forEach(Relation::onPrePersist);
-        Set<Relation> newRelations = relationRepository.saveAll(relations);
+        Set<Relation> newRelations = relationRepository.saveAllNewRelations(relations);
 
         notifyRelationListeners(processInstance, newRelations);
     }
