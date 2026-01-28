@@ -15,12 +15,12 @@ import static ch.admin.bit.jeap.processcontext.adapter.kafka.internalevent.consu
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@KafkaListener(groupId = "${spring.application.name}-event-received",
-        topics = TopicConfiguration.PROCESS_OUTDATED_TOPIC_NAME)
 public class ProcessContextOutdatedEventConsumer {
     private final ProcessInstanceService processInstanceService;
 
-    @KafkaHandler
+    @KafkaListener(groupId = "${spring.application.name}-event-received",
+            autoStartup = "${jeap.processcontext.process-updates.auto-start:true}",
+            topics = TopicConfiguration.PROCESS_OUTDATED_TOPIC_NAME)
     public void consumeProcessContextUpdatedEvent(final ProcessContextOutdatedEvent event, Acknowledgment ack) {
         String originProcessId = event.getProcessId();
         handleAndAcknowledge(originProcessId, ack, this::updateProcessState);

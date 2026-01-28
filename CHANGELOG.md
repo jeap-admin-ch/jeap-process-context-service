@@ -9,7 +9,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Add configuration property to stop processing of process updates in preparation of next major version
+- Add configuration property "jeap.processcontext.process-updates.auto-start" (default true) to be able to disable
+  processing of process updates in preparation of next major version
 - Update parent from 30.12.0 to 30.15.0
 
 ## [16.1.0] - 2026-01-26
