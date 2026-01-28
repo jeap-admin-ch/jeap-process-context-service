@@ -119,6 +119,7 @@ class ProcessInstanceServiceTest {
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
+        doReturn(new AddedMessage(null, List.of())).when(processInstance).addMessage(message);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
         when(processUpdate.getMessageName()).thenReturn("myDomainEvent");
@@ -154,7 +155,7 @@ class ProcessInstanceServiceTest {
 
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
-        doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
+        doReturn(new AddedMessage(messageReferenceMessageDTO, List.of())).when(processInstance).addMessage(message);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
@@ -194,7 +195,7 @@ class ProcessInstanceServiceTest {
 
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
-        doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
+        doReturn(new AddedMessage(messageReferenceMessageDTO, List.of())).when(processInstance).addMessage(message);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
@@ -234,7 +235,7 @@ class ProcessInstanceServiceTest {
 
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
-        doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
+        doReturn(new AddedMessage(messageReferenceMessageDTO, List.of())).when(processInstance).addMessage(message);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
@@ -273,7 +274,7 @@ class ProcessInstanceServiceTest {
 
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
-        doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
+        doReturn(new AddedMessage(messageReferenceMessageDTO, List.of())).when(processInstance).addMessage(message);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         doReturn(Sets.newHashSet("1", "2")).when(messageReferenceMessageDTO).getRelatedOriginTaskIds();
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
@@ -314,7 +315,7 @@ class ProcessInstanceServiceTest {
 
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
-        doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
+        doReturn(new AddedMessage(messageReferenceMessageDTO, List.of())).when(processInstance).addMessage(message);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         doReturn(Sets.newHashSet("1", "2")).when(messageReferenceMessageDTO).getRelatedOriginTaskIds();
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
@@ -355,7 +356,7 @@ class ProcessInstanceServiceTest {
 
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
-        doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
+        doReturn(new AddedMessage(messageReferenceMessageDTO, List.of())).when(processInstance).addMessage(message);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         doReturn(Sets.newHashSet("1", "2")).when(messageReferenceMessageDTO).getRelatedOriginTaskIds();
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
@@ -395,7 +396,7 @@ class ProcessInstanceServiceTest {
 
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
-        doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
+        doReturn(new AddedMessage(messageReferenceMessageDTO, List.of())).when(processInstance).addMessage(message);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
@@ -435,7 +436,7 @@ class ProcessInstanceServiceTest {
 
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
-        doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
+        doReturn(new AddedMessage(messageReferenceMessageDTO, List.of())).when(processInstance).addMessage(message);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
@@ -475,7 +476,7 @@ class ProcessInstanceServiceTest {
 
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
-        doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
+        doReturn(new AddedMessage(messageReferenceMessageDTO, List.of())).when(processInstance).addMessage(message);
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
@@ -524,7 +525,7 @@ class ProcessInstanceServiceTest {
                 .build();
         when(processTemplateRepository.findByName(templateName)).thenReturn(Optional.of(processTemplate));
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
-        doReturn(messageReferenceMessageDTO).when(processInstance).addMessage(message);
+        doReturn(new AddedMessage(messageReferenceMessageDTO, List.of())).when(processInstance).addMessage(message);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getMessageName()).thenReturn("myDomainEvent");
         ZonedDateTime now = ZonedDateTime.now();
@@ -553,7 +554,7 @@ class ProcessInstanceServiceTest {
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
         when(processUpdate.getMessageName()).thenReturn("eventName");
         when(processUpdate.getMessageReference()).thenReturn(Optional.of(eventReference));
-
+        doReturn(new AddedMessage(null, List.of())).when(processInstance).addMessage(message);
         when(message.getId()).thenReturn(Generators.timeBasedEpochGenerator().generate());
         when(message.getMessageName()).thenReturn("eventName");
         when(message.getIdempotenceId()).thenReturn("test");

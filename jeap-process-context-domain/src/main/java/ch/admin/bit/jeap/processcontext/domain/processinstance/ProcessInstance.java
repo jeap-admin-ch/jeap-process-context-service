@@ -190,14 +190,14 @@ public class ProcessInstance extends MutableDomainEntity {
         return unmodifiableList(messageReferenceMessageDTOS);
     }
 
-    public MessageReferenceMessageDTO addMessage(Message message) {
-        copyMessageDataToProcessData(message);
+    public AddedMessage addMessage(Message message) {
+        List<ProcessData> newProcessProcessData = copyMessageDataToProcessData(message);
         MessageReference messageReference = MessageReference.from(message);
         messageReference.setOwner(this);
         messageReferences.add(messageReference);
         MessageReferenceMessageDTO messageReferenceMessageDTO = toMessageReferenceMessageDTO(messageReference.getId(), message);
         messageReferenceMessageDTOS.add(messageReferenceMessageDTO);
-        return messageReferenceMessageDTO;
+        return new AddedMessage(messageReferenceMessageDTO, newProcessProcessData);
     }
 
     private MessageReferenceMessageDTO toMessageReferenceMessageDTO(UUID messageReferenceId, Message message) {
@@ -283,31 +283,43 @@ public class ProcessInstance extends MutableDomainEntity {
 
     /**
      * Copies the EventData to the ProcessData, if the Template defines this
+     *
+     * @return
      */
-    private void copyMessageDataToProcessData(Message message) {
+    private List<ProcessData> copyMessageDataToProcessData(Message message) {
         String messageName = message.getMessageName();
         Set<MessageData> messageData = message.getMessageData(processTemplateName);
         List<ProcessDataTemplate> processDataTemplates = processTemplate.getProcessDataTemplatesBySourceMessageName(messageName);
-        processDataTemplates.forEach(template -> applyProcessDataTemplate(messageName, messageData, template));
+        List<ProcessData> addedProcessData = new ArrayList<>();
+        processDataTemplates.forEach(template ->
+                applyProcessDataTemplate(addedProcessData, messageName, messageData, template));
+        return addedProcessData;
     }
 
-    private void applyProcessDataTemplate(String messageName, Set<MessageData> messageDataSet, ProcessDataTemplate processDataTemplate) {
+    private void applyProcessDataTemplate(List<ProcessData> addedProcessData,
+                                          String messageName, Set<MessageData> messageDataSet,
+                                          ProcessDataTemplate processDataTemplate) {
         String sourceKey = processDataTemplate.getSourceMessageDataKey();
         String targetKey = processDataTemplate.getKey();
         messageDataSet.forEach(messageData -> {
             if (sourceKey.equals(messageData.getKey())) {
-                addProcessData(messageName, targetKey, messageData);
+                ProcessData data = addProcessData(messageName, targetKey, messageData);
+                if (data != null) {
+                    addedProcessData.add(data);
+                }
             }
         });
     }
 
-    private void addProcessData(String messageName, String targetKey, MessageData messageData) {
+    private ProcessData addProcessData(String messageName, String targetKey, MessageData messageData) {
         ProcessData processDataItem = new ProcessData(targetKey, messageData.getValue(), messageData.getRole());
         if (processData.add(processDataItem)) {
             processDataItem.setProcessInstance(this);
             log.debug("Added process data to process instance {}: messageName: {}, key: {}, value: {}, role: {}",
                     id, messageName, targetKey, messageData.getValue(), messageData.getRole());
+            return processDataItem;
         }
+        return null;
     }
 
     public Set<ProcessRelation> getProcessRelations() {

@@ -195,7 +195,11 @@ public class ProcessInstanceService {
         if (reference.isPresent()) {
             Message message = messageRepository.findById(reference.get())
                     .orElseThrow(NotFoundException.messageNotFound(reference.get(), processInstance.getOriginProcessId()));
-            MessageReferenceMessageDTO messageReferenceMessageDTO = processInstance.addMessage(message);
+
+            AddedMessage addedMessage = processInstance.addMessage(message);
+            MessageReferenceMessageDTO messageReferenceMessageDTO = addedMessage.messageReference();
+            // TODO JEAP-6536 Create relations for added process data
+
             metricsListener.timed("pcs_process_single_update", Map.of("updateType", update.getProcessUpdateType().name()),
                     () -> updateProcessInstance(processInstance, update, messageReferenceMessageDTO, message));
             timestamp = message.getMessageCreatedAt();

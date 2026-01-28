@@ -439,13 +439,13 @@ class ProcessInstanceJpaRepositoryTest {
         Message e1 = saveEvent("e1",
                 Set.of(createEventData(templateName, "d1-a"), createEventData(templateName, "d1-b")),
                 Set.of(OriginTaskId.from(templateName, "i1-a"), OriginTaskId.from(templateName, "i1-b")), "traceIdFore1");
-        MessageReferenceMessageDTO reference1 = processInstance.addMessage(e1);
+        MessageReferenceMessageDTO reference1 = processInstance.addMessage(e1).messageReference();
         Message e2 = saveEvent("e2",
                 Set.of(createEventData(templateName, "d2")),
                 Set.of(OriginTaskId.from(templateName, "i2")), "traceIdFore2");
-        MessageReferenceMessageDTO reference2 = processInstance.addMessage(e2);
+        MessageReferenceMessageDTO reference2 = processInstance.addMessage(e2).messageReference();
         Message e3 = saveEvent("e3", Set.of(), Set.of(), "traceIdFore3");
-        MessageReferenceMessageDTO reference3 = processInstance.addMessage(e3);
+        MessageReferenceMessageDTO reference3 = processInstance.addMessage(e3).messageReference();
         saveEvent("e4",
                 Set.of(createEventData("other", "d4")),
                 Set.of(OriginTaskId.from("other", "i4")), "traceIdFore4");
