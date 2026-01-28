@@ -230,7 +230,6 @@ public class ProcessInstanceService {
                 createMessageTasks(processUpdate, processInstance, messageReferenceMessageDTO, message);
                 completeObservationTasks(processUpdate, processInstance, messageReferenceMessageDTO, message);
                 processInstance.evaluateCompletedTasks(messageReferenceMessageDTO, message.getMessageCreatedAt());
-                // TODO JEAP-6536 make sure this is covered processInstance.evaluateRelations();
                 processInstance.evaluateProcessRelations(message);
                 break;
             default:

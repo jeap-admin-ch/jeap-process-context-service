@@ -7,6 +7,7 @@ import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceQueryRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessSnapshotRepository;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.RelationRepository;
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ class ProcessInstanceViewService {
     private final ProcessInstanceQueryRepository repository;
     private final TranslateService translateService;
     private final MessageRepository messageRepository;
+    private final RelationRepository relationRepository;
 
     public Optional<ProcessInstanceDTO> createDto(String originProcessId) {
         return repository.findByOriginProcessIdLoadingMessages(originProcessId)
@@ -29,7 +31,7 @@ class ProcessInstanceViewService {
     }
 
     private ProcessInstanceDTO createDtoFromProcessInstance(ProcessInstance p) {
-        return ProcessInstanceDTOFactory.createFromProcessInstance(p, translateService, processRelationsService, messageRepository);
+        return ProcessInstanceDTOFactory.createFromProcessInstance(p, translateService, processRelationsService, messageRepository, relationRepository);
     }
 
     private Optional<ProcessInstanceDTO> createDtoFromProcessSnapshot(String originProcessId) {

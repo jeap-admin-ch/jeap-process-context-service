@@ -78,9 +78,7 @@ class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
                 .body(containsString("pcs_process_batch_update"))
                 .body(containsString("pcs_process_single_update"))
                 .body(containsString("jeap_pcs_late_correlate_message"))
-                // TODO JEAP-6536 Count relations .body(containsString("jeap_pcs_produce_relation_events"))
                 .body(containsString("jeap_pcs_produce_snapshot_events"))
-                // TODO JEAP-6536 Count relations .body(containsString("jeap_pcs_notify_relations_added"))
                 .body(containsString("jeap_pcs_produce_process_snapshot_created_event"))
                 .body(containsString("pcs_process_instances_total"));
     }

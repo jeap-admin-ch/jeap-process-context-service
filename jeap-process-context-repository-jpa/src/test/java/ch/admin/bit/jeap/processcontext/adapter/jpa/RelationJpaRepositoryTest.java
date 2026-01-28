@@ -113,4 +113,97 @@ class RelationJpaRepositoryTest {
         assertThat(savedRelation.getIdempotenceId()).isNotNull();
         assertThat(savedRelation.getCreatedAt()).isNotNull();
     }
+
+    @Test
+    void findByProcessInstance_returnsRelationsForProcessInstance() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        Relation relation1 = Relation.builder()
+                .systemId("test-system")
+                .subjectType("SubjectType")
+                .subjectId("subject-1")
+                .objectType("ObjectType")
+                .objectId("object-1")
+                .predicateType("relates-to")
+                .build();
+        relation1.onPrePersist();
+        ReflectionTestUtils.setField(relation1, "processInstance", processInstance);
+
+        Relation relation2 = Relation.builder()
+                .systemId("test-system")
+                .subjectType("SubjectType")
+                .subjectId("subject-2")
+                .objectType("ObjectType")
+                .objectId("object-2")
+                .predicateType("relates-to")
+                .build();
+        relation2.onPrePersist();
+        ReflectionTestUtils.setField(relation2, "processInstance", processInstance);
+
+        relationJpaRepository.saveAll(Set.of(relation1, relation2));
+        entityManager.flush();
+        entityManager.clear();
+
+        ProcessInstance savedInstance = processInstanceJpaRepository.findByOriginProcessId(processInstance.getOriginProcessId()).orElseThrow();
+        Set<Relation> result = relationJpaRepository.findByProcessInstance(savedInstance);
+
+        assertThat(result).hasSize(2);
+        assertThat(result)
+                .extracting(Relation::getSubjectId)
+                .containsExactlyInAnyOrder("subject-1", "subject-2");
+    }
+
+    @Test
+    void findByProcessInstance_doesNotReturnRelationsFromOtherProcessInstances() {
+        ProcessInstance processInstance1 = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        processInstanceJpaRepository.saveAndFlush(processInstance1);
+
+        ProcessInstance processInstance2 = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        processInstanceJpaRepository.saveAndFlush(processInstance2);
+
+        Relation relation1 = Relation.builder()
+                .systemId("test-system")
+                .subjectType("SubjectType")
+                .subjectId("subject-1")
+                .objectType("ObjectType")
+                .objectId("object-1")
+                .predicateType("relates-to")
+                .build();
+        relation1.onPrePersist();
+        ReflectionTestUtils.setField(relation1, "processInstance", processInstance1);
+
+        Relation relation2 = Relation.builder()
+                .systemId("test-system")
+                .subjectType("SubjectType")
+                .subjectId("subject-2")
+                .objectType("ObjectType")
+                .objectId("object-2")
+                .predicateType("relates-to")
+                .build();
+        relation2.onPrePersist();
+        ReflectionTestUtils.setField(relation2, "processInstance", processInstance2);
+
+        relationJpaRepository.saveAll(Set.of(relation1, relation2));
+        entityManager.flush();
+        entityManager.clear();
+
+        ProcessInstance savedInstance1 = processInstanceJpaRepository.findByOriginProcessId(processInstance1.getOriginProcessId()).orElseThrow();
+        Set<Relation> result = relationJpaRepository.findByProcessInstance(savedInstance1);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.iterator().next().getSubjectId()).isEqualTo("subject-1");
+    }
+
+    @Test
+    void findByProcessInstance_noRelations_returnsEmptySet() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        processInstanceJpaRepository.saveAndFlush(processInstance);
+        entityManager.clear();
+
+        ProcessInstance savedInstance = processInstanceJpaRepository.findByOriginProcessId(processInstance.getOriginProcessId()).orElseThrow();
+        Set<Relation> result = relationJpaRepository.findByProcessInstance(savedInstance);
+
+        assertThat(result).isEmpty();
+    }
 }

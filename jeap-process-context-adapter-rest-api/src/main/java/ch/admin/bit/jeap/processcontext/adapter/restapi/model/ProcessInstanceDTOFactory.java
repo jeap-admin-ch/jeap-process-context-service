@@ -46,11 +46,11 @@ public class ProcessInstanceDTOFactory {
     public static ProcessInstanceDTO createFromProcessInstance(ProcessInstance processInstance,
                                                                TranslateService translateService,
                                                                ProcessRelationsService processRelationsService,
-                                                               MessageRepository messageRepository) {
+                                                               MessageRepository messageRepository,
+                                                               RelationRepository relationRepository) {
         List<MessageDTO> messages = createMessages(processInstance.getMessageReferences());
         List<TaskInstanceDTO> tasks = createTasks(processInstance.getTasks(), messages, processInstance.getProcessTemplate().getName(), translateService, messageRepository);
-        // TODO JEAP-6536 Get from relation repository List<RelationDTO> relations = createRelations(processInstance.getRelations());
-        List<RelationDTO> relations = List.of();
+        List<RelationDTO> relations = createRelations(relationRepository.findByProcessInstance(processInstance));
         List<ProcessRelationDTO> processRelations = createProcessRelations(processInstance, processRelationsService);
         List<ProcessDataDTO> processDataDTOList = createProcessData(processInstance.getProcessData());
         ProcessCompletionDTO processCompletion = ProcessCompletionDTO.create(processInstance.getProcessCompletion(), processInstance.getProcessTemplate().getName(), translateService);

@@ -38,11 +38,13 @@ class ProcessInstanceDTOFactoryTest {
 
     private MessageRepository messageRepository;
     private TranslateService translateService;
+    private RelationRepository relationRepository;
 
     @BeforeEach
     void setUp() {
         messageRepository = mock(MessageRepository.class);
         translateService = mock(TranslateService.class);
+        relationRepository = mock(RelationRepository.class);
         when(translateService.translateUserDataKey(anyString())).thenAnswer(invocation -> createLabels(invocation.getArgument(0)));
         when(translateService.translateUserDataKey(anyString(), anyString())).thenAnswer(invocation -> createLabels(invocation.getArgument(1)));
         when(translateService.translateUserDataKey(anyString(), eq(null))).thenAnswer(invocation -> createLabels(invocation.getArgument(0)));
@@ -76,7 +78,17 @@ class ProcessInstanceDTOFactoryTest {
         ReflectionTestUtils.setField(expectedTask, "completedBy",  messages.get(1).getId());
 
         ProcessRelationsService processRelationsService = mock(ProcessRelationsService.class);
-        ProcessInstanceDTO processInstanceDTO = ProcessInstanceDTOFactory.createFromProcessInstance(processInstance, translateService, processRelationsService, messageRepository);
+        Relation relation = Relation.builder()
+                .systemId("test-system")
+                .subjectType("SubjectType")
+                .subjectId("subject-1")
+                .objectType("ObjectType")
+                .objectId("object-1")
+                .predicateType("relates-to")
+                .build();
+        relation.onPrePersist();
+        when(relationRepository.findByProcessInstance(processInstance)).thenReturn(Set.of(relation));
+        ProcessInstanceDTO processInstanceDTO = ProcessInstanceDTOFactory.createFromProcessInstance(processInstance, translateService, processRelationsService, messageRepository, relationRepository);
 
         assertEquals(processInstance.getState().name(), processInstanceDTO.getState());
         assertEquals(processInstance.getOriginProcessId(), processInstanceDTO.getOriginProcessId());
@@ -111,6 +123,14 @@ class ProcessInstanceDTOFactoryTest {
         assertEquals(processInstance.getProcessCompletion().get().getConclusion().name(), processCompletion.getConclusion());
         assertEquals("all good", processCompletion.getReason().get("de"));
         assertEquals(processInstance.getProcessCompletion().get().getCompletedAt(), processCompletion.getCompletedAt());
+        assertThat(processInstanceDTO.getRelations()).hasSize(1);
+        RelationDTO relationDTO = processInstanceDTO.getRelations().getFirst();
+        assertThat(relationDTO.getSubjectType()).isEqualTo("SubjectType");
+        assertThat(relationDTO.getSubjectId()).isEqualTo("subject-1");
+        assertThat(relationDTO.getObjectType()).isEqualTo("ObjectType");
+        assertThat(relationDTO.getObjectId()).isEqualTo("object-1");
+        assertThat(relationDTO.getPredicateType()).isEqualTo("relates-to");
+        assertThat(relationDTO.getCreatedAt()).isNotNull();
     }
 
     private ProcessDataDTO[] toProcessDataDTO(Set<ProcessData> processData) {
