@@ -28,6 +28,7 @@ class JsonProcessTemplateConsumerContractValidatorTest {
         validator = new JsonProcessTemplateConsumerContractValidator(contractsValidator);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void validateContract_shouldCallEnsureConsumerContractForEachMessageReference() {
         ProcessTemplate processTemplate = mock(ProcessTemplate.class);

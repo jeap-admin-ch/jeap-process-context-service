@@ -103,7 +103,7 @@ public class ProcessInstanceStubs {
     }
 
     // Will persist the created events referenced by the created process instance to allow the process instance to be persisted and read back.
-    public static ProcessInstance createProcessWithEventDataProcessDataAndRelations(MessageRepository messageRepository) {
+    public static ProcessInstance createProcessWithEventDataProcessData(MessageRepository messageRepository) {
         TaskType firstTask = TaskType.builder()
                 .name(task)
                 .lifecycle(TaskLifecycle.STATIC)
@@ -123,37 +123,12 @@ public class ProcessInstanceStubs {
                 .sourceMessageName("anotherSourceEventName")
                 .sourceMessageDataKey("anotherSourceEventDataKey").build();
 
-        RelationPattern relationPattern1 = RelationPattern.builder()
-                .objectSelector(RelationNodeSelector.builder()
-                        .processDataKey("targetKeyName")
-                        .processDataRole("someRole")
-                        .type("ch.admin.bit.entity.Some")
-                        .build())
-                .subjectSelector(RelationNodeSelector.builder()
-                        .processDataKey("targetKeyName")
-                        .processDataRole("someOtherRole")
-                        .type("ch.admin.bit.entity.Other")
-                        .build())
-                .predicateType("ch.admin.bit.test.predicate.Declares")
-                .build();
-        RelationPattern relationPattern2 = RelationPattern.builder()
-                .objectSelector(RelationNodeSelector.builder()
-                        .processDataKey("targetKeyName")
-                        .type("ch.admin.bit.entity.Foo")
-                        .build())
-                .subjectSelector(RelationNodeSelector.builder()
-                        .processDataKey("anotherTargetKeyName")
-                        .type("ch.admin.bit.entity.Bar")
-                        .build())
-                .predicateType("ch.admin.bit.test.predicate.Knows")
-                .build();
         ProcessTemplate processTemplate = ProcessTemplate.builder()
                 .name("template")
                 .templateHash("hash")
                 .taskTypes(List.of(firstTask))
                 .processDataTemplates(List.of(processDataTemplate1, processDataTemplate2, processDataTemplate3))
                 .relationSystemId("ch.admin.test.System")
-                .relationPatterns(List.of(relationPattern1, relationPattern2))
                 .build();
 
         ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
@@ -182,7 +157,6 @@ public class ProcessInstanceStubs {
                 .build());
         processInstance.addMessage(message);
         processInstance.addMessage(anotherMessage);
-        processInstance.evaluateRelations();
         return processInstance;
     }
 

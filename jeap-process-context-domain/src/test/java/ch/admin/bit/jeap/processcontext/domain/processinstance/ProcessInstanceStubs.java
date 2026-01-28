@@ -98,49 +98,6 @@ public final class ProcessInstanceStubs {
         return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
     }
 
-    public static ProcessInstance createProcessWithRelation() {
-        TaskType taskType = TaskType.builder()
-                .name(singleTaskName)
-                .lifecycle(TaskLifecycle.STATIC)
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .build();
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name("template")
-                .templateHash("hash")
-                .taskTypes(List.of(taskType))
-                .processDataTemplates(List.of(ProcessDataTemplate.builder()
-                        .key("targetKeyName")
-                        .sourceMessageName("sourceEventName")
-                        .sourceMessageDataKey("sourceEventDataKey")
-                        .build()))
-                .relationSystemId("ch.admin.test.System")
-                .relationPatterns(List.of(RelationPattern.builder()
-                        .objectSelector(RelationNodeSelector.builder()
-                                .processDataKey("targetKeyName")
-                                .type("ch.admin.bit.entity.Foo")
-                                .build())
-                        .subjectSelector(RelationNodeSelector.builder()
-                                .processDataKey("targetKeyName")
-                                .type("ch.admin.bit.entity.Bar")
-                                .build())
-                        .predicateType("ch.admin.bit.test.predicate.Knows")
-                        .build()))
-                .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
-        String templateName = processInstance.getProcessTemplateName();
-        MessageData messageData = new MessageData(templateName, "sourceEventDataKey", "someValue", "someRole");
-        processInstance.addMessage(Message.messageBuilder()
-                .messageId(Generators.timeBasedEpochGenerator().generate().toString())
-                .idempotenceId(Generators.timeBasedEpochGenerator().generate().toString())
-                .messageData(Set.of(messageData))
-                .messageName("sourceEventName")
-                .createdAt(ZonedDateTime.now())
-                .messageCreatedAt(ZonedDateTime.now())
-                .build());
-        processInstance.evaluateRelations();
-        return processInstance;
-    }
-
     static ProcessInstance createProcessWithSingleAndDynamicTaskInstances() {
         TaskType mandatoryTaskType = TaskType.builder()
                 .name(singleTaskName)

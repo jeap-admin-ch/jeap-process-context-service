@@ -53,10 +53,6 @@ public class ProcessInstance extends MutableDomainEntity {
 
     @NotNull
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "processInstance")
-    private Set<Relation> relations;
-
-    @NotNull
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "processInstance")
     private Set<ProcessRelation> processRelations;
 
     @NotNull
@@ -105,7 +101,6 @@ public class ProcessInstance extends MutableDomainEntity {
         Objects.requireNonNull(processTemplate, "Process template is mandatory");
         this.originProcessId = originProcessId;
         this.processData = new HashSet<>();
-        this.relations = new HashSet<>();
         this.processRelations = new HashSet<>();
         this.processTemplate = processTemplate;
         this.processTemplateName = processTemplate.getName();
@@ -263,7 +258,7 @@ public class ProcessInstance extends MutableDomainEntity {
                 .ifPresent(result -> {
                     this.state = ProcessState.COMPLETED;
                     this.processCompletion = new ProcessCompletion(
-                            ProcessCompletionConclusion.valueOf(result.getConclusion().get().name()),
+                            ProcessCompletionConclusion.valueOf(result.getConclusion().orElseThrow().name()),
                             result.getName().orElse(null),
                             ZonedDateTime.now());
                 });
@@ -312,33 +307,6 @@ public class ProcessInstance extends MutableDomainEntity {
             processDataItem.setProcessInstance(this);
             log.debug("Added process data to process instance {}: messageName: {}, key: {}, value: {}, role: {}",
                     id, messageName, targetKey, messageData.getValue(), messageData.getRole());
-        }
-    }
-
-    /**
-     * @return The (unmodifiable) set of relations inferred by this process instance so far.
-     */
-    public Set<Relation> getRelations() {
-        return unmodifiableSet(relations);
-    }
-
-    void evaluateRelations() {
-        if (processTemplate.getRelationPatterns().isEmpty()) {
-            // No relation patterns - no need to evaluate relations
-            return;
-        }
-        ProcessDataWrapper processDataWrapper = ProcessDataWrapper.of(processData);
-        String systemId = processTemplate.getRelationSystemId();
-        processTemplate.getRelationPatterns().stream()
-                .flatMap(pattern -> RelationFactory.createMatchingRelations(systemId, pattern, processDataWrapper).stream())
-                .forEach(this::addRelation);
-    }
-
-    private void addRelation(Relation relation) {
-        if (relations.add(relation)) {
-            relation.setProcessInstance(this);
-            relation.onPrePersist();
-            log.debug("Added relation to process instance {}: {}", id, relation);
         }
     }
 
