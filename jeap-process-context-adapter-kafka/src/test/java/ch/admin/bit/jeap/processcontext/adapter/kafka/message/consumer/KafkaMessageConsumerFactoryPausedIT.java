@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.messaging.kafka.test.KafkaIntegrationTestBase;
 import ch.admin.bit.jeap.processcontext.adapter.test.kafka.config.TestApp;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageReceiver;
 import ch.admin.bit.jeap.processcontext.domain.processevent.ProcessEventService;
+import ch.admin.bit.jeap.processcontext.domain.port.InternalMessageProducer;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,10 +31,7 @@ import static org.mockito.Mockito.*;
                 "jeap.processcontext.kafka.message-consumer-paused=true",
                 "jeap.processcontext.kafka.topic.process-changed-internal=changed",
                 "jeap.processcontext.kafka.topic.process-outdated-internal=outdated",
-                "jeap.processcontext.kafka.topic.process-instance-created=process-instance-created",
-                "jeap.processcontext.kafka.topic.process-instance-completed=process-instance-completed",
                 "jeap.processcontext.kafka.topic.process-snapshot-created=process-snapshot-created",
-                "jeap.processcontext.kafka.topic.create-process-instance=create-process-instance",
                 "jeap.messaging.kafka.consume-without-contract-allowed=true",
                 "jeap.messaging.kafka.silent-ignore-without-contract=true",
                 "jeap.messaging.kafka.error-topic-name=error",

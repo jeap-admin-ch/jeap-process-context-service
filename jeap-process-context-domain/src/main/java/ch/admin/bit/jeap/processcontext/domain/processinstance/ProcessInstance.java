@@ -191,9 +191,9 @@ public class ProcessInstance extends MutableDomainEntity {
     }
 
     public MessageReferenceMessageDTO addMessage(Message message) {
+        copyMessageDataToProcessData(message);
         MessageReference messageReference = MessageReference.from(message);
         messageReference.setOwner(this);
-        copyMessageDataToProcessData(message);
         messageReferences.add(messageReference);
         MessageReferenceMessageDTO messageReferenceMessageDTO = toMessageReferenceMessageDTO(messageReference.getId(), message);
         messageReferenceMessageDTOS.add(messageReferenceMessageDTO);
