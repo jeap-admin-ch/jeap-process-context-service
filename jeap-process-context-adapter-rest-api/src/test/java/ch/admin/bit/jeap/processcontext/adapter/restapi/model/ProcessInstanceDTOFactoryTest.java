@@ -79,6 +79,7 @@ class ProcessInstanceDTOFactoryTest {
 
         ProcessRelationsService processRelationsService = mock(ProcessRelationsService.class);
         Relation relation = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("test-system")
                 .subjectType("SubjectType")
                 .subjectId("subject-1")

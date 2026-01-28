@@ -34,6 +34,7 @@ class RelationRepositoryImplTest {
     @Test
     void saveAll_delegatesToJpaRepository() {
         Relation relation1 = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("system")
                 .subjectType("SubjectType")
                 .subjectId("subject-1")
@@ -43,6 +44,7 @@ class RelationRepositoryImplTest {
                 .build();
 
         Relation relation2 = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("system")
                 .subjectType("SubjectType")
                 .subjectId("subject-2")
@@ -70,6 +72,7 @@ class RelationRepositoryImplTest {
     @Test
     void findByProcessInstance_delegatesToJpaRepository() {
         Relation relation = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("system")
                 .subjectType("SubjectType")
                 .subjectId("subject-1")

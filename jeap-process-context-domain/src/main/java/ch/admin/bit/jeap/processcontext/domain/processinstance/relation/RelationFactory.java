@@ -46,7 +46,7 @@ class RelationFactory {
 
                 // Now create a relation from the object to each matching subject
                 List<ProcessData> subjects = Streams.concat(matchingNewSubjects, matchingPersistentSubjects.stream()).toList();
-                createRelations(newRelations, systemId, matchingObjectPattern, List.of(newProcessData), subjects);
+                createRelations(processInstance, newRelations, systemId, matchingObjectPattern, List.of(newProcessData), subjects);
             }
 
             List<RelationPattern> matchingSubjectPatterns = processTemplate.getRelationPatterns().stream()
@@ -64,7 +64,7 @@ class RelationFactory {
 
                 // Now create a relation from the subject to each matching object
                 List<ProcessData> objects = Streams.concat(matchingNewObjects, matchingPersistentObjects.stream()).toList();
-                createRelations(newRelations, systemId, matchingSubjectPattern, objects, List.of(newProcessData));
+                createRelations(processInstance, newRelations, systemId, matchingSubjectPattern, objects, List.of(newProcessData));
             }
 
         }
@@ -72,11 +72,11 @@ class RelationFactory {
         return newRelations;
     }
 
-    private void createRelations(Set<Relation> newRelations, String systemId, RelationPattern pattern,
+    private void createRelations(ProcessInstance processInstance, Set<Relation> newRelations, String systemId, RelationPattern pattern,
                                  List<ProcessData> objectProcessDataStream, List<ProcessData> subjectProcessDataStream) {
         for (ProcessData objectProcessData : objectProcessDataStream) {
             for (ProcessData subjectProcessData : subjectProcessDataStream) {
-                createRelationIfJoinMatches(newRelations, systemId, pattern, objectProcessData, subjectProcessData);
+                createRelationIfJoinMatches(processInstance, newRelations, systemId, pattern, objectProcessData, subjectProcessData);
             }
         }
     }
@@ -86,32 +86,33 @@ class RelationFactory {
      * If the joinTyp is byRole, join only if roles match.
      * If the joinType is byValue, join only if values match.
      */
-    private void createRelationIfJoinMatches(Set<Relation> newRelations, String systemId, RelationPattern pattern, ProcessData objectProcessData, ProcessData subjectProcessData) {
+    private void createRelationIfJoinMatches(ProcessInstance processInstance, Set<Relation> newRelations, String systemId, RelationPattern pattern, ProcessData objectProcessData, ProcessData subjectProcessData) {
         if (pattern.getJoinType() == null) {
-            newRelations.add(createRelation(systemId, pattern, objectProcessData, subjectProcessData));
+            newRelations.add(createRelation(processInstance, systemId, pattern, objectProcessData, subjectProcessData));
         } else if (JoinType.BY_ROLE == pattern.getJoinType()) {
             if (objectProcessData.getRole() != null && objectProcessData.getRole().equals(subjectProcessData.getRole())) {
-                newRelations.add(createRelation(systemId, pattern, objectProcessData, subjectProcessData));
+                newRelations.add(createRelation(processInstance, systemId, pattern, objectProcessData, subjectProcessData));
             }
         } else if (JoinType.BY_VALUE == pattern.getJoinType()) {
             if (objectProcessData.getValue() != null && objectProcessData.getValue().equals(subjectProcessData.getValue())) {
-                newRelations.add(createRelation(systemId, pattern, objectProcessData, subjectProcessData));
+                newRelations.add(createRelation(processInstance, systemId, pattern, objectProcessData, subjectProcessData));
             }
         }
     }
 
-    private Relation createRelation(String systemId, RelationPattern pattern, ProcessData objectProcessData, ProcessData subjectProcessData) {
-        return createRelation(
-                systemId,
-                pattern.getPredicateType(),
+    private Relation createRelation(ProcessInstance processInstance, String systemId,
+                                    RelationPattern pattern, ProcessData objectProcessData, ProcessData subjectProcessData) {
+        return createRelation(processInstance, systemId, pattern.getPredicateType(),
                 RelationNode.of(objectProcessData, pattern.getObjectSelector()),
                 RelationNode.of(subjectProcessData, pattern.getSubjectSelector()),
                 pattern.getFeatureFlag()
         );
     }
 
-    private Relation createRelation(String systemId, String predicateType, RelationNode object, RelationNode subject, String featureFlag) {
+    private Relation createRelation(ProcessInstance processInstance, String systemId, String predicateType,
+                                    RelationNode object, RelationNode subject, String featureFlag) {
         return Relation.builder()
+                .processInstance(processInstance)
                 .systemId(systemId)
                 .subjectType(subject.type())
                 .subjectId(subject.id())

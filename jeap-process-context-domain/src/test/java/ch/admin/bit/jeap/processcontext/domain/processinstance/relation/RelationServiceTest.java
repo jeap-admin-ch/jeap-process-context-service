@@ -75,6 +75,7 @@ class RelationServiceTest {
     void onNewProcessData_withRelations_callsOnPrePersistAndSavesAndNotifies() {
         List<ProcessData> newProcessData = List.of(new ProcessData("key", "value"));
         Relation relation = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("system")
                 .subjectType("subjectType")
                 .subjectId("subjectId")
@@ -111,6 +112,7 @@ class RelationServiceTest {
     void onNewProcessData_relationWithoutFeatureFlag_isNotified() {
         List<ProcessData> newProcessData = List.of(new ProcessData("key", "value"));
         Relation relation = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("system")
                 .subjectType("subjectType")
                 .subjectId("subjectId")
@@ -134,6 +136,7 @@ class RelationServiceTest {
     void onNewProcessData_relationWithActiveFeatureFlag_isNotified() {
         List<ProcessData> newProcessData = List.of(new ProcessData("key", "value"));
         Relation relation = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("system")
                 .subjectType("subjectType")
                 .subjectId("subjectId")
@@ -157,6 +160,7 @@ class RelationServiceTest {
     void onNewProcessData_relationWithInactiveFeatureFlag_isNotNotified() {
         List<ProcessData> newProcessData = List.of(new ProcessData("key", "value"));
         Relation relation = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("system")
                 .subjectType("subjectType")
                 .subjectId("subjectId")
@@ -181,6 +185,7 @@ class RelationServiceTest {
         List<ProcessData> newProcessData = List.of(new ProcessData("key", "value"));
 
         Relation relationNoFlag = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("system")
                 .subjectType("subjectType1")
                 .subjectId("subjectId1")
@@ -191,6 +196,7 @@ class RelationServiceTest {
                 .build();
 
         Relation relationActiveFlag = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("system")
                 .subjectType("subjectType2")
                 .subjectId("subjectId2")
@@ -201,6 +207,7 @@ class RelationServiceTest {
                 .build();
 
         Relation relationInactiveFlag = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("system")
                 .subjectType("subjectType3")
                 .subjectId("subjectId3")
@@ -236,6 +243,7 @@ class RelationServiceTest {
         List<ProcessData> newProcessData = List.of(new ProcessData("key", "value"));
 
         Relation relation1 = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("system")
                 .subjectType("subjectType1")
                 .subjectId("subjectId1")
@@ -245,6 +253,7 @@ class RelationServiceTest {
                 .build();
 
         Relation relation2 = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("system")
                 .subjectType("subjectType2")
                 .subjectId("subjectId2")

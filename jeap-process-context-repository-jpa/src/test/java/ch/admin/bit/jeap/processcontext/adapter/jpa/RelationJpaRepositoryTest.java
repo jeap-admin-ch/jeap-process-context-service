@@ -41,6 +41,7 @@ class RelationJpaRepositoryTest {
         processInstanceJpaRepository.saveAndFlush(processInstance);
 
         Relation relation1 = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("test-system")
                 .subjectType("SubjectType")
                 .subjectId("subject-1")
@@ -52,6 +53,7 @@ class RelationJpaRepositoryTest {
         ReflectionTestUtils.setField(relation1, "processInstance", processInstance);
 
         Relation relation2 = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("test-system")
                 .subjectType("SubjectType")
                 .subjectId("subject-2")
@@ -87,6 +89,7 @@ class RelationJpaRepositoryTest {
         processInstanceJpaRepository.saveAndFlush(processInstance);
 
         Relation relation = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("test-system")
                 .subjectType("SubjectType")
                 .subjectId("subject-id")
@@ -120,6 +123,7 @@ class RelationJpaRepositoryTest {
         processInstanceJpaRepository.saveAndFlush(processInstance);
 
         Relation relation1 = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("test-system")
                 .subjectType("SubjectType")
                 .subjectId("subject-1")
@@ -131,6 +135,7 @@ class RelationJpaRepositoryTest {
         ReflectionTestUtils.setField(relation1, "processInstance", processInstance);
 
         Relation relation2 = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("test-system")
                 .subjectType("SubjectType")
                 .subjectId("subject-2")
@@ -156,6 +161,7 @@ class RelationJpaRepositoryTest {
 
     @Test
     void findByProcessInstance_doesNotReturnRelationsFromOtherProcessInstances() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         ProcessInstance processInstance1 = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         processInstanceJpaRepository.saveAndFlush(processInstance1);
 
@@ -163,6 +169,7 @@ class RelationJpaRepositoryTest {
         processInstanceJpaRepository.saveAndFlush(processInstance2);
 
         Relation relation1 = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("test-system")
                 .subjectType("SubjectType")
                 .subjectId("subject-1")
@@ -174,6 +181,7 @@ class RelationJpaRepositoryTest {
         ReflectionTestUtils.setField(relation1, "processInstance", processInstance1);
 
         Relation relation2 = Relation.builder()
+                .processInstance(processInstance)
                 .systemId("test-system")
                 .subjectType("SubjectType")
                 .subjectId("subject-2")

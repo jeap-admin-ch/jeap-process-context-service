@@ -23,7 +23,6 @@ public class Relation {
     @EqualsAndHashCode.Exclude
     private UUID id = Generators.timeBasedEpochGenerator().generate();
 
-    @Setter(PACKAGE)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
@@ -61,9 +60,11 @@ public class Relation {
     private String featureFlag;
 
     @Builder
-    private Relation(@NonNull String systemId, @NonNull String subjectType, @NonNull String subjectId,
+    private Relation(@NonNull ProcessInstance processInstance, @NonNull String systemId,
+                     @NonNull String subjectType, @NonNull String subjectId,
                      @NonNull String objectType, @NonNull String objectId,
                      @NonNull String predicateType, String featureFlag) {
+        this.processInstance = processInstance;
         this.systemId = systemId;
         this.subjectType = subjectType;
         this.subjectId = subjectId;
@@ -80,5 +81,4 @@ public class Relation {
         idempotenceId = Generators.timeBasedEpochGenerator().generate();
         createdAt = ZonedDateTime.now();
     }
-
 }
