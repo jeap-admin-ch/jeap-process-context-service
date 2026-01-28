@@ -92,7 +92,7 @@ class RelationFactoryTest {
         when(processInstance.getProcessTemplate()).thenReturn(processTemplate);
 
         ProcessData persistentObject = new ProcessData(OBJECT_KEY, "persistent-object-value");
-        when(processDataRepository.findProcessData(any(), eq(SUBJECT_KEY), eq(null)))
+        when(processDataRepository.findProcessData(any(), eq(OBJECT_KEY), eq(null)))
                 .thenReturn(List.of(persistentObject));
 
         ProcessData subjectData = new ProcessData(SUBJECT_KEY, "subject-value-1");

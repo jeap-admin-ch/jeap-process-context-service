@@ -59,8 +59,8 @@ class RelationFactory {
 
                 // Find matching objects in previously persisted process data
                 List<ProcessData> matchingPersistentObjects = processDataRepository.findProcessData(processInstance,
-                        matchingSubjectPattern.getSubjectSelector().getProcessDataKey(),
-                        matchingSubjectPattern.getSubjectSelector().getProcessDataRole());
+                        matchingSubjectPattern.getObjectSelector().getProcessDataKey(),
+                        matchingSubjectPattern.getObjectSelector().getProcessDataRole());
 
                 // Now create a relation from the subject to each matching object
                 List<ProcessData> objects = Streams.concat(matchingNewObjects, matchingPersistentObjects.stream()).toList();
