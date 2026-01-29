@@ -7,7 +7,6 @@ import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsS
 import ch.admin.bit.jeap.security.resource.semanticAuthentication.SemanticApplicationRole;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.JeapAuthenticationTestTokenBuilder;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -197,10 +196,10 @@ class ProcessInstanceControllerTest {
     }
 
     @BeforeEach
-    void setup(){
+    void setup() {
         when(translateService.translateProcessCompletionName(anyString(), eq("allTasksInFinalStateProcessCompletionCondition"))).thenReturn(reason);
         when(translateService.translateProcessTemplateName("template")).thenReturn(
-                Map.of("de","template", "it", "template", "fr","template"));
+                Map.of("de", "template", "it", "template", "fr", "template"));
     }
 
 }

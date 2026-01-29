@@ -8,13 +8,11 @@ import lombok.*;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import static lombok.AccessLevel.PACKAGE;
-
 @Entity
 @Getter
 @ToString
 @EqualsAndHashCode
-@Table(name="process_instance_relations")
+@Table(name = "process_instance_relations")
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // for JPA
 public class Relation {
 
