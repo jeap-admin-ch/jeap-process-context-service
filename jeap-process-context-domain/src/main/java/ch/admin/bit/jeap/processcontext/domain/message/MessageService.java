@@ -98,8 +98,6 @@ class MessageService implements MessageReceiver {
 
         // Initiate process updates for the process instances correlated with the message.
         initiateProcessUpdatesForMessage(message, messageEntity, correlatedOriginProcessIds);
-
-        log.info("Processed message '{}'", message.getType().getName());
     }
 
     private void initiateProcessUpdatesForMessage(ch.admin.bit.jeap.messaging.model.Message message, Message messageEntity, Set<String> originProcessIds) {

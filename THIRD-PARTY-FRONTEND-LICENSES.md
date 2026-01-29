@@ -4183,6 +4183,11 @@
     - version: 1.0.12
     - licenses: BSD-3-Clause
     - repository: https://github.com/daaku/nodejs-makeerror
+ - **[material-icons@1.13.14](https://github.com/marella/material-icons)**
+    - name: material-icons
+    - version: 1.13.14
+    - licenses: Apache-2.0
+    - repository: https://github.com/marella/material-icons
  - **[math-intrinsics@1.1.0](https://github.com/es-shims/math-intrinsics)**
     - name: math-intrinsics
     - version: 1.1.0
