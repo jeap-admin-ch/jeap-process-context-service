@@ -54,7 +54,8 @@ class ProcessInstanceDTOFactoryTest {
         when(translateService.translateTaskTypeName(anyString(), anyString(), anyString())).thenAnswer(invocation -> createLabels(invocation.getArgument(1)));
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    // java:S5961: number of assertions
+    @SuppressWarnings({"OptionalGetWithoutIsPresent",  "java:S5961"})
     @Test
     void createFromProcessInstance() {
         final String templateName = "template";

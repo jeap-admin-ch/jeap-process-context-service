@@ -5,7 +5,6 @@ import ch.admin.bit.jeap.processcontext.domain.processinstance.Relation;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.RelationRepository;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +17,11 @@ class RelationRepositoryImpl implements RelationRepository {
     static final int BATCH_SIZE = 100;
 
     private final RelationJpaRepository relationJpaRepository;
+
+    @Override
+    public Set<Relation> findByProcessInstance(ProcessInstance processInstance) {
+        return relationJpaRepository.findByProcessInstance(processInstance);
+    }
 
     @Override
     public Set<Relation> saveAllNewRelations(Collection<Relation> relations) {
@@ -56,19 +60,13 @@ class RelationRepositoryImpl implements RelationRepository {
 
     private Set<Relation> filterOutExistingRelations(List<Relation> relations) {
         Specification<Relation> spec = buildExistsSpecification(relations);
-        List<Relation> existingRelations = relationJpaRepository.findAll(spec);
+        // This returns the list of relations that already exist given the spec, which only selects those
+        // matching a relation that we want to insert
+        List<Relation> duplicateRelations = relationJpaRepository.findAll(spec);
 
-        Set<RelationKey> existingKeys = new HashSet<>();
-        for (Relation existing : existingRelations) {
-            existingKeys.add(RelationKey.of(existing));
-        }
-
-        Set<Relation> newRelations = new HashSet<>();
-        for (Relation relation : relations) {
-            if (!existingKeys.contains(RelationKey.of(relation))) {
-                newRelations.add(relation);
-            }
-        }
+        Set<Relation> newRelations = new HashSet<>(relations);
+        // Remove duplicates, keep only new relations
+        duplicateRelations.forEach(newRelations::remove);
 
         return newRelations;
     }
@@ -93,27 +91,4 @@ class RelationRepositoryImpl implements RelationRepository {
         };
     }
 
-    @Override
-    public Set<Relation> findByProcessInstance(ProcessInstance processInstance) {
-        return relationJpaRepository.findByProcessInstance(processInstance);
-    }
-
-    private record RelationKey(
-            UUID processInstanceId,
-            String subjectType,
-            String subjectId,
-            String objectType,
-            String objectId,
-            String predicateType) {
-        static RelationKey of(Relation relation) {
-            return new RelationKey(
-                    relation.getProcessInstance().getId(),
-                    relation.getSubjectType(),
-                    relation.getSubjectId(),
-                    relation.getObjectType(),
-                    relation.getObjectId(),
-                    relation.getPredicateType()
-            );
-        }
-    }
 }

@@ -1,18 +1,14 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
-import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
-import ch.admin.bit.jeap.processcontext.domain.processtemplate.RelationPattern.JoinType;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessSnapshotCondition;
 import com.fasterxml.uuid.Generators;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.assertj.core.condition.Join;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

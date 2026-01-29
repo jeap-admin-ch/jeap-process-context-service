@@ -20,6 +20,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 @RequiredArgsConstructor
 @Slf4j
 public class ProcessUpdateService {
+    private static final String MESSAGE_NAME = "messageName";
+    private static final String ORIGIN_PROCESS_ID = "originProcessId";
+    private static final String TEMPLATE = "template";
+    private static final String IDEMPOTENCE_ID = "idempotenceId";
+
     private final InternalMessageProducer internalMessageProducer;
     private final ProcessUpdateRepository processUpdateRepository;
     private final PlatformTransactionManager transactionManager;
@@ -29,9 +34,9 @@ public class ProcessUpdateService {
 
         internalMessageProducer.produceProcessContextOutdatedEventSynchronously(originProcessId);
         log.info("CreateProcess message {} for {} received, using template {}",
-                StructuredArguments.keyValue("messageName", message.getMessageName()),
-                StructuredArguments.keyValue("originProcessId", originProcessId),
-                StructuredArguments.keyValue("template", template));
+                StructuredArguments.keyValue(MESSAGE_NAME, message.getMessageName()),
+                StructuredArguments.keyValue(ORIGIN_PROCESS_ID, originProcessId),
+                StructuredArguments.keyValue(TEMPLATE, template));
     }
 
 
@@ -40,8 +45,8 @@ public class ProcessUpdateService {
 
         internalMessageProducer.produceProcessContextOutdatedEventSynchronously(originProcessId);
         log.info("Message {} for {} received",
-                StructuredArguments.keyValue("messageName", message.getMessageName()),
-                StructuredArguments.keyValue("originProcessId", originProcessId));
+                StructuredArguments.keyValue(MESSAGE_NAME, message.getMessageName()),
+                StructuredArguments.keyValue(ORIGIN_PROCESS_ID, originProcessId));
     }
 
 
@@ -50,9 +55,9 @@ public class ProcessUpdateService {
         String idempotenceId = message.getIdempotenceId();
         if (processUpdateRepository.findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, messageName, idempotenceId).isPresent()) {
             log.info("Message {} {} has already been received for process {}.",
-                    StructuredArguments.keyValue("messageName", messageName),
-                    StructuredArguments.keyValue("idempotenceId", idempotenceId),
-                    StructuredArguments.keyValue("originProcessId", originProcessId));
+                    StructuredArguments.keyValue(MESSAGE_NAME, messageName),
+                    StructuredArguments.keyValue(IDEMPOTENCE_ID, idempotenceId),
+                    StructuredArguments.keyValue(ORIGIN_PROCESS_ID, originProcessId));
         } else {
             ProcessUpdate processUpdate = ProcessUpdate.messageReceived()
                     .originProcessId(originProcessId)
@@ -69,9 +74,9 @@ public class ProcessUpdateService {
         String idempotenceId = message.getIdempotenceId();
         if (processUpdateRepository.findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, messageName, idempotenceId).isPresent()) {
             log.info("CreateProcess message {} {} has already been received for process {}.",
-                    StructuredArguments.keyValue("messageName", messageName),
-                    StructuredArguments.keyValue("idempotenceId", idempotenceId),
-                    StructuredArguments.keyValue("originProcessId", originProcessId));
+                    StructuredArguments.keyValue(MESSAGE_NAME, messageName),
+                    StructuredArguments.keyValue(IDEMPOTENCE_ID, idempotenceId),
+                    StructuredArguments.keyValue(ORIGIN_PROCESS_ID, originProcessId));
         } else {
             ProcessUpdate processUpdate = ProcessUpdate.createProcessReceived()
                     .originProcessId(originProcessId)
