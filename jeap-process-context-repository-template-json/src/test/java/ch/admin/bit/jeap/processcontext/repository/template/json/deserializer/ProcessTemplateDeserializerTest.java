@@ -138,7 +138,7 @@ class ProcessTemplateDeserializerTest {
         assertEquals(1, template.getProcessRelationPatterns().size());
         assertEquals(2, template.getProcessCompletionConditions().size());
         assertInstanceOf(MessageProcessCompletionCondition.class, template.getProcessCompletionConditions().getFirst());
-        MessageProcessCompletionCondition messageProcessCompletionCondition = (MessageProcessCompletionCondition) template.getProcessCompletionConditions().get(0);
+        MessageProcessCompletionCondition messageProcessCompletionCondition = (MessageProcessCompletionCondition) template.getProcessCompletionConditions().getFirst();
         assertEquals("EventOne", messageProcessCompletionCondition.getMessageName());
         assertEquals(ProcessCompletionConclusion.SUCCEEDED, messageProcessCompletionCondition.getConclusion());
         assertInstanceOf(AllTasksInFinalStateProcessCompletionCondition.class, template.getProcessCompletionConditions().get(1));
@@ -156,7 +156,7 @@ class ProcessTemplateDeserializerTest {
 
         assertEquals(3, template.getProcessSnapshotConditions().size());
         assertInstanceOf(ProcessCompletionProcessSnapshotCondition.class, template.getProcessSnapshotConditions().getFirst());
-        ProcessCompletionProcessSnapshotCondition anySnapshotCompletionCondition = (ProcessCompletionProcessSnapshotCondition) template.getProcessSnapshotConditions().get(0);
+        ProcessCompletionProcessSnapshotCondition anySnapshotCompletionCondition = (ProcessCompletionProcessSnapshotCondition) template.getProcessSnapshotConditions().getFirst();
         assertNull(anySnapshotCompletionCondition.getTriggeringConclusion());
         assertInstanceOf(ProcessCompletionProcessSnapshotCondition.class, template.getProcessSnapshotConditions().get(1));
         ProcessCompletionProcessSnapshotCondition succeededSnapshotCompletionCondition = (ProcessCompletionProcessSnapshotCondition) template.getProcessSnapshotConditions().get(1);
@@ -388,8 +388,8 @@ class ProcessTemplateDeserializerTest {
 
         assertEquals(4, template.getMessageReferences().size());
         assertEquals("EventOne", template.getMessageReferences().getFirst().getMessageName());
-        assertEquals("TopicNameOne", template.getMessageReferences().get(0).getTopicName());
-        assertInstanceOf(MessageProcessIdCorrelationProvider.class, template.getMessageReferences().get(0).getCorrelationProvider());
+        assertEquals("TopicNameOne", template.getMessageReferences().getFirst().getTopicName());
+        assertInstanceOf(MessageProcessIdCorrelationProvider.class, template.getMessageReferences().getFirst().getCorrelationProvider());
         assertInstanceOf(TestCorrelationProvider.class, template.getMessageReferences().get(1).getCorrelationProvider());
         assertInstanceOf(TestPayloadExtractor.class, template.getMessageReferences().get(2).getPayloadExtractor());
         assertInstanceOf(TestPayloadExtractor.class, template.getMessageReferences().get(2).getPayloadExtractor());
@@ -438,7 +438,7 @@ class ProcessTemplateDeserializerTest {
 
         ProcessTemplate template = deserializer.toProcessTemplate();
 
-        assertInstanceOf(AlwaysProcessInstantiationCondition.class, template.getMessageReferences().get(0).getProcessInstantiationCondition());
+        assertInstanceOf(AlwaysProcessInstantiationCondition.class, template.getMessageReferences().getFirst().getProcessInstantiationCondition());
         assertInstanceOf(TestProcessInstantiationCondition.class, template.getMessageReferences().get(1).getProcessInstantiationCondition());
         assertInstanceOf(NeverProcessInstantiationCondition.class, template.getMessageReferences().get(2).getProcessInstantiationCondition());
         assertInstanceOf(NeverProcessInstantiationCondition.class, template.getMessageReferences().get(3).getProcessInstantiationCondition());

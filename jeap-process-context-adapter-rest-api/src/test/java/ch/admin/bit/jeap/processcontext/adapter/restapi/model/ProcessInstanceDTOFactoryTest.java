@@ -75,7 +75,7 @@ class ProcessInstanceDTOFactoryTest {
         ReflectionTestUtils.setField(processInstance, "processCompletion", new ProcessCompletion(
                 ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion.SUCCEEDED, "all good", ZonedDateTime.now()));
         TaskInstance expectedTask = processInstance.getTasks().getFirst();
-        ReflectionTestUtils.setField(expectedTask, "plannedBy",  messages.get(0).getId());
+        ReflectionTestUtils.setField(expectedTask, "plannedBy",  messages.getFirst().getId());
         ReflectionTestUtils.setField(expectedTask, "completedBy",  messages.get(1).getId());
 
         ProcessRelationsService processRelationsService = mock(ProcessRelationsService.class);
@@ -158,7 +158,7 @@ class ProcessInstanceDTOFactoryTest {
         );
         List<MessageDTO> messageDTOS = ProcessInstanceDTOFactory.createMessages(eventReferences);
 
-        assertEquals("newerA", messageDTOS.get(0).getName());
+        assertEquals("newerA", messageDTOS.getFirst().getName());
         assertEquals("newerB", messageDTOS.get(1).getName());
         assertEquals("olderA", messageDTOS.get(2).getName());
         assertEquals("olderB", messageDTOS.get(3).getName());
@@ -220,7 +220,7 @@ class ProcessInstanceDTOFactoryTest {
         );
         List<TaskInstanceDTO> taskDTOs = ProcessInstanceDTOFactory.createTasks(tasks, List.of(), "process", translateService, messageRepository);
 
-        assertEquals("taskA", taskDTOs.get(0).getName().get("de"));
+        assertEquals("taskA", taskDTOs.getFirst().getName().get("de"));
         assertEquals("taskB", taskDTOs.get(1).getName().get("de"));
         assertEquals("taskC", taskDTOs.get(2).getName().get("de"));
         assertEquals("idA", taskDTOs.get(2).getOriginTaskId());

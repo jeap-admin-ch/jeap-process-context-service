@@ -13,7 +13,7 @@ public class Test1EventDifferentPayloadExtractor implements PayloadExtractor<Tes
     @Override
     public Set<MessageData> getMessageData(Test1EventPayload payload) {
         if (!payload.getTaskIds().isEmpty()) {
-            return Set.of(new MessageData("differentKey1", payload.getTaskIds().get(0)));
+            return Set.of(new MessageData("differentKey1", payload.getTaskIds().getFirst()));
         } else {
             return emptySet();
         }

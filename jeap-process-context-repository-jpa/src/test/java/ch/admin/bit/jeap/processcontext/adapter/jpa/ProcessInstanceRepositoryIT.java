@@ -42,7 +42,7 @@ class ProcessInstanceRepositoryIT {
         ProcessTemplate processTemplate = ProcessTemplate.builder()
                 .name(processInstance.getProcessTemplateName())
                 .templateHash("ptHash")
-                .taskTypes(List.of(processInstance.getTasks().get(0).requireTaskType()))
+                .taskTypes(List.of(processInstance.getTasks().getFirst().requireTaskType()))
                 .build();
         doReturn(Optional.of(processTemplate)).when(processTemplateRepository).findByName(processInstance.getProcessTemplateName());
         processInstanceJpaRepository.saveAndFlush(processInstance);

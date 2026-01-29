@@ -45,7 +45,7 @@ class ProcessContextTest {
 
         List<Message> messages = processContext.getMessagesByName("event");
         assertEquals(2, messages.size());
-        assertEquals(processContext.getMessages().get(0), messages.get(0));
+        assertEquals(processContext.getMessages().getFirst(), messages.getFirst());
         assertEquals(processContext.getMessages().get(1), messages.get(1));
     }
 

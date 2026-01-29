@@ -65,7 +65,7 @@ class ProcessTemplateTest {
     void getProcessRelations() {
         List<ProcessRelationPattern> processRelationPatternList = processTemplate.getProcessRelationPatterns();
         assertEquals(1, processRelationPatternList.size());
-        ProcessRelationPattern aProcessRelationPattern = processRelationPatternList.get(0);
+        ProcessRelationPattern aProcessRelationPattern = processRelationPatternList.getFirst();
         assertSame(ProcessRelationRoleType.ORIGIN, aProcessRelationPattern.getRoleType());
         assertSame(ProcessRelationRoleVisibility.BOTH, aProcessRelationPattern.getVisibility());
     }

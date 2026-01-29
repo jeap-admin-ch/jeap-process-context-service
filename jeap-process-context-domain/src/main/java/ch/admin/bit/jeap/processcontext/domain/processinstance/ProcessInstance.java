@@ -284,7 +284,8 @@ public class ProcessInstance extends MutableDomainEntity {
     /**
      * Copies the EventData to the ProcessData, if the Template defines this
      *
-     * @return List of newly added ProcessData items
+     * @param message the incoming message containing data to copy
+     * @return list of newly created ProcessData entries
      */
     private List<ProcessData> copyMessageDataToProcessData(Message message) {
         String messageName = message.getMessageName();

@@ -91,7 +91,7 @@ class HouseKeepingServiceTest {
 
         final List<Set<UUID>> uuidCaptorAllValues = uuidCaptor.getAllValues();
 
-        assertThat(uuidCaptorAllValues.get(0)).isEqualTo(firstSet);
+        assertThat(uuidCaptorAllValues.getFirst()).isEqualTo(firstSet);
         assertThat(uuidCaptorAllValues.get(1)).isEqualTo(secondSet);
     }
 
@@ -141,11 +141,11 @@ class HouseKeepingServiceTest {
         verify(processUpdateRepository, times(2)).deleteAllByOriginProcessIdIn(processUpdateDeletionCaptor.capture());
 
         final List<Set<UUID>> uuidCaptorAllValues = uuidCaptor.getAllValues();
-        assertThat(uuidCaptorAllValues.get(0)).isEqualTo(firstSet.stream().map(ProcessInstanceQueryResult::getId).collect(Collectors.toSet()));
+        assertThat(uuidCaptorAllValues.getFirst()).isEqualTo(firstSet.stream().map(ProcessInstanceQueryResult::getId).collect(Collectors.toSet()));
         assertThat(uuidCaptorAllValues.get(1)).isEqualTo(secondSet.stream().map(ProcessInstanceQueryResult::getId).collect(Collectors.toSet()));
 
         final List<Set<String>> processUpdateDeletionCaptorAllValues = processUpdateDeletionCaptor.getAllValues();
-        assertThat(processUpdateDeletionCaptorAllValues.get(0)).isEqualTo(firstSet.stream().map(ProcessInstanceQueryResult::getOriginProcessId).collect(Collectors.toSet()));
+        assertThat(processUpdateDeletionCaptorAllValues.getFirst()).isEqualTo(firstSet.stream().map(ProcessInstanceQueryResult::getOriginProcessId).collect(Collectors.toSet()));
         assertThat(processUpdateDeletionCaptorAllValues.get(1)).isEqualTo(secondSet.stream().map(ProcessInstanceQueryResult::getOriginProcessId).collect(Collectors.toSet()));
     }
 

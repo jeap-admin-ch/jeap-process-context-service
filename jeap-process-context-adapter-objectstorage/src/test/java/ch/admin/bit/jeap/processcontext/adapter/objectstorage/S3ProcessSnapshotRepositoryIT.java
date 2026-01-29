@@ -132,7 +132,7 @@ class S3ProcessSnapshotRepositoryIT {
 
         List<LifecycleRule> lifeCycleRules = s3ObjectStorageRepository.getBucketLifecycleRules(TEST_BUCKET_NAME);
         assertThat(lifeCycleRules).hasSize(1);
-        assertThat(lifeCycleRules.get(0).id()).isEqualTo("snapshot_retention_days_" + SNAPSHOT_RETENTION_DAYS);
+        assertThat(lifeCycleRules.getFirst().id()).isEqualTo("snapshot_retention_days_" + SNAPSHOT_RETENTION_DAYS);
     }
 
     @Test
@@ -141,14 +141,14 @@ class S3ProcessSnapshotRepositoryIT {
         s3ProcessSnapshotRepository.applySnapshotRetentionConfiguration();
         List<LifecycleRule> initialLifeCycleRules = s3ObjectStorageRepository.getBucketLifecycleRules(TEST_BUCKET_NAME);
         assertThat(initialLifeCycleRules).hasSize(1);
-        assertThat(initialLifeCycleRules.get(0).id()).isEqualTo("snapshot_retention_days_" + SNAPSHOT_RETENTION_DAYS);
+        assertThat(initialLifeCycleRules.getFirst().id()).isEqualTo("snapshot_retention_days_" + SNAPSHOT_RETENTION_DAYS);
 
         // apply the same snapshot retention configuration again
         s3ProcessSnapshotRepository.applySnapshotRetentionConfiguration();
 
         List<LifecycleRule> lifeCycleRules = s3ObjectStorageRepository.getBucketLifecycleRules(TEST_BUCKET_NAME);
         assertThat(lifeCycleRules).hasSize(1);
-        assertThat(lifeCycleRules.get(0).id()).isEqualTo("snapshot_retention_days_" + SNAPSHOT_RETENTION_DAYS);
+        assertThat(lifeCycleRules.getFirst().id()).isEqualTo("snapshot_retention_days_" + SNAPSHOT_RETENTION_DAYS);
     }
 
     @Test
@@ -157,7 +157,7 @@ class S3ProcessSnapshotRepositoryIT {
         s3ProcessSnapshotRepository.applySnapshotRetentionConfiguration();
         List<LifecycleRule> initialLifeCycleRules = s3ObjectStorageRepository.getBucketLifecycleRules(TEST_BUCKET_NAME);
         assertThat(initialLifeCycleRules).hasSize(1);
-        assertThat(initialLifeCycleRules.get(0).id()).isEqualTo("snapshot_retention_days_" + SNAPSHOT_RETENTION_DAYS);
+        assertThat(initialLifeCycleRules.getFirst().id()).isEqualTo("snapshot_retention_days_" + SNAPSHOT_RETENTION_DAYS);
 
         // reconfigure the snapshot retention to newSnapshotRetentionDays and apply the new configuration
         final int newSnapshotRetentionDays = 5;
@@ -167,7 +167,7 @@ class S3ProcessSnapshotRepositoryIT {
 
         List<LifecycleRule> lifeCycleRules = s3ObjectStorageRepository.getBucketLifecycleRules(TEST_BUCKET_NAME);
         assertThat(lifeCycleRules).hasSize(1);
-        assertThat(lifeCycleRules.get(0).id()).isEqualTo("snapshot_retention_days_" + newSnapshotRetentionDays);
+        assertThat(lifeCycleRules.getFirst().id()).isEqualTo("snapshot_retention_days_" + newSnapshotRetentionDays);
     }
 
     @Test

@@ -41,7 +41,7 @@ class ProcessInstanceCreatedByDomainMessageWithObservedTaskIT extends ProcessIns
 
         assertThat(processInstance).isPresent();
         assertThat(processInstance.get().getTasks()).hasSize(1);
-        assertThat(processInstance.get().getTasks().get(0).getState()).isEqualTo(TaskState.COMPLETED);
+        assertThat(processInstance.get().getTasks().getFirst().getState()).isEqualTo(TaskState.COMPLETED);
     }
 
     private void sendTestCreatingProcessInstanceAndTaskEvent() {

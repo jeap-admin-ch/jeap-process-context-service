@@ -56,7 +56,7 @@ class ProcessUpdateJpaRepositoryTest {
         List<ProcessUpdate> updates = processUpdateJpaRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID);
 
         assertThat(updates).hasSize(1);
-        assertThat(updates.get(0).isHandled()).isFalse();
+        assertThat(updates.getFirst().isHandled()).isFalse();
     }
 
     @Test
@@ -89,7 +89,7 @@ class ProcessUpdateJpaRepositoryTest {
 
         assertThat(count).isEqualTo(3);
         assertThat(processUpdateJpaRepository.findAll()).hasSize(1);
-        assertThat(processUpdateJpaRepository.findAll().get(0).getOriginProcessId()).isEqualTo("id_3");
+        assertThat(processUpdateJpaRepository.findAll().getFirst().getOriginProcessId()).isEqualTo("id_3");
     }
 
 

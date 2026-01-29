@@ -35,7 +35,7 @@ public enum TaskLifecycle {
     }
 
     public TaskCardinality getDefaultCardinality() {
-        return supportedCardinalites.get(0);
+        return supportedCardinalites.getFirst();
     }
 
 }

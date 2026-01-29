@@ -61,7 +61,7 @@ class ProcessSnapshotIT extends ProcessInstanceMockS3ITBase {
         //    Each of the snapshot conditions should have created one snapshot.
         Mockito.verify(processSnapshotRepository, times(2)).
                 storeSnapshot(processSnapshotArchiveDataCaptor.capture());
-        ProcessSnapshotArchiveData snapshot1 = processSnapshotArchiveDataCaptor.getAllValues().get(0);
+        ProcessSnapshotArchiveData snapshot1 = processSnapshotArchiveDataCaptor.getAllValues().getFirst();
         ProcessSnapshotArchiveData snapshot2 = processSnapshotArchiveDataCaptor.getAllValues().get(1);
 
         // The snapshots should have been created with the correct origin process id

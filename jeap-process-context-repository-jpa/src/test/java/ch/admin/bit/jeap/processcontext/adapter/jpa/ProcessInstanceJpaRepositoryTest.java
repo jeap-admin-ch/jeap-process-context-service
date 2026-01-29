@@ -229,7 +229,7 @@ class ProcessInstanceJpaRepositoryTest {
         ProcessInstance persistedProcessInstanceRead = processInstanceReadOptional.get();
         assertEquals(processInstance.getProcessData(), persistedProcessInstanceRead.getProcessData());
         assertEquals(1, persistedProcessInstanceRead.getTasks().size());
-        assertEquals(processInstance.getTasks().getFirst().getOriginTaskId(), persistedProcessInstanceRead.getTasks().get(0).getOriginTaskId());
+        assertEquals(processInstance.getTasks().getFirst().getOriginTaskId(), persistedProcessInstanceRead.getTasks().getFirst().getOriginTaskId());
     }
 
     @Test

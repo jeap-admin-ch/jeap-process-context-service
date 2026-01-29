@@ -138,7 +138,7 @@ class JsonProcessTemplateRepositoryTest {
         assertEquals(Set.of("foo"), taskDataCompleted.getMessageDataKeys());
 
         assertEquals(2, template.getProcessCompletionConditions().size());
-        assertInstanceOf(AllTasksInFinalStateProcessCompletionCondition.class, template.getProcessCompletionConditions().get(0));
+        assertInstanceOf(AllTasksInFinalStateProcessCompletionCondition.class, template.getProcessCompletionConditions().getFirst());
         assertInstanceOf(MessageProcessCompletionCondition.class, template.getProcessCompletionConditions().get(1));
         MessageProcessCompletionCondition messageProcessCompletionCondition = (MessageProcessCompletionCondition) template.getProcessCompletionConditions().get(1);
         assertEquals("TestEvent4", messageProcessCompletionCondition.getMessageName());
@@ -146,7 +146,7 @@ class JsonProcessTemplateRepositoryTest {
         assertThat(messageProcessCompletionCondition.getName()).isEqualTo("Cancelled because of TestEvent4");
 
         assertEquals(2, template.getProcessSnapshotConditions().size());
-        assertInstanceOf(TestProcessSnapshotCondition.class, template.getProcessSnapshotConditions().get(0));
+        assertInstanceOf(TestProcessSnapshotCondition.class, template.getProcessSnapshotConditions().getFirst());
         assertInstanceOf(ProcessCompletionProcessSnapshotCondition.class, template.getProcessSnapshotConditions().get(1));
         ProcessCompletionProcessSnapshotCondition completionSnapshotCondition = (ProcessCompletionProcessSnapshotCondition) template.getProcessSnapshotConditions().get(1);
         assertNull(completionSnapshotCondition.getTriggeringConclusion());
@@ -211,8 +211,8 @@ class JsonProcessTemplateRepositoryTest {
         List<MessageReference> messageReferences = template.getMessageReferences();
         assertThat(messageReferences).hasSize(2);
 
-        assertThat(messageReferences.get(0).getMessageName()).isEqualTo("TestEventWithCluster");
-        assertThat(messageReferences.get(0).getClusterName()).isEqualTo("aws");
+        assertThat(messageReferences.getFirst().getMessageName()).isEqualTo("TestEventWithCluster");
+        assertThat(messageReferences.getFirst().getClusterName()).isEqualTo("aws");
 
         assertThat(messageReferences.get(1).getMessageName()).isEqualTo("TestEventWithoutCluster");
         assertThat(messageReferences.get(1).getClusterName()).isNull();

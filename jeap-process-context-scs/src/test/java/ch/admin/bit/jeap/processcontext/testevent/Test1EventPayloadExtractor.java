@@ -15,7 +15,7 @@ public class Test1EventPayloadExtractor implements PayloadExtractor<Test1EventPa
     public Set<MessageData> getMessageData(Test1EventPayload payload) {
         HashSet<MessageData> set = new HashSet<>();
         if (!payload.getTaskIds().isEmpty()) {
-            set.add(new MessageData("key1", payload.getTaskIds().get(0)));
+            set.add(new MessageData("key1", payload.getTaskIds().getFirst()));
         }
         if (hasText(payload.getSomeField()) ) {
             set.add(new MessageData("someField", payload.getSomeField()));
