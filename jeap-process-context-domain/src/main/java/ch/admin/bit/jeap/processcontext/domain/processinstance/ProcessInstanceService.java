@@ -200,7 +200,9 @@ public class ProcessInstanceService {
 
             AddedMessage addedMessage = processInstance.addMessage(message);
             MessageReferenceMessageDTO messageReferenceMessageDTO = addedMessage.messageReference();
-            relationService.onNewProcessData(processInstance, addedMessage.newProcessData());
+            if (!addedMessage.newProcessData().isEmpty()) {
+                relationService.onNewProcessData(processInstance, addedMessage.newProcessData());
+            }
 
             metricsListener.timed("pcs_process_single_update", Map.of("updateType", update.getProcessUpdateType().name()),
                     () -> updateProcessInstance(processInstance, update, messageReferenceMessageDTO, message));

@@ -68,8 +68,7 @@ class RelationServiceTest {
         verify(relationRepository).saveAllNewRelations(savedRelationsCaptor.capture());
         assertThat(savedRelationsCaptor.getValue()).isEmpty();
 
-        verify(relationListener).relationsAdded(notifiedRelationsCaptor.capture());
-        assertThat(notifiedRelationsCaptor.getValue()).isEmpty();
+        verify(relationListener, never()).relationsAdded(any());
     }
 
     @Test

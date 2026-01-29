@@ -29,7 +29,9 @@ public class RelationService {
         relations.forEach(Relation::onPrePersist);
         Set<Relation> newRelations = relationRepository.saveAllNewRelations(relations);
 
-        notifyRelationListeners(processInstance, newRelations);
+        if (!newRelations.isEmpty()) {
+            notifyRelationListeners(processInstance, newRelations);
+        }
     }
 
     private void notifyRelationListeners(ProcessInstance processInstance, Collection<Relation> relations) {

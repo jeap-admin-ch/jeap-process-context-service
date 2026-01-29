@@ -12,6 +12,8 @@ public class LoggingRelationListener implements RelationListener {
 
     @Override
     public void relationsAdded(Collection<Relation> relations) {
-        log.info("Relations added to process {}: {}", relations.iterator().next().getOriginProcessId(), relations);
+        if (!relations.isEmpty()) {
+            log.info("Relations added to process {}: {}", relations.iterator().next().getOriginProcessId(), relations);
+        }
     }
 }
