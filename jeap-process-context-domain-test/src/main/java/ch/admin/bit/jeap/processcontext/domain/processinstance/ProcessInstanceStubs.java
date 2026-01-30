@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 @SuppressWarnings("java:S115") // constant names deliberately kept lowercase
 public class ProcessInstanceStubs {
     public final String task = "task";
+    public final String task2 = "task2";
     public final String event = "event";
 
     public ProcessInstance createProcessWithSingleTaskInstance() {
@@ -50,6 +51,67 @@ public class ProcessInstanceStubs {
         ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
         repositoryFacadeStub.setProcessInstance(processInstance);
         setProcessData(processInstance, processData);
+        return processInstance;
+    }
+
+    public ProcessInstance createProcessWithoutTaskInstance() {
+        TaskType taskType = TaskType.builder()
+                .name(task)
+                .lifecycle(TaskLifecycle.OBSERVED)
+                .cardinality(TaskCardinality.MULTI_INSTANCE)
+                .build();
+        ProcessTemplate processTemplate = ProcessTemplate.builder()
+                .name("template")
+                .templateHash("hash")
+                .taskTypes(singletonList(
+                        taskType))
+                .build();
+        ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
+        ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        repositoryFacadeStub.setProcessInstance(processInstance);
+        return processInstance;
+    }
+
+    public ProcessInstance createProcessWithTwoPlannedTaskInstances() {
+        TaskType taskType1 = TaskType.builder()
+                .name(task)
+                .lifecycle(TaskLifecycle.STATIC)
+                .cardinality(TaskCardinality.SINGLE_INSTANCE)
+                .build();
+        TaskType taskType2 = TaskType.builder()
+                .name(task2)
+                .lifecycle(TaskLifecycle.STATIC)
+                .cardinality(TaskCardinality.SINGLE_INSTANCE)
+                .build();
+        ProcessTemplate processTemplate = ProcessTemplate.builder()
+                .name("template")
+                .templateHash("hash")
+                .taskTypes(List.of(taskType1, taskType2))
+                .build();
+        ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
+        ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        repositoryFacadeStub.setProcessInstance(processInstance);
+        return processInstance;
+    }
+
+    public ProcessInstance createProcessWithTwoTaskInstancesPlannedAndCompleted() {
+        ProcessInstance processInstance = createProcessWithTwoPlannedTaskInstances();
+        processInstance.getTasks().getFirst().complete(ZonedDateTime.now());
+        return processInstance;
+    }
+
+    public ProcessInstance createProcessWithTwoCompletedTaskInstances() {
+        ProcessInstance processInstance = createProcessWithTwoTaskInstancesPlannedAndCompleted();
+        processInstance.getTasks().get(1).complete(ZonedDateTime.now());
+        return processInstance;
+    }
+
+    public ProcessInstance createProcessWithTwoTaskInstancesNotRequiredAndDeleted() {
+        ProcessInstance processInstance = createProcessWithTwoPlannedTaskInstances();
+        processInstance.getTasks().getFirst().notRequired();
+        processInstance.getTasks().get(1).delete();
         return processInstance;
     }
 

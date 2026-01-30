@@ -510,6 +510,73 @@ class ProcessInstanceJpaRepositoryTest {
         );
     }
 
+    @Test
+    void isAllTasksInFinalState_singleCompletedTask_expectTrue() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createCompletedProcessInstance();
+        ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
+
+        boolean result = repository.isAllTasksInFinalState(processInstanceSaved.getId());
+
+        assertThat(result)
+                .isTrue();
+    }
+
+    @Test
+    void isAllTasksInFinalState_twoPlannedTasks_expectFalse() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoPlannedTaskInstances();
+        ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
+
+        boolean result = repository.isAllTasksInFinalState(processInstanceSaved.getId());
+
+        assertThat(result)
+                .isFalse();
+    }
+
+    @Test
+    void isAllTasksInFinalState_twoTasksPlannedAndCompleted_expectFalse() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoTaskInstancesPlannedAndCompleted();
+        ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
+
+        boolean result = repository.isAllTasksInFinalState(processInstanceSaved.getId());
+
+        assertThat(result)
+                .isFalse();
+    }
+
+    @Test
+    void isAllTasksInFinalState_twoCompletedTasks_expectTrue() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoCompletedTaskInstances();
+        ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
+
+        boolean result = repository.isAllTasksInFinalState(processInstanceSaved.getId());
+
+        assertThat(result)
+                .isTrue();
+    }
+
+    @Test
+    void isAllTasksInFinalState_twoFinalStateTasks_expectTrue() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoTaskInstancesNotRequiredAndDeleted();
+        ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
+
+        boolean result = repository.isAllTasksInFinalState(processInstanceSaved.getId());
+
+        assertThat(result)
+                .isTrue();
+    }
+
+    @Test
+    void isAllTasksInFinalState_noTasksExpectFalse() {
+        ProcessInstance completedProcessInstance = ProcessInstanceStubs.createProcessWithoutTaskInstance();
+        ProcessInstance processInstanceSaved = repository.saveAndFlush(completedProcessInstance);
+        assertThat(processInstanceSaved.getTasks()).isEmpty();
+
+        boolean result = repository.isAllTasksInFinalState(processInstanceSaved.getId());
+
+        assertThat(result)
+                .isFalse();
+    }
+
     private MessageReferenceMessageDTO toEventReferenceEventDTO(UUID eventReferenceId, Message message) {
         return MessageReferenceMessageDTO.builder()
                 .messageReferenceId(eventReferenceId)

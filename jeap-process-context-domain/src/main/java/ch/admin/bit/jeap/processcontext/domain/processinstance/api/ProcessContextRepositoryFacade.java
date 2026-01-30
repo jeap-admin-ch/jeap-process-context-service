@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public interface ProcessContextRepositoryFacade {
 
-    boolean isAllTasksCompleted(UUID processInstanceId);
+    boolean isAllTasksInFinalState(UUID processInstanceId);
 }

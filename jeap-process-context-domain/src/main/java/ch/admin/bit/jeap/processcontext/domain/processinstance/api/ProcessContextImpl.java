@@ -58,6 +58,6 @@ public final class ProcessContextImpl implements ProcessContext {
 
     @Override
     public boolean isAllTasksInFinalState() {
-        return repositoryFacade.isAllTasksCompleted(processInstanceId);
+        return repositoryFacade.isAllTasksInFinalState(processInstanceId);
     }
 }

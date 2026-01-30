@@ -139,4 +139,22 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
 
     @Query(nativeQuery = true, value = "SELECT p.latest_snapshot_version FROM process_instance p WHERE p.origin_process_id = :originProcessId")
     Integer getLatestProcessSnapshotVersion(@Param("originProcessId") String originProcessId);
+
+    /**
+     * Checks whether all tasks in the process instance are in a final state. For this to be true,
+     * the following conditions must be met:
+     * <ul>
+     *   <li>the process instance contains at least one task</li>
+     *   <li>all existing tasks are in a final state (COMPLETED, NOT_REQUIRED or DELETED)</li>
+     * </ul>
+     *
+     * @return true if all tasks are in a final state and at least one task exists, false otherwise
+     */
+    @Query("""
+            SELECT CASE WHEN COUNT(t) = SUM(CASE WHEN t.state IN ('COMPLETED', 'NOT_REQUIRED', 'DELETED') THEN 1 ELSE 0 END) \
+            THEN true ELSE false END \
+            FROM TaskInstance t \
+            WHERE t.processInstance.id = :processInstanceId\
+            """)
+    boolean isAllTasksInFinalState(UUID processInstanceId);
 }

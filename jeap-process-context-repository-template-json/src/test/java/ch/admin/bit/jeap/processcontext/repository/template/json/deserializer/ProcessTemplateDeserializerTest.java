@@ -158,7 +158,7 @@ class ProcessTemplateDeserializerTest {
         assertNull(anySnapshotCompletionCondition.getTriggeringConclusion());
         assertInstanceOf(ProcessCompletionProcessSnapshotCondition.class, template.getProcessSnapshotConditions().get(1));
         ProcessCompletionProcessSnapshotCondition succeededSnapshotCompletionCondition = (ProcessCompletionProcessSnapshotCondition) template.getProcessSnapshotConditions().get(1);
-        assertEquals(ProcessCompletionConclusion.SUCCEEDED, succeededSnapshotCompletionCondition.getTriggeringConclusion());
+        assertEquals(ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion.SUCCEEDED, succeededSnapshotCompletionCondition.getTriggeringConclusion());
     }
 
     @Test
@@ -1040,7 +1040,6 @@ class ProcessTemplateDeserializerTest {
         assertTrue(ex.getMessage().contains("SomeEvent"));
         assertTrue(ex.getMessage().contains("not contained in event definitions"));
     }
-
 
     @Test
     void toTemplate_invalidSnapshotCompletion() {
