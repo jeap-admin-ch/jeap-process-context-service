@@ -9,7 +9,6 @@ import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessContextFac
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessState;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextRepositoryFacade;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskCardinality;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskLifecycle;
@@ -37,7 +36,6 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 @TestPropertySource(properties =
         "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/domain_event_triggers_process_instance_instantiation.json")
@@ -238,7 +236,6 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
                         taskType))
                 .build();
         String originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
-        ProcessContextFactory processContextFactory = new ProcessContextFactory(mock(ProcessContextRepositoryFacade.class));
         ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate, processContextFactory);
         processInstanceRepository.save(processInstance);
 

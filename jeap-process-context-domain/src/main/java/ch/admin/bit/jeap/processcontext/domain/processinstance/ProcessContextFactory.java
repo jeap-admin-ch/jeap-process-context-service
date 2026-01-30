@@ -3,7 +3,6 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextImpl;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextRepositoryFacade;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +21,6 @@ public class ProcessContextFactory {
                 .processInstanceId(processInstance.getId())
                 .originProcessId(processInstance.getOriginProcessId())
                 .processName(processInstance.getProcessTemplateName())
-                .processState(ProcessState.valueOf(processInstance.getState().name()))
                 .messages(createMessages(processInstance))
                 .repositoryFacade(repositoryFacade)
                 .build();

@@ -2,13 +2,16 @@ package ch.admin.bit.jeap.processcontext.plugin.api.context;
 
 import java.util.List;
 
+/**
+ * Represents the process context of a process instance, providing access to its metadata and messages when implementing
+ * conditions. When extending this interface, be careful not to expose data that is altered by conditions such as task
+ * or process state. This would lead to inconsistent behavior when conditions are evaluated in a different order.
+ */
 public interface ProcessContext {
 
     String getOriginProcessId();
 
     String getProcessName();
-
-    ProcessState getProcessState();
 
     List<Message> getMessages();
 

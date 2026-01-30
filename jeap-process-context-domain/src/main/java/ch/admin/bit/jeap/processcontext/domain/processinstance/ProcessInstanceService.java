@@ -34,6 +34,8 @@ import static net.logstash.logback.argument.StructuredArguments.keyValue;
 @RequiredArgsConstructor
 @Slf4j
 public class ProcessInstanceService {
+    private static final String ORIGIN_PROCESS_ID = "originProcessId";
+
     private final InternalMessageProducer internalMessageProducer;
     private final ProcessUpdateQueryRepository processUpdateQueryRepository;
     private final ProcessInstanceRepository processInstanceRepository;
@@ -115,7 +117,7 @@ public class ProcessInstanceService {
             try {
                 ProcessInstance processInstance = createOrLoadProcessInstance(originProcessId, processUpdates).orElse(null);
                 if (processInstance == null) {
-                    log.debug("Process instance for process " + keyValue("originProcessId", originProcessId) + " not found, won't handle the corresponding process updates (yet).");
+                    log.debug("Process instance for process " + keyValue(ORIGIN_PROCESS_ID, originProcessId) + " not found, won't handle the corresponding process updates (yet).");
                     return List.of();
                 }
 
@@ -125,7 +127,7 @@ public class ProcessInstanceService {
                 metricsListener.processUpdateProcessed(processInstance.getProcessTemplate(), true, processUpdates.size());
                 return List.of();
             } catch (ProcessUpdateFailedException pufe) {
-                log.error("Failed processing a batch of process updates for process " + keyValue("originProcessId", originProcessId) + ". Rolling back the transaction to only fail the problematic update.", pufe);
+                log.error("Failed processing a batch of process updates for process " + keyValue(ORIGIN_PROCESS_ID, originProcessId) + ". Rolling back the transaction to only fail the problematic update.", pufe);
                 txStatus.setRollbackOnly();
                 ProcessTemplate processTemplate = createOrLoadProcessInstance(originProcessId, processUpdates)
                         .map(ProcessInstance::getProcessTemplate)
@@ -184,7 +186,7 @@ public class ProcessInstanceService {
     }
 
     private void failUpdate(ProcessUpdate processUpdate, Exception e) {
-        log.error("Failed to apply process update to process " + keyValue("originProcessId", processUpdate.getOriginProcessId()), e);
+        log.error("Failed to apply process update to process " + keyValue(ORIGIN_PROCESS_ID, processUpdate.getOriginProcessId()), e);
         transactions.withinNewTransaction(() -> processUpdateRepository.markHandlingFailed(processUpdate.getId()));
         metricsListener.processUpdateFailed(processUpdate, e);
     }

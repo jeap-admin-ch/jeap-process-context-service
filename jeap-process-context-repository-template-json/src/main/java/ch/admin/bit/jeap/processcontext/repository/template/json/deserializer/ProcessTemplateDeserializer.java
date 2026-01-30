@@ -148,7 +148,7 @@ public class ProcessTemplateDeserializer {
                 .collect(Collectors.toSet());
     }
 
-    private MessageReference toDomainEventReference(MessageReferenceDefinition eventRefDefinition) {
+    private MessageReference toMessageReference(MessageReferenceDefinition eventRefDefinition) {
         String messageName = eventRefDefinition.getMessageName();
         String topicName = eventRefDefinition.getTopicName();
         String clusterName = eventRefDefinition.getClusterName();
@@ -417,7 +417,7 @@ public class ProcessTemplateDeserializer {
 
     private List<MessageReference> messageReferences() {
         List<MessageReference> messageReferences = templateDefinition.getMessages().stream()
-                .map(this::toDomainEventReference)
+                .map(this::toMessageReference)
                 .toList();
         ProcessTemplateUtils.validateUniqueNames("message", messageReferences.stream()
                 .map(MessageReference::getMessageName));

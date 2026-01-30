@@ -2,7 +2,6 @@ package ch.admin.bit.jeap.processcontext.plugin.api.context.test;
 
 import ch.admin.bit.jeap.processcontext.plugin.api.context.Message;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessState;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -24,9 +23,6 @@ public class ProcessContextStub implements ProcessContext {
     private final String processName;
 
     @Getter
-    private final ProcessState processState;
-
-    @Getter
     private final List<Message> messages;
 
     private final Map<String, List<Message>> messagesByName;
@@ -36,15 +32,10 @@ public class ProcessContextStub implements ProcessContext {
     @Builder
     private ProcessContextStub(@NonNull String originProcessId,
                                @NonNull String processName,
-                               ProcessState processState,
                                List<Message> messages,
                                boolean allTasksCompleted) {
         this.originProcessId = originProcessId;
         this.processName = processName;
-        if (processState == null) {
-            processState = ProcessState.STARTED;
-        }
-        this.processState = processState;
         if (messages == null) {
             messages = List.of();
         }

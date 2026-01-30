@@ -2,7 +2,6 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance.api;
 
 import ch.admin.bit.jeap.processcontext.plugin.api.context.Message;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessState;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -25,9 +24,6 @@ public final class ProcessContextImpl implements ProcessContext {
     private final String processName;
 
     @Getter
-    private final ProcessState processState;
-
-    @Getter
     private final List<Message> messages;
 
     private final Map<String, List<Message>> messagesByName;
@@ -38,13 +34,11 @@ public final class ProcessContextImpl implements ProcessContext {
     private ProcessContextImpl(@NonNull UUID processInstanceId,
                                @NonNull String originProcessId,
                                @NonNull String processName,
-                               @NonNull ProcessState processState,
                                @NonNull List<Message> messages,
                                @NonNull ProcessContextRepositoryFacade repositoryFacade) {
         this.processInstanceId = processInstanceId;
         this.originProcessId = originProcessId;
         this.processName = processName;
-        this.processState = processState;
         this.messages = messages;
         this.messagesByName = messages.stream()
                 .collect(groupingBy(Message::getName));

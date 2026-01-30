@@ -43,7 +43,6 @@ class ProcessContextFactoryTest {
 
         assertEquals(processInstance.getOriginProcessId(), processContext.getOriginProcessId());
         assertEquals(processInstance.getProcessTemplate().getName(), processContext.getProcessName());
-        assertEquals(processInstance.getState().name(), processContext.getProcessState().name());
         assertEquals(2, processContext.getMessages().size());
         ch.admin.bit.jeap.processcontext.plugin.api.context.Message processContextEvent = processContext.getMessages().get(1);
 
@@ -104,7 +103,6 @@ class ProcessContextFactoryTest {
         ProcessContext processContext = processContextFactory.createProcessContext(processInstance);
         assertEquals(processInstance.getOriginProcessId(), processContext.getOriginProcessId());
         assertEquals(processInstance.getProcessTemplate().getName(), processContext.getProcessName());
-        assertEquals(processInstance.getState().name(), processContext.getProcessState().name());
         assertEquals(2, processInstance.getTasks().size());
     }
 

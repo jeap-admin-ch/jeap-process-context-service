@@ -47,7 +47,6 @@ class ProcessContextTest {
         return ProcessContextStub.builder()
                 .originProcessId("id")
                 .processName("name")
-                .processState(ProcessState.STARTED)
                 .messages(events)
                 .build();
     }

@@ -115,6 +115,9 @@ public class ProcessInstance extends MutableDomainEntity {
 
     public static ProcessInstance startProcess(String originProcessId, ProcessTemplate processTemplate, ProcessContextFactory processContextFactory) {
         ProcessInstance processInstance = new ProcessInstance(originProcessId, processTemplate, processContextFactory);
+        // TODO: This invokes updateProcessState(), which in turn invokes ProcessContextRepositoryFacade, which accesses the database.
+        // Tnis does not work as the processInstance entity is not yet persisted. Make sure to 1) persist the entity first using save()
+        // and 2) then update process state. Also, make sure updateProessState() is invoked only on persisted or managed entities.
         processInstance.planInitialTasks();
         return processInstance;
     }

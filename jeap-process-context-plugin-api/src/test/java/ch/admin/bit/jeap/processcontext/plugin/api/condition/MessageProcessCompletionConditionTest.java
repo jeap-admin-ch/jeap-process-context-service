@@ -3,7 +3,6 @@ package ch.admin.bit.jeap.processcontext.plugin.api.condition;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.Message;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessState;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.test.ProcessContextStub;
 import org.junit.jupiter.api.Test;
 
@@ -65,7 +64,6 @@ class MessageProcessCompletionConditionTest {
         return ProcessContextStub.builder()
                 .originProcessId("id")
                 .processName("name")
-                .processState(ProcessState.STARTED)
                 .messages(messages)
                 .build();
     }

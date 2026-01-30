@@ -184,9 +184,10 @@ class ProcessInstanceTest {
     void setProcessTemplate_shouldThrowIfAlreadySet() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
         ProcessContextFactory processContextFactory = new ProcessContextFactory(new ProcessContextRepositoryFacadeStub());
+        ProcessTemplate processTemplate = processInstance.getProcessTemplate();
 
         assertThrows(IllegalStateException.class, () ->
-                processInstance.onAfterLoadFromPersistentState(processInstance.getProcessTemplate(), processContextFactory));
+                processInstance.onAfterLoadFromPersistentState(processTemplate, processContextFactory));
     }
 
     /**

@@ -18,6 +18,7 @@ public class ProcessContextRepositoryFacadeImpl implements ProcessContextReposit
     @Override
     public boolean isAllTasksInFinalState(UUID processInstanceId) {
         processInstanceJpaRepository.flush();
-        return processInstanceJpaRepository.isAllTasksInFinalState(processInstanceId);
+        Boolean result = processInstanceJpaRepository.isAllTasksInFinalState(processInstanceId);
+        return Boolean.TRUE.equals(result);
     }
 }
