@@ -150,11 +150,6 @@
   "snapshots": [
     {
       "createdOn" : {
-        "condition" : "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestProcessSnapshotCondition"
-      }
-    },
-    {
-      "createdOn" : {
         "completion": "any"
       }
     }

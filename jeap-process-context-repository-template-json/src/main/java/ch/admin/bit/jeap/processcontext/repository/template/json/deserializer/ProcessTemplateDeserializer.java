@@ -577,12 +577,7 @@ public class ProcessTemplateDeserializer {
     }
 
     private ProcessSnapshotCondition toProcessSnapshotCondition(ProcessSnapshotConditionDefinition processSnapshotDefinition) {
-        if (hasText(processSnapshotDefinition.getCondition()) && hasText(processSnapshotDefinition.getCompletion())) {
-            throw TemplateDefinitionException.processSnapshotMustBeCreatedEitherByConditionOrCompletion();
-        }
-        if (hasText(processSnapshotDefinition.getCondition())) {
-            return ProcessTemplateUtils.newInstance(processSnapshotDefinition.getCondition());
-        } else if (hasText(processSnapshotDefinition.getCompletion())) {
+        if (hasText(processSnapshotDefinition.getCompletion())) {
             final String completionConclusion = processSnapshotDefinition.getCompletion();
             if ("any".equalsIgnoreCase(completionConclusion)) {
                 return new ProcessCompletionProcessSnapshotCondition(null);
@@ -590,7 +585,7 @@ public class ProcessTemplateDeserializer {
                 return new ProcessCompletionProcessSnapshotCondition(parseCompletionConclusion(completionConclusion));
             }
         } else {
-            throw TemplateDefinitionException.processSnapshotMustBeCreatedEitherByConditionOrCompletion();
+            throw TemplateDefinitionException.processSnapshotConditionMissing();
         }
     }
 

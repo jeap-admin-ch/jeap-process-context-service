@@ -195,8 +195,8 @@ class TemplateDefinitionException extends RuntimeException {
         return new TemplateDefinitionException("Missing mandatory process relation property 'source'.");
     }
 
-    static TemplateDefinitionException processSnapshotMustBeCreatedEitherByConditionOrCompletion() {
-        return new TemplateDefinitionException("A process snapshot must either specify a condition or a completion, but not both at the same time.");
+    static TemplateDefinitionException processSnapshotConditionMissing() {
+        return new TemplateDefinitionException("Missing mandatory process snapshot property 'completion'.");
     }
 
     static TemplateDefinitionException invalidProcessSnapshotCompletion(String unknown) {

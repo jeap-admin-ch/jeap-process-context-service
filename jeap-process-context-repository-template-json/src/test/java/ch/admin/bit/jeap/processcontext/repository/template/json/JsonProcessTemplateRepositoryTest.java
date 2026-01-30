@@ -9,7 +9,6 @@ import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConc
 import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageProcessIdCorrelationProvider;
 import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider;
 import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestPayloadExtractor;
-import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestProcessSnapshotCondition;
 import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestReferenceExtractor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -145,10 +144,9 @@ class JsonProcessTemplateRepositoryTest {
         assertEquals(ProcessCompletionConclusion.CANCELLED, messageProcessCompletionCondition.getConclusion());
         assertThat(messageProcessCompletionCondition.getName()).isEqualTo("Cancelled because of TestEvent4");
 
-        assertEquals(2, template.getProcessSnapshotConditions().size());
-        assertInstanceOf(TestProcessSnapshotCondition.class, template.getProcessSnapshotConditions().getFirst());
-        assertInstanceOf(ProcessCompletionProcessSnapshotCondition.class, template.getProcessSnapshotConditions().get(1));
-        ProcessCompletionProcessSnapshotCondition completionSnapshotCondition = (ProcessCompletionProcessSnapshotCondition) template.getProcessSnapshotConditions().get(1);
+        assertEquals(1, template.getProcessSnapshotConditions().size());
+        assertInstanceOf(ProcessCompletionProcessSnapshotCondition.class, template.getProcessSnapshotConditions().getFirst());
+        ProcessCompletionProcessSnapshotCondition completionSnapshotCondition = (ProcessCompletionProcessSnapshotCondition) template.getProcessSnapshotConditions().getFirst();
         assertNull(completionSnapshotCondition.getTriggeringConclusion());
 
         List<MessageReference> messageReferences = template.getMessageReferences();

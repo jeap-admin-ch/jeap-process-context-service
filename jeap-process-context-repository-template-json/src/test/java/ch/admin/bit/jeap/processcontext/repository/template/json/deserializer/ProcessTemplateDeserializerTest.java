@@ -1,9 +1,9 @@
 package ch.admin.bit.jeap.processcontext.repository.template.json.deserializer;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessCompletionProcessSnapshotCondition;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.AllTasksInFinalStateProcessCompletionCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.MessageProcessCompletionCondition;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessCompletionProcessSnapshotCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.TaskInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
 import ch.admin.bit.jeap.processcontext.plugin.api.event.AlwaysProcessInstantiationCondition;
@@ -13,7 +13,6 @@ import ch.admin.bit.jeap.processcontext.repository.template.json.TestProcessInst
 import ch.admin.bit.jeap.processcontext.repository.template.json.model.*;
 import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider;
 import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestPayloadExtractor;
-import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestProcessSnapshotCondition;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -102,10 +101,9 @@ class ProcessTemplateDeserializerTest {
         processTemplateDefinition.setProcessRelationPatterns(List.of(processRelationPatternDefinition));
 
         // process snapshots
-        ProcessSnapshotDefinition anyCompletionSnapshot = createProcessSnapshotDefinition(null, "any");
-        ProcessSnapshotDefinition succeededCompletionSnapshot = createProcessSnapshotDefinition(null, "succeeded");
-        ProcessSnapshotDefinition testConditionSnapshot = createProcessSnapshotDefinition(TestProcessSnapshotCondition.class.getCanonicalName(), null);
-        processTemplateDefinition.setSnapshots(List.of(anyCompletionSnapshot, succeededCompletionSnapshot, testConditionSnapshot));
+        ProcessSnapshotDefinition anyCompletionSnapshot = createProcessSnapshotDefinition("any");
+        ProcessSnapshotDefinition succeededCompletionSnapshot = createProcessSnapshotDefinition("succeeded");
+        processTemplateDefinition.setSnapshots(List.of(anyCompletionSnapshot, succeededCompletionSnapshot));
 
 
         ProcessTemplateDeserializer deserializer = new ProcessTemplateDeserializer(processTemplateDefinition, "hash");
@@ -154,14 +152,13 @@ class ProcessTemplateDeserializerTest {
         assertEquals("EventOne", processRelationPattern.getSource().getMessageName());
         assertEquals("aMessageDataKey", processRelationPattern.getSource().getMessageDataKey());
 
-        assertEquals(3, template.getProcessSnapshotConditions().size());
+        assertEquals(2, template.getProcessSnapshotConditions().size());
         assertInstanceOf(ProcessCompletionProcessSnapshotCondition.class, template.getProcessSnapshotConditions().getFirst());
         ProcessCompletionProcessSnapshotCondition anySnapshotCompletionCondition = (ProcessCompletionProcessSnapshotCondition) template.getProcessSnapshotConditions().getFirst();
         assertNull(anySnapshotCompletionCondition.getTriggeringConclusion());
         assertInstanceOf(ProcessCompletionProcessSnapshotCondition.class, template.getProcessSnapshotConditions().get(1));
         ProcessCompletionProcessSnapshotCondition succeededSnapshotCompletionCondition = (ProcessCompletionProcessSnapshotCondition) template.getProcessSnapshotConditions().get(1);
         assertEquals(ProcessCompletionConclusion.SUCCEEDED, succeededSnapshotCompletionCondition.getTriggeringConclusion());
-        assertInstanceOf(TestProcessSnapshotCondition.class, template.getProcessSnapshotConditions().get(2));
     }
 
     @Test
@@ -1048,17 +1045,9 @@ class ProcessTemplateDeserializerTest {
     @Test
     void toTemplate_invalidSnapshotCompletion() {
         TemplateDefinitionException ex = assertThrows(TemplateDefinitionException.class, () ->
-                deserializeProcessSnapshotDefinition(null, "invalid-completion-conclusion"));
-        assertEquals("'invalid-completion-conclusion' is not a valid process snapshot completion value.", ex.getMessage());
+                deserializeProcessSnapshotDefinition( ""));
+        assertEquals("Missing mandatory process snapshot property 'completion'.", ex.getMessage());
     }
-
-    @Test
-    void toTemplate_processSnapshotMustBeCreatedEitherByConditionOrCompletion() {
-        TemplateDefinitionException ex = assertThrows(TemplateDefinitionException.class, () ->
-                deserializeProcessSnapshotDefinition(TestProcessSnapshotCondition.class.getCanonicalName(), "invalid-completion-conclusion"));
-        assertEquals("A process snapshot must either specify a condition or a completion, but not both at the same time.", ex.getMessage());
-    }
-
 
     private void deserializeCompletionCondition(String condition, String completionMessage, ProcessCompletionConclusion conclusion, boolean addCompletionMessage) {
         ProcessTemplateDefinition processTemplateDefinition = new ProcessTemplateDefinition();
@@ -1094,14 +1083,14 @@ class ProcessTemplateDeserializerTest {
         return completionDefinition;
     }
 
-    private ProcessSnapshotDefinition createProcessSnapshotDefinition(String condition, String completion) {
-        ProcessSnapshotConditionDefinition createdOn = new ProcessSnapshotConditionDefinition(condition, completion);
+    private ProcessSnapshotDefinition createProcessSnapshotDefinition(String completion) {
+        ProcessSnapshotConditionDefinition createdOn = new ProcessSnapshotConditionDefinition(completion);
         return new ProcessSnapshotDefinition(createdOn);
     }
 
     @SuppressWarnings("SameParameterValue")
-    private void deserializeProcessSnapshotDefinition(String condition, String completionConclusion) {
-        ProcessSnapshotConditionDefinition snapshotConditionDefinition = new ProcessSnapshotConditionDefinition(condition, completionConclusion);
+    private void deserializeProcessSnapshotDefinition(String completionConclusion) {
+        ProcessSnapshotConditionDefinition snapshotConditionDefinition = new ProcessSnapshotConditionDefinition(completionConclusion);
         ProcessSnapshotDefinition snapshotDefinition = new ProcessSnapshotDefinition(snapshotConditionDefinition);
 
         ProcessTemplateDefinition processTemplateDefinition = new ProcessTemplateDefinition();

@@ -8,6 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProcessSnapshotConditionDefinition {
-    private String condition;
     private String completion;
 }

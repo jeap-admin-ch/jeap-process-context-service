@@ -166,9 +166,8 @@ public class ProcessInstance extends MutableDomainEntity {
         if ((getProcessTemplate() == null) || getProcessTemplate().getProcessSnapshotConditions().isEmpty()) {
             return emptySet();
         }
-        ProcessContext processContext = ProcessContextFactory.createProcessContext(this);
         return getProcessTemplate().getProcessSnapshotConditions().stream().
-                map(snapshotCondition -> snapshotCondition.triggerSnapshot(processContext)).
+                map(snapshotCondition -> snapshotCondition.triggerSnapshot(this)).
                 filter(ProcessSnapshotConditionResult::isSnapShotTriggered).
                 map(ProcessSnapshotConditionResult::getSnapshotName).
                 filter(snapshotName -> !snapshotNames.contains(snapshotName)).

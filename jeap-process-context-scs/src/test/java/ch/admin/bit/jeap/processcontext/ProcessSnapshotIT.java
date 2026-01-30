@@ -39,14 +39,10 @@ class ProcessSnapshotIT extends ProcessInstanceMockS3ITBase {
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void testCreateSnapshots() {
-        // send Test1Event that creates the process and fulfills the programmatic snapshot condition
+        // send Test1Event that creates the process
         sendTest1Event("trigger");
         assertProcessInstanceCreated(originProcessId, "snapshots");
         assertMessageCount(originProcessId, "Test1Event", 1);
-
-        // send Test1Event again that fulfills the programmatic snapshot condition again
-        sendTest1Event("no-trigger");
-        assertMessageCount(originProcessId, "Test1Event", 2);
 
         // send Test2Event that complete the only task in the process and thus the process and triggers a snapshot on completion
         sendTest2Event("complete");
@@ -55,25 +51,17 @@ class ProcessSnapshotIT extends ProcessInstanceMockS3ITBase {
         // Check that process completed
         assertProcessInstanceCompleted(originProcessId);
 
-        // The programmatic snapshot condition would trigger at least twice but should only register once.
-        // The completion snapshot condition would trigger once and should only register once.
-        // -> We are expecting only 2 snapshots created and stored in the snapshot repository.
-        //    Each of the snapshot conditions should have created one snapshot.
-        Mockito.verify(processSnapshotRepository, times(2)).
+        // The completion snapshot condition should have been triggered once
+        Mockito.verify(processSnapshotRepository, times(1)).
                 storeSnapshot(processSnapshotArchiveDataCaptor.capture());
-        ProcessSnapshotArchiveData snapshot1 = processSnapshotArchiveDataCaptor.getAllValues().getFirst();
-        ProcessSnapshotArchiveData snapshot2 = processSnapshotArchiveDataCaptor.getAllValues().get(1);
+        ProcessSnapshotArchiveData snapshot = processSnapshotArchiveDataCaptor.getAllValues().getFirst();
 
-        // The snapshots should have been created with the correct origin process id
-        assertThat(snapshot1.getProcessSnapshot().getOriginProcessId()).isEqualTo(originProcessId);
-        assertThat(snapshot2.getProcessSnapshot().getOriginProcessId()).isEqualTo(originProcessId);
+        // The snapshot should have been created with the correct origin process id and version 1
+        assertThat(snapshot.getProcessSnapshot().getOriginProcessId()).isEqualTo(originProcessId);
+        assertThat(snapshot.getMetadata().getSnapshotVersion()).isEqualTo(1);
 
-        // The snapshots should have been created in a sequence starting with snapshot version number 1
-        assertThat(snapshot1.getMetadata().getSnapshotVersion()).isEqualTo(1);
-        assertThat(snapshot2.getMetadata().getSnapshotVersion()).isEqualTo(2);
-
-        // Snapshot created events should have been published for the two snapshot versions
-        assertSnapshotCreatedEvents(1, 2);
+        // Snapshot created events should have been published for the snapshot
+        assertSnapshotCreatedEvent(1);
     }
 
     private void assertMessageCount(String originProcessId, String messageType, long count) {

@@ -61,10 +61,6 @@ class ProcessContextFactoryTest {
         assertEquals(taskInstance.requireTaskType().getCardinality().name(), processContextTask.getType().getCardinality().name());
         assertEquals(taskInstance.getState().name(), processContextTask.getState().name());
         assertEquals(taskInstance.getOriginTaskId(), processContextTask.getOriginTaskId().orElseThrow());
-
-        assertNotNull(processContext.getProcessCompletion());
-        assertEquals(processInstance.getProcessCompletion().get().getConclusion(), processContext.getProcessCompletion().getConclusion());
-        assertEquals(processInstance.getProcessCompletion().get().getCompletedAt(), processContext.getProcessCompletion().getCompletedAt());
     }
 
     @Test

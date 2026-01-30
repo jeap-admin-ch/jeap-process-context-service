@@ -1,6 +1,6 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot;
 
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 
 /**
  * Decide if a snapshot should be created or not given a certain process context.
@@ -14,6 +14,6 @@ import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
  */
 public interface ProcessSnapshotCondition {
 
-    ProcessSnapshotConditionResult triggerSnapshot(ProcessContext processContext);
+    ProcessSnapshotConditionResult triggerSnapshot(ProcessInstance processInstance);
 
 }

@@ -3,14 +3,13 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotCondition;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskCardinality;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskLifecycle;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotCondition;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletion;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
 import com.fasterxml.uuid.Generators;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -401,7 +400,7 @@ class ProcessInstanceTest {
     static class AlwaysTrueProcessSnapshotCondition implements ProcessSnapshotCondition {
         static final String SNAPSHOT_CONDITION_NAME = "AlwaysTrueCondition";
         @Override
-        public ProcessSnapshotConditionResult triggerSnapshot(ProcessContext processContext) {
+        public ProcessSnapshotConditionResult triggerSnapshot(ProcessInstance processInstance) {
             return ProcessSnapshotConditionResult.triggeredFor("AlwaysTrueCondition");
         }
     }

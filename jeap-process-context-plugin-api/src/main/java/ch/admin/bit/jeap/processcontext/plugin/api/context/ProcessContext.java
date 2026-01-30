@@ -24,9 +24,6 @@ public final class ProcessContext {
     private final ProcessState processState;
 
     @Getter
-    private final ProcessCompletion processCompletion;
-
-    @Getter
     private final List<Task> tasks;
 
     @Getter
@@ -51,7 +48,6 @@ public final class ProcessContext {
         if ((processState == ProcessState.COMPLETED) && (processCompletion == null)) {
             throw new IllegalArgumentException("Process completion must be provided for a process in completed state.");
         }
-        this.processCompletion = processCompletion;
         this.tasksByName = tasks.stream()
                 .collect(groupingBy(task -> task.getType().getName()));
         this.messagesByName = messages.stream()

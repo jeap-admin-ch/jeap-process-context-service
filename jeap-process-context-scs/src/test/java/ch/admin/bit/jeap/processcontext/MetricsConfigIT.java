@@ -55,7 +55,7 @@ class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessId);
         assertProcessInstanceCompleted(originProcessId);
-        assertSnapshotCreatedEvents(1);
+        assertSnapshotCreatedEvent(1);
         Awaitility.await()
                 .atMost(TIMEOUT)
                 .pollInterval(Duration.ofSeconds(2))

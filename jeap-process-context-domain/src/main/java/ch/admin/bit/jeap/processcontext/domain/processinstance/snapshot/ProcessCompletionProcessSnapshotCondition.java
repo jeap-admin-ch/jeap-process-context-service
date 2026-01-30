@@ -1,10 +1,12 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
+import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletion;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
 import lombok.Getter;
 
-import static ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult.*;
+import static ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult.NOT_TRIGGERED;
+import static ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult.triggeredFor;
 
 @Getter
 public class ProcessCompletionProcessSnapshotCondition implements ProcessSnapshotCondition {
@@ -22,8 +24,8 @@ public class ProcessCompletionProcessSnapshotCondition implements ProcessSnapsho
     private final ProcessCompletionConclusion triggeringConclusion;
 
     @Override
-    public ProcessSnapshotConditionResult triggerSnapshot(ProcessContext processContext) {
-        if (processContext.getProcessCompletion() == null) {
+    public ProcessSnapshotConditionResult triggerSnapshot(ProcessInstance processInstance) {
+        if (processInstance.getProcessCompletion().isEmpty()) {
             // process not yet completed
             return NOT_TRIGGERED;
         }
@@ -34,11 +36,11 @@ public class ProcessCompletionProcessSnapshotCondition implements ProcessSnapsho
         }
 
         // trigger on given completion conclusion
-        if (processContext.getProcessCompletion().getConclusion() == triggeringConclusion) {
+        ProcessCompletion processCompletion = processInstance.getProcessCompletion().orElseThrow();
+        if (processCompletion.getConclusion() == triggeringConclusion) {
             return triggeredFor(SNAPSHOT_CONDITION_NAME + ":" + triggeringConclusion.name());
         } else {
             return NOT_TRIGGERED;
         }
     }
-
 }

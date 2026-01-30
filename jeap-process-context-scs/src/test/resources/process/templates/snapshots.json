@@ -22,11 +22,6 @@
   "snapshots": [
     {
       "createdOn" : {
-        "condition" : "ch.admin.bit.jeap.processcontext.processsnapshot.TestEvent1ReceivedProcessSnapshotCondition"
-      }
-    },
-    {
-      "createdOn" : {
         "completion": "any"
       }
     }

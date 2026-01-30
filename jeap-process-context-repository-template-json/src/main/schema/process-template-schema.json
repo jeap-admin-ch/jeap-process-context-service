@@ -366,9 +366,6 @@
     "snapshotCondition": {
       "type": "object",
       "properties": {
-        "condition": {
-          "type": "string"
-        },
         "completion": {
           "type": "string"
         }

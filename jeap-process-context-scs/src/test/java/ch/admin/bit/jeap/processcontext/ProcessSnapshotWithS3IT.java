@@ -69,7 +69,7 @@ class ProcessSnapshotWithS3IT extends ProcessInstanceITBase {
     @WithAuthentication("viewAndCreateRoleToken")
     void testCreateSnapshots() {
         // start a new process
-        // send Test1Event that creates the process and fulfills the programmatic snapshot condition
+        // send Test1Event that creates the process
         sendTest1Event("trigger");
         assertProcessInstanceCreated(originProcessId, "snapshots");
         assertMessageCount(originProcessId, "Test1Event", 1);
@@ -81,20 +81,15 @@ class ProcessSnapshotWithS3IT extends ProcessInstanceITBase {
         // wait for the process to complete
         assertProcessInstanceCompleted(originProcessId);
 
-        // assert that two process snapshot versions have been created
+        // assert that a process snapshot version has been created
         Optional<SerializedProcessSnapshotArchiveData> snapshotV1Optional = s3ProcessSnapshotRepository.loadSnapshot(originProcessId, 1);
         assertThat(snapshotV1Optional).isPresent();
         SerializedProcessSnapshotArchiveData snapshotV1 = snapshotV1Optional.get();
         assertThat(snapshotV1.getSerializedProcessSnapshot()).isNotEmpty();
         assertThat(snapshotV1.getMetadata().getSnapshotVersion()).isEqualTo(1);
-        Optional<SerializedProcessSnapshotArchiveData> snapshotV2Optional = s3ProcessSnapshotRepository.loadSnapshot(originProcessId, 2);
-        assertThat(snapshotV2Optional).isPresent();
-        SerializedProcessSnapshotArchiveData snapshotV2 = snapshotV2Optional.get();
-        assertThat(snapshotV2.getSerializedProcessSnapshot()).isNotEmpty();
-        assertThat(snapshotV2.getMetadata().getSnapshotVersion()).isEqualTo(2);
 
-        // Snapshot created events should have been published for the two snapshot versions
-        assertSnapshotCreatedEvents(1, 2);
+        // A snapshot created event should have been published for the snapshot version
+        assertSnapshotCreatedEvent(1);
 
         // Clear database
         String processId = this.originProcessId;

@@ -150,12 +150,10 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
                 });
     }
 
-    protected void assertSnapshotCreatedEvents(int... snapshotVersions) {
-        for (int snapshotVersion : snapshotVersions) {
+    protected void assertSnapshotCreatedEvent(int snapshotVersion) {
             processSnapshotCreatedEventListener
                     .awaitEvent(e -> originProcessId.equals(e.getProcessId()) &&
                             (e.getReferences().getReference().getSnapshotVersion() == snapshotVersion));
-        }
     }
 
     protected void assertProcessInstanceCreated(String originProcessId, String processName) {
