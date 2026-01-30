@@ -16,6 +16,7 @@ import org.springframework.kafka.core.KafkaAdmin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 @Configuration
@@ -40,6 +41,7 @@ public class TopicConfiguration {
     @Configuration
     @Profile("!local")
     @RequiredArgsConstructor
+    @Slf4j
     @SuppressWarnings({"unused", "java:S3985"}) // Class is used as spring configuration even if not public
     private static class TopicConfigurationCloud {
 
@@ -61,7 +63,14 @@ public class TopicConfiguration {
                     // The notification of a snapshot creation requires the following topic
                     topicNames.add(topicConfiguration.getProcessSnapshotCreated());
                 }
-                adminClient.describeTopics(topicNames).allTopicNames().get();
+                for (String topicName : topicNames) {
+                    try {
+                        adminClient.describeTopics(Set.of(topicName)).allTopicNames().get();
+                    } catch (Exception e) {
+                        log.error("Topic {} does not exist, please check your configuration or create the topic", topicName);
+                        throw e;
+                    }
+                }
             }
         }
     }
