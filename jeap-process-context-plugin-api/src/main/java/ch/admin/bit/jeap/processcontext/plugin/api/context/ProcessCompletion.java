@@ -6,6 +6,7 @@ import lombok.Value;
 
 import java.time.ZonedDateTime;
 
+// TODO Remove
 @Value
 @Builder
 public class ProcessCompletion {

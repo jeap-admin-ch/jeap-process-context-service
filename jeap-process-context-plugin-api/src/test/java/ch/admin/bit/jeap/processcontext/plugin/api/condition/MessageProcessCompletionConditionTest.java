@@ -19,7 +19,7 @@ class MessageProcessCompletionConditionTest {
     private static final String COMPLETING_NAME = "Completed because of som reason";
 
     @Test
-    void testIsCompleted_whenCompletingDomainEventInProcessContext_thenCompleted()  {
+    void testIsCompleted_whenCompletingDomainEventInProcessContext_thenCompleted() {
         ProcessContext processContext = createProcessContextWithEvents(List.of(OTHER_DOMAIN_EVENT_NAME_1, COMPLETING_DOMAIN_EVENT_NAME, OTHER_DOMAIN_EVENT_NAME_2));
         MessageProcessCompletionCondition condition =
                 new MessageProcessCompletionCondition(COMPLETING_DOMAIN_EVENT_NAME, COMPLETING_CONCLUSION, COMPLETING_NAME);
@@ -34,10 +34,10 @@ class MessageProcessCompletionConditionTest {
     }
 
     @Test
-    void testIsCompleted_whenCompletingDomainEventNotInProcessContext_thenUncompleted()  {
+    void testIsCompleted_whenCompletingDomainEventNotInProcessContext_thenUncompleted() {
         ProcessContext processContext = createProcessContextWithEvents(List.of(OTHER_DOMAIN_EVENT_NAME_1, OTHER_DOMAIN_EVENT_NAME_2));
         MessageProcessCompletionCondition condition =
-                new MessageProcessCompletionCondition(COMPLETING_DOMAIN_EVENT_NAME, COMPLETING_CONCLUSION,  COMPLETING_NAME);
+                new MessageProcessCompletionCondition(COMPLETING_DOMAIN_EVENT_NAME, COMPLETING_CONCLUSION, COMPLETING_NAME);
 
         ProcessCompletionConditionResult result = condition.isProcessCompleted(processContext);
 
@@ -47,7 +47,7 @@ class MessageProcessCompletionConditionTest {
     }
 
     @Test
-    void testIsCompleted_whenNoDomainEventInProcessContext_thenUncompleted()  {
+    void testIsCompleted_whenNoDomainEventInProcessContext_thenUncompleted() {
         ProcessContext processContext = createProcessContextWithEvents(List.of());
         MessageProcessCompletionCondition condition =
                 new MessageProcessCompletionCondition(COMPLETING_DOMAIN_EVENT_NAME, COMPLETING_CONCLUSION, null);
@@ -62,12 +62,10 @@ class MessageProcessCompletionConditionTest {
     private ProcessContext createProcessContextWithEvents(List<String> messageNames) {
         List<Message> messages = messageNames.stream().map(name -> Message.builder().name(name).build()).toList();
         return ProcessContext.builder()
-                    .originProcessId("id")
-                    .processName("name")
-                    .processState(ProcessState.STARTED)
+                .originProcessId("id")
+                .processName("name")
+                .processState(ProcessState.STARTED)
                 .messages(messages)
-                    .tasks(List.of())
-                    .build();
+                .build();
     }
-
 }

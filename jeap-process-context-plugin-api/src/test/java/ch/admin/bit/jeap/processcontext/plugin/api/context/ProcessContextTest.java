@@ -1,40 +1,14 @@
 package ch.admin.bit.jeap.processcontext.plugin.api.context;
 
-import com.fasterxml.uuid.Generators;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProcessContextTest {
-
-    @Test
-    void isTasksInState() {
-        ProcessContext processContext = createProcessContextWithTasks(
-                createTask("name", TaskState.COMPLETED),
-                createTask("name", TaskState.COMPLETED),
-                createTask("other", TaskState.PLANNED));
-
-        assertTrue(processContext.isTasksInState("name", TaskState.COMPLETED));
-    }
-
-    @Test
-    void isTasksInState_whenNoTaskWithThisName_thenReturnFalse() {
-        ProcessContext processContext = createProcessContextWithTasks();
-
-        assertFalse(processContext.isTasksInState("name", TaskState.COMPLETED));
-    }
-
-    @Test
-    void isTasksInState_whenNotTasksInExpectedState_thenReturnFalse() {
-        ProcessContext processContext = createProcessContextWithTasks(
-                createTask("name", TaskState.COMPLETED),
-                createTask("name", TaskState.PLANNED));
-
-        assertFalse(processContext.isTasksInState("name", TaskState.COMPLETED));
-    }
 
     @Test
     void getEventsByName() {
@@ -57,20 +31,6 @@ class ProcessContextTest {
         assertTrue(messages.isEmpty());
     }
 
-    private static Task createTask(String name, TaskState state) {
-        TaskType taskType = TaskType.builder()
-                .name(name)
-                .lifecycle(TaskLifecycle.STATIC)
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .build();
-        return Task.builder()
-                .type(taskType)
-                .state(state)
-                .originTaskId("id")
-                .id(Generators.timeBasedEpochGenerator().generate().toString())
-                .build();
-    }
-
     private Message createMessage(String name, Set<String> originTaskIds) {
         return Message.builder()
                 .name(name)
@@ -78,20 +38,15 @@ class ProcessContextTest {
                 .build();
     }
 
-    private static ProcessContext createProcessContextWithTasks(Task... tasks) {
-        return createProcessContext(List.of(tasks), List.of());
-    }
-
     private static ProcessContext createProcessContextWithEvents(Message... messages) {
-        return createProcessContext(List.of(), List.of(messages));
+        return createProcessContext(List.of(messages));
     }
 
-    private static ProcessContext createProcessContext(List<Task> tasks, List<Message> events) {
+    private static ProcessContext createProcessContext(List<Message> events) {
         return ProcessContext.builder()
                 .originProcessId("id")
                 .processName("name")
                 .processState(ProcessState.STARTED)
-                .tasks(tasks)
                 .messages(events)
                 .build();
     }

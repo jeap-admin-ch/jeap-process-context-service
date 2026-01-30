@@ -7,8 +7,13 @@ public class AllTasksInFinalStateProcessCompletionCondition implements ProcessCo
 
     @Override
     public ProcessCompletionConditionResult isProcessCompleted(ProcessContext processContext) {
-        boolean hasTasks = !processContext.getTasks().isEmpty();
-        boolean completed = hasTasks && processContext.getTasks().stream().allMatch(task -> task.getState().isFinalState());
+
+        boolean completed = false;
+        // TODO return processContext.allTasksInFinalState() when available
+
+        // boolean hasTasks = !processContext.getTasks().isEmpty();
+        // boolean completed = hasTasks && processContext.getTasks().stream().allMatch(task -> task.getState().isFinalState());
+
         if (completed) {
             return ProcessCompletionConditionResult.completedBuilder()
                     .conclusion(ProcessCompletionConclusion.SUCCEEDED)

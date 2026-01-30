@@ -1,8 +1,8 @@
 package ch.admin.bit.jeap.processcontext.domain.processtemplate;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.AllTasksInFinalStateProcessCompletionCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessCompletionCondition;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotCondition;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -80,6 +80,7 @@ public final class ProcessTemplate {
         this.relationSystemId = relationSystemId;
         this.relationPatterns = Objects.requireNonNullElseGet(relationPatterns, List::of);
         if ((processCompletionConditions == null) || processCompletionConditions.isEmpty()) {
+            // TODO: Null object pattern? Or how to avoid the list of tasks, method allTasksComplete() on ProcessContext?
             this.processCompletionConditions = List.of(new AllTasksInFinalStateProcessCompletionCondition());
         } else {
             this.processCompletionConditions = List.copyOf(processCompletionConditions);

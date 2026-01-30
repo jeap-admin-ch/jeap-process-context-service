@@ -5,8 +5,7 @@ import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.TaskState;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.*;
+import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -14,17 +13,16 @@ import java.time.ZonedDateTime;
 import java.util.*;
 
 import static java.util.stream.Collectors.toSet;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ProcessContextFactoryTest {
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     void createProcessContext() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
         String templateName = processInstance.getProcessTemplateName();
         Set<String> taskNames =  Set.of("taskId1", "taskId2");
-        TaskInstance taskInstance = processInstance.getTasks().getFirst();
         Message domainMessage = Message.messageBuilder()
                 .messageName("event")
                 .messageId("eventId")
@@ -54,13 +52,6 @@ class ProcessContextFactoryTest {
         assertEquals(messageData.getKey(), eventDataFromAPI.getKey());
         assertEquals(messageData.getValue(), eventDataFromAPI.getValue());
         assertNull(messageData.getRole());
-
-        assertEquals(1, processContext.getTasks().size());
-        Task processContextTask = processContext.getTasks().getFirst();
-        assertEquals(taskInstance.requireTaskType().getName(), processContextTask.getType().getName());
-        assertEquals(taskInstance.requireTaskType().getCardinality().name(), processContextTask.getType().getCardinality().name());
-        assertEquals(taskInstance.getState().name(), processContextTask.getState().name());
-        assertEquals(taskInstance.getOriginTaskId(), processContextTask.getOriginTaskId().orElseThrow());
     }
 
     @Test
@@ -86,36 +77,12 @@ class ProcessContextFactoryTest {
     }
 
     @Test
-    void allTaskCardinalitiesMappedInApi() {
-        Set<String> domainCardinalityNames = Arrays.stream(ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskCardinality.values())
-                .map(Enum::name)
-                .collect(toSet());
-
-        domainCardinalityNames.forEach(TaskCardinality::valueOf);
-
-        assertEquals(TaskCardinality.values().length, domainCardinalityNames.size());
-    }
-
-    @Test
-    void allTaskLifecyclesMappedInApi() {
-        Set<String> domainLifecycleNames = Arrays.stream(ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskLifecycle.values())
-                .map(Enum::name)
-                .collect(toSet());
-
-        domainLifecycleNames.forEach(TaskLifecycle::valueOf);
-
-        assertEquals(TaskLifecycle.values().length, domainLifecycleNames.size());
-    }
-
-    @Test
     void allProcessConclusionsMappedInApi() {
         Set<String> processCompletionConclusionNames = Arrays.stream(ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion.values())
                 .map(Enum::name)
                 .collect(toSet());
 
         processCompletionConclusionNames.forEach(ProcessCompletionConclusion::valueOf);
-
-        assertEquals(TaskLifecycle.values().length, processCompletionConclusionNames.size());
     }
 
     @Test
@@ -134,7 +101,6 @@ class ProcessContextFactoryTest {
         assertEquals(processInstance.getProcessTemplate().getName(), processContext.getProcessName());
         assertEquals(processInstance.getState().name(), processContext.getProcessState().name());
         assertEquals(2, processInstance.getTasks().size());
-        assertEquals(1, processContext.getTasks().size());
     }
 
     @Test
