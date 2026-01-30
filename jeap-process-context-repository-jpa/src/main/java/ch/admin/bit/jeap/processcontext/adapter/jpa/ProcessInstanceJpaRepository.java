@@ -29,22 +29,22 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
                     """;
 
     String FIND_MESSAGE_REFERENCES_MESSAGE_DATA_QUERY = """
-            select r.id as messageReferenceId, d.key as messageDataKey, d.value as messageDataValue, d.role as messageDataRole
-                from ProcessInstance p join p.messageReferences r join events e on e.id = r.messageId join e.messageData d
-        where p.id = :processInstanceId and d.templateName = p.processTemplateName
-        """;
+                select r.id as messageReferenceId, d.key as messageDataKey, d.value as messageDataValue, d.role as messageDataRole
+                    from ProcessInstance p join p.messageReferences r join events e on e.id = r.messageId join e.messageData d
+            where p.id = :processInstanceId and d.templateName = p.processTemplateName
+            """;
 
     String FIND_MESSAGE_REFERENCES_RELATED_ORIGIN_TASK_IDS_QUERY = """
-            select r.id as messageReferenceId, oti.originTaskId as relatedOriginTaskId
-            from ProcessInstance p join p.messageReferences r join events e on e.id = r.messageId join e.originTaskIds oti
-        where p.id = :processInstanceId and oti.templateName = p.processTemplateName
-        """;
+                select r.id as messageReferenceId, oti.originTaskId as relatedOriginTaskId
+                from ProcessInstance p join p.messageReferences r join events e on e.id = r.messageId join e.originTaskIds oti
+            where p.id = :processInstanceId and oti.templateName = p.processTemplateName
+            """;
 
     String FIND_MESSAGE_REFERENCES_MESSAGES_QUERY = """
-                select r.id as messageReferenceId, e.id as messageId, e.messageName as messageName, e.createdAt as messageReceivedAt, e.messageCreatedAt as messageCreatedAt, e.traceId as traceId
-            from ProcessInstance p join p.messageReferences r join events e on e.id = r.messageId
-        where p.id = :processInstanceId
-        """;
+                    select r.id as messageReferenceId, e.id as messageId, e.messageName as messageName, e.createdAt as messageReceivedAt, e.messageCreatedAt as messageCreatedAt, e.traceId as traceId
+                from ProcessInstance p join p.messageReferences r join events e on e.id = r.messageId
+            where p.id = :processInstanceId
+            """;
 
     boolean existsByOriginProcessId(String originProcessId);
 
@@ -151,10 +151,21 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
      * @return true if all tasks are in a final state and at least one task exists, false otherwise
      */
     @Query("""
-            SELECT CASE WHEN COUNT(t) = SUM(CASE WHEN t.state IN ('COMPLETED', 'NOT_REQUIRED', 'DELETED') THEN 1 ELSE 0 END) \
-            THEN true ELSE false END \
-            FROM TaskInstance t \
-            WHERE t.processInstance.id = :processInstanceId\
+            select case when
+            exists (
+                  select 1
+                  from TaskInstance t
+                  where t.processInstance.id = :processInstanceId
+            )
+            and not exists (
+                  select 1
+                  from TaskInstance t2
+                  where t2.processInstance.id = :processInstanceId
+                    and t2.state not in ('COMPLETED', 'NOT_REQUIRED', 'DELETED')
+            )
+            then true else false end
+            from ProcessInstance p
+            where p.id = :processInstanceId
             """)
     boolean isAllTasksInFinalState(UUID processInstanceId);
 }
