@@ -9,7 +9,7 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationPa
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessCompletionConditionResult;
-import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessSnapshotConditionResult;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
 import com.fasterxml.uuid.Generators;
 import jakarta.persistence.*;

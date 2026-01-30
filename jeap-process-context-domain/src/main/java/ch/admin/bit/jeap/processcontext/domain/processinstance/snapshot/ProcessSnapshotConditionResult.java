@@ -1,9 +1,8 @@
-package ch.admin.bit.jeap.processcontext.plugin.api.condition;
+package ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot;
 
 
 import io.micrometer.common.util.StringUtils;
 import lombok.*;
-
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)

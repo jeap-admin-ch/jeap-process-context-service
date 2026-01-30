@@ -1,4 +1,4 @@
-package ch.admin.bit.jeap.processcontext.plugin.api.condition;
+package ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot;
 
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletion;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;

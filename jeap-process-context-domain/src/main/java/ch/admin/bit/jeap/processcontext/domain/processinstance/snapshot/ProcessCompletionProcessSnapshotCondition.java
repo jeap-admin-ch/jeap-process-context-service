@@ -1,11 +1,10 @@
-package ch.admin.bit.jeap.processcontext.plugin.api.condition;
+package ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot;
 
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
 import lombok.Getter;
 
-import static ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessSnapshotConditionResult.NOT_TRIGGERED;
-import static ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessSnapshotConditionResult.triggeredFor;
+import static ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult.*;
 
 @Getter
 public class ProcessCompletionProcessSnapshotCondition implements ProcessSnapshotCondition {

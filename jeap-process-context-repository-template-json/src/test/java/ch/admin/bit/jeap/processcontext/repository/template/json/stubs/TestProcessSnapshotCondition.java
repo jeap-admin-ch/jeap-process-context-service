@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.processcontext.repository.template.json.stubs;
 
-import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessSnapshotCondition;
-import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessSnapshotConditionResult;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotCondition;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
 
 

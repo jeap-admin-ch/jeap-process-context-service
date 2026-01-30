@@ -1,5 +1,7 @@
 package ch.admin.bit.jeap.processcontext.repository.template.json.deserializer;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessCompletionProcessSnapshotCondition;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotCondition;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.*;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;

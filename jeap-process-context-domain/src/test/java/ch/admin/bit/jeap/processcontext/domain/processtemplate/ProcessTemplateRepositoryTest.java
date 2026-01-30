@@ -1,6 +1,6 @@
 package ch.admin.bit.jeap.processcontext.domain.processtemplate;
 
-import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessSnapshotCondition;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotCondition;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
