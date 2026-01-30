@@ -45,7 +45,7 @@ class MessageService implements MessageReceiver {
     private final TraceContextProvider traceContextProvider;
 
     @EventListener
-    public void onAppStarted(ApplicationStartedEvent event) {
+    public void onAppStarted(ApplicationStartedEvent ignored) {
         startDomainEventListeners();
     }
 
@@ -228,7 +228,6 @@ class MessageService implements MessageReceiver {
         return messageData;
     }
 
-    @SuppressWarnings("removal")
     private Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> getMessageDataFromPayload(ch.admin.bit.jeap.messaging.model.Message message, MessageReference messageReference) {
         Optional<? extends MessagePayload> optionalPayload = message.getOptionalPayload();
         if (optionalPayload.isEmpty()) {
@@ -236,11 +235,8 @@ class MessageService implements MessageReceiver {
         }
         PayloadExtractor<MessagePayload> payloadExtractor = messageReference.getPayloadExtractor();
         MessagePayload payload = optionalPayload.get();
-        Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> eventData = payloadExtractor
-                .getEventData(payload)
-                .stream()
-                .map(ch.admin.bit.jeap.processcontext.plugin.api.event.EventData::toMessageData)
-                .collect(toSet());
+        Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> eventData = new HashSet<>(payloadExtractor
+                .getMessageData(payload));
         Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> messageData = payloadExtractor.getMessageData(payload);
         Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> data = new HashSet<>(messageData);
         data.addAll(eventData);
@@ -248,21 +244,16 @@ class MessageService implements MessageReceiver {
         return data;
     }
 
-    @SuppressWarnings("removal")
     private Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> getMessageDataFromReferences(ch.admin.bit.jeap.messaging.model.Message message, MessageReference messageReference) {
         MessageReferences messageReferences = message.getOptionalReferences().orElse(null);
         if (messageReferences == null) {
             return emptySet();
         }
         ReferenceExtractor<MessageReferences> referenceExtractor = messageReference.getReferenceExtractor();
-        Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> eventData = referenceExtractor
-                .getEventData(messageReferences)
-                .stream()
-                .map(ch.admin.bit.jeap.processcontext.plugin.api.event.EventData::toMessageData)
-                .collect(toSet());
+        Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> eventData = new HashSet<>(referenceExtractor
+                .getMessageData(messageReferences));
 
-        Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> messageData = referenceExtractor.getMessageData(messageReferences);
-        Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> data = new HashSet<>(messageData);
+        Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> data = new HashSet<>(referenceExtractor.getMessageData(messageReferences));
         data.addAll(eventData);
         log.debug("Message data extracted from reference of message {}: {}", message.getType().getName(), data);
         return data;

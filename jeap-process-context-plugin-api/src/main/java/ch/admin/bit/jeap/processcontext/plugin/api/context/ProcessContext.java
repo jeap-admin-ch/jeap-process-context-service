@@ -11,7 +11,6 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.groupingBy;
 
-@SuppressWarnings("removal")
 public final class ProcessContext {
 
     @Getter
@@ -55,16 +54,6 @@ public final class ProcessContext {
     }
 
     /**
-     * @deprecated Replaced by {@link #getMessages()}
-     */
-    @Deprecated(since = "7.0.0", forRemoval = true)
-    public List<Event> getEvents() {
-        return messages.stream()
-                .map(message -> new Event(message.getName(), message.getRelatedOriginTaskIds(), message.getMessageData()))
-                .toList();
-    }
-
-    /**
      * @param name          the name of the task
      * @param expectedState the expected state
      * @return true if at least one task with this name exists, and all tasks of this type are in the expected state
@@ -77,17 +66,6 @@ public final class ProcessContext {
 
     public List<Task> getTasksByName(String name) {
         return tasksByName.getOrDefault(name, Collections.emptyList());
-    }
-
-    /**
-     * @deprecated Replaced by {@link #getMessagesByName(String)}
-     */
-    @Deprecated(since = "7.0.0", forRemoval = true)
-    public List<Event> getEventsByName(String name) {
-        return messagesByName.getOrDefault(name, List.of())
-                .stream()
-                .map(message -> new Event(message.getName(), message.getRelatedOriginTaskIds(), message.getMessageData()))
-                .toList();
     }
 
     /**
