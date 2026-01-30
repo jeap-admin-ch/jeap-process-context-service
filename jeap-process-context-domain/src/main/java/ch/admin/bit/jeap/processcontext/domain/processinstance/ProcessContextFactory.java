@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextImpl;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessState;
 import lombok.experimental.UtilityClass;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 class ProcessContextFactory {
 
     ProcessContext createProcessContext(ProcessInstance processInstance) {
-        return ProcessContext.builder()
+        return ProcessContextImpl.builder()
                 .originProcessId(processInstance.getOriginProcessId())
                 .processName(processInstance.getProcessTemplateName())
                 .processState(ProcessState.valueOf(processInstance.getState().name()))

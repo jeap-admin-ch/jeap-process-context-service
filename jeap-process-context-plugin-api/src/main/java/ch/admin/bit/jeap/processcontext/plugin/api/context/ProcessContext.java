@@ -1,44 +1,22 @@
 package ch.admin.bit.jeap.processcontext.plugin.api.context;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-
 import java.util.List;
-import java.util.Map;
 
-import static java.util.stream.Collectors.groupingBy;
+public interface ProcessContext {
 
-public final class ProcessContext {
+    String getOriginProcessId();
 
-    @Getter
-    private final String originProcessId;
+    String getProcessName();
 
-    @Getter
-    private final String processName;
+    ProcessState getProcessState();
 
-    @Getter
-    private final ProcessState processState;
+    List<Message> getMessages();
 
-    @Getter
-    private final List<Message> messages;
-
-    private final Map<String, List<Message>> messagesByName;
-
-    @Builder
-    private ProcessContext(@NonNull String originProcessId,
-                           @NonNull String processName,
-                           @NonNull ProcessState processState,
-                           @NonNull List<Message> messages) {
-        this.originProcessId = originProcessId;
-        this.processName = processName;
-        this.processState = processState;
-        this.messages = messages;
-        this.messagesByName = messages.stream()
-                .collect(groupingBy(Message::getName));
-    }
-
-    public List<Message> getMessagesByName(String messageName) {
-        return messagesByName.getOrDefault(messageName, List.of());
-    }
+    /**
+     * Get all messages with the given name.
+     *
+     * @param messageName Name of the messages to retrieve
+     * @return List of messages with the given name. If no message with the given name exists, an empty list is returned.
+     */
+    List<Message> getMessagesByName(String messageName);
 }

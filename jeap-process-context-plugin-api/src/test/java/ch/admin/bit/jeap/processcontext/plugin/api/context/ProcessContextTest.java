@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.plugin.api.context;
 
+import ch.admin.bit.jeap.processcontext.plugin.api.context.test.ProcessContextStub;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -43,7 +44,7 @@ class ProcessContextTest {
     }
 
     private static ProcessContext createProcessContext(List<Message> events) {
-        return ProcessContext.builder()
+        return ProcessContextStub.builder()
                 .originProcessId("id")
                 .processName("name")
                 .processState(ProcessState.STARTED)

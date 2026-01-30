@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.processcontext.plugin.api.context.Message;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessState;
+import ch.admin.bit.jeap.processcontext.plugin.api.context.test.ProcessContextStub;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -61,7 +62,7 @@ class MessageProcessCompletionConditionTest {
 
     private ProcessContext createProcessContextWithEvents(List<String> messageNames) {
         List<Message> messages = messageNames.stream().map(name -> Message.builder().name(name).build()).toList();
-        return ProcessContext.builder()
+        return ProcessContextStub.builder()
                 .originProcessId("id")
                 .processName("name")
                 .processState(ProcessState.STARTED)
