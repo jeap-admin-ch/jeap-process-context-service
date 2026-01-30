@@ -1,8 +1,8 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletion;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletion;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
 import lombok.Getter;
 
 import static ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult.NOT_TRIGGERED;

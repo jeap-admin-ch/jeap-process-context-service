@@ -2,7 +2,7 @@ package ch.admin.bit.jeap.processcontext.adapter.restapi.model;
 
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessSnapshot;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletion;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletion;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

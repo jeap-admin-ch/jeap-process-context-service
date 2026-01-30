@@ -1,8 +1,8 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletion;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletion;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
@@ -58,11 +58,10 @@ class ProcessCompletionProcessSnapshotConditionTest {
     private ProcessInstance createProcessContext(ProcessCompletionConclusion conclusion) {
         ProcessCompletion processCompletion = null;
         if (conclusion != null) {
-            processCompletion = ProcessCompletion.builder().
-                    conclusion(conclusion).
-                    name(conclusion.name()).
-                    completedAt(ZonedDateTime.now()).
-                    build();
+            processCompletion = new ProcessCompletion();
+            processCompletion.setConclusion(conclusion);
+            processCompletion.setName(conclusion.name());
+            processCompletion.setCompletedAt(ZonedDateTime.now());
         }
         ProcessInstance instance = mock(ProcessInstance.class);
         when(instance.getProcessCompletion())

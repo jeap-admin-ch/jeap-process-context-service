@@ -9,7 +9,6 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskCardinality;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskLifecycle;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletion;
 import com.fasterxml.uuid.Generators;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;

@@ -10,7 +10,6 @@ import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationVi
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
-import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletion;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

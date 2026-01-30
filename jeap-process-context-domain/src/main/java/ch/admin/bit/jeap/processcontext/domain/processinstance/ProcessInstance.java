@@ -4,12 +4,12 @@ import ch.admin.bit.jeap.processcontext.domain.MutableDomainEntity;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessDataTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationPattern;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessCompletionConditionResult;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
 import com.fasterxml.uuid.Generators;
 import jakarta.persistence.*;
@@ -219,18 +219,13 @@ public class ProcessInstance extends MutableDomainEntity {
         return originTaskIds.stream().map(OriginTaskId::getOriginTaskId).collect(toSet());
     }
 
-    public Optional<ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletion> getProcessCompletion() {
+    public Optional<ProcessCompletion> getProcessCompletion() {
         ProcessCompletion reportedCompletion = processCompletion;
         if ((state == ProcessState.COMPLETED) && (reportedCompletion == null)) {
             // this is an 'old' process instance that completed without setting completion data -> create derived completion data
             reportedCompletion = new ProcessCompletion(SUCCEEDED, "All tasks completed.", getModifiedAt());
         }
-        return Optional.ofNullable(reportedCompletion).
-                map(completion -> ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletion.builder()
-                        .conclusion(ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion.valueOf(completion.getConclusion().name()))
-                        .name(completion.getName())
-                        .completedAt(completion.getCompletedAt())
-                        .build());
+        return Optional.ofNullable(reportedCompletion);
     }
 
     /**

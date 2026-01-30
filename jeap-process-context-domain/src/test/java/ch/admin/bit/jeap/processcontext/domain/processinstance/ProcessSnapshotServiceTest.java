@@ -154,7 +154,7 @@ class ProcessSnapshotServiceTest {
         when(translateService.translateTaskTypeName(templateName, taskTypeWithoutLabel.getName())).
                 thenReturn(Map.of(Language.FR.name().toLowerCase(), taskTypeDescription));
         when(processInstance.getModifiedAt()).thenReturn(processModifiedAt);
-        var processCompletion = mock(ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletion.class);
+        var processCompletion = mock(ProcessCompletion.class);
         when(processCompletion.getCompletedAt()).thenReturn(processCompletedAt);
         when(processInstance.getProcessCompletion()).thenReturn(Optional.of(processCompletion));
         when(processInstance.getProcessData()).thenReturn(Set.of(processDataWithRole, processDataWithoutRole));
