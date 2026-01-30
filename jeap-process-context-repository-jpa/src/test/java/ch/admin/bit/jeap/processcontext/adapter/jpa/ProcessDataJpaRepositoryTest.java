@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceStubs;
@@ -25,8 +26,9 @@ class ProcessDataJpaRepositoryTest {
     EntityManager entityManager;
 
     @MockitoBean
-    @SuppressWarnings("unused")
     private ProcessTemplateRepository processTemplateRepository;
+    @MockitoBean
+    private ProcessContextFactory processContextFactory;
 
     @Autowired
     private ProcessDataJpaRepository processDataJpaRepository;

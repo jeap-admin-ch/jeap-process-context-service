@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceStubs;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
@@ -27,12 +28,14 @@ class ProcessInstanceRepositoryIT {
     private ProcessTemplateRepository processTemplateRepository;
     @Autowired
     private ProcessInstanceJpaRepository processInstanceJpaRepository;
+    @MockitoBean
+    private ProcessContextFactory processContextFactory;
 
     private ProcessInstanceRepositoryImpl processInstanceRepository;
 
     @BeforeEach
     void setUp() {
-        processInstanceRepository = new ProcessInstanceRepositoryImpl(processInstanceJpaRepository, processTemplateRepository);
+        processInstanceRepository = new ProcessInstanceRepositoryImpl(processInstanceJpaRepository, processTemplateRepository, processContextFactory);
     }
 
     @Test

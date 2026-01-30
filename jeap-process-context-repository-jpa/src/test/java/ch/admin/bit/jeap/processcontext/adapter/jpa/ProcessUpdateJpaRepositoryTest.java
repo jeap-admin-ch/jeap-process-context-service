@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateType;
@@ -27,6 +28,8 @@ class ProcessUpdateJpaRepositoryTest {
 
     @MockitoBean
     private ProcessTemplateRepository processTemplateRepository;
+    @MockitoBean
+    private ProcessContextFactory processContextFactory;
     @Autowired
     private ProcessUpdateJpaRepository processUpdateJpaRepository;
     @PersistenceContext

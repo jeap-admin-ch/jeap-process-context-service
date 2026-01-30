@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextRepositoryFacade;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import com.fasterxml.uuid.Generators;
 import lombok.SneakyThrows;
@@ -44,9 +45,16 @@ public class ProcessInstanceStubs {
                 .taskTypes(singletonList(
                         taskType))
                 .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
+        ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
+        ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        repositoryFacadeStub.setProcessInstance(processInstance);
         setProcessData(processInstance, processData);
         return processInstance;
+    }
+
+    private static ProcessContextFactory createProcessContextFactory(ProcessContextRepositoryFacade repositoryFacade) {
+        return new ProcessContextFactory(repositoryFacade);
     }
 
     public ProcessInstance createProcessWithSingleTaskInstanceAndEvent() {
@@ -67,7 +75,10 @@ public class ProcessInstanceStubs {
                 .taskTypes(singletonList(
                         taskType))
                 .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
+        ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
+        ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        repositoryFacadeStub.setProcessInstance(processInstance);
         Message message = Message.messageBuilder()
                 .messageName(event)
                 .messageId("eventId")
@@ -131,7 +142,10 @@ public class ProcessInstanceStubs {
                 .relationSystemId("ch.admin.test.System")
                 .build();
 
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
+        ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
+        ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        repositoryFacadeStub.setProcessInstance(processInstance);
 
         String templateName = processInstance.getProcessTemplateName();
         MessageData messageData1 = new MessageData(templateName, "sourceEventDataKey", "someValue", "someRole");
@@ -159,7 +173,6 @@ public class ProcessInstanceStubs {
         processInstance.addMessage(anotherMessage);
         return processInstance;
     }
-
 
     @SuppressWarnings("java:S5960") // this module provides test code to be used in tests
     public static ProcessInstance createCompletedProcessInstance() {

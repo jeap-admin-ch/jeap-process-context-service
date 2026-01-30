@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessTemplateStubs;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
@@ -32,6 +33,8 @@ class ProcessInstanceRepositoryImplTest {
     @Mock
     private ProcessInstance processInstance;
     @Mock
+    private ProcessContextFactory processContextFactory;
+    @Mock
     private ProcessInstanceJpaRepository processInstanceJpaRepository;
 
     private ProcessInstanceRepositoryImpl processInstanceRepository;
@@ -51,7 +54,7 @@ class ProcessInstanceRepositoryImplTest {
 
         assertTrue(processInstanceOptional.isPresent());
         ProcessInstance processInstance = processInstanceOptional.get();
-        verify(processInstance).setProcessTemplate(same(processTemplate));
+        verify(processInstance).onAfterLoadFromPersistentState(same(processTemplate), same(processContextFactory));
         verify(processInstance).setMessageReferenceMessageDTOS(any());
     }
 
@@ -99,7 +102,6 @@ class ProcessInstanceRepositoryImplTest {
 
     @BeforeEach
     void setUp() {
-        processInstanceRepository = new ProcessInstanceRepositoryImpl(processInstanceJpaRepository, processTemplateRepository);
+        processInstanceRepository = new ProcessInstanceRepositoryImpl(processInstanceJpaRepository, processTemplateRepository, processContextFactory);
     }
-
 }

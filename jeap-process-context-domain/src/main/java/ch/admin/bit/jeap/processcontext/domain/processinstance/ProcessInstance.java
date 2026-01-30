@@ -76,6 +76,9 @@ public class ProcessInstance extends MutableDomainEntity {
     @Getter
     private ProcessTemplate processTemplate;
 
+    @Transient
+    private ProcessContextFactory processContextFactory;
+
     @Getter
     private ZonedDateTime lastCorrelationAt;
 
@@ -96,20 +99,22 @@ public class ProcessInstance extends MutableDomainEntity {
     @Convert(converter = SnapshotNameSetConverter.class)
     private SequencedSet<String> snapshotNames = new LinkedHashSet<>();
 
-    private ProcessInstance(String originProcessId, ProcessTemplate processTemplate) {
+    private ProcessInstance(String originProcessId, ProcessTemplate processTemplate, ProcessContextFactory processContextFactory) {
         Objects.requireNonNull(originProcessId, "Origin process ID is mandatory");
         Objects.requireNonNull(processTemplate, "Process template is mandatory");
+        Objects.requireNonNull(processContextFactory, "Process context factory is mandatory");
         this.originProcessId = originProcessId;
         this.processData = new HashSet<>();
         this.processRelations = new HashSet<>();
         this.processTemplate = processTemplate;
         this.processTemplateName = processTemplate.getName();
         this.processTemplateHash = processTemplate.getTemplateHash();
+        this.processContextFactory = processContextFactory;
         this.state = ProcessState.STARTED;
     }
 
-    public static ProcessInstance startProcess(String originProcessId, ProcessTemplate processTemplate) {
-        ProcessInstance processInstance = new ProcessInstance(originProcessId, processTemplate);
+    public static ProcessInstance startProcess(String originProcessId, ProcessTemplate processTemplate, ProcessContextFactory processContextFactory) {
+        ProcessInstance processInstance = new ProcessInstance(originProcessId, processTemplate, processContextFactory);
         processInstance.planInitialTasks();
         return processInstance;
     }
@@ -229,9 +234,10 @@ public class ProcessInstance extends MutableDomainEntity {
     }
 
     /**
-     * Set process template after re-loading the domain object from persistent state
+     * Set process template and process context factory after re-loading the domain object from persistent state
      */
-    public void setProcessTemplate(ProcessTemplate processTemplate) {
+    public void onAfterLoadFromPersistentState(ProcessTemplate processTemplate, ProcessContextFactory processContextFactory) {
+        this.processContextFactory = processContextFactory;
         if (this.processTemplate != null) {
             throw new IllegalStateException("Cannot set process template - already set for process " + originProcessId);
         }
@@ -244,7 +250,7 @@ public class ProcessInstance extends MutableDomainEntity {
             // final state
             return;
         }
-        final ProcessContext processContext = ProcessContextFactory.createProcessContext(this);
+        ProcessContext processContext = processContextFactory.createProcessContext(this);
         processTemplate.getProcessCompletionConditions().stream()
                 .map(condition -> condition.isProcessCompleted(processContext))
                 .filter(ProcessCompletionConditionResult::isCompleted)

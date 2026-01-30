@@ -19,4 +19,16 @@ public interface ProcessContext {
      * @return List of messages with the given name. If no message with the given name exists, an empty list is returned.
      */
     List<Message> getMessagesByName(String messageName);
+
+    /**
+     * Checks whether all tasks in the process context are in a final state. For this to be true,
+     * the following conditions must be met:
+     * <ul>
+     *   <li>the process context contains at least one task</li>
+     *   <li>all existing tasks are in a final state (COMPLETED, NOT_REQUIRED or DELETED)</li>
+     * </ul>
+     *
+     * @return
+     */
+    boolean isAllTasksInFinalState();
 }

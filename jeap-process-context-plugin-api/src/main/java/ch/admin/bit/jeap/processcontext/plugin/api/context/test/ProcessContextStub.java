@@ -31,21 +31,36 @@ public class ProcessContextStub implements ProcessContext {
 
     private final Map<String, List<Message>> messagesByName;
 
+    private final boolean allTasksCompleted;
+
     @Builder
     private ProcessContextStub(@NonNull String originProcessId,
                                @NonNull String processName,
-                               @NonNull ProcessState processState,
-                               @NonNull List<Message> messages) {
+                               ProcessState processState,
+                               List<Message> messages,
+                               boolean allTasksCompleted) {
         this.originProcessId = originProcessId;
         this.processName = processName;
+        if (processState == null) {
+            processState = ProcessState.STARTED;
+        }
         this.processState = processState;
+        if (messages == null) {
+            messages = List.of();
+        }
         this.messages = messages;
         this.messagesByName = messages.stream()
                 .collect(groupingBy(Message::getName));
+        this.allTasksCompleted = allTasksCompleted;
     }
 
     @Override
     public List<Message> getMessagesByName(String messageName) {
         return messagesByName.getOrDefault(messageName, List.of());
+    }
+
+    @Override
+    public boolean isAllTasksInFinalState() {
+        return allTasksCompleted;
     }
 }

@@ -9,7 +9,6 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskCardinality;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskLifecycle;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
-import com.fasterxml.uuid.Generators;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -42,7 +41,7 @@ class ProcessInstanceTest {
                 .taskTypes(List.of(mandatoryTaskType, multipleTaskType))
                 .build();
 
-        ProcessInstance processInstance = ProcessInstance.startProcess("id", processTemplate);
+        ProcessInstance processInstance = startProcessInstance(processTemplate);
 
         TaskInstance firstTask = processInstance.getTasks().getFirst();
         assertEquals(1, processInstance.getTasks().size());
@@ -50,6 +49,14 @@ class ProcessInstanceTest {
         assertEquals(processInstance, firstTask.getProcessInstance());
         assertEquals(mandatoryTaskType, firstTask.requireTaskType());
         assertEquals(PLANNED, firstTask.getState());
+    }
+
+    private static ProcessInstance startProcessInstance(ProcessTemplate processTemplate) {
+        ProcessContextRepositoryFacadeStub repositoryFacade = new ProcessContextRepositoryFacadeStub();
+        ProcessContextFactory processContextFactory = new ProcessContextFactory(repositoryFacade);
+        ProcessInstance processInstance = ProcessInstance.startProcess("id", processTemplate, processContextFactory);
+        repositoryFacade.setProcessInstance(processInstance);
+        return processInstance;
     }
 
     @Test
@@ -88,7 +95,7 @@ class ProcessInstanceTest {
         Optional<ProcessCompletion> completion = processInstance.getProcessCompletion();
 
         assertTrue(completion.isPresent());
-        assertEquals(ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion.SUCCEEDED, completion.get().getConclusion());
+        assertEquals(ProcessCompletionConclusion.SUCCEEDED, completion.get().getConclusion());
         assertEquals(processInstance.getModifiedAt(), completion.get().getCompletedAt());
     }
 
@@ -101,7 +108,7 @@ class ProcessInstanceTest {
         Optional<ProcessCompletion> completion = processInstance.getProcessCompletion();
 
         assertTrue(completion.isPresent());
-        assertEquals(ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion.SUCCEEDED, completion.get().getConclusion());
+        assertEquals(ProcessCompletionConclusion.SUCCEEDED, completion.get().getConclusion());
         assertNotNull(completion.get().getCompletedAt());
     }
 
@@ -125,7 +132,7 @@ class ProcessInstanceTest {
                 .templateHash("hash")
                 .taskTypes(List.of(mandatoryTaskType, dynamicTaskType))
                 .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
+        ProcessInstance processInstance = startProcessInstance(processTemplate);
 
         processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-1", ZonedDateTime.now(), null);
         processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-2", ZonedDateTime.now(), null);
@@ -157,12 +164,16 @@ class ProcessInstanceTest {
     }
 
     @Test
-    void setProcessTemplate() throws Exception {
+    void onAfterLoadFromPersistentState() throws Exception {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
         ProcessTemplate processTemplate = processInstance.getProcessTemplate();
-        setProcessTemplateToNull(processInstance);
+        ProcessContextRepositoryFacadeStub repositoryFacade = new ProcessContextRepositoryFacadeStub();
+        repositoryFacade.setProcessInstance(processInstance);
+        ProcessContextFactory processContextFactory = new ProcessContextFactory(repositoryFacade);
 
-        processInstance.setProcessTemplate(processTemplate);
+        onAfterLoadFromPersistentStateToNull(processInstance);
+
+        processInstance.onAfterLoadFromPersistentState(processTemplate, processContextFactory);
 
         assertSame(processTemplate, processInstance.getProcessTemplate());
         assertSame(processTemplate.getTaskTypeByName(ProcessInstanceStubs.singleTaskName).orElseThrow(),
@@ -172,15 +183,16 @@ class ProcessInstanceTest {
     @Test
     void setProcessTemplate_shouldThrowIfAlreadySet() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
+        ProcessContextFactory processContextFactory = new ProcessContextFactory(new ProcessContextRepositoryFacadeStub());
 
         assertThrows(IllegalStateException.class, () ->
-                processInstance.setProcessTemplate(processInstance.getProcessTemplate()));
+                processInstance.onAfterLoadFromPersistentState(processInstance.getProcessTemplate(), processContextFactory));
     }
 
     /**
      * Simulate empty template properties after loading the domain object from persistent state
      */
-    private static void setProcessTemplateToNull(ProcessInstance processInstance) throws Exception {
+    private static void onAfterLoadFromPersistentStateToNull(ProcessInstance processInstance) throws Exception {
         String fieldName = "processTemplate";
         setFieldToNull(processInstance, fieldName);
         assertNull(processInstance.getProcessTemplate());
@@ -398,6 +410,7 @@ class ProcessInstanceTest {
 
     static class AlwaysTrueProcessSnapshotCondition implements ProcessSnapshotCondition {
         static final String SNAPSHOT_CONDITION_NAME = "AlwaysTrueCondition";
+
         @Override
         public ProcessSnapshotConditionResult triggerSnapshot(ProcessInstance processInstance) {
             return ProcessSnapshotConditionResult.triggeredFor("AlwaysTrueCondition");
@@ -413,7 +426,7 @@ class ProcessInstanceTest {
                         TaskType.builder().name("new-added-single-task-type").cardinality(TaskCardinality.SINGLE_INSTANCE).lifecycle(TaskLifecycle.STATIC).build(),
                         TaskType.builder().name("new-added-dynamic-task-type").cardinality(TaskCardinality.MULTI_INSTANCE).lifecycle(TaskLifecycle.DYNAMIC).build()))
                 .build();
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
+        return startProcessInstance(processTemplate);
     }
 
     private TaskInstance createTaskInstance(String name, ProcessInstance processInstance, TaskState taskState) {

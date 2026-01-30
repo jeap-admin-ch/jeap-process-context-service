@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.port.InternalMessageProducer;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextRepositoryFacade;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference;
@@ -25,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -58,22 +58,21 @@ class ProcessInstanceServiceTest {
     private ProcessSnapshotService processSnapshotService;
     @Mock
     private RelationService relationService;
-
-    private PcsConfigProperties pcsConfigProperties;
+    @Mock
+    private ProcessContextRepositoryFacade processContextRepositoryFacade;
 
     private ProcessInstanceService target;
 
-    private PlatformTransactionManager transactionManager;
-
     @BeforeEach
     void setUp() {
-        transactionManager = mock(PlatformTransactionManager.class);
-        pcsConfigProperties = new PcsConfigProperties();
+        PlatformTransactionManager transactionManager = mock(PlatformTransactionManager.class);
+        PcsConfigProperties pcsConfigProperties = new PcsConfigProperties();
         Transactions transactions = new Transactions(transactionManager);
         MetricsListener metricsListener = new StubMetricsListener();
+        ProcessContextFactory processContextFactory = new ProcessContextFactory(processContextRepositoryFacade);
         target = new ProcessInstanceService(internalMessageProducer,
                 processUpdateQueryRepository, processInstanceRepository, processTemplateRepository, messageRepository,
-                processUpdateRepository, processSnapshotService, relationService, transactions, metricsListener, pcsConfigProperties);
+                processUpdateRepository, processSnapshotService, relationService, processContextFactory, transactions, metricsListener, pcsConfigProperties);
     }
 
     @Test

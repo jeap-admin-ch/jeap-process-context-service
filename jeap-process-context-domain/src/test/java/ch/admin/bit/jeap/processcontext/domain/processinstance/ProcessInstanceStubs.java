@@ -1,11 +1,12 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
-import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotCondition;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import com.fasterxml.uuid.Generators;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jspecify.annotations.NonNull;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -19,12 +20,6 @@ public final class ProcessInstanceStubs {
     static final String singleTaskName = "single";
     static final String dynamicTaskName = "dynamic";
     static final String task1 = "task1";
-    static final String task2 = "task2";
-
-    public static ProcessInstance createSimpleProcess() {
-        ProcessTemplate processTemplate = createSimpleProcessTemplate();
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
-    }
 
     public static ProcessTemplate createSimpleProcessTemplate() {
         TaskType taskType = TaskType.builder()
@@ -37,23 +32,6 @@ public final class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(List.of(taskType))
                 .build();
-    }
-
-    public static ProcessInstance createSimpleCompletedProcess() {
-        TaskType taskType = TaskType.builder()
-                .name(singleTaskName)
-                .lifecycle(TaskLifecycle.STATIC)
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .build();
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name("template")
-                .templateHash("hash")
-                .taskTypes(List.of(taskType))
-                .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
-        processInstance.getTasks().getFirst().complete(ZonedDateTime.now());
-        processInstance.evaluateCompletedTasks(ZonedDateTime.now());
-        return processInstance;
     }
 
     static ProcessInstance createProcessWithSingleDynamicTaskInstance() {
@@ -69,7 +47,7 @@ public final class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(List.of(taskType))
                 .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
+        ProcessInstance processInstance = startProcessInstance(processTemplate);
         processInstance.addMessage(Message.messageBuilder()
                 .messageId(UUID.randomUUID().toString())
                 .idempotenceId("idempotenceId")
@@ -93,7 +71,7 @@ public final class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(List.of(taskType))
                 .build();
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
+        return startProcessInstance(processTemplate);
     }
 
     static ProcessInstance createProcessWithSingleAndDynamicTaskInstances() {
@@ -113,7 +91,7 @@ public final class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(List.of(mandatoryTaskType, dynamicTaskType))
                 .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
+        ProcessInstance processInstance = startProcessInstance(processTemplate);
         processInstance.addMessage(Message.messageBuilder()
                 .messageId(UUID.randomUUID().toString())
                 .idempotenceId("idempotenceId")
@@ -145,7 +123,7 @@ public final class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(List.of(mandatoryTaskType, dynamicTaskType))
                 .build();
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
+        ProcessInstance processInstance = startProcessInstance(processTemplate);
         processInstance.planDomainEventTask(mandatoryTaskType, "mandatory-id", ZonedDateTime.now(), null);
         processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-1", ZonedDateTime.now(), null);
         processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-2", ZonedDateTime.now(), null);
@@ -220,7 +198,7 @@ public final class ProcessInstanceStubs {
                 .relationPatterns(List.of(relationPattern1, relationPattern2))
                 .build();
 
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
+        return startProcessInstance(processTemplate);
     }
 
     static ProcessInstance createProcessWithProcessSnapshotCondition(ProcessSnapshotCondition processSnapshotCondition) {
@@ -235,6 +213,14 @@ public final class ProcessInstanceStubs {
                 .taskTypes(List.of(taskType))
                 .processSnapshotConditions(List.of(processSnapshotCondition))
                 .build();
-        return ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate);
+        return startProcessInstance(processTemplate);
+    }
+
+    private static @NonNull ProcessInstance startProcessInstance(ProcessTemplate processTemplate) {
+        ProcessContextRepositoryFacadeStub repositoryFacade = new ProcessContextRepositoryFacadeStub();
+        ProcessContextFactory processContextFactory = new ProcessContextFactory(repositoryFacade);
+        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        repositoryFacade.setProcessInstance(processInstance);
+        return processInstance;
     }
 }

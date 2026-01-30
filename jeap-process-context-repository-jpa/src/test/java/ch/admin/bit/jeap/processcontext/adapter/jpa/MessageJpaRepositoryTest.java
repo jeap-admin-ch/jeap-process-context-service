@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageUserData;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import com.fasterxml.uuid.Generators;
 import jakarta.persistence.EntityManager;
@@ -56,6 +57,8 @@ class MessageJpaRepositoryTest {
 
     @MockitoBean
     private ProcessTemplateRepository processTemplateRepository;
+    @MockitoBean
+    private ProcessContextFactory processContextFactory;
 
     @Test
     void testSaveAndGetDomainEvent() {

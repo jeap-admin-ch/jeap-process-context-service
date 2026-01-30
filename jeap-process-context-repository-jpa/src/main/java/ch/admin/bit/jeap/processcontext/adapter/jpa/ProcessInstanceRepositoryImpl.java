@@ -22,6 +22,7 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
     private final ProcessInstanceJpaRepository processInstanceJpaRepository;
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     private final ProcessTemplateRepository processTemplateRepository;
+    private final ProcessContextFactory processContextFactory;
 
     @Override
     public ProcessInstance save(ProcessInstance processInstance) {
@@ -96,7 +97,7 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
         ProcessTemplate template = processTemplateRepository.findByName(processInstance.getProcessTemplateName())
                 .orElseThrow(ProcessTemplateNotFoundException.templateNotFound(processInstance.getOriginProcessId(), processInstance.getProcessTemplateName()));
         if (processInstance.getProcessTemplate() == null) {
-            processInstance.setProcessTemplate(template);
+            processInstance.onAfterLoadFromPersistentState(template, processContextFactory);
         } else if (!processInstance.getProcessTemplate().equals(template)) {
             throw new IllegalStateException("Cannot replace process template on process " + processInstance.getOriginProcessId() + " with a different process template");
         }

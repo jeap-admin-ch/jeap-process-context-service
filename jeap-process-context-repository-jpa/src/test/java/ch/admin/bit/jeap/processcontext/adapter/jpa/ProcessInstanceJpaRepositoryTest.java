@@ -46,8 +46,9 @@ class ProcessInstanceJpaRepositoryTest {
     @PersistenceContext
     EntityManager entityManager;
     @MockitoBean
-    @SuppressWarnings("unused")
     private ProcessTemplateRepository processTemplateRepository;
+    @MockitoBean
+    private ProcessContextFactory processContextFactory;
     @Autowired
     private ProcessInstanceJpaRepository repository;
     @Autowired

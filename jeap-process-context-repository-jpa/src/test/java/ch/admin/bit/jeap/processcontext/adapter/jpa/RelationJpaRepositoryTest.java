@@ -1,9 +1,6 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceStubs;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.Relation;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.RelationRepository;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -27,8 +24,10 @@ class RelationJpaRepositoryTest {
     EntityManager entityManager;
 
     @MockitoBean
-    @SuppressWarnings("unused")
     private ProcessTemplateRepository processTemplateRepository;
+
+    @MockitoBean
+    private ProcessContextFactory processContextFactory;
 
     @Autowired
     private RelationJpaRepository relationJpaRepository;

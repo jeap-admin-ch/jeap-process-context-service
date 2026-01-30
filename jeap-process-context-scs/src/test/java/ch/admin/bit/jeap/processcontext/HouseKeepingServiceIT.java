@@ -5,9 +5,11 @@ import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessState;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextRepositoryFacade;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskCardinality;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskLifecycle;
@@ -35,6 +37,7 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 @TestPropertySource(properties =
         "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/domain_event_triggers_process_instance_instantiation.json")
@@ -57,6 +60,9 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
 
     @Autowired
     private PlatformTransactionManager platformTransactionManager;
+
+    @Autowired
+    private ProcessContextFactory processContextFactory;
 
     @Test
     void testDeleteProcessInstances_completedProcessInstances_processInstancesDeleted() {
@@ -199,20 +205,24 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
     }
 
     private void assertPresent(List<String> originProcessIds) {
-        originProcessIds.forEach(originProcessId -> {
-            assertThat(processUpdateRepository.findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, "test", "test")).isPresent();
-        });
+        originProcessIds.forEach(originProcessId ->
+                assertThat(processUpdateRepository
+                        .findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, "test", "test"))
+                        .isPresent());
     }
 
     private void assertProcessUpdatePresent(List<String> originProcessIds) {
-        originProcessIds.forEach(originProcessId -> assertThat(processUpdateRepository.findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, "test", "test")).isPresent()
-        );
+        originProcessIds.forEach(originProcessId ->
+                assertThat(processUpdateRepository
+                        .findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, "test", "test"))
+                        .isPresent());
     }
 
     private void assertNotPresent(List<String> originProcessIds) {
-        originProcessIds.forEach(originProcessId -> {
-            assertThat(processUpdateRepository.findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, "test", "test")).isNotPresent();
-        });
+        originProcessIds.forEach(originProcessId ->
+                assertThat(processUpdateRepository
+                        .findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, "test", "test"))
+                        .isNotPresent());
     }
 
     private ProcessInstance createAndSaveProcessInstance(ProcessState processState, Duration age) {
@@ -228,7 +238,8 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
                         taskType))
                 .build();
         String originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
-        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate);
+        ProcessContextFactory processContextFactory = new ProcessContextFactory(mock(ProcessContextRepositoryFacade.class));
+        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate, processContextFactory);
         processInstanceRepository.save(processInstance);
 
         CriteriaUpdate<ProcessInstance> criteriaUpdate = entityManager.getCriteriaBuilder().createCriteriaUpdate(ProcessInstance.class);
@@ -254,22 +265,19 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
                         taskType))
                 .build();
         String originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
-        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate);
+        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate, processContextFactory);
         processInstance.addMessage(message);
         processInstanceRepository.save(processInstance);
     }
 
-    @SuppressWarnings("unchecked")
     private void assertCountProcessInstances(int count) {
         assertThat(entityManager.createQuery("select p from ProcessInstance p").getResultList()).hasSize(count);
     }
 
-    @SuppressWarnings("unchecked")
     private void assertCountEvents(int count) {
         assertThat(entityManager.createQuery("select e from events e").getResultList()).hasSize(count);
     }
 
-    @SuppressWarnings("unchecked")
     private void assertCountProcessUpdates(int count) {
         assertThat(entityManager.createQuery("select p from ProcessUpdate p").getResultList()).hasSize(count);
     }

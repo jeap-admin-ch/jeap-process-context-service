@@ -42,6 +42,7 @@ public class ProcessInstanceService {
     private final ProcessUpdateRepository processUpdateRepository;
     private final ProcessSnapshotService processSnapshotService;
     private final RelationService relationService;
+    private final ProcessContextFactory processContextFactory;
     private final Transactions transactions;
     private final MetricsListener metricsListener;
     private final PcsConfigProperties pcsConfigProperties;
@@ -49,7 +50,7 @@ public class ProcessInstanceService {
     private ProcessInstance createFromTemplate(String originProcessId, String processTemplateName) {
         ProcessTemplate processTemplate = processTemplateRepository.findByName(processTemplateName)
                 .orElseThrow(NotFoundException.templateNotFound(processTemplateName, originProcessId));
-        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate);
+        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate, processContextFactory);
 
         log.info("Creating process {} with origin process ID {} from template {}", processInstance.getId(), originProcessId, processTemplateName);
         metricsListener.processInstanceCreated(processTemplateName);
@@ -124,6 +125,7 @@ public class ProcessInstanceService {
                 metricsListener.processUpdateProcessed(processInstance.getProcessTemplate(), true, processUpdates.size());
                 return List.of();
             } catch (ProcessUpdateFailedException pufe) {
+                log.error("Failed processing a batch of process updates for process " + keyValue("originProcessId", originProcessId) + ". Rolling back the transaction to only fail the problematic update.", pufe);
                 txStatus.setRollbackOnly();
                 ProcessTemplate processTemplate = createOrLoadProcessInstance(originProcessId, processUpdates)
                         .map(ProcessInstance::getProcessTemplate)

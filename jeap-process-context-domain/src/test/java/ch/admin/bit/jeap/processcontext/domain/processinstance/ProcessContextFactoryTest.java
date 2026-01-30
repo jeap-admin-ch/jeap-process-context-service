@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextRepositoryFacade;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
@@ -15,6 +16,7 @@ import java.util.*;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
 
 class ProcessContextFactoryTest {
 
@@ -22,7 +24,7 @@ class ProcessContextFactoryTest {
     void createProcessContext() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
         String templateName = processInstance.getProcessTemplateName();
-        Set<String> taskNames =  Set.of("taskId1", "taskId2");
+        Set<String> taskNames = Set.of("taskId1", "taskId2");
         Message domainMessage = Message.messageBuilder()
                 .messageName("event")
                 .messageId("eventId")
@@ -36,7 +38,8 @@ class ProcessContextFactoryTest {
         ReflectionTestUtils.setField(processInstance, "processCompletion", new ProcessCompletion(
                 ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion.SUCCEEDED, "all good", ZonedDateTime.now()));
 
-        ProcessContext processContext = ProcessContextFactory.createProcessContext(processInstance);
+        ProcessContextFactory processContextFactory = new ProcessContextFactory(mock(ProcessContextRepositoryFacade.class));
+        ProcessContext processContext = processContextFactory.createProcessContext(processInstance);
 
         assertEquals(processInstance.getOriginProcessId(), processContext.getOriginProcessId());
         assertEquals(processInstance.getProcessTemplate().getName(), processContext.getProcessName());
@@ -96,7 +99,9 @@ class ProcessContextFactoryTest {
         tasks.add(deletedTaskInstance);
         ReflectionTestUtils.setField(processInstance, "tasks", tasks);
 
-        ProcessContext processContext = ProcessContextFactory.createProcessContext(processInstance);
+        ProcessContextFactory processContextFactory = new ProcessContextFactory(mock(ProcessContextRepositoryFacade.class));
+
+        ProcessContext processContext = processContextFactory.createProcessContext(processInstance);
         assertEquals(processInstance.getOriginProcessId(), processContext.getOriginProcessId());
         assertEquals(processInstance.getProcessTemplate().getName(), processContext.getProcessName());
         assertEquals(processInstance.getState().name(), processContext.getProcessState().name());
@@ -107,7 +112,7 @@ class ProcessContextFactoryTest {
     void createProcessContextWithMessageDataWithRole() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
         String templateName = processInstance.getProcessTemplateName();
-        Set<String> taskNames =  Set.of("taskId1", "taskId2");
+        Set<String> taskNames = Set.of("taskId1", "taskId2");
         Message domainMessage = Message.messageBuilder()
                 .messageName("event")
                 .messageId("eventId")
@@ -118,8 +123,9 @@ class ProcessContextFactoryTest {
                 .messageCreatedAt(ZonedDateTime.now())
                 .build();
         processInstance.addMessage(domainMessage);
+        ProcessContextFactory processContextFactory = new ProcessContextFactory(mock(ProcessContextRepositoryFacade.class));
 
-        ProcessContext processContext = ProcessContextFactory.createProcessContext(processInstance);
+        ProcessContext processContext = processContextFactory.createProcessContext(processInstance);
 
         assertEquals(2, processContext.getMessages().size());
         ch.admin.bit.jeap.processcontext.plugin.api.context.Message processContextEvent = processContext.getMessages().get(1);
