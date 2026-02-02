@@ -9,6 +9,7 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessDataTempla
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationPattern;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
+import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessCompletionCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessCompletionConditionResult;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
 import com.fasterxml.uuid.Generators;
@@ -113,13 +114,30 @@ public class ProcessInstance extends MutableDomainEntity {
         this.state = ProcessState.STARTED;
     }
 
-    public static ProcessInstance startProcess(String originProcessId, ProcessTemplate processTemplate, ProcessContextFactory processContextFactory) {
-        ProcessInstance processInstance = new ProcessInstance(originProcessId, processTemplate, processContextFactory);
-        // TODO: This invokes updateProcessState(), which in turn invokes ProcessContextRepositoryFacade, which accesses the database.
-        // Tnis does not work as the processInstance entity is not yet persisted. Make sure to 1) persist the entity first using save()
-        // and 2) then update process state. Also, make sure updateProessState() is invoked only on persisted or managed entities.
-        processInstance.planInitialTasks();
-        return processInstance;
+    /**
+     * Creates a new ProcessInstance based on the given processTemplate. Callers must persist the returned
+     * ProcessInstance first, then call start() to plan initial tasks.
+     *
+     * @param originProcessId       origin process id
+     * @param processTemplate       the process template to base the process instance on
+     * @param processContextFactory the process context factory to create process contexts for PCS API calls (conditions etc.)
+     * @return A new ProcessInstance
+     */
+    public static ProcessInstance createProcessInstance(String originProcessId, ProcessTemplate processTemplate, ProcessContextFactory processContextFactory) {
+        return new ProcessInstance(originProcessId, processTemplate, processContextFactory);
+    }
+
+    void start() {
+        if (state != ProcessState.STARTED) {
+            return;
+        }
+
+        Set<TaskType> taskTypesWithoutTaskInstance = TaskUtils.taskTypesWithoutTaskInstance(tasks, processTemplate);
+        taskTypesWithoutTaskInstance.stream()
+                .filter(TaskType::isPlannedAtProcessStart)
+                .map(type -> TaskInstance.createInitialTaskInstance(type, this, ZonedDateTime.now()))
+                .forEach(tasks::add);
+        updateProcessState();
     }
 
     public int nextSnapshotVersion() {
@@ -129,15 +147,6 @@ public class ProcessInstance extends MutableDomainEntity {
 
     public void registerSnapshot(String snapshotName) {
         snapshotNames.add(snapshotName);
-    }
-
-    private void planInitialTasks() {
-        Set<TaskType> taskTypesWithoutTaskInstance = TaskUtils.taskTypesWithoutTaskInstance(tasks, processTemplate);
-        taskTypesWithoutTaskInstance.stream()
-                .filter(TaskType::isPlannedAtProcessStart)
-                .map(type -> TaskInstance.createInitialTaskInstance(type, this, ZonedDateTime.now()))
-                .forEach(tasks::add);
-        updateProcessState();
     }
 
     void registerNewTaskInUnknownState(TaskType taskType, ZonedDateTime timestamp) {
@@ -153,15 +162,9 @@ public class ProcessInstance extends MutableDomainEntity {
         tasks.add(TaskInstance.createTaskInstanceWithOriginTaskIdAndState(taskType, this, messageId, TaskState.COMPLETED, timestamp, messageUuid));
     }
 
-    void evaluateCompletedTasks(ZonedDateTime timestamp) {
-        for (MessageReferenceMessageDTO messageReference : this.getMessageReferences()) {
-            evaluateCompletedTasks(messageReference, timestamp);
-        }
+    void evaluateCompletedTasks(MessageReferenceMessageDTO messageReference) {
+        getTasks().forEach(task -> task.evaluateIfCompleted(messageReference));
         updateProcessState();
-    }
-
-    void evaluateCompletedTasks(MessageReferenceMessageDTO messageReference, ZonedDateTime timestamp) {
-        this.getTasks().forEach(task -> task.evaluateIfCompleted(messageReference, timestamp));
     }
 
     /**
@@ -254,17 +257,17 @@ public class ProcessInstance extends MutableDomainEntity {
             return;
         }
         ProcessContext processContext = processContextFactory.createProcessContext(this);
-        processTemplate.getProcessCompletionConditions().stream()
-                .map(condition -> condition.isProcessCompleted(processContext))
-                .filter(ProcessCompletionConditionResult::isCompleted)
-                .findFirst()
-                .ifPresent(result -> {
-                    this.state = ProcessState.COMPLETED;
-                    this.processCompletion = new ProcessCompletion(
-                            ProcessCompletionConclusion.valueOf(result.getConclusion().orElseThrow().name()),
-                            result.getName().orElse(null),
-                            ZonedDateTime.now());
-                });
+        for (ProcessCompletionCondition condition : processTemplate.getProcessCompletionConditions()) {
+            ProcessCompletionConditionResult processCompleted = condition.isProcessCompleted(processContext);
+            if (processCompleted.isCompleted()) {
+                this.state = ProcessState.COMPLETED;
+                this.processCompletion = new ProcessCompletion(
+                        ProcessCompletionConclusion.valueOf(processCompleted.getConclusion().orElseThrow().name()),
+                        processCompleted.getName().orElse(null),
+                        ZonedDateTime.now());
+                return;
+            }
+        }
     }
 
     @Override
@@ -387,12 +390,15 @@ public class ProcessInstance extends MutableDomainEntity {
         if (this.isTemplateChanged()) {
             log.info("Applying template migrations to process {}", this.getOriginProcessId());
 
-            this.deleteTaskInstancesForDeletedTaskTypes();
-            this.planTaskInstancesForNewTaskTypes();
+            deleteTaskInstancesForDeletedTaskTypes();
+            planTaskInstancesForNewTaskTypes();
 
-            this.updateTemplateHash();
+            updateTemplateHash();
 
-            this.evaluateCompletedTasks(ZonedDateTime.now());
+            for (MessageReferenceMessageDTO messageReference : messageReferenceMessageDTOS) {
+                evaluateCompletedTasks(messageReference);
+            }
+            updateProcessState();
         }
     }
 

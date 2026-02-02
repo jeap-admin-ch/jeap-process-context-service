@@ -54,7 +54,8 @@ class ProcessInstanceTest {
     private static ProcessInstance startProcessInstance(ProcessTemplate processTemplate) {
         ProcessContextRepositoryFacadeStub repositoryFacade = new ProcessContextRepositoryFacadeStub();
         ProcessContextFactory processContextFactory = new ProcessContextFactory(repositoryFacade);
-        ProcessInstance processInstance = ProcessInstance.startProcess("id", processTemplate, processContextFactory);
+        ProcessInstance processInstance = ProcessInstance.createProcessInstance("id", processTemplate, processContextFactory);
+        processInstance.start();
         repositoryFacade.setProcessInstance(processInstance);
         return processInstance;
     }
@@ -148,7 +149,7 @@ class ProcessInstanceTest {
     }
 
     void completeTask(ProcessInstance processInstance, String originTaskId, String messageName) {
-        processInstance.addMessage(Message.messageBuilder()
+        AddedMessage addedMessage = processInstance.addMessage(Message.messageBuilder()
                 .messageId(UUID.randomUUID().toString())
                 .idempotenceId("idempotenceId")
                 .messageName(messageName)
@@ -156,7 +157,7 @@ class ProcessInstanceTest {
                 .createdAt(ZonedDateTime.now())
                 .messageCreatedAt(ZonedDateTime.now())
                 .build());
-        processInstance.evaluateCompletedTasks(ZonedDateTime.now());
+        processInstance.evaluateCompletedTasks(addedMessage.messageReference());
     }
 
     void completeTask(ProcessInstance processInstance, String originTaskId) {

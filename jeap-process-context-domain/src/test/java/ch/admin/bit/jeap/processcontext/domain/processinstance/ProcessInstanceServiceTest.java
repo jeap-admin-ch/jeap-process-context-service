@@ -121,18 +121,17 @@ class ProcessInstanceServiceTest {
         doReturn(Optional.of(processInstance)).when(processInstanceRepository).findByOriginProcessIdLoadingMessages(originProcessId);
         doReturn(processTemplate).when(processInstance).getProcessTemplate();
         doReturn(List.of(processUpdate)).when(processUpdateQueryRepository).findByOriginProcessIdAndHandledFalse(originProcessId);
-        doReturn(new AddedMessage(null, List.of())).when(processInstance).addMessage(message);
+        MessageReferenceMessageDTO messageReferenceMessageDTO = mock(MessageReferenceMessageDTO.class);
+        doReturn(new AddedMessage(messageReferenceMessageDTO, List.of())).when(processInstance).addMessage(message);
         when(messageRepository.findById(eventReference)).thenReturn(Optional.of(message));
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
         when(processUpdate.getMessageName()).thenReturn("myDomainEvent");
         when(processUpdate.getMessageReference()).thenReturn(Optional.of(eventReference));
-        ZonedDateTime now = ZonedDateTime.now();
-        when(message.getMessageCreatedAt()).thenReturn(now);
 
         target.updateProcessState(originProcessId);
 
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasks(now);
+        verify(processInstance).evaluateCompletedTasks(messageReferenceMessageDTO);
     }
 
     @Test
@@ -171,7 +170,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance).planDomainEventTask(eq(taskType), eq(null), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasks(now);
+        verify(processInstance).evaluateCompletedTasks(messageReferenceMessageDTO);
     }
 
     @Test
@@ -211,7 +210,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance).planDomainEventTask(eq(taskType), eq(null), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasks(now);
+        verify(processInstance).evaluateCompletedTasks(messageReferenceMessageDTO);
     }
 
     @Test
@@ -243,15 +242,13 @@ class ProcessInstanceServiceTest {
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
         when(processUpdate.getMessageName()).thenReturn("myDomainEvent");
         when(processUpdate.getMessageReference()).thenReturn(Optional.of(eventReference));
-        ZonedDateTime now = ZonedDateTime.now();
-        when(message.getMessageCreatedAt()).thenReturn(now);
 
         target.updateProcessState(originProcessId);
 
         verify(processInstance, times(0)).planDomainEventTask(any(), any(), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasks(now);
+        verify(processInstance).evaluateCompletedTasks(messageReferenceMessageDTO);
     }
 
     @Test
@@ -291,7 +288,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(2)).planDomainEventTask(eq(taskType), anyString(), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasks(now);
+        verify(processInstance).evaluateCompletedTasks(messageReferenceMessageDTO);
     }
 
     @Test
@@ -332,7 +329,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(2)).planDomainEventTask(eq(taskType), anyString(), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasks(now);
+        verify(processInstance).evaluateCompletedTasks(messageReferenceMessageDTO);
     }
 
     @Test
@@ -365,15 +362,13 @@ class ProcessInstanceServiceTest {
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
         when(processUpdate.getMessageName()).thenReturn("myDomainEvent");
         when(processUpdate.getMessageReference()).thenReturn(Optional.of(eventReference));
-        ZonedDateTime now = ZonedDateTime.now();
-        when(message.getMessageCreatedAt()).thenReturn(now);
 
         target.updateProcessState(originProcessId);
 
         verify(processInstance, times(0)).planDomainEventTask(eq(taskType), anyString(), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasks(now);
+        verify(processInstance).evaluateCompletedTasks(messageReferenceMessageDTO);
     }
 
     @Test
@@ -412,7 +407,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).planDomainEventTask(any(), any(), any(), eq(null));
         verify(processInstance).addObservationTask(eq(taskType), eq(null), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasks(now);
+        verify(processInstance).evaluateCompletedTasks(messageReferenceMessageDTO);
     }
 
     @Test
@@ -452,7 +447,7 @@ class ProcessInstanceServiceTest {
         verify(processInstance, times(0)).planDomainEventTask(any(), any(), any(), eq(null));
         verify(processInstance).addObservationTask(eq(taskType), eq(null), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasks(now);
+        verify(processInstance).evaluateCompletedTasks(messageReferenceMessageDTO);
     }
 
     @Test
@@ -484,15 +479,13 @@ class ProcessInstanceServiceTest {
         when(processUpdate.getProcessUpdateType()).thenReturn(ProcessUpdateType.DOMAIN_EVENT);
         when(processUpdate.getMessageName()).thenReturn("myDomainEvent");
         when(processUpdate.getMessageReference()).thenReturn(Optional.of(eventReference));
-        ZonedDateTime now = ZonedDateTime.now();
-        when(message.getMessageCreatedAt()).thenReturn(now);
 
         target.updateProcessState(originProcessId);
 
         verify(processInstance, times(0)).planDomainEventTask(any(), any(), any(), eq(null));
         verify(processInstance, times(0)).addObservationTask(any(), any(), any(), eq(null));
         verify(processInstance).addMessage(eventArgumentCaptor.capture());
-        verify(processInstance).evaluateCompletedTasks(now);
+        verify(processInstance).evaluateCompletedTasks(messageReferenceMessageDTO);
     }
 
     @Test

@@ -137,11 +137,11 @@ public class TaskInstance extends MutableDomainEntity {
         taskType = processTemplate.getTaskTypeByName(taskTypeName);
     }
 
-    void evaluateIfCompleted(MessageReferenceMessageDTO messageReference, ZonedDateTime timestamp) {
+    void evaluateIfCompleted(MessageReferenceMessageDTO messageReference) {
         if (Set.of(TaskState.PLANNED, TaskState.NOT_PLANNED).contains(state)) {
             if (taskType.isPresent() && taskType.get().getCompletedByDomainEvent() != null && isCompleted(messageReference)) {
                 state = TaskState.COMPLETED;
-                completedAt = timestamp;
+                completedAt = messageReference.getMessageCreatedAt();
                 completedBy = messageReference.getMessageId();
             }
         }

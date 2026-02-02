@@ -236,7 +236,7 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
                         taskType))
                 .build();
         String originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
-        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate, processContextFactory);
+        ProcessInstance processInstance = ProcessInstance.createProcessInstance(originProcessId, processTemplate, processContextFactory);
         processInstanceRepository.save(processInstance);
 
         CriteriaUpdate<ProcessInstance> criteriaUpdate = entityManager.getCriteriaBuilder().createCriteriaUpdate(ProcessInstance.class);
@@ -262,21 +262,24 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
                         taskType))
                 .build();
         String originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
-        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate, processContextFactory);
+        ProcessInstance processInstance = ProcessInstance.createProcessInstance(originProcessId, processTemplate, processContextFactory);
         processInstance.addMessage(message);
         processInstanceRepository.save(processInstance);
     }
 
     private void assertCountProcessInstances(int count) {
-        assertThat(entityManager.createQuery("select p from ProcessInstance p").getResultList()).hasSize(count);
+        assertThat(entityManager.createQuery("select p from ProcessInstance p").getResultList())
+                .hasSize(count);
     }
 
     private void assertCountEvents(int count) {
-        assertThat(entityManager.createQuery("select e from events e").getResultList()).hasSize(count);
+        assertThat(entityManager.createQuery("select e from events e").getResultList())
+                .hasSize(count);
     }
 
     private void assertCountProcessUpdates(int count) {
-        assertThat(entityManager.createQuery("select p from ProcessUpdate p").getResultList()).hasSize(count);
+        assertThat(entityManager.createQuery("select p from ProcessUpdate p").getResultList())
+                .hasSize(count);
     }
 
     private Message createAndSaveEvent(Duration age) {

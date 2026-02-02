@@ -48,7 +48,8 @@ public class ProcessInstanceStubs {
                 .build();
         ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
         ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        ProcessInstance processInstance = ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        processInstance.start();
         repositoryFacadeStub.setProcessInstance(processInstance);
         setProcessData(processInstance, processData);
         return processInstance;
@@ -68,7 +69,8 @@ public class ProcessInstanceStubs {
                 .build();
         ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
         ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        ProcessInstance processInstance = ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        processInstance.start();
         repositoryFacadeStub.setProcessInstance(processInstance);
         return processInstance;
     }
@@ -91,7 +93,8 @@ public class ProcessInstanceStubs {
                 .build();
         ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
         ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        ProcessInstance processInstance = ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        processInstance.start();
         repositoryFacadeStub.setProcessInstance(processInstance);
         return processInstance;
     }
@@ -139,7 +142,8 @@ public class ProcessInstanceStubs {
                 .build();
         ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
         ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        ProcessInstance processInstance = ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        processInstance.start();
         repositoryFacadeStub.setProcessInstance(processInstance);
         Message message = Message.messageBuilder()
                 .messageName(event)
@@ -206,7 +210,8 @@ public class ProcessInstanceStubs {
 
         ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
         ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        ProcessInstance processInstance = ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        processInstance.start();
         repositoryFacadeStub.setProcessInstance(processInstance);
 
         String templateName = processInstance.getProcessTemplateName();
@@ -240,7 +245,7 @@ public class ProcessInstanceStubs {
     public static ProcessInstance createCompletedProcessInstance() {
         ProcessInstance processInstance = createProcessWithSingleTaskInstance("template");
         processInstance.getTasks().getFirst().complete(ZonedDateTime.now());
-        processInstance.evaluateCompletedTasks(ZonedDateTime.now());
+        processInstance.start(); // Force state re-evaluation of the process instance stub after completing the task
         assertSame(ProcessState.COMPLETED, processInstance.getState());
         return processInstance;
     }

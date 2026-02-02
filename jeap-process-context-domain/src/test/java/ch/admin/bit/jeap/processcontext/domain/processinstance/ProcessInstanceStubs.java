@@ -6,7 +6,6 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import com.fasterxml.uuid.Generators;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.jspecify.annotations.NonNull;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -216,10 +215,11 @@ public final class ProcessInstanceStubs {
         return startProcessInstance(processTemplate);
     }
 
-    private static @NonNull ProcessInstance startProcessInstance(ProcessTemplate processTemplate) {
+    private static ProcessInstance startProcessInstance(ProcessTemplate processTemplate) {
         ProcessContextRepositoryFacadeStub repositoryFacade = new ProcessContextRepositoryFacadeStub();
         ProcessContextFactory processContextFactory = new ProcessContextFactory(repositoryFacade);
-        ProcessInstance processInstance = ProcessInstance.startProcess(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        ProcessInstance processInstance = ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        processInstance.start();
         repositoryFacade.setProcessInstance(processInstance);
         return processInstance;
     }

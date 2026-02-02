@@ -52,12 +52,18 @@ public class ProcessInstanceService {
     private ProcessInstance createFromTemplate(String originProcessId, String processTemplateName) {
         ProcessTemplate processTemplate = processTemplateRepository.findByName(processTemplateName)
                 .orElseThrow(NotFoundException.templateNotFound(processTemplateName, originProcessId));
-        ProcessInstance processInstance = ProcessInstance.startProcess(originProcessId, processTemplate, processContextFactory);
+        ProcessInstance processInstance = ProcessInstance.createProcessInstance(originProcessId, processTemplate, processContextFactory);
+        ProcessInstance managedEntity = processInstanceRepository.save(processInstance);
+        managedEntity.onAfterLoadFromPersistentState(processTemplate, processContextFactory);
+        managedEntity.start();
 
         log.info("Creating process {} with origin process ID {} from template {}", processInstance.getId(), originProcessId, processTemplateName);
         metricsListener.processInstanceCreated(processTemplateName);
+
+        // Count completion in case the process instance is completed immediately after creation
         countCompletionIfCompleted(processInstance, ProcessState.STARTED);
-        return processInstanceRepository.save(processInstance);
+
+        return managedEntity;
     }
 
     @Timed(value = "jeap_pcs_update_process_state", description = "Update process state", percentiles = {0.5, 0.8, 0.95, 0.99})
@@ -196,8 +202,9 @@ public class ProcessInstanceService {
     }
 
     private void applyProcessUpdateAndReEvaluateProcessInstance(ProcessInstance processInstance, ProcessUpdate update) {
-        ZonedDateTime timestamp = ZonedDateTime.now();
-        final Optional<UUID> reference = update.getMessageReference();
+        ProcessState stateBeforeUpdate = processInstance.getState();
+        Optional<UUID> reference = update.getMessageReference();
+
         if (reference.isPresent()) {
             Message message = messageRepository.findById(reference.get())
                     .orElseThrow(NotFoundException.messageNotFound(reference.get(), processInstance.getOriginProcessId()));
@@ -210,12 +217,9 @@ public class ProcessInstanceService {
 
             metricsListener.timed("pcs_process_single_update", Map.of("updateType", update.getProcessUpdateType().name()),
                     () -> updateProcessInstance(processInstance, update, messageReferenceMessageDTO, message));
-            timestamp = message.getMessageCreatedAt();
         }
-        ProcessState stateBeforeUpdate = processInstance.getState();
-        processInstance.evaluateCompletedTasks(timestamp);
-        countCompletionIfCompleted(processInstance, stateBeforeUpdate);
 
+        countCompletionIfCompleted(processInstance, stateBeforeUpdate);
         createProcessSnapshotIfTriggered(processInstance);
     }
 
@@ -235,7 +239,7 @@ public class ProcessInstanceService {
             case CREATE_PROCESS, DOMAIN_EVENT:
                 createMessageTasks(processUpdate, processInstance, messageReferenceMessageDTO, message);
                 completeObservationTasks(processUpdate, processInstance, messageReferenceMessageDTO, message);
-                processInstance.evaluateCompletedTasks(messageReferenceMessageDTO, message.getMessageCreatedAt());
+                processInstance.evaluateCompletedTasks(messageReferenceMessageDTO);
                 processInstance.evaluateProcessRelations(message);
                 break;
             default:
