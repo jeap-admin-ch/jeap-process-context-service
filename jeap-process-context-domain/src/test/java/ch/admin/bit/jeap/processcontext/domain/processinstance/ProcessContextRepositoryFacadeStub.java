@@ -9,7 +9,7 @@ public class ProcessContextRepositoryFacadeStub implements ProcessContextReposit
     private ProcessInstance processInstance;
 
     @Override
-    public boolean isAllTasksInFinalState(UUID processInstanceId) {
+    public boolean areAllTasksInFinalState(UUID processInstanceId) {
         if (processInstance == null) {
             return false;
         }

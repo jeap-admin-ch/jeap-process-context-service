@@ -51,7 +51,7 @@ public class ProcessContextStub implements ProcessContext {
     }
 
     @Override
-    public boolean isAllTasksInFinalState() {
+    public boolean areAllTasksInFinalState() {
         return allTasksCompleted;
     }
 }

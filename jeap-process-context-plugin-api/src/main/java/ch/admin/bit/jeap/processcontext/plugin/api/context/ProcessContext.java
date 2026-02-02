@@ -33,5 +33,5 @@ public interface ProcessContext {
      *
      * @return true if all tasks are in a final state and at least one task exists, false otherwise
      */
-    boolean isAllTasksInFinalState();
+    boolean areAllTasksInFinalState();
 }

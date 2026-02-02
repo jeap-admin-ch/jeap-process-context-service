@@ -167,5 +167,5 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
             from ProcessInstance p
             where p.id = :processInstanceId
             """)
-    Boolean isAllTasksInFinalState(UUID processInstanceId);
+    Boolean areAllTasksInFinalState(UUID processInstanceId);
 }

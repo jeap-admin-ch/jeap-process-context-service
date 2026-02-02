@@ -8,7 +8,7 @@ public class AllTasksInFinalStateProcessCompletionCondition implements ProcessCo
     @Override
     public ProcessCompletionConditionResult isProcessCompleted(ProcessContext processContext) {
 
-        boolean completed = processContext.isAllTasksInFinalState();
+        boolean completed = processContext.areAllTasksInFinalState();
 
         if (completed) {
             return ProcessCompletionConditionResult.completedBuilder()

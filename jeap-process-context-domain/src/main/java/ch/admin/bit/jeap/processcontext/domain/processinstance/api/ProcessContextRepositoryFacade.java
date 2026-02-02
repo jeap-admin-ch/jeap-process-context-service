@@ -8,5 +8,5 @@ import java.util.UUID;
  */
 public interface ProcessContextRepositoryFacade {
 
-    boolean isAllTasksInFinalState(UUID processInstanceId);
+    boolean areAllTasksInFinalState(UUID processInstanceId);
 }
