@@ -116,7 +116,9 @@ public class ProcessInstance extends MutableDomainEntity {
 
     /**
      * Creates a new ProcessInstance based on the given processTemplate. Callers must persist the returned
-     * ProcessInstance first, then call start() to plan initial tasks.
+     * ProcessInstance first, then call {@link #start()} to plan initial tasks.
+     * The reason the process instance needs to be persisted first before calling start is that conditions may need
+     * to access persisted data (e.g. messages) when evaluating process and task states.
      *
      * @param originProcessId       origin process id
      * @param processTemplate       the process template to base the process instance on
@@ -127,6 +129,13 @@ public class ProcessInstance extends MutableDomainEntity {
         return new ProcessInstance(originProcessId, processTemplate, processContextFactory);
     }
 
+    /**
+     * Start the process instance by planning initial tasks as defined in the process template. This needs to be invoked
+     * after persisting a new process instance created using {@link #createProcessInstance(String, ProcessTemplate, ProcessContextFactory)}.
+     * If the process is not in STARTED state, this method does nothing. As this method invokes {@link #updateProcessState()}
+     * internally, the process instance must be persisted first in case task or process conmpletion conditions require
+     * access to persisted data.
+     */
     void start() {
         if (state != ProcessState.STARTED) {
             return;
