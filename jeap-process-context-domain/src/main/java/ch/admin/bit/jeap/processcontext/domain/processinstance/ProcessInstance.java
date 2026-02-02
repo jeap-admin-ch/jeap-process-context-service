@@ -387,7 +387,7 @@ public class ProcessInstance extends MutableDomainEntity {
     }
 
     public void applyTemplateMigrationIfChanged() {
-        if (this.isTemplateChanged()) {
+        if (isTemplateChanged()) {
             log.info("Applying template migrations to process {}", this.getOriginProcessId());
 
             deleteTaskInstancesForDeletedTaskTypes();
@@ -398,7 +398,6 @@ public class ProcessInstance extends MutableDomainEntity {
             for (MessageReferenceMessageDTO messageReference : messageReferenceMessageDTOS) {
                 evaluateCompletedTasks(messageReference);
             }
-            updateProcessState();
         }
     }
 

@@ -85,15 +85,17 @@ public class ProcessInstanceService {
     }
 
     private void migrateProcessInstanceTemplateIfNeeded(String originProcessId) {
-        transactions.withinNewTransaction(() -> {
-            processInstanceRepository.findProcessInstanceTemplate(originProcessId).ifPresent(processInstanceTemplate -> {
-                processTemplateRepository.findByName(processInstanceTemplate.getTemplateName()).ifPresent(template -> {
-                    if (!template.getTemplateHash().equals(processInstanceTemplate.getTemplateHash())) {
-                        processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).ifPresent(
-                                this::applyTemplateMigrationsIfRequired);
-                    }
-                });
-            });
+        transactions.withinNewTransaction(() ->
+                processInstanceRepository.findProcessInstanceTemplate(originProcessId).ifPresent(processInstanceTemplate ->
+                        migrateIfNeeded(originProcessId, processInstanceTemplate)));
+    }
+
+    private void migrateIfNeeded(String originProcessId, ProcessInstanceTemplate processInstanceTemplate) {
+        processTemplateRepository.findByName(processInstanceTemplate.getTemplateName()).ifPresent(template -> {
+            if (!template.getTemplateHash().equals(processInstanceTemplate.getTemplateHash())) {
+                processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).ifPresent(
+                        this::applyTemplateMigrationsIfRequired);
+            }
         });
     }
 
