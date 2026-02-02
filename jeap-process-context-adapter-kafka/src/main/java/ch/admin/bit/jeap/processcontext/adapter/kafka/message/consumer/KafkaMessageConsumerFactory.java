@@ -35,7 +35,7 @@ public class KafkaMessageConsumerFactory implements MessageConsumerFactory {
 
     private final JeapKafkaBeanNames jeapKafkaBeanNames;
 
-    private final List<ConcurrentMessageListenerContainer<?, ?>> containers = new CopyOnWriteArrayList<>();
+    private final List<ConcurrentMessageListenerContainer<AvroMessageKey, AvroMessage>> containers = new CopyOnWriteArrayList<>();
 
     private final ProcessContextKafkaConfiguration processContextKafkaConfiguration;
 
@@ -117,7 +117,7 @@ public class KafkaMessageConsumerFactory implements MessageConsumerFactory {
         containers.forEach(concurrentMessageListenerContainer -> concurrentMessageListenerContainer.stop(true));
     }
 
-    public List<ConcurrentMessageListenerContainer<?, ?>> getContainers() {
+    public List<ConcurrentMessageListenerContainer<AvroMessageKey, AvroMessage>> getContainers() {
         return List.copyOf(containers);
     }
 }
