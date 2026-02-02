@@ -116,4 +116,8 @@ public class KafkaMessageConsumerFactory implements MessageConsumerFactory {
         log.info("Stopping all domain event listener containers...");
         containers.forEach(concurrentMessageListenerContainer -> concurrentMessageListenerContainer.stop(true));
     }
+
+    public List<ConcurrentMessageListenerContainer<?, ?>> getContainers() {
+        return List.copyOf(containers);
+    }
 }
