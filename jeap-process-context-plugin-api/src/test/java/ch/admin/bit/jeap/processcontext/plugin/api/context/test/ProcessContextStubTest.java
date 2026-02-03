@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.processcontext.plugin.api.context.test;
 
 import ch.admin.bit.jeap.processcontext.plugin.api.context.Message;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

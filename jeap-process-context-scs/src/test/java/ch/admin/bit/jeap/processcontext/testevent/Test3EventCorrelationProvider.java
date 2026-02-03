@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.processcontext.testevent;
 
 import ch.admin.bit.jeap.processcontext.event.test3.Test3Event;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageCorrelationProvider;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageCorrelationProvider;
 
 import java.util.Set;
 

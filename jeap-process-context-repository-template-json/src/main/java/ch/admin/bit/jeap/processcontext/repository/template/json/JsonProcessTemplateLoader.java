@@ -2,9 +2,9 @@ package ch.admin.bit.jeap.processcontext.repository.template.json;
 
 import ch.admin.bit.jeap.messaging.model.Message;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.AlwaysProcessInstantiationCondition;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.NeverProcessInstantiationCondition;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.ProcessInstantiationCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.AlwaysProcessInstantiationCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.NeverProcessInstantiationCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.ProcessInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.repository.template.json.deserializer.ProcessTemplateDeserializer;
 import ch.admin.bit.jeap.processcontext.repository.template.json.model.ProcessTemplateDefinition;
 import com.fasterxml.jackson.databind.DeserializationFeature;

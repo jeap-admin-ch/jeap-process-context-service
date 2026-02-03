@@ -1,8 +1,8 @@
 package ch.admin.bit.jeap.processcontext.repository.template.json.stubs;
 
 import ch.admin.bit.jeap.messaging.model.MessagePayload;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.PayloadExtractor;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.PayloadExtractor;
 
 import java.util.Set;
 

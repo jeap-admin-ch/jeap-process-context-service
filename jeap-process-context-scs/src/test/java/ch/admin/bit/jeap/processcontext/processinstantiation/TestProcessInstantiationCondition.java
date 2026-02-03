@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.processcontext.processinstantiation;
 
 import ch.admin.bit.jeap.processcontext.event.test5.Test5CreatingProcessInstanceEvent;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.ProcessInstantiationCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.ProcessInstantiationCondition;
 
 public class TestProcessInstantiationCondition implements ProcessInstantiationCondition<Test5CreatingProcessInstanceEvent> {
 

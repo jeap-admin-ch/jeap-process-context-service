@@ -16,10 +16,10 @@ import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateQueryR
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateRepository;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateType;
 import ch.admin.bit.jeap.processcontext.domain.tx.Transactions;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.EmptySetPayloadExtractor;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.EmptySetReferenceExtractor;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageProcessIdCorrelationProvider;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.NeverProcessInstantiationCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.EmptySetPayloadExtractor;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.EmptySetReferenceExtractor;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageProcessIdCorrelationProvider;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.NeverProcessInstantiationCondition;
 import com.fasterxml.uuid.Generators;
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeEach;

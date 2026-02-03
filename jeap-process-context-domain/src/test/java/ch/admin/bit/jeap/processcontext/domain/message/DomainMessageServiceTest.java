@@ -9,7 +9,7 @@ import ch.admin.bit.jeap.processcontext.domain.port.MessageConsumerFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceQueryRepository;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateService;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.*;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,47 +64,47 @@ class DomainMessageServiceTest {
 
     private static final PayloadExtractor<MessagePayload> PAYLOAD_EXTRACTOR_FIRST_TEMPLATE = new PayloadExtractor<>() {
         @Override
-        public Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> getMessageData(MessagePayload payload) {
-            return Set.of(new ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData("pkey1-first", "pvalue1-first"));
+        public Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> getMessageData(MessagePayload payload) {
+            return Set.of(new ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData("pkey1-first", "pvalue1-first"));
         }
     };
 
     private static final PayloadExtractor<MessagePayload> PAYLOAD_EXTRACTOR_SECOND_TEMPLATE = new PayloadExtractor<>() {
         @Override
-        public Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> getMessageData(MessagePayload payload) {
-            return Set.of(new ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData("pkey2-second", "pvalue2-second"),
-                    new ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData("pkey3-second", "pvalue3-second", "prole3-second"));
+        public Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> getMessageData(MessagePayload payload) {
+            return Set.of(new ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData("pkey2-second", "pvalue2-second"),
+                    new ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData("pkey3-second", "pvalue3-second", "prole3-second"));
         }
     };
 
     private static final PayloadExtractor<MessagePayload> PAYLOAD_EXTRACTOR_FOR_PROCESS_DATA_CORRELATION_TEMPLATE = new PayloadExtractor<>() {
         @Override
-        public Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> getMessageData(MessagePayload payload) {
-            return Set.of(new ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData("process-data-event-key", "process-data-event-value", "process-data-event-role"),
-                    new ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData("other-key", "other-value", "other-role"));
+        public Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> getMessageData(MessagePayload payload) {
+            return Set.of(new ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData("process-data-event-key", "process-data-event-value", "process-data-event-role"),
+                    new ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData("other-key", "other-value", "other-role"));
         }
     };
 
     private static final PayloadExtractor<MessagePayload> PAYLOAD_EXTRACTOR_FOR_PROCESS_DATA_CORRELATION_WITHOUT_ROLE_TEMPLATE = new PayloadExtractor<>() {
         @Override
-        public Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> getMessageData(MessagePayload payload) {
-            return Set.of(new ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData("process-data-without-role-event-key", "process-data-without-role-event-value", null));
+        public Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> getMessageData(MessagePayload payload) {
+            return Set.of(new ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData("process-data-without-role-event-key", "process-data-without-role-event-value", null));
         }
     };
 
 
     private static final ReferenceExtractor<MessageReferences> REFERENCE_EXTRACTOR_FIRST_TEMPLATE = new ReferenceExtractor<>() {
         @Override
-        public Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> getMessageData(MessageReferences references) {
-            return Set.of(new ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData("rkey1-first", "rvalue1-first"));
+        public Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> getMessageData(MessageReferences references) {
+            return Set.of(new ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData("rkey1-first", "rvalue1-first"));
         }
     };
 
     private static final ReferenceExtractor<MessageReferences> REFERENCE_EXTRACTOR_SECOND_TEMPLATE = new ReferenceExtractor<>() {
         @Override
-        public Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> getMessageData(MessageReferences references) {
-            return Set.of(new ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData("rkey2-second", "rvalue2-second"),
-                    new ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData("rkey3-second", "rvalue3-second", "rrole3-second"));
+        public Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> getMessageData(MessageReferences references) {
+            return Set.of(new ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData("rkey2-second", "rvalue2-second"),
+                    new ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData("rkey3-second", "rvalue3-second", "rrole3-second"));
         }
     };
 

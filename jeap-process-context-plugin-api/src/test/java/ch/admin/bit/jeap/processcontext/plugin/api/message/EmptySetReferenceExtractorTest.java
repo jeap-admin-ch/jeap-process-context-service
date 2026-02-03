@@ -1,4 +1,4 @@
-package ch.admin.bit.jeap.processcontext.plugin.api.event;
+package ch.admin.bit.jeap.processcontext.plugin.api.message;
 
 import ch.admin.bit.jeap.messaging.model.MessageReferences;
 import org.junit.jupiter.api.Test;

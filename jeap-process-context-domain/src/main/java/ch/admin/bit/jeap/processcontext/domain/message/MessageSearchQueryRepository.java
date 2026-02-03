@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.processcontext.domain.message;
 
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContextMessageQueryRepository;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
 
 import java.util.Map;
 import java.util.Set;

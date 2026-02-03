@@ -1,6 +1,6 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
 
 /**
  * Projection interface for MessageData.

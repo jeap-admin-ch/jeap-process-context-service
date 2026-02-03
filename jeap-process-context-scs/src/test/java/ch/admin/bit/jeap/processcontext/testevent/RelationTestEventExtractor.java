@@ -2,9 +2,9 @@ package ch.admin.bit.jeap.processcontext.testevent;
 
 import ch.admin.bit.jeap.processcontext.event.test1.Test1EventReferences;
 import ch.admin.bit.jeap.processcontext.event.test2.Test2EventPayload;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.PayloadExtractor;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.ReferenceExtractor;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.PayloadExtractor;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.ReferenceExtractor;
 
 import java.util.Set;
 

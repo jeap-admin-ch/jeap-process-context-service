@@ -5,7 +5,7 @@ import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceStubs;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;

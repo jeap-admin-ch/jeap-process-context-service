@@ -52,11 +52,11 @@ public class MessageData {
         this(templateName, key, value, null);
     }
 
-    public static MessageData from(String templateName, ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData messageData) {
+    public static MessageData from(String templateName, ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData messageData) {
         return new MessageData(templateName, messageData.getKey(), messageData.getValue(), messageData.getRole());
     }
 
-    public static Set<MessageData> from(String templateName, Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> messageData) {
+    public static Set<MessageData> from(String templateName, Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> messageData) {
         return messageData.stream().map(data -> from(templateName, data)).collect(Collectors.toSet());
     }
 

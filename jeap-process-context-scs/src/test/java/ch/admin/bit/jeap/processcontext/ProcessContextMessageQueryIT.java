@@ -4,7 +4,7 @@ import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRe
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
 import ch.admin.bit.jeap.processcontext.event.test2.Test2Event;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
 import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
 import ch.admin.bit.jeap.processcontext.testevent.Test2EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;

@@ -1,8 +1,8 @@
 package ch.admin.bit.jeap.processcontext.testevent;
 
 import ch.admin.bit.jeap.processcontext.event.test6.Test6EventReferences;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.ReferenceExtractor;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.ReferenceExtractor;
 
 import java.util.Set;
 

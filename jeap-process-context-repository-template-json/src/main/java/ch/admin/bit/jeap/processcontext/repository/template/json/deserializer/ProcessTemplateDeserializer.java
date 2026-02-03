@@ -7,7 +7,7 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.MessageProcessCompletionCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessCompletionCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.TaskInstantiationCondition;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.*;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.*;
 import ch.admin.bit.jeap.processcontext.repository.template.json.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;

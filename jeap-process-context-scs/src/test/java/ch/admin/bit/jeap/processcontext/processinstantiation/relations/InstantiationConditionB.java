@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.processcontext.processinstantiation.relations;
 
 import ch.admin.bit.jeap.processcontext.event.test2.Test2Event;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.ProcessInstantiationCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.ProcessInstantiationCondition;
 
 public class InstantiationConditionB implements ProcessInstantiationCondition<Test2Event> {
 

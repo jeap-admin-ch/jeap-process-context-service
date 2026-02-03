@@ -3,7 +3,7 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance.api;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReferenceMessageDTO;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReferenceMessageDataDTO;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.Message;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
 import lombok.experimental.UtilityClass;
 
 import java.util.Set;

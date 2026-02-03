@@ -1,4 +1,4 @@
-package ch.admin.bit.jeap.processcontext.plugin.api.event;
+package ch.admin.bit.jeap.processcontext.plugin.api.message;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

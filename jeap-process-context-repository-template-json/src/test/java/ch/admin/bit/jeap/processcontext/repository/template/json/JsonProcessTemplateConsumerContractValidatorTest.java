@@ -6,10 +6,10 @@ import ch.admin.bit.jeap.messaging.model.MessagePayload;
 import ch.admin.bit.jeap.messaging.model.MessageReferences;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageCorrelationProvider;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.PayloadExtractor;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.ProcessInstantiationCondition;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.ReferenceExtractor;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageCorrelationProvider;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.PayloadExtractor;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.ProcessInstantiationCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.ReferenceExtractor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

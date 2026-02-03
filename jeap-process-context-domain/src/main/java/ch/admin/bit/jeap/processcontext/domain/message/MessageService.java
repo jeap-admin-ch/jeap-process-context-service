@@ -11,8 +11,8 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.CorrelatedByProce
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateService;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.PayloadExtractor;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.ReferenceExtractor;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.PayloadExtractor;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.ReferenceExtractor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -77,7 +77,7 @@ class MessageService implements MessageReceiver {
         Set<OriginTaskId> templateOriginTaskIds = new HashSet<>();
         var messageReferencesByTemplateNameForMessageName = processTemplateRepository.getMessageReferencesByTemplateNameForMessageName(message.getType().getName());
         messageReferencesByTemplateNameForMessageName.forEach((templateName, messageReference) -> {
-            Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> messageData = getMessageData(message, messageReference);
+            Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> messageData = getMessageData(message, messageReference);
             templateMessageData.addAll(MessageData.from(templateName, messageData));
             Set<String> originTaskIds = getRelatedOriginTaskIds(message, messageReference);
             templateOriginTaskIds.addAll(OriginTaskId.from(templateName, originTaskIds));
@@ -221,39 +221,39 @@ class MessageService implements MessageReceiver {
         return relatedOriginTaskIds;
     }
 
-    private Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> getMessageData(ch.admin.bit.jeap.messaging.model.Message message, MessageReference messageReference) {
-        Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> messageData = new HashSet<>(
+    private Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> getMessageData(ch.admin.bit.jeap.messaging.model.Message message, MessageReference messageReference) {
+        Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> messageData = new HashSet<>(
                 getMessageDataFromPayload(message, messageReference));
         messageData.addAll(getMessageDataFromReferences(message, messageReference));
         return messageData;
     }
 
-    private Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> getMessageDataFromPayload(ch.admin.bit.jeap.messaging.model.Message message, MessageReference messageReference) {
+    private Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> getMessageDataFromPayload(ch.admin.bit.jeap.messaging.model.Message message, MessageReference messageReference) {
         Optional<? extends MessagePayload> optionalPayload = message.getOptionalPayload();
         if (optionalPayload.isEmpty()) {
             return emptySet();
         }
         PayloadExtractor<MessagePayload> payloadExtractor = messageReference.getPayloadExtractor();
         MessagePayload payload = optionalPayload.get();
-        Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> eventData = new HashSet<>(payloadExtractor
+        Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> eventData = new HashSet<>(payloadExtractor
                 .getMessageData(payload));
-        Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> messageData = payloadExtractor.getMessageData(payload);
-        Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> data = new HashSet<>(messageData);
+        Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> messageData = payloadExtractor.getMessageData(payload);
+        Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> data = new HashSet<>(messageData);
         data.addAll(eventData);
         log.debug("Message data extracted from payload of message {}: {}", message.getType().getName(), data);
         return data;
     }
 
-    private Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> getMessageDataFromReferences(ch.admin.bit.jeap.messaging.model.Message message, MessageReference messageReference) {
+    private Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> getMessageDataFromReferences(ch.admin.bit.jeap.messaging.model.Message message, MessageReference messageReference) {
         MessageReferences messageReferences = message.getOptionalReferences().orElse(null);
         if (messageReferences == null) {
             return emptySet();
         }
         ReferenceExtractor<MessageReferences> referenceExtractor = messageReference.getReferenceExtractor();
-        Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> eventData = new HashSet<>(referenceExtractor
+        Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> eventData = new HashSet<>(referenceExtractor
                 .getMessageData(messageReferences));
 
-        Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> data = new HashSet<>(referenceExtractor.getMessageData(messageReferences));
+        Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> data = new HashSet<>(referenceExtractor.getMessageData(messageReferences));
         data.addAll(eventData);
         log.debug("Message data extracted from reference of message {}: {}", message.getType().getName(), data);
         return data;

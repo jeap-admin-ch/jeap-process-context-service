@@ -6,9 +6,9 @@ import ch.admin.bit.jeap.processcontext.plugin.api.condition.AllTasksInFinalStat
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.MessageProcessCompletionCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.TaskInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.AlwaysProcessInstantiationCondition;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageProcessIdCorrelationProvider;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.NeverProcessInstantiationCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.AlwaysProcessInstantiationCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageProcessIdCorrelationProvider;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.NeverProcessInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.repository.template.json.TestProcessInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.repository.template.json.model.*;
 import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider;

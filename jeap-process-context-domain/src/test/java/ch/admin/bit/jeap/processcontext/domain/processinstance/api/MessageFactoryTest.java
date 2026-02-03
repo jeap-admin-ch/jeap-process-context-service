@@ -37,7 +37,7 @@ class MessageFactoryTest {
         assertEquals(taskNames, apiMessage.getRelatedOriginTaskIds());
         MessageData messageData = domainMessage.getMessageData(templateName).iterator().next();
         assertEquals(1, apiMessage.getMessageData().size());
-        ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData eventDataFromAPI = apiMessage.getMessageData().iterator().next();
+        ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData eventDataFromAPI = apiMessage.getMessageData().iterator().next();
         assertEquals(messageData.getKey(), eventDataFromAPI.getKey());
         assertEquals(messageData.getValue(), eventDataFromAPI.getValue());
         assertEquals(messageData.getRole(), eventDataFromAPI.getRole());

@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.processcontext.adapter.restapi.model;
 
 import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReferenceMessageDTO;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReferenceMessageDataDTO;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +23,7 @@ public class MessageDTO {
     String name;
     Set<String> relatedOriginTaskIds;
     String traceId;
-    Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> messageData;
+    Set<MessageData> messageData;
     ZonedDateTime receivedAt;
     ZonedDateTime createdAt;
 
@@ -38,9 +39,9 @@ public class MessageDTO {
                 .build();
     }
 
-    private static Set<ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData> toMessageData(Set<MessageReferenceMessageDataDTO> dtos) {
+    private static Set<MessageData> toMessageData(Set<MessageReferenceMessageDataDTO> dtos) {
         return dtos.stream()
-                .map(data -> new ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData(data.getMessageDataKey(), data.getMessageDataValue(), data.getMessageDataRole()))
+                .map(data -> new MessageData(data.getMessageDataKey(), data.getMessageDataValue(), data.getMessageDataRole()))
                 .collect(toSet());
     }
 }

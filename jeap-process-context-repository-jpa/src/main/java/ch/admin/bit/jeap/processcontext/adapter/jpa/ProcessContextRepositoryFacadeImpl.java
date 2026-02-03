@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextRepositoryFacade;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

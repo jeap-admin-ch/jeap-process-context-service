@@ -1,8 +1,8 @@
 package ch.admin.bit.jeap.processcontext.testevent;
 
 import ch.admin.bit.jeap.processcontext.event.test1.Test1EventPayload;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.PayloadExtractor;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.PayloadExtractor;
 
 import java.util.HashSet;
 import java.util.Set;

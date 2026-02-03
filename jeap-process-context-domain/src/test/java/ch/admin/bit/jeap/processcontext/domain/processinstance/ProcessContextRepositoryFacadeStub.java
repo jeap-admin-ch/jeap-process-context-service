@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextRepositoryFacade;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
 
 import java.util.Map;
 import java.util.Set;

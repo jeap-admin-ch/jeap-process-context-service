@@ -26,7 +26,7 @@ class MessageDTOTest {
         assertEquals(createdAt, messageDTO.getCreatedAt());
         assertEquals("traceId", messageDTO.getTraceId());
         assertFalse(messageDTO.getMessageData().isEmpty());
-        ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData messageData = messageDTO.getMessageData().iterator().next();
+        ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData messageData = messageDTO.getMessageData().iterator().next();
         assertEquals("key", messageData.getKey());
         assertEquals("value", messageData.getValue());
         assertEquals("role", messageData.getRole());

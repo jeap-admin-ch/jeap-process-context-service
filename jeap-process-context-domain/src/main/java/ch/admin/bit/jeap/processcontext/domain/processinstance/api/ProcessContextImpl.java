@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance.api;
 
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
-import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
