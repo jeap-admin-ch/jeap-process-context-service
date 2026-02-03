@@ -43,8 +43,6 @@ public interface ProcessInstanceQueryRepository {
      */
     Optional<ProcessInstanceSummary> findProcessInstanceSummaryByOriginProcessId(String originProcessId);
 
-    Optional<String> getProcessTemplateNameByOriginProcessId(String originProcessId);
-
     Page<ProcessInstance> findAll(Pageable pageable);
 
     Page<ProcessInstance> findByProcessData(String processData, Pageable pageable);

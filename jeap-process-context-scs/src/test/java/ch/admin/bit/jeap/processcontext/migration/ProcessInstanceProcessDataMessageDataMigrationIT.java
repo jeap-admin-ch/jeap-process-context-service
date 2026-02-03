@@ -93,6 +93,7 @@ class ProcessInstanceProcessDataMessageDataMigrationIT extends ProcessInstanceMo
         assertProcessInstanceCreated(originProcessId, "migrationFullTest");
     }
 
+    @Override
     public JeapAuthenticationToken viewAndCreateRoleToken() {
         return super.viewAndCreateRoleToken();
     }

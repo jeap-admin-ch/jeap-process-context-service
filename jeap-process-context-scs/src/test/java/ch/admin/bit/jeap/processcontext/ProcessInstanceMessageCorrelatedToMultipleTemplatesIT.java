@@ -63,6 +63,7 @@ class ProcessInstanceMessageCorrelatedToMultipleTemplatesIT extends ProcessInsta
         return event1;
     }
 
+    @Override
     public JeapAuthenticationToken viewAndCreateRoleToken() {
         return super.viewAndCreateRoleToken();
     }

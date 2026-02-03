@@ -93,6 +93,7 @@ class ProcessSnapshotIT extends ProcessInstanceMockS3ITBase {
         sendSync("topic.test2", event2);
     }
 
+    @Override
     public JeapAuthenticationToken viewAndCreateRoleToken() {
         return super.viewAndCreateRoleToken();
     }

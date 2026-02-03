@@ -14,7 +14,6 @@ import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import com.fasterxml.uuid.Generators;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
@@ -195,6 +194,7 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
                 .build();
     }
 
+    @Override
     public JeapAuthenticationToken viewAndCreateRoleToken() {
         return super.viewAndCreateRoleToken();
     }

@@ -35,7 +35,7 @@ class ProcessInstanceCreatedByDomainMessageConditionalIT extends ProcessInstance
     @Autowired
     private ProcessUpdateRepository processUpdateRepository;
 
-
+    @Override
     public JeapAuthenticationToken viewAndCreateRoleToken() {
         return super.viewAndCreateRoleToken();
     }

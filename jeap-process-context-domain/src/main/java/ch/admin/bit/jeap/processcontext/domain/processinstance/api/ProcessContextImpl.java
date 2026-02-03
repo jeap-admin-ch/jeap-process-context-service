@@ -1,16 +1,14 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance.api;
 
-import ch.admin.bit.jeap.processcontext.plugin.api.context.Message;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
+import ch.admin.bit.jeap.processcontext.plugin.api.event.MessageData;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-
-import static java.util.stream.Collectors.groupingBy;
 
 public final class ProcessContextImpl implements ProcessContext {
 
@@ -23,35 +21,71 @@ public final class ProcessContextImpl implements ProcessContext {
     @Getter
     private final String processName;
 
-    @Getter
-    private final List<Message> messages;
-
-    private final Map<String, List<Message>> messagesByName;
-
     private final ProcessContextRepositoryFacade repositoryFacade;
 
     @Builder
     private ProcessContextImpl(@NonNull UUID processInstanceId,
                                @NonNull String originProcessId,
                                @NonNull String processName,
-                               @NonNull List<Message> messages,
                                @NonNull ProcessContextRepositoryFacade repositoryFacade) {
         this.processInstanceId = processInstanceId;
         this.originProcessId = originProcessId;
         this.processName = processName;
-        this.messages = messages;
-        this.messagesByName = messages.stream()
-                .collect(groupingBy(Message::getName));
         this.repositoryFacade = repositoryFacade;
-    }
-
-    @Override
-    public List<Message> getMessagesByName(String messageName) {
-        return messagesByName.getOrDefault(messageName, List.of());
     }
 
     @Override
     public boolean areAllTasksInFinalState() {
         return repositoryFacade.areAllTasksInFinalState(processInstanceId);
+    }
+
+    @Override
+    public boolean containsMessageOfType(String messageType) {
+        return repositoryFacade.containsMessageOfType(processInstanceId, messageType);
+    }
+
+    @Override
+    public boolean containsMessageOfAnyType(Set<String> messageType) {
+        return repositoryFacade.containsMessageOfAnyType(processInstanceId, messageType);
+    }
+
+    @Override
+    public Set<MessageData> getMessageDataForMessageType(String messageType) {
+        return repositoryFacade.getMessageDataForMessageType(processInstanceId, messageType);
+    }
+
+    @Override
+    public long countMessagesByType(String messageType) {
+        return countMessagesByTypes(Set.of(messageType)).get(messageType);
+    }
+
+    @Override
+    public Map<String, Long> countMessagesByTypes(Set<String> messageTypes) {
+        return repositoryFacade.countMessagesByTypes(processInstanceId, messageTypes);
+    }
+
+    @Override
+    public long countMessagesByTypeWithMessageData(String messageType, String messageDataKey, String messageDataValue) {
+        return repositoryFacade.countMessagesByTypeWithMessageData(processInstanceId, messageType, messageDataKey, messageDataValue);
+    }
+
+    @Override
+    public long countMessagesByTypeWithAnyMessageData(String messageType, Map<String, String> messageDataFilter) {
+        return repositoryFacade.countMessagesByTypeWithAnyMessageData(processInstanceId, messageType, messageDataFilter);
+    }
+
+    @Override
+    public boolean containsMessageByTypeWithMessageData(String messageType, String messageDataKey, String messageDataValue) {
+        return repositoryFacade.containsMessageByTypeWithMessageData(processInstanceId, messageType, messageDataKey, messageDataValue);
+    }
+
+    @Override
+    public boolean containsMessageByTypeWithAnyMessageDataValue(String messageType, String messageDataKey, Set<String> messageDataValues) {
+        return repositoryFacade.containsMessageByTypeWithAnyMessageDataValue(processInstanceId, messageType, messageDataKey, messageDataValues);
+    }
+
+    @Override
+    public boolean containsMessageByTypeWithAnyMessageDataKeyValue(String messageType, Map<String, Set<String>> messageDataFilter) {
+        return repositoryFacade.containsMessageByTypeWithAnyMessageDataKeyValue(processInstanceId, messageType, messageDataFilter);
     }
 }

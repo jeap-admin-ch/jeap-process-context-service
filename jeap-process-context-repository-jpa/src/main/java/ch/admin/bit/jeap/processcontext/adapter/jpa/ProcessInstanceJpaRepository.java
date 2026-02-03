@@ -59,9 +59,6 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
     @Query("SELECT p.processTemplateName as templateName, p.processTemplateHash as templateHash from ProcessInstance p where p.originProcessId = :originProcessId")
     Optional<ProcessInstanceTemplate> findProcessInstanceTemplate(@Param("originProcessId") String originProcessId);
 
-    @Query("SELECT p.processTemplateName FROM ProcessInstance p where p.originProcessId = :originProcessId")
-    Optional<String> getProcessTemplateNameByOriginProcessId(@Param("originProcessId") String originProcessId);
-
     @Query(FIND_UNCOMPLETED_PROCESS_INSTANCES_HAVING_PROCESS_DATA_BASE_QUERY + " AND d.role = :processDataRole")
     Set<String> findUncompletedProcessInstancesHavingProcessData(@Param("processTemplateName") String processTemplateName,
                                                                  @Param("processDataKey") String processDataKey,

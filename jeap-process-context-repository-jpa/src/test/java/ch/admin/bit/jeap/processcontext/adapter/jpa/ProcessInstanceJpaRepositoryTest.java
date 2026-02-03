@@ -5,6 +5,7 @@ import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import com.fasterxml.uuid.Generators;
@@ -231,17 +232,6 @@ class ProcessInstanceJpaRepositoryTest {
         assertEquals(processInstance.getProcessData(), persistedProcessInstanceRead.getProcessData());
         assertEquals(1, persistedProcessInstanceRead.getTasks().size());
         assertEquals(processInstance.getTasks().getFirst().getOriginTaskId(), persistedProcessInstanceRead.getTasks().getFirst().getOriginTaskId());
-    }
-
-    @Test
-    void getProcessTemplateNameByOriginProcessId() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
-        repository.save(processInstance);
-
-        String templateName = repository.getProcessTemplateNameByOriginProcessId(processInstance.getOriginProcessId())
-                .orElseThrow();
-
-        assertEquals(processInstance.getProcessTemplateName(), templateName);
     }
 
     @Test

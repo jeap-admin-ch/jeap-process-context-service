@@ -1,8 +1,8 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceStubs;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import org.junit.jupiter.api.BeforeEach;

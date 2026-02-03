@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotCondition;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import com.fasterxml.uuid.Generators;
@@ -33,7 +34,7 @@ public final class ProcessInstanceStubs {
                 .build();
     }
 
-    static ProcessInstance createProcessWithSingleDynamicTaskInstance() {
+    public static ProcessInstance createProcessWithSingleDynamicTaskInstance() {
         TaskType taskType = TaskType.builder()
                 .name(singleTaskName)
                 .lifecycle(TaskLifecycle.DYNAMIC)

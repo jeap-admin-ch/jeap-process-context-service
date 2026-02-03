@@ -40,6 +40,7 @@ class ProcessInstanceCreatedByCommandIT extends ProcessInstanceMockS3ITBase {
         sendSync("topic.testcreateprocessinstance", command);
     }
 
+    @Override
     public JeapAuthenticationToken viewAndCreateRoleToken() {
         return super.viewAndCreateRoleToken();
     }

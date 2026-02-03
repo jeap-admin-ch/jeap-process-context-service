@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
 import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import lombok.RequiredArgsConstructor;
@@ -62,11 +63,6 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
     @Override
     public Optional<ProcessInstanceSummary> findProcessInstanceSummaryByOriginProcessId(String originProcessId) {
         return processInstanceJpaRepository.findProcessInstanceSummaryByOriginProcessId(originProcessId);
-    }
-
-    @Override
-    public Optional<String> getProcessTemplateNameByOriginProcessId(String originProcessId) {
-        return processInstanceJpaRepository.getProcessTemplateNameByOriginProcessId(originProcessId);
     }
 
     @Override

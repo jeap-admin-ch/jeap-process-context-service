@@ -1,10 +1,9 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
-import ch.admin.bit.jeap.processcontext.domain.message.Message;
-import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
-import ch.admin.bit.jeap.processcontext.domain.message.MessageUserData;
-import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessContextFactory;
+import ch.admin.bit.jeap.processcontext.domain.message.*;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceStubs;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import com.fasterxml.uuid.Generators;
 import jakarta.persistence.EntityManager;
@@ -19,8 +18,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,6 +52,13 @@ class MessageJpaRepositoryTest {
 
     @Autowired
     private MessageJpaRepository messageJpaRepository;
+    @Autowired
+    private MessageSearchJpaRepository messageSearchJpaRepository;
+    @Autowired
+    private MessageRepository messageRepository;
+
+    @Autowired
+    private ProcessInstanceJpaRepository processInstanceJpaRepository;
 
     @PersistenceContext
     EntityManager entityManager;
@@ -235,6 +243,229 @@ class MessageJpaRepositoryTest {
         entityManager.detach(messageSaved);
         List<String[]> messageRead = messageJpaRepository.findMessageUserDataByMessageId(messageSaved.getId());
         assertThat(messageRead).isEmpty();
+    }
+
+    @Test
+    void containsMessageOfType_messageExists_expectTrue() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        boolean result = messageJpaRepository.containsMessageOfType(savedProcessInstance.getId(), "sourceEventName");
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void containsMessageOfType_messageNotExists_expectFalse() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        boolean result = messageJpaRepository.containsMessageOfType(savedProcessInstance.getId(), "nonExistentMessageType");
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void containsMessageOfAnyType_oneTypeMatches_expectTrue() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        boolean result = messageJpaRepository.containsMessageOfAnyType(savedProcessInstance.getId(),
+                Set.of("sourceEventName", "nonExistentType"));
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void containsMessageOfAnyType_noTypeMatches_expectFalse() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        boolean result = messageJpaRepository.containsMessageOfAnyType(savedProcessInstance.getId(),
+                Set.of("nonExistent1", "nonExistent2"));
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void findMessageDataForMessageType_messageExists_expectMessageData() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        List<MessageDataProjection> result =
+                messageJpaRepository.findMessageDataForMessageType(savedProcessInstance.getId(), "sourceEventName");
+
+        assertThat(result).hasSize(2);
+        Set<String> keys = result.stream().map(MessageDataProjection::getKey).collect(Collectors.toSet());
+        assertThat(keys).containsOnly("sourceEventDataKey");
+    }
+
+    @Test
+    void findMessageDataForMessageType_messageNotExists_expectEmpty() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        List<MessageDataProjection> result =
+                messageJpaRepository.findMessageDataForMessageType(savedProcessInstance.getId(), "nonExistentType");
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void countMessagesByTypes_multipleTypes_expectCorrectCounts() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        List<MessageTypeCount> result =
+                messageJpaRepository.countMessagesByTypes(savedProcessInstance.getId(),
+                        Set.of("sourceEventName", "anotherSourceEventName", "nonExistent"));
+
+        assertThat(result).hasSize(2);
+        Map<String, Long> countMap = result.stream()
+                .collect(Collectors.toMap(
+                        MessageTypeCount::getMessageName,
+                        MessageTypeCount::getMessageCount));
+        assertThat(countMap)
+                .containsEntry("sourceEventName", 1L)
+                .containsEntry("anotherSourceEventName", 1L);
+    }
+
+    @Test
+    void countMessagesWithMessageData_matchingData_expectCountByType() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        long result = messageJpaRepository.countMessagesByTypeWithMessageData(savedProcessInstance.getId(),
+                "sourceEventName", "sourceEventDataKey", "someValue");
+
+        assertThat(result).isEqualTo(1);
+    }
+
+    @Test
+    void countMessagesByTypeWithMessageData_noMatchingData_expectZero() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        long result = messageJpaRepository.countMessagesByTypeWithMessageData(savedProcessInstance.getId(),
+                "sourceEventName", "sourceEventDataKey", "nonExistentValue");
+
+        assertThat(result).isZero();
+    }
+
+    @Test
+    void containsMessageByTypeWithAnyMessageDataValue_matchingValue_expectTrue() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        boolean result = messageJpaRepository.containsMessageByTypeWithAnyMessageDataValue(savedProcessInstance.getId(),
+                "sourceEventName", "sourceEventDataKey", Set.of("someValue", "otherValue"));
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void containsMessageByTypeWithAnyMessageDataValue_noMatchingValue_expectFalse() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        boolean result = messageJpaRepository.containsMessageByTypeWithAnyMessageDataValue(savedProcessInstance.getId(),
+                "sourceEventName", "sourceEventDataKey", Set.of("nonExistent1", "nonExistent2"));
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void containsMessageByTypeWithAnyMessageDataKeyValue_singleKeyValueMatch_expectTrue() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
+                savedProcessInstance.getId(),
+                "sourceEventName",
+                Map.of("sourceEventDataKey", Set.of("someValue")));
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void containsMessageByTypeWithAnyMessageDataKeyValue_multipleValuesForKey_expectTrue() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
+                savedProcessInstance.getId(),
+                "sourceEventName",
+                Map.of("sourceEventDataKey", Set.of("someValue", "nonExistentValue")));
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void containsMessageByTypeWithAnyMessageDataKeyValue_multipleKeysOneMatches_expectTrue() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
+                savedProcessInstance.getId(),
+                "sourceEventName",
+                Map.of(
+                        "nonExistentKey", Set.of("someValue"),
+                        "sourceEventDataKey", Set.of("someValue")
+                ));
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void containsMessageByTypeWithAnyMessageDataKeyValue_noMatchingKey_expectFalse() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
+                savedProcessInstance.getId(),
+                "sourceEventName",
+                Map.of("nonExistentKey", Set.of("someValue")));
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void containsMessageByTypeWithAnyMessageDataKeyValue_noMatchingValue_expectFalse() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
+                savedProcessInstance.getId(),
+                "sourceEventName",
+                Map.of("sourceEventDataKey", Set.of("nonExistent1", "nonExistent2")));
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void containsMessageByTypeWithAnyMessageDataKeyValue_wrongMessageType_expectFalse() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
+                savedProcessInstance.getId(),
+                "nonExistentMessageType",
+                Map.of("sourceEventDataKey", Set.of("someValue")));
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void containsMessageByTypeWithAnyMessageDataKeyValue_emptyFilter_expectFalse() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
+                savedProcessInstance.getId(),
+                "sourceEventName",
+                Map.of());
+
+        assertThat(result).isFalse();
     }
 
     private MessageData createEventData(String eventDataKey, String eventDataValue, String eventDataRole) {

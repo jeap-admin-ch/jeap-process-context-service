@@ -5,6 +5,7 @@ import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.port.InternalMessageProducer;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference;
@@ -27,7 +28,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessContextFactory.createMessage;
+import static ch.admin.bit.jeap.processcontext.domain.processinstance.api.MessageFactory.createMessage;
 import static net.logstash.logback.argument.StructuredArguments.keyValue;
 
 @Component

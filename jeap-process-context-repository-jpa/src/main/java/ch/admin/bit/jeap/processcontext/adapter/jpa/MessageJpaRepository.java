@@ -51,4 +51,124 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
     @Modifying
     @Query(nativeQuery = true, value = "DELETE FROM events e WHERE e.id in (:messageIds) ")
     void deleteMessageByIds(@Param("messageIds") Set<UUID> messageIds);
+
+    /**
+     * Checks if the process instance contains at least one message of the given type.
+     */
+    @Query("""
+            select case when exists (
+                select 1 from ProcessInstance p
+                join p.messageReferences r
+                join events e on e.id = r.messageId
+                where p.id = :processInstanceId and e.messageName = :messageType
+            ) then true else false end
+            """)
+    boolean containsMessageOfType(@Param("processInstanceId") UUID processInstanceId,
+                                  @Param("messageType") String messageType);
+
+    /**
+     * Checks if the process instance contains at least one message of any of the given types.
+     */
+    @Query("""
+            select case when exists (
+                select 1 from ProcessInstance p
+                join p.messageReferences r
+                join events e on e.id = r.messageId
+                where p.id = :processInstanceId and e.messageName in :messageTypes
+            ) then true else false end
+            """)
+    boolean containsMessageOfAnyType(@Param("processInstanceId") UUID processInstanceId,
+                                     @Param("messageTypes") Set<String> messageTypes);
+
+    /**
+     * Retrieves message data for messages of a given type within a process instance.
+     */
+    @Query("""
+            select d.key as key, d.value as value, d.role as role
+            from ProcessInstance p
+            join p.messageReferences r
+            join events e on e.id = r.messageId
+            join e.messageData d
+            where p.id = :processInstanceId
+              and e.messageName = :messageType
+              and d.templateName = p.processTemplateName
+            """)
+    List<MessageDataProjection> findMessageDataForMessageType(@Param("processInstanceId") UUID processInstanceId,
+                                                              @Param("messageType") String messageType);
+
+    /**
+     * Counts messages by type for multiple message types within a process instance.
+     */
+    @Query("""
+            select e.messageName as messageName, count(e) as messageCount
+            from ProcessInstance p
+            join p.messageReferences r
+            join events e on e.id = r.messageId
+            where p.id = :processInstanceId and e.messageName in :messageTypes
+            group by e.messageName
+            """)
+    List<MessageTypeCount> countMessagesByTypes(@Param("processInstanceId") UUID processInstanceId,
+                                                @Param("messageTypes") Set<String> messageTypes);
+
+    /**
+     * Counts messages by type that have the specified message data key/value pair.
+     */
+    @Query("""
+            select count(distinct e)
+            from ProcessInstance p
+            join p.messageReferences r
+            join events e on e.id = r.messageId
+            join e.messageData d
+            where p.id = :processInstanceId
+              and e.messageName = :messageType
+              and d.templateName = p.processTemplateName
+              and d.key = :dataKey
+              and d.value = :dataValue
+            """)
+    long countMessagesByTypeWithMessageData(@Param("processInstanceId") UUID processInstanceId,
+                                            @Param("messageType") String messageType,
+                                            @Param("dataKey") String dataKey,
+                                            @Param("dataValue") String dataValue);
+
+    /**
+     * Checks if any message of the given type exists with the specified message data key and any of the given values.
+     */
+    @Query("""
+            select case when exists (
+                select 1 from ProcessInstance p
+                join p.messageReferences r
+                join events e on e.id = r.messageId
+                join e.messageData d
+                where p.id = :processInstanceId
+                  and e.messageName = :messageType
+                  and d.templateName = p.processTemplateName
+                  and d.key = :dataKey
+                  and d.value in :dataValues
+            ) then true else false end
+            """)
+    boolean containsMessageByTypeWithAnyMessageDataValue(@Param("processInstanceId") UUID processInstanceId,
+                                                         @Param("messageType") String messageType,
+                                                         @Param("dataKey") String dataKey,
+                                                         @Param("dataValues") Set<String> dataValues);
+
+    /**
+     * Checks if any message of the given type exists with the specified message data key/value pair.
+     */
+    @Query("""
+            select case when exists (
+                select 1 from ProcessInstance p
+                join p.messageReferences r
+                join events e on e.id = r.messageId
+                join e.messageData d
+                where p.id = :processInstanceId
+                  and e.messageName = :messageType
+                  and d.templateName = p.processTemplateName
+                  and d.key = :messageDataKey
+                  and d.value = :messageDataValue
+            ) then true else false end
+            """)
+    boolean containsMessageByTypeWithMessageData(@Param("processInstanceId") UUID processInstanceId,
+                                                 @Param("messageType") String messageType,
+                                                 @Param("messageDataKey") String messageDataKey,
+                                                 @Param("messageDataValue") String messageDataValue);
 }

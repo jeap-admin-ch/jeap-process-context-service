@@ -49,6 +49,7 @@ class ProcessInstanceCreatedByDomainMessageWithObservedTaskIT extends ProcessIns
         sendSync("topic.testcreatingprocessinstanceandtask", event1);
     }
 
+    @Override
     public JeapAuthenticationToken viewAndCreateRoleToken() {
         return super.viewAndCreateRoleToken();
     }

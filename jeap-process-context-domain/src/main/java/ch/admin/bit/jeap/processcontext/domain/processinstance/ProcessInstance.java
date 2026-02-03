@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.processcontext.domain.MutableDomainEntity;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessDataTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationPattern;
@@ -133,7 +134,7 @@ public class ProcessInstance extends MutableDomainEntity {
      * Start the process instance by planning initial tasks as defined in the process template. This needs to be invoked
      * after persisting a new process instance created using {@link #createProcessInstance(String, ProcessTemplate, ProcessContextFactory)}.
      * If the process is not in STARTED state, this method does nothing. As this method invokes {@link #updateProcessState()}
-     * internally, the process instance must be persisted first in case task or process conmpletion conditions require
+     * internally, the process instance must be persisted first in case task or process completion conditions require
      * access to persisted data.
      */
     void start() {

@@ -60,6 +60,7 @@ class ProcessInstanceTemplateMigrationIT extends ProcessInstanceMockS3ITBase {
         return processInstanceQueryRepository.findByOriginProcessIdLoadingMessages(originProcessId).orElseThrow().getProcessTemplateHash();
     }
 
+    @Override
     public JeapAuthenticationToken viewAndCreateRoleToken() {
         return super.viewAndCreateRoleToken();
     }
