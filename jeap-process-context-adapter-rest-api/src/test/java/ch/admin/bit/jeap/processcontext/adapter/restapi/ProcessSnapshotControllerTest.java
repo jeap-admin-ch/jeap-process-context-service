@@ -1,8 +1,8 @@
 package ch.admin.bit.jeap.processcontext.adapter.restapi;
 
+import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationService;
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsService;
 import ch.admin.bit.jeap.security.resource.semanticAuthentication.SemanticApplicationRole;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
@@ -57,6 +57,8 @@ class ProcessSnapshotControllerTest {
     private RelationRepository relationRepository;
     @MockitoBean
     private MessageRepository messageRepository;
+    @MockitoBean
+    private MessageReferenceRepository messageReferenceRepository;
 
     private static final SemanticApplicationRole SNAPSHOT_VIEW_ROLE = SemanticApplicationRole.builder()
             .system("jme")

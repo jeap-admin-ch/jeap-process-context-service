@@ -60,6 +60,9 @@ class MessageJpaRepositoryTest {
     @Autowired
     private ProcessInstanceJpaRepository processInstanceJpaRepository;
 
+    @Autowired
+    private MessageReferenceJpaRepository messageReferenceJpaRepository;
+
     @PersistenceContext
     EntityManager entityManager;
 
@@ -247,8 +250,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void containsMessageOfType_messageExists_expectTrue() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageJpaRepository.containsMessageOfType(savedProcessInstance.getId(), "sourceEventName");
 
@@ -257,8 +259,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void containsMessageOfType_messageNotExists_expectFalse() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageJpaRepository.containsMessageOfType(savedProcessInstance.getId(), "nonExistentMessageType");
 
@@ -267,8 +268,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void containsMessageOfAnyType_oneTypeMatches_expectTrue() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageJpaRepository.containsMessageOfAnyType(savedProcessInstance.getId(),
                 Set.of("sourceEventName", "nonExistentType"));
@@ -278,8 +278,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void containsMessageOfAnyType_noTypeMatches_expectFalse() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageJpaRepository.containsMessageOfAnyType(savedProcessInstance.getId(),
                 Set.of("nonExistent1", "nonExistent2"));
@@ -289,8 +288,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void findMessageDataForMessageType_messageExists_expectMessageData() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         List<MessageDataProjection> result =
                 messageJpaRepository.findMessageDataForMessageType(savedProcessInstance.getId(), "sourceEventName");
@@ -302,8 +300,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void findMessageDataForMessageType_messageNotExists_expectEmpty() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         List<MessageDataProjection> result =
                 messageJpaRepository.findMessageDataForMessageType(savedProcessInstance.getId(), "nonExistentType");
@@ -313,8 +310,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void countMessagesByTypes_multipleTypes_expectCorrectCounts() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         List<MessageTypeCount> result =
                 messageJpaRepository.countMessagesByTypes(savedProcessInstance.getId(),
@@ -332,8 +328,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void countMessagesWithMessageData_matchingData_expectCountByType() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         long result = messageJpaRepository.countMessagesByTypeWithMessageData(savedProcessInstance.getId(),
                 "sourceEventName", "sourceEventDataKey", "someValue");
@@ -343,8 +338,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void countMessagesByTypeWithMessageData_noMatchingData_expectZero() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         long result = messageJpaRepository.countMessagesByTypeWithMessageData(savedProcessInstance.getId(),
                 "sourceEventName", "sourceEventDataKey", "nonExistentValue");
@@ -354,8 +348,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void containsMessageByTypeWithAnyMessageDataValue_matchingValue_expectTrue() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageJpaRepository.containsMessageByTypeWithAnyMessageDataValue(savedProcessInstance.getId(),
                 "sourceEventName", "sourceEventDataKey", Set.of("someValue", "otherValue"));
@@ -365,8 +358,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void containsMessageByTypeWithAnyMessageDataValue_noMatchingValue_expectFalse() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageJpaRepository.containsMessageByTypeWithAnyMessageDataValue(savedProcessInstance.getId(),
                 "sourceEventName", "sourceEventDataKey", Set.of("nonExistent1", "nonExistent2"));
@@ -376,8 +368,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void containsMessageByTypeWithAnyMessageDataKeyValue_singleKeyValueMatch_expectTrue() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
                 savedProcessInstance.getId(),
@@ -389,8 +380,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void containsMessageByTypeWithAnyMessageDataKeyValue_multipleValuesForKey_expectTrue() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
                 savedProcessInstance.getId(),
@@ -402,8 +392,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void containsMessageByTypeWithAnyMessageDataKeyValue_multipleKeysOneMatches_expectTrue() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
                 savedProcessInstance.getId(),
@@ -418,8 +407,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void containsMessageByTypeWithAnyMessageDataKeyValue_noMatchingKey_expectFalse() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
                 savedProcessInstance.getId(),
@@ -431,8 +419,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void containsMessageByTypeWithAnyMessageDataKeyValue_noMatchingValue_expectFalse() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
                 savedProcessInstance.getId(),
@@ -444,8 +431,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void containsMessageByTypeWithAnyMessageDataKeyValue_wrongMessageType_expectFalse() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
                 savedProcessInstance.getId(),
@@ -457,8 +443,7 @@ class MessageJpaRepositoryTest {
 
     @Test
     void containsMessageByTypeWithAnyMessageDataKeyValue_emptyFilter_expectFalse() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
-        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
                 savedProcessInstance.getId(),
@@ -489,6 +474,15 @@ class MessageJpaRepositoryTest {
         messageJpaRepository.saveAndFlush(message);
         entityManager.detach(message);
         return message.getId();
+    }
+
+    /**
+     * Creates a process instance with messages and persists the MessageReference entities.
+     */
+    private ProcessInstance createProcessInstanceWithPersistedMessageReferences() {
+        ProcessInstance processInstanceStub = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        return JpaRepositoryTestSupport.createProcessInstanceWithPersistedMessageReferences(processInstanceStub,
+                processInstanceJpaRepository, messageJpaRepository, messageReferenceJpaRepository);
     }
 
 }

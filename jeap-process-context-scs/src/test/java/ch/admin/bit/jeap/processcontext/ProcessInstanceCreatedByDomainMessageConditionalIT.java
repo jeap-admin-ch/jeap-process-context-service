@@ -79,7 +79,6 @@ class ProcessInstanceCreatedByDomainMessageConditionalIT extends ProcessInstance
     private void waitForProcessUpdateToBeCreated(String originProcessId) {
         Awaitility.await()
                 .pollInSameThread()
-                .atMost(TIMEOUT)
                 .until(() -> processUpdateRepository.countAllByOriginProcessIdIn(Set.of(originProcessId)) == 1);
     }
 

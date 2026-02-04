@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -30,19 +29,19 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
 
     String FIND_MESSAGE_REFERENCES_MESSAGE_DATA_QUERY = """
                 select r.id as messageReferenceId, d.key as messageDataKey, d.value as messageDataValue, d.role as messageDataRole
-                    from ProcessInstance p join p.messageReferences r join events e on e.id = r.messageId join e.messageData d
+                    from MessageReference r join r.processInstance p join events e on e.id = r.messageId join e.messageData d
             where p.id = :processInstanceId and d.templateName = p.processTemplateName
             """;
 
     String FIND_MESSAGE_REFERENCES_RELATED_ORIGIN_TASK_IDS_QUERY = """
                 select r.id as messageReferenceId, oti.originTaskId as relatedOriginTaskId
-                from ProcessInstance p join p.messageReferences r join events e on e.id = r.messageId join e.originTaskIds oti
+                from MessageReference r join r.processInstance p join events e on e.id = r.messageId join e.originTaskIds oti
             where p.id = :processInstanceId and oti.templateName = p.processTemplateName
             """;
 
     String FIND_MESSAGE_REFERENCES_MESSAGES_QUERY = """
                     select r.id as messageReferenceId, e.id as messageId, e.messageName as messageName, e.createdAt as messageReceivedAt, e.messageCreatedAt as messageCreatedAt, e.traceId as traceId
-                from ProcessInstance p join p.messageReferences r join events e on e.id = r.messageId
+                from MessageReference r join r.processInstance p join events e on e.id = r.messageId
             where p.id = :processInstanceId
             """;
 
@@ -71,24 +70,6 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
                                                                             @Param("processDataValue") String processDataValue);
 
     Slice<ProcessInstanceQueryResult> findIdOriginProcessIdByStateAndModifiedAtBefore(ProcessState state, ZonedDateTime modifiedBefore, Pageable pageable);
-
-    @Query(FIND_MESSAGE_REFERENCES_MESSAGE_DATA_QUERY)
-    List<MessageReferenceMessageData> findMessageReferencesMessageData(@Param("processInstanceId") UUID processInstanceId);
-
-    @Query(FIND_MESSAGE_REFERENCES_RELATED_ORIGIN_TASK_IDS_QUERY)
-    List<MessageReferenceRelatedTaskId> findMessageReferencesRelatedOriginTaskIds(@Param("processInstanceId") UUID processInstanceId);
-
-    @Query(FIND_MESSAGE_REFERENCES_MESSAGES_QUERY)
-    List<MessageReferenceMessage> findMessageReferencesMessages(@Param("processInstanceId") UUID processInstanceId);
-
-
-    @Transactional
-    @Modifying
-    @Query("""
-            UPDATE ProcessInstance p SET p.processTemplateHash = :templateHash \
-            WHERE p.processTemplateHash IS NULL AND p.processTemplateName = :templateName\
-            """)
-    void setInitialTemplateHashIfNotSet(@Param("templateName") String templateName, @Param("templateHash") String templateHash);
 
     @Query("""
             SELECT p.originProcessId FROM ProcessInstance p WHERE \
@@ -134,9 +115,6 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
     @Query(nativeQuery = true, value = "SELECT p.origin_process_id FROM process_instance p WHERE p.id in (:processInstanceIds) ")
     Set<String> getOriginProcessIdsByInstanceIds(@Param("processInstanceIds") Set<UUID> processInstanceIds);
 
-    @Query(nativeQuery = true, value = "SELECT p.latest_snapshot_version FROM process_instance p WHERE p.origin_process_id = :originProcessId")
-    Integer getLatestProcessSnapshotVersion(@Param("originProcessId") String originProcessId);
-
     /**
      * Checks whether all tasks in the process instance are in a final state. For this to be true,
      * the following conditions must be met:
@@ -165,4 +143,33 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
             where p.id = :processInstanceId
             """)
     Boolean areAllTasksInFinalState(UUID processInstanceId);
+
+    @Query("""
+            SELECT r FROM MessageReference r
+            JOIN r.processInstance p
+            JOIN events e ON e.id = r.messageId
+            WHERE p.id = :processInstanceId AND e.messageName = :messageType
+            ORDER BY e.createdAt DESC
+            """)
+    List<MessageReference> findMessageReferencesByMessageType(
+            @Param("processInstanceId") UUID processInstanceId,
+            @Param("messageType") String messageType,
+            Pageable pageable);
+
+    @Query("""
+            SELECT r FROM MessageReference r
+            JOIN r.processInstance p
+            JOIN events e ON e.id = r.messageId
+            JOIN e.originTaskIds oti
+            WHERE p.id = :processInstanceId
+              AND e.messageName = :messageType
+              AND oti.originTaskId = :originTaskId
+              AND oti.templateName = p.processTemplateName
+            ORDER BY e.createdAt DESC
+            """)
+    List<MessageReference> findMessageReferencesByMessageTypeAndOriginTaskId(
+            @Param("processInstanceId") UUID processInstanceId,
+            @Param("messageType") String messageType,
+            @Param("originTaskId") String originTaskId,
+            Pageable pageable);
 }

@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.processcontext.adapter.restapi.model;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessSnapshot;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.Task;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
+import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsService;
@@ -47,8 +48,10 @@ public class ProcessInstanceDTOFactory {
                                                                TranslateService translateService,
                                                                ProcessRelationsService processRelationsService,
                                                                MessageRepository messageRepository,
+                                                               MessageReferenceRepository messageReferenceRepository,
                                                                RelationRepository relationRepository) {
-        List<MessageDTO> messages = createMessages(processInstance.getMessageReferences());
+        List<MessageReferenceMessageDTO> messageReferences = messageReferenceRepository.findByProcessInstanceId(processInstance.getId());
+        List<MessageDTO> messages = createMessages(messageReferences);
         List<TaskInstanceDTO> tasks = createTasks(processInstance.getTasks(), messages, processInstance.getProcessTemplate().getName(), translateService, messageRepository);
         List<RelationDTO> relations = createRelations(relationRepository.findByProcessInstance(processInstance));
         List<ProcessRelationDTO> processRelations = createProcessRelations(processInstance, processRelationsService);
@@ -112,8 +115,8 @@ public class ProcessInstanceDTOFactory {
                 .toList();
     }
 
-    static List<MessageDTO> createMessages(List<MessageReferenceMessageDTO> messageReferenceMessageDTOS) {
-        return messageReferenceMessageDTOS.stream()
+    static List<MessageDTO> createMessages(List<MessageReferenceMessageDTO> messageReferences) {
+        return messageReferences.stream()
                 .sorted(MESSAGE_COMPARATOR)
                 .map(MessageDTO::create)
                 .toList();

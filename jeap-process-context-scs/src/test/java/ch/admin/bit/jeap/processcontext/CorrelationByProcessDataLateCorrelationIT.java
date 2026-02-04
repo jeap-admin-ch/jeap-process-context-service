@@ -1,9 +1,7 @@
 package ch.admin.bit.jeap.processcontext;
 
-import ch.admin.bit.jeap.processcontext.domain.message.Message;
-import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
-import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
-import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
+import ch.admin.bit.jeap.processcontext.domain.message.*;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
 import ch.admin.bit.jeap.processcontext.event.test3.Test3Event;
@@ -29,6 +27,9 @@ class CorrelationByProcessDataLateCorrelationIT extends ProcessInstanceMockS3ITB
 
     @Autowired
     private MessageRepository messageRepository;
+
+    @Autowired
+    private MessageReferenceRepository messageReferenceRepository;
 
     @Autowired
     private ProcessInstanceRepository processInstanceRepository;
@@ -87,7 +88,9 @@ class CorrelationByProcessDataLateCorrelationIT extends ProcessInstanceMockS3ITB
     private void assertEventReferencesCount(int count) {
         TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
         transactionTemplate.executeWithoutResult(status -> {
-            assertThat(processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).orElseThrow().getMessageReferences()).hasSize(count);
+            ProcessInstance processInstance = processInstanceRepository.findByOriginProcessId(originProcessId).orElseThrow();
+            assertThat(messageReferenceRepository.findByProcessInstanceId(processInstance.getId()))
+                    .hasSize(count);
         });
     }
 

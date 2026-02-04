@@ -199,7 +199,6 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
     protected void assertProcessInstanceHasProcessReference(String originProcessId, ProcessRelationDTO expectedDto) {
         Awaitility.await()
                 .pollInSameThread()
-                .atMost(TIMEOUT)
                 .until(() -> !processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getProcessRelations().isEmpty());
 
         List<ProcessRelationDTO> processRelationDTOList = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getProcessRelations();

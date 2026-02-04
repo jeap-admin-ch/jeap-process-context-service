@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext;
 
+import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.tx.Transactions;
@@ -11,10 +12,10 @@ import ch.admin.bit.jeap.processcontext.testevent.Test2EventBuilder;
 import ch.admin.bit.jeap.processcontext.testevent.Test4CreatingProcessInstanceEventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,13 +27,15 @@ class ProcessInstanceCreatedByDomainEventIT extends ProcessInstanceMockS3ITBase 
     @Autowired
     private ProcessInstanceRepository processInstanceRepository;
     @Autowired
+    private MessageReferenceRepository messageReferenceRepository;
+    @Autowired
     private Transactions transactions;
 
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void testProcessInstantiationWithDomainEventAndCorrelation() {
 
-        assertThat(processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId)).isNotPresent();
+        assertThat(processInstanceRepository.findByOriginProcessId(originProcessId)).isNotPresent();
 
         // Send event that triggers the process instantiation
         sendTest1CreatingProcessInstanceEvent();
@@ -55,7 +58,7 @@ class ProcessInstanceCreatedByDomainEventIT extends ProcessInstanceMockS3ITBase 
         // Sent event that is correlated by the process data
         sendTest2Event();
 
-        transactions.withinNewTransaction(() -> assertThat(processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId)).isNotPresent());
+        transactions.withinNewTransaction(() -> assertThat(processInstanceRepository.findByOriginProcessId(originProcessId)).isNotPresent());
 
         // Send event that triggers the process instantiation
         sendTest1CreatingProcessInstanceEvent();
@@ -72,7 +75,7 @@ class ProcessInstanceCreatedByDomainEventIT extends ProcessInstanceMockS3ITBase 
     @WithAuthentication("viewAndCreateRoleToken")
     void testProcessInstantiationWithDomainEventsAndCorrelation() {
 
-        assertThat(processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId)).isNotPresent();
+        assertThat(processInstanceRepository.findByOriginProcessId(originProcessId)).isNotPresent();
 
         // Send event that triggers the process instantiation
         sendTest1CreatingProcessInstanceEvent();
@@ -92,8 +95,8 @@ class ProcessInstanceCreatedByDomainEventIT extends ProcessInstanceMockS3ITBase 
                 .timeout(TIMEOUT)
                 .until(() -> {
                     int correlatedEventCount = transactions.withinNewTransactionWithResult(() -> {
-                        ProcessInstance processInstance = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).get();
-                        return processInstance.getMessageReferences().size();
+                        ProcessInstance processInstance = processInstanceRepository.findByOriginProcessId(originProcessId).orElseThrow();
+                        return messageReferenceRepository.findByProcessInstanceId(processInstance.getId()).size();
                     });
                     return correlatedEventCount == 3; // test event 1, 2 and 4
                 });

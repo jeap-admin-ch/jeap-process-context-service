@@ -123,12 +123,7 @@ public class ProcessInstanceStubs {
         return new ProcessContextFactory(repositoryFacade);
     }
 
-    public ProcessInstance createProcessWithSingleTaskInstanceAndEvent() {
-        return createProcessWithSingleTaskInstanceAndEventWithAdditionalMessages("template", Set.of(), Set.of(), List.of());
-    }
-
-    public ProcessInstance createProcessWithSingleTaskInstanceAndEventWithAdditionalMessages(
-            String templateName, Set<TaskData> taskData, Set<ProcessData> processData, List<Message> additionalMessages) {
+    public ProcessInstance createProcessWithSingleTaskInstance(String templateName, Set<TaskData> taskData, Set<ProcessData> processData) {
         TaskType taskType = TaskType.builder()
                 .name(task)
                 .lifecycle(TaskLifecycle.STATIC)
@@ -155,9 +150,7 @@ public class ProcessInstanceStubs {
                 .createdAt(ZonedDateTime.now())
                 .messageCreatedAt(ZonedDateTime.now())
                 .build();
-        processInstance.addMessage(message);
         setProcessData(processInstance, processData);
-        additionalMessages.forEach(processInstance::addMessage);
         return processInstance;
     }
 
@@ -219,7 +212,7 @@ public class ProcessInstanceStubs {
         MessageData messageData1 = new MessageData(templateName, "sourceEventDataKey", "someValue", "someRole");
         MessageData messageData2 = new MessageData(templateName, "sourceEventDataKey", "someValueOtherValue", "someOtherRole");
         MessageData messageData3 = new MessageData(templateName, "anotherSourceEventDataKey", "anotherValue");
-        Message message = messageRepository.save(Message.messageBuilder()
+        messageRepository.save(Message.messageBuilder()
                 .messageName("sourceEventName")
                 .messageId(Generators.timeBasedEpochGenerator().generate().toString())
                 .idempotenceId(Generators.timeBasedEpochGenerator().generate().toString())
@@ -228,7 +221,7 @@ public class ProcessInstanceStubs {
                 .messageData(Set.of(messageData1, messageData2))
                 .traceId("traceId1")
                 .build());
-        Message anotherMessage = messageRepository.save(Message.messageBuilder()
+        messageRepository.save(Message.messageBuilder()
                 .messageName("anotherSourceEventName")
                 .messageId(Generators.timeBasedEpochGenerator().generate().toString())
                 .idempotenceId(Generators.timeBasedEpochGenerator().generate().toString())
@@ -237,8 +230,16 @@ public class ProcessInstanceStubs {
                 .messageData(Set.of(messageData3))
                 .traceId("traceId2")
                 .build());
-        processInstance.addMessage(message);
-        processInstance.addMessage(anotherMessage);
+
+        // Create ProcessData corresponding to what would be derived from message data via ProcessDataTemplates
+        // targetKeyName <- sourceEventDataKey (from sourceEventName message)
+        // anotherTargetKeyName <- anotherSourceEventDataKey (from anotherSourceEventName message)
+        Set<ProcessData> processData = Set.of(
+                new ProcessData("targetKeyName", "someValue", "someRole"),
+                new ProcessData("targetKeyName", "someValueOtherValue", "someOtherRole"),
+                new ProcessData("anotherTargetKeyName", "anotherValue")
+        );
+        setProcessData(processInstance, processData);
         return processInstance;
     }
 

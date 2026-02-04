@@ -17,9 +17,16 @@ class InternalEventsIT extends KafkaAdapterIntegrationTestBase {
     private CommonErrorHandler errorHandler;
 
     @Test
-    void produceAndConsumeProcessContextOutdatedEvent_internalMessageAsDomainEvent() {
+    void produceAndConsumeProcessContextOutdatedEvent() {
         eventProducer.produceProcessContextOutdatedEventSynchronously("1234");
         verify(processInstanceService, timeout(TEST_TIMEOUT)).updateProcessState("1234");
+        verifyNoErrorHandlingInteractions(errorHandler);
+    }
+
+    @Test
+    void produceAndConsumeProcessContextOutdatedEvent_triggerMigration() {
+        eventProducer.produceProcessContextOutdatedMigrationTriggerEventSynchronously("1234");
+        verify(processInstanceService, timeout(TEST_TIMEOUT)).migrateProcessInstanceTemplate("1234");
         verifyNoErrorHandlingInteractions(errorHandler);
     }
 

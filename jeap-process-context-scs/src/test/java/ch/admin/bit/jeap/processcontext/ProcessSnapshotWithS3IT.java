@@ -99,7 +99,6 @@ class ProcessSnapshotWithS3IT extends ProcessInstanceITBase {
         // from the snapshot on S3 and not from the DB
         ProcessInstanceDTO dto = Awaitility.await()
                 .pollInSameThread()
-                .atMost(TIMEOUT)
                 .until(() -> processInstanceController.getProcessInstanceByOriginProcessId(processId),
                         Matchers.hasProperty("snapshot", is(equalTo(true))));
 
@@ -114,7 +113,6 @@ class ProcessSnapshotWithS3IT extends ProcessInstanceITBase {
     private void assertMessageCount(String originProcessId, String messageType, long count) {
         Awaitility.await()
                 .pollInSameThread()
-                .atMost(TIMEOUT)
                 .until(() -> countProcessEventsOfType(originProcessId, messageType), is(equalTo(count)));
     }
 

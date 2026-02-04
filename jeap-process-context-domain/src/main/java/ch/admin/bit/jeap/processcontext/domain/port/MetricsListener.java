@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 public interface MetricsListener {
 
@@ -35,5 +36,7 @@ public interface MetricsListener {
     void snapshotCreated(ProcessTemplate template);
 
     void timed(String name, Map<String, String> tags, Runnable runnable);
+
+    <T> T timedWithReturnValue(String name, Supplier<T> supplier);
 
 }

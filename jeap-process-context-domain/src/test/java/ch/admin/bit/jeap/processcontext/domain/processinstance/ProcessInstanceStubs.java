@@ -1,6 +1,5 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
-import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotCondition;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
@@ -10,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ProcessInstanceStubs {
@@ -48,13 +46,6 @@ public final class ProcessInstanceStubs {
                 .taskTypes(List.of(taskType))
                 .build();
         ProcessInstance processInstance = startProcessInstance(processTemplate);
-        processInstance.addMessage(Message.messageBuilder()
-                .messageId(UUID.randomUUID().toString())
-                .idempotenceId("idempotenceId")
-                .messageName("messageName1")
-                .createdAt(ZonedDateTime.now())
-                .messageCreatedAt(ZonedDateTime.now())
-                .build());
         processInstance.planDomainEventTask(taskType, "taskId", ZonedDateTime.now(), null);
         return processInstance;
     }
@@ -92,13 +83,6 @@ public final class ProcessInstanceStubs {
                 .taskTypes(List.of(mandatoryTaskType, dynamicTaskType))
                 .build();
         ProcessInstance processInstance = startProcessInstance(processTemplate);
-        processInstance.addMessage(Message.messageBuilder()
-                .messageId(UUID.randomUUID().toString())
-                .idempotenceId("idempotenceId")
-                .messageName("messageNamePlan")
-                .createdAt(ZonedDateTime.now())
-                .messageCreatedAt(ZonedDateTime.now())
-                .build());
         processInstance.planDomainEventTask(dynamicTaskType, "taskId", ZonedDateTime.now(), null);
         return processInstance;
     }

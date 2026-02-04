@@ -22,20 +22,12 @@ public class ProcessContextRepositoryFacadeStub implements ProcessContextReposit
 
     @Override
     public boolean containsMessageOfType(UUID processInstanceId, String messageType) {
-        if (processInstance == null) {
-            return false;
-        }
-        return processInstance.getMessageReferences().stream()
-                .anyMatch(ref -> ref.getMessageName().equals(messageType));
+        throw unsupported();
     }
 
     @Override
     public boolean containsMessageOfAnyType(UUID processInstanceId, Set<String> messageTypes) {
-        if (processInstance == null) {
-            return false;
-        }
-        return processInstance.getMessageReferences().stream()
-                .anyMatch(ref -> messageTypes.contains(ref.getMessageName()));
+        throw unsupported();
     }
 
     @Override

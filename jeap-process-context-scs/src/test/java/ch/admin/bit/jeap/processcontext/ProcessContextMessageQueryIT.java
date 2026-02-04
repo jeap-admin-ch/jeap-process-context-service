@@ -49,7 +49,7 @@ class ProcessContextMessageQueryIT extends ProcessInstanceMockS3ITBase {
         sendTest1Event(originProcessId);
         instantiateProcess(originProcessId);
         assertProcessInstanceCreated(originProcessId, "message_queries");
-        var processInstance = processInstanceRepository.findByOriginProcessIdWithoutLoadingMessages(originProcessId).orElseThrow();
+        var processInstance = processInstanceRepository.findByOriginProcessId(originProcessId).orElseThrow();
 
         var processContext = processContextFactory.createProcessContext(processInstance);
 

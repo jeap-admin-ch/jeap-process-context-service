@@ -25,14 +25,6 @@ public class ProcessInstanceMigrationService {
     private final InternalMessageProducer internalMessageProducer;
 
     /**
-     * Initialize process template hash value for existing process instance that do not yet have a persisted hash value
-     */
-    public void initializeProcessTemplateHashes() {
-        processTemplateRepository.getAllTemplates()
-                .forEach(processInstanceRepository::setHashForTemplateIfNull);
-    }
-
-    /**
      * Trigger a migration for all not-completed process instances with <pre>modifiedAt &gt; lastModifiedAfter</pre>
      * for which the template has been modified.
      */
@@ -56,6 +48,6 @@ public class ProcessInstanceMigrationService {
 
     private void sendProcessOutdatedEvent(String originProcessId) {
         log.info("Triggering process outdated event due to changed template for process {}", keyValue("originProcessId", originProcessId));
-        internalMessageProducer.produceProcessContextOutdatedEventSynchronously(originProcessId);
+        internalMessageProducer.produceProcessContextOutdatedMigrationTriggerEventSynchronously(originProcessId);
     }
 }

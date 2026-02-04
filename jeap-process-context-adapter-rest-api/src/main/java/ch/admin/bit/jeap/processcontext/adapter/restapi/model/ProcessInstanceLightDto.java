@@ -22,7 +22,8 @@ public class ProcessInstanceLightDto {
     String lastMessageCreatedAt;
     Map<String, String> name;
 
-    public static ProcessInstanceLightDto create(ProcessInstance processInstance, TranslateService translateService) {
+    public static ProcessInstanceLightDto create(ProcessInstance processInstance, TranslateService translateService,
+                                                 ZonedDateTime lastMessageCreatedAt) {
         Map<String, String> name = new HashMap<>();
         if (processInstance.getProcessTemplate() != null) {
             name = translateService.translateProcessTemplateName(processInstance.getProcessTemplate().getName());
@@ -33,7 +34,7 @@ public class ProcessInstanceLightDto {
                 .name(name)
                 .state(processInstance.getState().name())
                 .createdAt(formatZoneDateTime(processInstance.getCreatedAt()))
-                .lastMessageCreatedAt(formatZoneDateTime(processInstance.getLastMessageDateTime().orElse(null)))
+                .lastMessageCreatedAt(formatZoneDateTime(lastMessageCreatedAt))
                 .build();
     }
 

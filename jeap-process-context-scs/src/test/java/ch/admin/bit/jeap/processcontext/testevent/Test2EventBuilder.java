@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.processcontext.event.test2.Test2EventReferences;
 import com.fasterxml.uuid.Generators;
 
 import java.util.List;
+import java.util.Set;
 
 public class Test2EventBuilder extends AbstractTestEventBuilder<Test2EventBuilder, Test2Event> {
 
@@ -23,6 +24,11 @@ public class Test2EventBuilder extends AbstractTestEventBuilder<Test2EventBuilde
 
     public Test2EventBuilder taskIds(String... taskIds) {
         this.taskIds = List.of(taskIds);
+        return this;
+    }
+
+    public Test2EventBuilder taskIds(Set<String> taskIds) {
+        this.taskIds = List.copyOf(taskIds);
         return this;
     }
 

@@ -6,15 +6,16 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
-import java.util.*;
-
-import static java.util.stream.Collectors.*;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -50,13 +51,7 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
 
     @Transactional(readOnly = true)
     @Override
-    public Optional<ProcessInstance> findByOriginProcessIdLoadingMessages(String originProcessId) {
-        return findByOriginProcessIdWithoutLoadingMessages(originProcessId).map(this::setMessageReferenceMessageDTOs);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public Optional<ProcessInstance> findByOriginProcessIdWithoutLoadingMessages(String originProcessId) {
+    public Optional<ProcessInstance> findByOriginProcessId(String originProcessId) {
         return processInstanceJpaRepository.findByOriginProcessId(originProcessId).map(this::setProcessTemplateReference);
     }
 
@@ -67,12 +62,12 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
 
     @Override
     public Page<ProcessInstance> findAll(Pageable pageable) {
-        return processInstanceJpaRepository.findAll(pageable).map(this::setProcessTemplateReferenceAndMessageReferencesMessageDTOs);
+        return processInstanceJpaRepository.findAll(pageable).map(this::setProcessTemplateReference);
     }
 
     @Override
     public Page<ProcessInstance> findByProcessData(String processData, Pageable pageable) {
-        return processInstanceJpaRepository.findDistinctByProcessData_value(processData, pageable).map(this::setProcessTemplateReferenceAndMessageReferencesMessageDTOs);
+        return processInstanceJpaRepository.findDistinctByProcessData_value(processData, pageable).map(this::setProcessTemplateReference);
     }
 
     @Override
@@ -101,11 +96,6 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
     }
 
     @Override
-    public void setHashForTemplateIfNull(ProcessTemplate template) {
-        processInstanceJpaRepository.setInitialTemplateHashIfNotSet(template.getName(), template.getTemplateHash());
-    }
-
-    @Override
     public Slice<String> findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
             ZonedDateTime lastModifiedAfter, ProcessTemplate template, Pageable pageable) {
         return processInstanceJpaRepository.findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
@@ -118,51 +108,23 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
     }
 
     @Override
-    public List<MessageReferenceMessageDTO> findMessageReferenceMessageDTOs(UUID processInstanceId) {
-        List<MessageReferenceMessage> messages = processInstanceJpaRepository.findMessageReferencesMessages(processInstanceId);
-        Map<UUID, Set<MessageReferenceMessageDataDTO>> messageDataById = processInstanceJpaRepository.findMessageReferencesMessageData(processInstanceId).stream()
-                .collect(groupingBy(MessageReferenceMessageData::getMessageReferenceId, mapping(this::toDTO, toSet())));
-        Map<UUID, Set<String>> relatedTaskIdsByMessageReferenceId = processInstanceJpaRepository.findMessageReferencesRelatedOriginTaskIds(processInstanceId).stream()
-                .collect(groupingBy(MessageReferenceRelatedTaskId::getMessageReferenceId, mapping(MessageReferenceRelatedTaskId::getRelatedOriginTaskId, toSet())));
-        return messages.stream().map(messageReferenceMessage -> MessageReferenceMessageDTO.builder()
-                .messageReferenceId(messageReferenceMessage.getMessageReferenceId())
-                .messageId(messageReferenceMessage.getMessageId())
-                .messageName(messageReferenceMessage.getMessageName())
-                .messageCreatedAt(messageReferenceMessage.getMessageCreatedAt())
-                .messageReceivedAt(messageReferenceMessage.getMessageReceivedAt())
-                .messageData(messageDataById.getOrDefault(messageReferenceMessage.getMessageReferenceId(), Set.of()))
-                .traceId(messageReferenceMessage.getTraceId())
-                .relatedOriginTaskIds(relatedTaskIdsByMessageReferenceId.getOrDefault(messageReferenceMessage.getMessageReferenceId(), Set.of()))
-                .build()).collect(toList());
+    public Optional<MessageReference> findLatestMessageReferenceByMessageTypeAndOriginTaskId(ProcessInstance processInstance, String messageType, String originTaskId) {
+        return processInstanceJpaRepository.findMessageReferencesByMessageTypeAndOriginTaskId(
+                        processInstance.getId(), messageType, originTaskId, PageRequest.of(0, 1))
+                .stream()
+                .findFirst();
     }
 
     @Override
-    public Optional<Integer> getLatestProcessSnapshotVersion(String originProcessId) {
-        return Optional.ofNullable(processInstanceJpaRepository.getLatestProcessSnapshotVersion(originProcessId));
+    public Optional<MessageReference> findLatestMessageReferenceByMessageType(ProcessInstance processInstance, String messageType) {
+        return processInstanceJpaRepository.findMessageReferencesByMessageType(
+                        processInstance.getId(), messageType, PageRequest.of(0, 1))
+                .stream()
+                .findFirst();
     }
 
     @Override
     public void flush() {
         processInstanceJpaRepository.flush();
     }
-
-    private MessageReferenceMessageDataDTO toDTO(MessageReferenceMessageData messageReferenceMessageData) {
-        return MessageReferenceMessageDataDTO.builder()
-                .messageDataKey(messageReferenceMessageData.getMessageDataKey())
-                .messageDataValue(messageReferenceMessageData.getMessageDataValue())
-                .messageDataRole(messageReferenceMessageData.getMessageDataRole())
-                .build();
-    }
-
-    private ProcessInstance setMessageReferenceMessageDTOs(ProcessInstance processInstance) {
-        processInstance.setMessageReferenceMessageDTOS(findMessageReferenceMessageDTOs(processInstance.getId()));
-        return processInstance;
-    }
-
-    private ProcessInstance setProcessTemplateReferenceAndMessageReferencesMessageDTOs(ProcessInstance processInstance) {
-        setProcessTemplateReference(processInstance);
-        setMessageReferenceMessageDTOs(processInstance);
-        return processInstance;
-    }
-
 }

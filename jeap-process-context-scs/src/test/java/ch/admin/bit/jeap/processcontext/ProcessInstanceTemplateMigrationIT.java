@@ -52,12 +52,12 @@ class ProcessInstanceTemplateMigrationIT extends ProcessInstanceMockS3ITBase {
     }
 
     private void awaitProcessTemplateHashUpdatedTo(String expectedHash) {
-        await().atMost(TIMEOUT).pollInSameThread()
+        await().pollInSameThread()
                 .until(() -> expectedHash.equals(getProcessTemplateHash()));
     }
 
     private String getProcessTemplateHash() {
-        return processInstanceQueryRepository.findByOriginProcessIdLoadingMessages(originProcessId).orElseThrow().getProcessTemplateHash();
+        return processInstanceQueryRepository.findByOriginProcessId(originProcessId).orElseThrow().getProcessTemplateHash();
     }
 
     @Override

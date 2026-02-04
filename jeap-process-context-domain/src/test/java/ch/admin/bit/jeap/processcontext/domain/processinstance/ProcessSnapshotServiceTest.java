@@ -5,6 +5,7 @@ import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessRelati
 import ch.admin.bit.jeap.processcontext.domain.Language;
 import ch.admin.bit.jeap.processcontext.domain.PcsConfigProperties;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
+import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.event.ProcessSnapshotEventProducer;
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationView;
@@ -43,6 +44,8 @@ class ProcessSnapshotServiceTest {
     @Mock
     private MessageRepository messageRepository;
     @Mock
+    private MessageReferenceRepository messageReferenceRepository;
+    @Mock
     private ProcessSnapshotEventProducer processSnapshotEventProducer;
 
     private PcsConfigProperties pcsConfigProperties;
@@ -59,6 +62,7 @@ class ProcessSnapshotServiceTest {
                 processTemplateRepository,
                 processRelationsService,
                 messageRepository,
+                messageReferenceRepository,
                 processSnapshotEventProducer);
     }
 
@@ -187,7 +191,7 @@ class ProcessSnapshotServiceTest {
                         messageDataKey("otherKey").
                         messageDataValue("otherValue").
                         build()));
-        when(processInstance.getMessageReferences()).thenReturn(List.of(messagePlannedBy, messageCompletedBy));
+        when(messageReferenceRepository.findByProcessInstanceId(any())).thenReturn(List.of(messagePlannedBy, messageCompletedBy));
         when(messageRepository.findMessageUserDataByMessageId(taskPlannedByMessageId)).thenReturn(List.of(
                 new String[] {"plannedByUserDataKey1", "plannedByUserDataValue1"},
                 new String[] {"plannedByUserDataKey2", "plannedByUserDataValue2"}));

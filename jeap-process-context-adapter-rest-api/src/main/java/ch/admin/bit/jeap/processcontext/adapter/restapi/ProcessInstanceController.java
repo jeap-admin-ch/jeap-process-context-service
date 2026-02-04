@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceDTO
 import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceLightDto;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceListDto;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
+import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceQueryRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,9 +20,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toSet;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,6 +38,7 @@ public class ProcessInstanceController {
     private final ProcessInstanceQueryRepository repository;
     private final TranslateService translateService;
     private final ProcessInstanceViewService processInstanceViewService;
+    private final MessageReferenceRepository messageReferenceRepository;
 
     @GetMapping("/")
     @PreAuthorize("hasRole('processinstance','view')")
@@ -65,8 +72,15 @@ public class ProcessInstanceController {
             return emptyDto();
         }
         List<ProcessInstance> processInstanceList = processInstancePage.getContent();
+
+        Set<UUID> processInstanceIds = processInstanceList.stream()
+                .map(ProcessInstance::getId)
+                .collect(toSet());
+        Map<UUID, ZonedDateTime> lastMessageDates = messageReferenceRepository
+                .findLastMessageCreatedAtByProcessInstanceIds(processInstanceIds);
+
         List<ProcessInstanceLightDto> lightDtoList = processInstanceList.stream()
-                .map(p -> ProcessInstanceLightDto.create(p, translateService))
+                .map(p -> ProcessInstanceLightDto.create(p, translateService, lastMessageDates.get(p.getId())))
                 .toList();
 
         return ProcessInstanceListDto.builder()

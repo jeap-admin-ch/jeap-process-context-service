@@ -190,6 +190,17 @@ class MicrometerMetricsListenerTest {
         assertThat(timer.count()).isEqualTo(1);
     }
 
+    @Test
+    void timedWithReturnValue_shouldRecordTimer() {
+        boolean executed = metricsListener.timedWithReturnValue("test_timer_retval", () -> true);
+
+        assertThat(executed).isTrue();
+        Timer timer = meterRegistry.find("test_timer_retval")
+                .timer();
+        assertThat(timer).isNotNull();
+        assertThat(timer.count()).isEqualTo(1);
+    }
+
     private ProcessTemplate createProcessTemplate() {
         TaskType taskType = TaskType.builder()
                 .name("task")

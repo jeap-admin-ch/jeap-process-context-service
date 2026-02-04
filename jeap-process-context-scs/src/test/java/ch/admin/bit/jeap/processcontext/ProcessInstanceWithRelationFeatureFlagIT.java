@@ -53,7 +53,6 @@ class ProcessInstanceWithRelationFeatureFlagIT extends ProcessInstanceMockS3ITBa
     protected List<Relation> processWithRelations_whenRelationsAreAdded_thenShouldNotifyListener(int size) {
         assertProcessInstanceCompleted(originProcessId);
         Awaitility.await()
-                .atMost(TIMEOUT)
                 .pollInterval(Duration.ofSeconds(2))
                 .until(() -> {
                     List<Relation> relations = relationListenerStub.getRelations(originProcessId);

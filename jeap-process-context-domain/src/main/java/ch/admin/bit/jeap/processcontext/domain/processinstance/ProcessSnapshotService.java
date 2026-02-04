@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.*;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessRelation;
 import ch.admin.bit.jeap.processcontext.domain.PcsConfigProperties;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
+import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.event.ProcessSnapshotEventProducer;
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationView;
@@ -31,6 +32,7 @@ public class ProcessSnapshotService {
     private final ProcessTemplateRepository processTemplateRepository;
     private final ProcessRelationsService processRelationsService;
     private final MessageRepository messageRepository;
+    private final MessageReferenceRepository messageReferenceRepository;
     private final ProcessSnapshotEventProducer processSnapshotEventProducer;
 
     @SuppressWarnings("java:S112")
@@ -44,7 +46,7 @@ public class ProcessSnapshotService {
 
     public void createAndStoreSnapshot(ProcessInstance processInstance) {
         ProcessSnapshotArchiveData processSnapshotArchiveData = createProcessSnapshotArchiveData(processInstance);
-        processSnapshotRepository.get().storeSnapshot(processSnapshotArchiveData);
+        processSnapshotRepository.orElseThrow().storeSnapshot(processSnapshotArchiveData);
         processSnapshotEventProducer.onSnapshotCreated(processSnapshotArchiveData, processInstance.getProcessTemplate());
     }
 
@@ -84,6 +86,7 @@ public class ProcessSnapshotService {
     }
 
     private Task toTask(ProcessInstance processInstance, TaskInstance task) {
+        List<MessageReferenceMessageDTO> messageReferences = messageReferenceRepository.findByProcessInstanceId(processInstance.getId());
         return new Task(
                 task.getTaskTypeName(),
                 getTaskTypeDescription(processInstance.getProcessTemplateName(), task),
@@ -94,7 +97,7 @@ public class ProcessSnapshotService {
                 getUser(task.getPlannedBy()),
                 task.getCompletedAt() != null ? task.getCompletedAt().toInstant() : null,
                 getUser(task.getCompletedBy()),
-                getTaskData(task, processInstance.getMessageReferences()));
+                getTaskData(task, messageReferences));
     }
 
     private User getUser(UUID messageId) {
@@ -142,17 +145,15 @@ public class ProcessSnapshotService {
                          String processTemplateName, String taskTypeName) {
         return planningOrCompletingMessages.stream().
                 filter(message -> taskDataDeclaration.getSourceMessage().equals(message.getMessageName())).
-                findFirst().
-                map(message -> message.getMessageData().stream().
+                findFirst().stream().flatMap(message -> message.getMessageData().stream().
                         filter(messageData -> taskDataDeclaration.getMessageDataKeys().contains(messageData.getMessageDataKey())).
                         map(messageDataMatchingTaskDataKey ->
                                 TaskData.newBuilder().
-                                    setKey(messageDataMatchingTaskDataKey.getMessageDataKey()).
-                                    setValue(messageDataMatchingTaskDataKey.getMessageDataValue()).
-                                    setLabel(getTaskDataLabel(processTemplateName, taskTypeName,
-                                            messageDataMatchingTaskDataKey.getMessageDataKey(), defaultLanguage())).
-                                build())).
-                orElse(Stream.empty());
+                                        setKey(messageDataMatchingTaskDataKey.getMessageDataKey()).
+                                        setValue(messageDataMatchingTaskDataKey.getMessageDataValue()).
+                                        setLabel(getTaskDataLabel(processTemplateName, taskTypeName,
+                                                messageDataMatchingTaskDataKey.getMessageDataKey(), defaultLanguage())).
+                                        build()));
     }
 
     private String getTaskDataLabel(String processTemplate, String taskTypeName, String taskDataKey, String language) {

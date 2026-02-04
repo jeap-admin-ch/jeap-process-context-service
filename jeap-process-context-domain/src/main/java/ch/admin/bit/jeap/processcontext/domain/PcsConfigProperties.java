@@ -4,7 +4,6 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-
 import static ch.admin.bit.jeap.processcontext.domain.Language.DE;
 
 @Data

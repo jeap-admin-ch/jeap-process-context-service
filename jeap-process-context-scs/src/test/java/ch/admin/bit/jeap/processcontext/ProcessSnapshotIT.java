@@ -67,7 +67,6 @@ class ProcessSnapshotIT extends ProcessInstanceMockS3ITBase {
     private void assertMessageCount(String originProcessId, String messageType, long count) {
         Awaitility.await()
                 .pollInSameThread()
-                .atMost(TIMEOUT)
                 .until(() -> countProcessEventsOfType(originProcessId, messageType), is(equalTo(count)));
     }
 

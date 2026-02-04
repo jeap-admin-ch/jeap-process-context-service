@@ -3,13 +3,12 @@ package ch.admin.bit.jeap.processcontext.migration;
 import ch.admin.bit.jeap.processcontext.ProcessInstanceMockS3ITBase;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.ProcessInstanceController;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceDTO;
-import ch.admin.bit.jeap.processcontext.domain.message.Message;
-import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
+import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceService;
 import ch.admin.bit.jeap.processcontext.domain.tx.Transactions;
-import ch.admin.bit.jeap.processcontext.event.test3.Test3Event;
+import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
 import ch.admin.bit.jeap.processcontext.testevent.Test3EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
@@ -19,10 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import java.time.ZonedDateTime;
-import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 
 @Slf4j
@@ -40,6 +37,8 @@ class ProcessInstanceProcessDataMessageDataMigrationIT extends ProcessInstanceMo
     private ProcessInstanceRepository processInstanceRepository;
     @Autowired
     private ProcessInstanceController processInstanceController;
+    @Autowired
+    private MessageReferenceRepository messageReferenceRepository;
 
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
@@ -47,22 +46,12 @@ class ProcessInstanceProcessDataMessageDataMigrationIT extends ProcessInstanceMo
         // Start a new process
         createProcessInstance();
 
-        transactions.withinNewTransaction(() -> {
-            final Message message = Message.messageBuilder()
-                    .messageId("eventId")
-                    .idempotenceId("idempotenceId")
-                    .messageName("Test1Event")
-                    .messageCreatedAt(ZonedDateTime.now())
-                    .messageData(Set.of(MessageData.builder().key("correlationEventDataKey")
-                            .value("value")
-                            .templateName("migrationFullTest")
-                            .build()))
-                    .build();
-            entityManager.persist(message);
-            ProcessInstance processInstance1 = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).orElseThrow();
-            log.debug("processInstance {} State {}", processInstance1.getId(), processInstance1.getState());
-            processInstance1.addMessage(message);
+        sendTest1Event();
+        await().pollInSameThread().untilAsserted(() -> {
+            ProcessInstanceDTO processInstanceByOriginProcessId = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
+            assertThat(processInstanceByOriginProcessId.getMessages()).hasSize(2);
         });
+
         // Update template name for the process instance
         transactions.withinNewTransaction(() -> entityManager
                 .createQuery("UPDATE ProcessInstance p SET p.processTemplateName='migrationFullTestNew' WHERE p.originProcessId='" + originProcessId + "'")
@@ -72,25 +61,26 @@ class ProcessInstanceProcessDataMessageDataMigrationIT extends ProcessInstanceMo
         processInstanceService.updateProcessState(originProcessId);
 
         transactions.withinNewTransaction(() -> {
-            final ProcessInstance processInstance = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).orElseThrow();
+            ProcessInstance processInstance = processInstanceRepository.findByOriginProcessId(originProcessId).orElseThrow();
             assertThat(processInstance.getProcessData()).hasSize(1);
-            assertThat(processInstance.getMessageReferences()).hasSize(2);
+            assertThat(messageReferenceRepository.findByProcessInstanceId(processInstance.getId())).hasSize(2);
             assertThat(processInstance.getProcessTemplate().getProcessDataTemplates()).isEmpty();
         });
 
         transactions.withinNewTransaction(() -> {
-            final ProcessInstanceDTO processInstanceByOriginProcessId = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
+            ProcessInstanceDTO processInstanceByOriginProcessId = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
             assertThat(processInstanceByOriginProcessId.getProcessData()).hasSize(1);
             assertThat(processInstanceByOriginProcessId.getMessages()).hasSize(2);
         });
     }
 
     private void createProcessInstance() {
-        Test3Event event3 = Test3EventBuilder.createForProcessId(originProcessId)
-                .taskIds()
-                .build();
-        sendSync("topic.test3", event3);
+        sendSync("topic.test3", Test3EventBuilder.createForProcessId(originProcessId).build());
         assertProcessInstanceCreated(originProcessId, "migrationFullTest");
+    }
+
+    private void sendTest1Event() {
+        sendSync("topic.test1", Test1EventBuilder.createForProcessId(originProcessId).build());
     }
 
     @Override

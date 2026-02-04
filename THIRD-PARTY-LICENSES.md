@@ -47,6 +47,7 @@ Apache License Version 2.0
  * ch.admin.bit.jeap:jeap-spring-boot-swagger-starter - [ch.admin.bit.jeap:jeap-spring-boot-swagger-starter](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-swagger-starter)
  * ch.admin.bit.jeap.archivetype.jeap:process-snapshot-v1 - [ch.admin.bit.jeap.archivetype.jeap:process-snapshot-v1](https://github.com/jeap-admin-ch/jeap-archive-type-registry/tree/main)
  * ch.admin.bit.jeap.archivetype.jeap:process-snapshot-v2 - [ch.admin.bit.jeap.archivetype.jeap:process-snapshot-v2](https://github.com/jeap-admin-ch/jeap-archive-type-registry/tree/main)
+ * ch.admin.bit.jeap.messagetype.jeap:process-context-outdated-event - [ch.admin.bit.jeap.messagetype.jeap:process-context-outdated-event](https://github.com/jeap-admin-ch/jeap-message-type-registry/tree/main)
  * process-snapshot-created-event - ch.admin.bit.jeap.messagetype.jeap:process-snapshot-created-event
  * ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-declaration-created-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-declaration-created-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
  * ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-messaging-common - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-messaging-common](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)

@@ -93,20 +93,6 @@ class TaskInstanceTest {
     }
 
     @Test
-    void plan() {
-        ProcessInstance process = ProcessInstanceStubs.createProcessWithSingleAndDynamicInstanceTasksBothNotYetInstantiated();
-        TaskInstance taskInstance = process.getTasks().getFirst();
-        final ZonedDateTime timestamp = ZonedDateTime.now();
-
-        taskInstance.plan("foo", timestamp);
-
-        assertEquals("foo", taskInstance.getOriginTaskId());
-        assertEquals(TaskState.PLANNED, taskInstance.getState());
-        assertEquals(timestamp, taskInstance.getPlannedAt());
-        assertNull(taskInstance.getCompletedAt());
-    }
-
-    @Test
     void notRequired() {
         ProcessInstance process = ProcessInstanceStubs.createProcessWithSingleAndDynamicInstanceTasksBothNotYetInstantiated();
         TaskInstance taskInstance = process.getTasks().getFirst();

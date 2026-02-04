@@ -43,7 +43,7 @@ class ProcessInstanceMigrationServiceTest {
 
         migrationService.triggerMigrationForModifiedTemplates(afterStub);
 
-        verify(internalMessageProducer).produceProcessContextOutdatedEventSynchronously(CHANGED_TEMPLATE_ORIGIN_PROCESS_ID);
+        verify(internalMessageProducer).produceProcessContextOutdatedMigrationTriggerEventSynchronously(CHANGED_TEMPLATE_ORIGIN_PROCESS_ID);
         verifyNoMoreInteractions(internalMessageProducer);
     }
 }

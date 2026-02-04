@@ -1,0 +1,46 @@
+{
+  "name": "dynamic_task_completed_by_event_multi_instance",
+  "tasks": [
+    {
+      "name": "raceCarRefuel",
+      "lifecycle": "dynamic",
+      "cardinality": "multi-instance",
+      "plannedBy": {
+        "message": "Test1Event"
+      },
+      "completedBy": {
+        "message": "Test2Event"
+      },
+      "taskData": [
+        {
+          "sourceMessage": "Test1Event",
+          "messageDataKeys": [
+            "key1"
+          ]
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "messageName": "Test1Event",
+      "topicName": "topic.test1",
+      "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.Test1EventPayloadExtractor",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.TaskTest1EventCorrelationProvider"
+    },
+    {
+      "messageName": "Test2Event",
+      "topicName": "topic.test2",
+      "correlationProvider": "ch.admin.bit.jeap.processcontext.testevent.TaskTest2EventCorrelationProvider"
+    },
+    {
+      "messageName": "Test3Event",
+      "topicName": "topic.test3"
+    },
+    {
+      "messageName": "Test4Event",
+      "topicName": "topic.test4",
+      "triggersProcessInstantiation": true
+    }
+  ]
+}

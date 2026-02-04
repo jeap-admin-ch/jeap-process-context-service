@@ -3,13 +3,14 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance.api;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.AddedMessage;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReferenceMessageDTO;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceStubs;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -29,9 +30,9 @@ class MessageFactoryTest {
                 .createdAt(ZonedDateTime.now())
                 .messageCreatedAt(ZonedDateTime.now())
                 .build();
-        AddedMessage addedMessage = processInstance.addMessage(domainMessage);
+        MessageReferenceMessageDTO dto = MessageReferenceMessageDTO.of("template", UUID.randomUUID(), domainMessage);
 
-        ch.admin.bit.jeap.processcontext.plugin.api.context.Message apiMessage = MessageFactory.createMessage(addedMessage.messageReference());
+        ch.admin.bit.jeap.processcontext.plugin.api.context.Message apiMessage = MessageFactory.createMessage(dto);
 
         assertEquals(domainMessage.getMessageName(), apiMessage.getName());
         assertEquals(taskNames, apiMessage.getRelatedOriginTaskIds());

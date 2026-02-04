@@ -49,11 +49,11 @@ class ProcessInstanceRepositoryIT {
                 .build();
         doReturn(Optional.of(processTemplate)).when(processTemplateRepository).findByName(processInstance.getProcessTemplateName());
         processInstanceJpaRepository.saveAndFlush(processInstance);
-        Optional<ProcessInstance> processInstanceReadOptional = processInstanceRepository.findByOriginProcessIdWithoutLoadingMessages(processInstance.getOriginProcessId());
+        Optional<ProcessInstance> processInstanceReadOptional = processInstanceRepository.findByOriginProcessId(processInstance.getOriginProcessId());
         assertTrue(processInstanceReadOptional.isPresent());
 
         // when
-        Optional<ProcessInstance> processInstanceSecondRead = processInstanceRepository.findByOriginProcessIdWithoutLoadingMessages(processInstance.getOriginProcessId());
+        Optional<ProcessInstance> processInstanceSecondRead = processInstanceRepository.findByOriginProcessId(processInstance.getOriginProcessId());
 
         // then
         assertThat(processInstanceSecondRead).isPresent();

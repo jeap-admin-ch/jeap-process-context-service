@@ -6,6 +6,7 @@ public enum TaskState {
     COMPLETED,
     NOT_REQUIRED,
     DELETED,
+    /** New static task added due to a template migration, unknown if completed or not */
     UNKNOWN;
 
     public boolean isFinalState() {

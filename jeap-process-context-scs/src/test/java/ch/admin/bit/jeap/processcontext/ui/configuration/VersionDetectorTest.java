@@ -1,6 +1,5 @@
 package ch.admin.bit.jeap.processcontext.ui.configuration;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,14 +37,4 @@ class VersionDetectorTest {
 
         assertEquals("??", result);
     }
-
-    @Disabled("This test is problematic. If the branch names contains something that looks like a version, this test will fail the Jenkins build.")
-    @Test
-    void getVersion() {
-        VersionDetector versionDetector = new VersionDetector();
-        String version = versionDetector.getVersion();
-
-        assertEquals("??", version);
-    }
-
 }

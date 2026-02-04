@@ -27,7 +27,7 @@ class ProcessInstanceCreatedByDomainMessageWithObservedTaskIT extends ProcessIns
     @WithAuthentication("viewAndCreateRoleToken")
     void testProcessInstantiationWithDomainEventAndCorrelation() {
 
-        assertThat(processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId)).isNotPresent();
+        assertThat(processInstanceRepository.findByOriginProcessId(originProcessId)).isNotPresent();
 
         // Send event that triggers the process instantiation and creates an observed task
         sendTestCreatingProcessInstanceAndTaskEvent();
@@ -37,7 +37,7 @@ class ProcessInstanceCreatedByDomainMessageWithObservedTaskIT extends ProcessIns
         // When the second event got correlated to the process it will complete the process
         assertProcessInstanceCompleted(originProcessId);
 
-        Optional<ProcessInstance> processInstance = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId);
+        Optional<ProcessInstance> processInstance = processInstanceRepository.findByOriginProcessId(originProcessId);
 
         assertThat(processInstance).isPresent();
         assertThat(processInstance.get().getTasks()).hasSize(1);

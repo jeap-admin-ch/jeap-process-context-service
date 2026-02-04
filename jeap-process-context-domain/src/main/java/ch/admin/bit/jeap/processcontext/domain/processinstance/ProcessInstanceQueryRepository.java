@@ -6,32 +6,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 public interface ProcessInstanceQueryRepository {
 
     boolean existsByOriginProcessId(String originProcessId);
 
     /**
-     * For the given origin process id, find and load the corresponding process instance and its associated messages.
+     * For the given origin process id, find and load the corresponding process instance
      *
      * @param originProcessId Origin process id of the process instance to load
-     * @return The process instance with associated messages
+     * @return The process instance
      */
-    Optional<ProcessInstance> findByOriginProcessIdLoadingMessages(String originProcessId);
-
-    /**
-     * For the given origin process id, find and load the corresponding process instance but forgo the loading of its
-     * associated messages. Use only if the associated messages are not required for the intended processing on the process
-     * instance.
-     *
-     * @param originProcessId Origin process id of the process instance to load
-     * @return The process instance with associated messages
-     */
-    Optional<ProcessInstance> findByOriginProcessIdWithoutLoadingMessages(String originProcessId);
+    Optional<ProcessInstance> findByOriginProcessId(String originProcessId);
 
 
     /**
@@ -71,7 +59,7 @@ public interface ProcessInstanceQueryRepository {
      */
     Optional<ProcessInstanceTemplate> findProcessInstanceTemplate(String originProcessId);
 
-    List<MessageReferenceMessageDTO> findMessageReferenceMessageDTOs(UUID processInstanceId);
+    Optional<MessageReference> findLatestMessageReferenceByMessageType(ProcessInstance processInstance, String messageType);
 
-    Optional<Integer> getLatestProcessSnapshotVersion(String originProcessId);
+    Optional<MessageReference> findLatestMessageReferenceByMessageTypeAndOriginTaskId(ProcessInstance processInstance, String messageType, String originTaskId);
 }

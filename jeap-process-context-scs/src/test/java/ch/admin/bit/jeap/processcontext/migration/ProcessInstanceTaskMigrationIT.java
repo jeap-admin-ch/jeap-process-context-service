@@ -44,14 +44,14 @@ class ProcessInstanceTaskMigrationIT extends ProcessInstanceMockS3ITBase {
                 .executeUpdate());
 
         // Trigger migration for process instances with changed template hash
-        processInstanceService.updateProcessState(originProcessId);
+        processInstanceService.migrateProcessInstanceTemplate(originProcessId);
 
         Awaitility.await().until(() -> {
-            ProcessInstance processInstance = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).orElseThrow();
+            ProcessInstance processInstance = processInstanceRepository.findByOriginProcessId(originProcessId).orElseThrow();
             return processInstance.getTasks().size() == 3;
         });
 
-        ProcessInstance processInstance = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).orElseThrow();
+        ProcessInstance processInstance = processInstanceRepository.findByOriginProcessId(originProcessId).orElseThrow();
         assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("task3") && t.getState() == TaskState.UNKNOWN).count())).isEqualTo(1L);
         assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("task2") && t.getState() == TaskState.DELETED).count())).isEqualTo(1L);
         assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("task1") && t.getState() == TaskState.PLANNED).count())).isEqualTo(1L);
@@ -77,14 +77,14 @@ class ProcessInstanceTaskMigrationIT extends ProcessInstanceMockS3ITBase {
                 .executeUpdate());
 
         // Trigger migration for process instances with changed template hash
-        processInstanceService.updateProcessState(originProcessId);
+        processInstanceService.migrateProcessInstanceTemplate(originProcessId);
 
         Awaitility.await().until(() -> {
-            ProcessInstance processInstance = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).orElseThrow();
+            ProcessInstance processInstance = processInstanceRepository.findByOriginProcessId(originProcessId).orElseThrow();
             return processInstance.getTasks().size() == 3;
         });
 
-        ProcessInstance processInstance = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).orElseThrow();
+        ProcessInstance processInstance = processInstanceRepository.findByOriginProcessId(originProcessId).orElseThrow();
 
         assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("task2") && t.getState() == TaskState.PLANNED).count())).isEqualTo(1L);
         assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("task1") && t.getState() == TaskState.PLANNED).count())).isEqualTo(1L);
@@ -116,14 +116,14 @@ class ProcessInstanceTaskMigrationIT extends ProcessInstanceMockS3ITBase {
                 .executeUpdate());
 
         // Trigger migration for process instances with changed template hash
-        processInstanceService.updateProcessState(originProcessId);
+        processInstanceService.migrateProcessInstanceTemplate(originProcessId);
 
         Awaitility.await().until(() -> {
-            ProcessInstance processInstance = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).orElseThrow();
+            ProcessInstance processInstance = processInstanceRepository.findByOriginProcessId(originProcessId).orElseThrow();
             return processInstance.getTasks().size() == 2 && processInstance.getState() == ProcessState.COMPLETED;
         });
 
-        ProcessInstance processInstance = processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId).orElseThrow();
+        ProcessInstance processInstance = processInstanceRepository.findByOriginProcessId(originProcessId).orElseThrow();
 
         assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("task2") && t.getState() == TaskState.DELETED).count())).isEqualTo(1L);
         assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("task1") && t.getState() == TaskState.COMPLETED).count())).isEqualTo(1L);

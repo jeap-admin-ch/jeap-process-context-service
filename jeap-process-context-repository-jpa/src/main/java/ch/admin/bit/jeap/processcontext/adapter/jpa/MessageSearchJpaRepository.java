@@ -22,12 +22,12 @@ class MessageSearchJpaRepository {
      * for the process instance and has at least one message data entry matching any of the key/values specified in the filter:
      * <pre>
      * SELECT CASE WHEN EXISTS (
-     *       SELECT 1 FROM process_instance p
-     *       JOIN event_reference r ON r.process_instance_id = p.id
+     *       SELECT 1 FROM event_reference r
+     *       JOIN process_instance p ON p.id = r.process_instance_id
      *       JOIN events e ON e.id = r.events_id
      *       JOIN events_event_data d ON d.events_id = e.id
      *       WHERE p.id = :processInstanceId
-     *         AND e.message_name = :messageType
+     *         AND e.event_name = :messageType
      *         AND d.template_name = p.template_name
      *         AND (
      *             (d.key_ = :key1 AND d.value_ IN (:values1))
@@ -51,8 +51,8 @@ class MessageSearchJpaRepository {
 
         // Build EXISTS subquery
         Subquery<Integer> subquery = query.subquery(Integer.class);
-        Root<ProcessInstance> processInstanceRoot = subquery.from(ProcessInstance.class);
-        Join<ProcessInstance, MessageReference> processInstanceMessageReferenceJoin = processInstanceRoot.join("messageReferences");
+        Root<MessageReference> messageReferenceRoot = subquery.from(MessageReference.class);
+        Join<MessageReference, ProcessInstance> processInstanceJoin = messageReferenceRoot.join("processInstance");
 
         // Since MessageReference.messageId is a UUID (not a @ManyToOne), we need a separate root for Message
         Root<Message> messageRoot = subquery.from(Message.class);
@@ -62,10 +62,10 @@ class MessageSearchJpaRepository {
         List<Predicate> orPredicates = buildKeyValueMatchPredicates(messageDataFilter, cb, messageDataJoin);
 
         // Combine all conditions
-        Predicate processInstanceMatches = cb.equal(processInstanceRoot.get("id"), processInstanceId);
-        Predicate messageIdJoin = cb.equal(messageRoot.get("id"), processInstanceMessageReferenceJoin.get("messageId"));
+        Predicate processInstanceMatches = cb.equal(processInstanceJoin.get("id"), processInstanceId);
+        Predicate messageIdJoin = cb.equal(messageRoot.get("id"), messageReferenceRoot.get("messageId"));
         Predicate messageTypeMatches = cb.equal(messageRoot.get("messageName"), messageType);
-        Predicate templateNameMatches = cb.equal(messageDataJoin.get("templateName"), processInstanceRoot.get("processTemplateName"));
+        Predicate templateNameMatches = cb.equal(messageDataJoin.get("templateName"), processInstanceJoin.get("processTemplateName"));
         Predicate anyKeyValueMatches = cb.or(orPredicates.toArray(new Predicate[0]));
 
         subquery.select(cb.literal(1));
@@ -105,8 +105,8 @@ class MessageSearchJpaRepository {
      * Executes a JPA query equivalent to the following SQL:
      * <pre>
      * SELECT COUNT(DISTINCT e.id)
-     * FROM process_instance p
-     * JOIN event_reference r ON r.process_instance_id = p.id
+     * FROM event_reference r
+     * JOIN process_instance p ON p.id = r.process_instance_id
      * JOIN events e ON e.id = r.events_id
      * JOIN events_event_data d ON d.events_id = e.id
      * WHERE p.id = :processInstanceId
@@ -132,8 +132,8 @@ class MessageSearchJpaRepository {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
 
-        Root<ProcessInstance> processInstanceRoot = query.from(ProcessInstance.class);
-        Join<ProcessInstance, MessageReference> processInstanceMessageReferenceJoin = processInstanceRoot.join("messageReferences");
+        Root<MessageReference> messageReferenceRoot = query.from(MessageReference.class);
+        Join<MessageReference, ProcessInstance> processInstanceJoin = messageReferenceRoot.join("processInstance");
 
         // Since MessageReference.messageId is a UUID (not a @ManyToOne), we need a separate root for Message
         Root<Message> messageRoot = query.from(Message.class);
@@ -143,10 +143,10 @@ class MessageSearchJpaRepository {
         List<Predicate> orPredicates = buildKeyValueMatchPredicatesForSingleValues(messageDataFilter, cb, messageDataJoin);
 
         // Combine all conditions
-        Predicate processInstanceMatches = cb.equal(processInstanceRoot.get("id"), processInstanceId);
-        Predicate messageIdJoin = cb.equal(messageRoot.get("id"), processInstanceMessageReferenceJoin.get("messageId"));
+        Predicate processInstanceMatches = cb.equal(processInstanceJoin.get("id"), processInstanceId);
+        Predicate messageIdJoin = cb.equal(messageRoot.get("id"), messageReferenceRoot.get("messageId"));
         Predicate messageTypeMatches = cb.equal(messageRoot.get("messageName"), messageType);
-        Predicate templateNameMatches = cb.equal(messageDataJoin.get("templateName"), processInstanceRoot.get("processTemplateName"));
+        Predicate templateNameMatches = cb.equal(messageDataJoin.get("templateName"), processInstanceJoin.get("processTemplateName"));
         Predicate anyKeyValueMatches = cb.or(orPredicates.toArray(new Predicate[0]));
 
         query.select(cb.countDistinct(messageRoot));

@@ -7,11 +7,13 @@ import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.UserData;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
+import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskData;
 import com.fasterxml.uuid.Generators;
+import com.fasterxml.uuid.impl.TimeBasedEpochGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -37,12 +39,14 @@ import static org.mockito.Mockito.when;
 class ProcessInstanceDTOFactoryTest {
 
     private MessageRepository messageRepository;
+    private MessageReferenceRepository messageReferenceRepository;
     private TranslateService translateService;
     private RelationRepository relationRepository;
 
     @BeforeEach
     void setUp() {
         messageRepository = mock(MessageRepository.class);
+        messageReferenceRepository = mock(MessageReferenceRepository.class);
         translateService = mock(TranslateService.class);
         relationRepository = mock(RelationRepository.class);
         when(translateService.translateUserDataKey(anyString())).thenAnswer(invocation -> createLabels(invocation.getArgument(0)));
@@ -58,20 +62,19 @@ class ProcessInstanceDTOFactoryTest {
     @SuppressWarnings({"OptionalGetWithoutIsPresent",  "java:S5961"})
     @Test
     void createFromProcessInstance() {
-        final String templateName = "template";
+        String templateName = "template";
         Set<ProcessData> processData = Set.of(
                 new ProcessData("some-name-1", "some-value-1"),
                 new ProcessData("some-name-2", "some-value-2")
         );
-        final List<Message> messages = createMessages(templateName);
+        List<Message> messages = createMessages(templateName);
         Set<TaskData> taskData = messages.stream().
                 map(message -> TaskData.builder().
                         sourceMessage(message.getMessageName()).
                         messageDataKeys(message.getMessageData().stream().map(MessageData::getKey).collect(Collectors.toSet())).
                         build()).
                 collect(Collectors.toSet());
-        ProcessInstance processInstance = ProcessInstanceStubs.
-                createProcessWithSingleTaskInstanceAndEventWithAdditionalMessages(templateName, taskData, processData, messages);
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance(templateName, taskData, processData);
         ReflectionTestUtils.setField(processInstance, "processCompletion", new ProcessCompletion(
                 ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion.SUCCEEDED, "all good", ZonedDateTime.now()));
         TaskInstance expectedTask = processInstance.getTasks().getFirst();
@@ -90,7 +93,27 @@ class ProcessInstanceDTOFactoryTest {
                 .build();
         relation.onPrePersist();
         when(relationRepository.findByProcessInstance(processInstance)).thenReturn(Set.of(relation));
-        ProcessInstanceDTO processInstanceDTO = ProcessInstanceDTOFactory.createFromProcessInstance(processInstance, translateService, processRelationsService, messageRepository, relationRepository);
+
+        TimeBasedEpochGenerator uuidGenerator = Generators.timeBasedEpochGenerator();
+        Message eventMessage = Message.messageBuilder()
+                .messageName(ProcessInstanceStubs.event)
+                .messageId("eventId")
+                .idempotenceId("idempotenceId")
+                .originTaskIds(ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId.from(templateName, Set.of("taskId1", "taskId2")))
+                .messageData(Set.of(new ch.admin.bit.jeap.processcontext.domain.message.MessageData(templateName, "myKey", "myValue")))
+                .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
+                .build();
+
+        List<MessageReferenceMessageDTO> messageReferenceMessageDTOs = new ArrayList<>();
+        messageReferenceMessageDTOs.add(toMessageReferenceDTO(uuidGenerator, templateName, eventMessage));
+        for (Message message : messages) {
+            messageReferenceMessageDTOs.add(toMessageReferenceDTO(uuidGenerator, templateName, message));
+        }
+        when(messageReferenceRepository.findByProcessInstanceId(processInstance.getId())).thenReturn(messageReferenceMessageDTOs);
+
+        ProcessInstanceDTO processInstanceDTO = ProcessInstanceDTOFactory
+                .createFromProcessInstance(processInstance, translateService, processRelationsService, messageRepository, messageReferenceRepository, relationRepository);
 
         assertEquals(processInstance.getState().name(), processInstanceDTO.getState());
         assertEquals(processInstance.getOriginProcessId(), processInstanceDTO.getOriginProcessId());
@@ -109,7 +132,7 @@ class ProcessInstanceDTOFactoryTest {
         assertThat(taskDTO.getCompletedBy()).containsExactlyInAnyOrder(
                 new MessageUserDataDTO("completing-userdata-key1", "completing-userdata-value-1", createLabels("completing-userdata-key1")),
                 new MessageUserDataDTO("completing-userdata-key2", "completing-userdata-value-2", createLabels("completing-userdata-key2")));
-        final Set<TaskDataDTO> expectedTaskDataDTOs = messages.stream().
+        Set<TaskDataDTO> expectedTaskDataDTOs = messages.stream().
                 flatMap(message -> message.getMessageData().stream()).
                 map(messageData -> TaskDataDTO.builder().
                         key(messageData.getKey()).
@@ -342,5 +365,25 @@ class ProcessInstanceDTOFactoryTest {
 
     private Map<String, String> createLabels(String value) {
         return Map.of("de", value);
+    }
+
+    private MessageReferenceMessageDTO toMessageReferenceDTO(TimeBasedEpochGenerator uuidGenerator, String templateName, Message message) {
+        return MessageReferenceMessageDTO.builder()
+                .messageReferenceId(uuidGenerator.generate())
+                .messageId(message.getId())
+                .messageName(message.getMessageName())
+                .messageCreatedAt(message.getMessageCreatedAt())
+                .messageReceivedAt(message.getReceivedAt())
+                .messageData(message.getMessageData(templateName).stream()
+                        .map(md -> MessageReferenceMessageDataDTO.builder()
+                                .messageDataKey(md.getKey())
+                                .messageDataValue(md.getValue())
+                                .messageDataRole(md.getRole())
+                                .build())
+                        .collect(Collectors.toSet()))
+                .relatedOriginTaskIds(message.getOriginTaskIds(templateName).stream()
+                        .map(ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId::getOriginTaskId)
+                        .collect(Collectors.toSet()))
+                .build();
     }
 }

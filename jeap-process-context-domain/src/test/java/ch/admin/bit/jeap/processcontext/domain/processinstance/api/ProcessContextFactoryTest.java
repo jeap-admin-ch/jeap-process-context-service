@@ -1,8 +1,5 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance.api;
 
-import ch.admin.bit.jeap.processcontext.domain.message.Message;
-import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
-import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
@@ -24,16 +21,6 @@ class ProcessContextFactoryTest {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
         String templateName = processInstance.getProcessTemplateName();
         Set<String> taskNames = Set.of("taskId1", "taskId2");
-        Message domainMessage = Message.messageBuilder()
-                .messageName("event")
-                .messageId("eventId")
-                .idempotenceId("idempotenceId")
-                .originTaskIds(OriginTaskId.from(templateName, taskNames))
-                .messageData(Set.of(new MessageData(templateName, "myKey", "myValue")))
-                .createdAt(ZonedDateTime.now())
-                .messageCreatedAt(ZonedDateTime.now())
-                .build();
-        processInstance.addMessage(domainMessage);
         ReflectionTestUtils.setField(processInstance, "processCompletion", new ProcessCompletion(
                 ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion.SUCCEEDED, "all good", ZonedDateTime.now()));
 

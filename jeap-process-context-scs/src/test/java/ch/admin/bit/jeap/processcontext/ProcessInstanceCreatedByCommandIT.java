@@ -26,7 +26,7 @@ class ProcessInstanceCreatedByCommandIT extends ProcessInstanceMockS3ITBase {
     @WithAuthentication("viewAndCreateRoleToken")
     void testProcessInstantiationWithDomainEventAndCorrelation() {
 
-        assertThat(processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId)).isNotPresent();
+        assertThat(processInstanceRepository.findByOriginProcessId(originProcessId)).isNotPresent();
 
         // Send command that triggers the process instantiation
         sendTestCreateProcessInstanceCommand();

@@ -4,6 +4,7 @@ package ch.admin.bit.jeap.processcontext.adapter.kafka.internalevent.producer;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventBuilder;
 import ch.admin.bit.jeap.processcontext.internal.event.key.ProcessContextProcessIdKey;
 import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessContextOutdatedEvent;
+import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessContextOutdatedPayload;
 import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessContextOutdatedReferences;
 import com.fasterxml.uuid.Generators;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,13 @@ class InternalMessageFactory {
                 .build();
     }
 
+
+    ProcessContextOutdatedEvent processContextOutdatedMigrationTriggerEvent(String originProcessId) {
+        return new ProcessContextUpdatedEventBuilder(originProcessId)
+                .triggerMigration()
+                .build();
+    }
+
     ProcessContextProcessIdKey key(String originProcessId) {
         return ProcessContextProcessIdKey.newBuilder()
                 .setProcessId(originProcessId)
@@ -35,8 +43,15 @@ class InternalMessageFactory {
             super(ProcessContextOutdatedEvent::new);
             setProcessId(originProcessId);
             setReferences(ProcessContextOutdatedReferences.newBuilder().build());
-            // An UUID is sufficient here, processing these events is naturally idempotent (actions are only taken if necessary due to the current process context state)
+            // A UUID is sufficient here, processing these events is naturally idempotent (actions are only taken if necessary due to the current process context state)
             idempotenceId = Generators.timeBasedEpochGenerator().generate().toString();
+        }
+
+        ProcessContextUpdatedEventBuilder triggerMigration() {
+            setPayload(ProcessContextOutdatedPayload.newBuilder()
+                    .setTriggerMigration(true)
+                    .build());
+            return this;
         }
 
         @Override

@@ -2,7 +2,9 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot;
 
 
 import io.micrometer.common.util.StringUtils;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)

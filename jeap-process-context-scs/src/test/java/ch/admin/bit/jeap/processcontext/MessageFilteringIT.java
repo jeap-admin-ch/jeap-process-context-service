@@ -25,12 +25,12 @@ class MessageFilteringIT extends ProcessInstanceMockS3ITBase {
     @WithAuthentication("viewAndCreateRoleToken")
     void testProcessInstantiationWithDomainEventFiltered_processInstanceNotCreated() {
 
-        assertThat(processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId)).isNotPresent();
+        assertThat(processInstanceRepository.findByOriginProcessId(originProcessId)).isNotPresent();
 
         // Send event that triggers the process instantiation
         sendTest1CreatingProcessInstanceEvent("taskIdToFilter");
 
-        assertThat(processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId)).isNotPresent();
+        assertThat(processInstanceRepository.findByOriginProcessId(originProcessId)).isNotPresent();
 
     }
 
@@ -38,7 +38,7 @@ class MessageFilteringIT extends ProcessInstanceMockS3ITBase {
     @WithAuthentication("viewAndCreateRoleToken")
     void testProcessInstantiationWithDomainEventNotFiltered_processInstanceCreated() {
 
-        assertThat(processInstanceRepository.findByOriginProcessIdLoadingMessages(originProcessId)).isNotPresent();
+        assertThat(processInstanceRepository.findByOriginProcessId(originProcessId)).isNotPresent();
 
         // Send event that triggers the process instantiation
         sendTest1CreatingProcessInstanceEvent("dontFilter");

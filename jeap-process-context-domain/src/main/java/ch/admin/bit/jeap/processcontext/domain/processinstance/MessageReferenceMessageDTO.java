@@ -1,5 +1,8 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
+import ch.admin.bit.jeap.processcontext.domain.message.Message;
+import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
+import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -7,6 +10,8 @@ import lombok.Value;
 import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.UUID;
+
+import static java.util.stream.Collectors.toSet;
 
 @Value
 @Builder(toBuilder = true)
@@ -27,5 +32,26 @@ public class MessageReferenceMessageDTO {
     @NonNull
     Set<String> relatedOriginTaskIds;
     String traceId;
+
+    public static MessageReferenceMessageDTO of(String processTemplateName, UUID messageReferenceId, Message message) {
+        return MessageReferenceMessageDTO.builder()
+                .messageReferenceId(messageReferenceId)
+                .messageId(message.getId())
+                .messageName(message.getMessageName())
+                .messageReceivedAt(message.getReceivedAt())
+                .messageCreatedAt(message.getMessageCreatedAt())
+                .messageData(toDto(message.getMessageData(processTemplateName)))
+                .relatedOriginTaskIds(toRelatedOriginTaskIds(message.getOriginTaskIds(processTemplateName)))
+                .traceId(message.getTraceId())
+                .build();
+    }
+
+    private static Set<MessageReferenceMessageDataDTO> toDto(Set<MessageData> messageData) {
+        return messageData.stream().map(MessageReferenceMessageDataDTO::from).collect(toSet());
+    }
+
+    private static Set<String> toRelatedOriginTaskIds(Set<OriginTaskId> originTaskIds) {
+        return originTaskIds.stream().map(OriginTaskId::getOriginTaskId).collect(toSet());
+    }
 
 }

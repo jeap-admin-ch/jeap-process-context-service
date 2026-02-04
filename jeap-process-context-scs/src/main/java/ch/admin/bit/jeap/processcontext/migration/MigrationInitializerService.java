@@ -21,8 +21,6 @@ class MigrationInitializerService {
 
     @PostConstruct
     public void triggerMigrationTasks() {
-        log.info("Setting initial template hash value");
-        processInstanceMigrationService.initializeProcessTemplateHashes();
         log.info("Triggering process instance migrations if templates have been modified");
         ZonedDateTime lastModifiedAfter = ZonedDateTime.now().minusDays(maxModifiedAtAgeDays);
         processInstanceMigrationService.triggerMigrationForModifiedTemplates(lastModifiedAfter);

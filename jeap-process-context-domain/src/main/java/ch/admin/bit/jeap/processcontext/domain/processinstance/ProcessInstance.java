@@ -3,7 +3,6 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance;
 import ch.admin.bit.jeap.processcontext.domain.MutableDomainEntity;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
-import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessDataTemplate;
@@ -18,7 +17,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -91,13 +89,6 @@ public class ProcessInstance extends MutableDomainEntity {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "processInstance")
     private List<TaskInstance> tasks = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "processInstance")
-    private List<MessageReference> messageReferences = new ArrayList<>();
-
-    @Setter
-    @Transient
-    private List<MessageReferenceMessageDTO> messageReferenceMessageDTOS = new ArrayList<>();
-
     @Getter
     private int latestSnapshotVersion = 0;
 
@@ -137,7 +128,8 @@ public class ProcessInstance extends MutableDomainEntity {
     /**
      * Start the process instance by planning initial tasks as defined in the process template. This needs to be invoked
      * after persisting a new process instance created using {@link #createProcessInstance(String, ProcessTemplate, ProcessContextFactory)}.
-     * If the process is not in STARTED state, this method does nothing. As this method invokes {@link #updateProcessState()}
+     * Creates task instances for all task types that are defined to be planned at process start.
+     * If the process is not in STARTED state, this method does nothing. As this method invokes {@link #updateState()}
      * internally, the process instance must be persisted first in case task or process completion conditions require
      * access to persisted data.
      */
@@ -151,7 +143,7 @@ public class ProcessInstance extends MutableDomainEntity {
                 .filter(TaskType::isPlannedAtProcessStart)
                 .map(type -> TaskInstance.createInitialTaskInstance(type, this, ZonedDateTime.now()))
                 .forEach(tasks::add);
-        updateProcessState();
+        updateState();
     }
 
     public int nextSnapshotVersion() {
@@ -163,13 +155,16 @@ public class ProcessInstance extends MutableDomainEntity {
         snapshotNames.add(snapshotName);
     }
 
-    void registerNewTaskInUnknownState(TaskType taskType, ZonedDateTime timestamp) {
-        tasks.add(TaskInstance.createUnknownTaskInstance(taskType, this, timestamp));
-        updateProcessState();
+    TaskInstance registerNewTaskInUnknownState(TaskType taskType, ZonedDateTime timestamp) {
+        TaskInstance taskInstance = TaskInstance.createUnknownTaskInstance(taskType, this, timestamp);
+        tasks.add(taskInstance);
+        return taskInstance;
     }
 
-    void planDomainEventTask(TaskType taskType, String originTaskId, ZonedDateTime timestamp, UUID messageId) {
-        tasks.add(TaskInstance.createTaskInstanceWithOriginTaskId(taskType, this, originTaskId, timestamp, messageId));
+    TaskInstance planDomainEventTask(TaskType taskType, String originTaskId, ZonedDateTime timestamp, UUID messageId) {
+        TaskInstance plannedTask = TaskInstance.createTaskInstanceWithOriginTaskId(taskType, this, originTaskId, timestamp, messageId);
+        tasks.add(plannedTask);
+        return plannedTask;
     }
 
     void addObservationTask(TaskType taskType, String messageId, ZonedDateTime timestamp, UUID messageUuid) {
@@ -178,14 +173,6 @@ public class ProcessInstance extends MutableDomainEntity {
 
     void evaluateCompletedTasks(MessageReferenceMessageDTO messageReference) {
         getTasks().forEach(task -> task.evaluateIfCompleted(messageReference));
-        updateProcessState();
-    }
-
-    void evaluateCompletedTasks() {
-        for (MessageReferenceMessageDTO messageReference : this.getMessageReferences()) {
-            evaluateCompletedTasks(messageReference);
-        }
-        updateProcessState();
     }
 
     /**
@@ -217,40 +204,6 @@ public class ProcessInstance extends MutableDomainEntity {
         return getTasks().stream().filter(t -> !t.getState().isFinalState()).toList();
     }
 
-    public List<MessageReferenceMessageDTO> getMessageReferences() {
-        return unmodifiableList(messageReferenceMessageDTOS);
-    }
-
-    public AddedMessage addMessage(Message message) {
-        List<ProcessData> newProcessProcessData = copyMessageDataToProcessData(message);
-        MessageReference messageReference = MessageReference.from(message);
-        messageReference.setOwner(this);
-        messageReferences.add(messageReference);
-        MessageReferenceMessageDTO messageReferenceMessageDTO = toMessageReferenceMessageDTO(messageReference.getId(), message);
-        messageReferenceMessageDTOS.add(messageReferenceMessageDTO);
-        return new AddedMessage(messageReferenceMessageDTO, newProcessProcessData);
-    }
-
-    private MessageReferenceMessageDTO toMessageReferenceMessageDTO(UUID messageReferenceId, Message message) {
-        return MessageReferenceMessageDTO.builder()
-                .messageReferenceId(messageReferenceId)
-                .messageId(message.getId())
-                .messageName(message.getMessageName())
-                .messageCreatedAt(message.getMessageCreatedAt())
-                .messageReceivedAt(message.getReceivedAt())
-                .messageData(toDto(message.getMessageData(processTemplateName)))
-                .relatedOriginTaskIds(toRelatedOriginTaskIds(message.getOriginTaskIds(processTemplateName)))
-                .build();
-    }
-
-    private static Set<MessageReferenceMessageDataDTO> toDto(Set<MessageData> messageData) {
-        return messageData.stream().map(MessageReferenceMessageDataDTO::from).collect(toSet());
-    }
-
-    private static Set<String> toRelatedOriginTaskIds(Set<OriginTaskId> originTaskIds) {
-        return originTaskIds.stream().map(OriginTaskId::getOriginTaskId).collect(toSet());
-    }
-
     public Optional<ProcessCompletion> getProcessCompletion() {
         ProcessCompletion reportedCompletion = processCompletion;
         if ((state == ProcessState.COMPLETED) && (reportedCompletion == null)) {
@@ -272,7 +225,7 @@ public class ProcessInstance extends MutableDomainEntity {
         tasks.forEach(task -> task.setTaskTypeFromTemplate(processTemplate));
     }
 
-    private void updateProcessState() {
+    void updateState() {
         if (state == ProcessState.COMPLETED) {
             // final state
             return;
@@ -314,7 +267,7 @@ public class ProcessInstance extends MutableDomainEntity {
      * @param message the incoming message containing data to copy
      * @return list of newly created ProcessData entries
      */
-    private List<ProcessData> copyMessageDataToProcessData(Message message) {
+    List<ProcessData> copyMessageDataToProcessData(Message message) {
         String messageName = message.getMessageName();
         Set<MessageData> messageData = message.getMessageData(processTemplateName);
         List<ProcessDataTemplate> processDataTemplates = processTemplate.getProcessDataTemplatesBySourceMessageName(messageName);
@@ -388,38 +341,27 @@ public class ProcessInstance extends MutableDomainEntity {
         });
     }
 
-    /**
-     * Evaluates the Date/Time of the newest (last) Message
-     *
-     * @return ZoneDateTime
-     */
-    public Optional<ZonedDateTime> getLastMessageDateTime() {
-        MessageReferenceMessageDTO lastMessage = this.getMessageReferences().stream()
-                .max(Comparator.comparing(MessageReferenceMessageDTO::getMessageReceivedAt))
-                .orElse(null);
-        if (lastMessage != null) {
-            return Optional.of(lastMessage.getMessageReceivedAt());
-        }
-        return Optional.empty();
-    }
-
     void correlatedAt(ZonedDateTime lastCorrelationAt) {
         this.lastCorrelationAt = lastCorrelationAt;
     }
 
-    public void applyTemplateMigrationIfChanged() {
+    /**
+     * @return If the process template has changed since the last time it was applied to this process instance, apply
+     * necessary migrations to existing tasks and return the list of newly planned tasks. If the template has not
+     * changed, return an empty optional.
+     */
+    public Optional<List<TaskInstance>> applyTemplateMigrationIfChanged() {
         if (isTemplateChanged()) {
             log.info("Applying template migrations to process {}", this.getOriginProcessId());
 
             deleteTaskInstancesForDeletedTaskTypes();
-            planTaskInstancesForNewTaskTypes();
+            List<TaskInstance> plannedTasks = planTaskInstancesForNewTaskTypes();
 
             updateTemplateHash();
 
-            for (MessageReferenceMessageDTO messageReference : messageReferenceMessageDTOS) {
-                evaluateCompletedTasks(messageReference);
-            }
+            return Optional.of(plannedTasks);
         }
+        return Optional.empty();
     }
 
     private boolean isTemplateChanged() {
@@ -443,21 +385,24 @@ public class ProcessInstance extends MutableDomainEntity {
         }
     }
 
-    private void planTaskInstancesForNewTaskTypes() {
+    private List<TaskInstance> planTaskInstancesForNewTaskTypes() {
         final Set<String> taskInstanceNames = this.getTasks().stream().map(TaskInstance::getTaskTypeName).collect(Collectors.toUnmodifiableSet());
         final Set<String> allTaskNames = new HashSet<>(this.getProcessTemplate().getTaskNames());
         log.debug("Migration - Found {} task types in process template '{}'", allTaskNames.size(), this.getProcessTemplate().getName());
         allTaskNames.removeAll(taskInstanceNames);
         log.debug("Migration - Found {} new task types", allTaskNames.size());
+        List<TaskInstance> plannedTasks = new ArrayList<>();
         for (String taskName : allTaskNames) {
             TaskType taskType = processTemplate.getTaskTypeByName(taskName).orElseThrow(TaskPlanningException.invalidTaskType(taskName, originProcessId));
             if (taskType.isPlannedAtProcessStart()) {
                 log.info("Migration - Plan new instance of task '{}'", taskName);
-                this.registerNewTaskInUnknownState(taskType, ZonedDateTime.now());
+                TaskInstance plannedTask = registerNewTaskInUnknownState(taskType, ZonedDateTime.now());
+                plannedTasks.add(plannedTask);
             } else {
                 log.info("Migration - Task '{}' does not need upfront planning.", taskName);
             }
         }
+        return plannedTasks;
     }
 
     @Converter

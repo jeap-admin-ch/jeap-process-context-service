@@ -1,12 +1,14 @@
 package ch.admin.bit.jeap.processcontext.adapter.restapi;
 
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
+import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsService;
 import ch.admin.bit.jeap.security.resource.semanticAuthentication.SemanticApplicationRole;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.JeapAuthenticationTestTokenBuilder;
+import com.fasterxml.uuid.Generators;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,6 +51,8 @@ class ProcessInstanceControllerTest {
     @MockitoBean
     private MessageRepository messageRepository;
     @MockitoBean
+    private MessageReferenceRepository messageReferenceRepository;
+    @MockitoBean
     private RelationRepository relationRepository;
     @MockitoBean
     private TranslateService translateService;
@@ -71,8 +76,24 @@ class ProcessInstanceControllerTest {
     @Test
     void testGetProcessInstanceByOriginProcessId_whenFound_thenReturnProcessInstanceResource() throws Exception {
         String originProcessId = "123";
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstanceAndEvent();
-        doReturn(Optional.of(processInstance)).when(repository).findByOriginProcessIdLoadingMessages(originProcessId);
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        doReturn(Optional.of(processInstance)).when(repository).findByOriginProcessId(originProcessId);
+
+        // Mock message reference repository to return the event message
+        ZonedDateTime now = ZonedDateTime.now();
+        MessageReferenceMessageDTO eventMessageRef = MessageReferenceMessageDTO.builder()
+                .messageReferenceId(Generators.timeBasedEpochGenerator().generate())
+                .messageId(Generators.timeBasedEpochGenerator().generate())
+                .messageName(ProcessInstanceStubs.event)
+                .messageCreatedAt(now)
+                .messageReceivedAt(now)
+                .messageData(Set.of(MessageReferenceMessageDataDTO.builder()
+                        .messageDataKey("myKey")
+                        .messageDataValue("myValue")
+                        .build()))
+                .relatedOriginTaskIds(Set.of("taskId1", "taskId2"))
+                .build();
+        when(messageReferenceRepository.findByProcessInstanceId(processInstance.getId())).thenReturn(List.of(eventMessageRef));
 
         Map<String, String> name = Map.of("de", processInstance.getProcessTemplate().getName(),
                 "fr", processInstance.getProcessTemplate().getName(),
@@ -131,7 +152,7 @@ class ProcessInstanceControllerTest {
     void testGetCompletedProcessInstanceByOriginProcessId_whenFound_thenReturnProcessInstanceResource() throws Exception {
         String originProcessId = "123";
         ProcessInstance processInstance = ProcessInstanceStubs.createCompletedProcessInstance();
-        doReturn(Optional.of(processInstance)).when(repository).findByOriginProcessIdLoadingMessages(originProcessId);
+        doReturn(Optional.of(processInstance)).when(repository).findByOriginProcessId(originProcessId);
 
         Map<String, String> name = Map.of("de", processInstance.getProcessTemplate().getName(),
                 "fr", processInstance.getProcessTemplate().getName(),

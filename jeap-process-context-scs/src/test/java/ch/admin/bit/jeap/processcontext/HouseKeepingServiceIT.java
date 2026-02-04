@@ -1,10 +1,8 @@
 package ch.admin.bit.jeap.processcontext;
 
 import ch.admin.bit.jeap.processcontext.domain.housekeeping.HouseKeepingService;
-import ch.admin.bit.jeap.processcontext.domain.message.Message;
-import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
-import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
-import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
+import ch.admin.bit.jeap.processcontext.domain.message.*;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReference;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessState;
@@ -46,6 +44,9 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
 
     @Autowired
     private MessageRepository messageRepository;
+
+    @Autowired
+    private MessageReferenceRepository messageReferenceRepository;
 
     @Autowired
     private ProcessInstanceRepository processInstanceRepository;
@@ -263,8 +264,10 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
                 .build();
         String originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
         ProcessInstance processInstance = ProcessInstance.createProcessInstance(originProcessId, processTemplate, processContextFactory);
-        processInstance.addMessage(message);
         processInstanceRepository.save(processInstance);
+        entityManager.flush();
+        messageReferenceRepository.save(MessageReference.from(message, processInstance));
+        entityManager.flush();
     }
 
     private void assertCountProcessInstances(int count) {

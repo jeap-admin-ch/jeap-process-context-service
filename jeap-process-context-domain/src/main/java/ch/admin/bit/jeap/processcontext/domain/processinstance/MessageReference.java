@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -37,8 +38,10 @@ public class MessageReference extends ImmutableDomainEntity {
     @Getter
     private ProcessInstance processInstance;
 
-    public static MessageReference from(Message message) {
-        return new MessageReference(message);
+    public static MessageReference from(Message message, ProcessInstance processInstance) {
+        MessageReference messageReference = new MessageReference(message);
+        messageReference.setOwner(processInstance);
+        return messageReference;
     }
 
     private MessageReference(Message message) {
@@ -46,8 +49,12 @@ public class MessageReference extends ImmutableDomainEntity {
         this.messageId = message.getId();
     }
 
-    void setOwner(ProcessInstance owner) {
+    private void setOwner(ProcessInstance owner) {
         this.processInstance = owner;
     }
 
+    @Override
+    public ZonedDateTime getCreatedAt() {
+        return super.getCreatedAt();
+    }
 }

@@ -52,7 +52,6 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
         assertProcessInstanceCompleted(originProcessId);
         assertProcessInstanceCompleted(originProcessId);
         Awaitility.await()
-                .atMost(TIMEOUT)
                 .pollInterval(Duration.ofSeconds(2))
                 .until(() -> {
                     List<Relation> relations = relationListenerStub.getRelations(originProcessId);
@@ -88,7 +87,6 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
         assertProcessInstanceCompleted(originProcessId);
         assertProcessInstanceCompleted(originProcessId);
         Awaitility.await()
-                .atMost(TIMEOUT)
                 .pollInterval(Duration.ofSeconds(2))
                 .until(() -> {
                     List<Relation> relations = relationListenerStub.getRelations(originProcessId);
@@ -122,7 +120,6 @@ class ProcessInstanceWithRelationIT extends ProcessInstanceMockS3ITBase {
         assertProcessInstanceCompleted(originProcessId);
         assertProcessInstanceCompleted(originProcessId);
         Awaitility.await()
-                .atMost(TIMEOUT)
                 .pollInterval(Duration.ofSeconds(2))
                 .until(() -> {
                     List<Relation> relations = relationListenerStub.getRelations(originProcessId);

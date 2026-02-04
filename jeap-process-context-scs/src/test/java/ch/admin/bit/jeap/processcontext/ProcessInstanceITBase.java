@@ -78,6 +78,11 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
     private JdbcTemplate jdbcTemplate;
 
     @BeforeEach
+    void setUp() {
+        Awaitility.setDefaultTimeout(TIMEOUT);
+    }
+
+    @BeforeEach
     void translateService() {
         when(translateService.translateProcessCompletionName(anyString(), anyString())).thenAnswer(invocation -> Map.of("de", invocation.getArgument(0)));
         when(translateService.translateProcessCompletionNameFromSnapshot(anyString(), anyString(), anyString())).thenAnswer(invocation -> Map.of("de", invocation.getArgument(1)));
@@ -115,7 +120,6 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
     protected void assertTasks(String originProcessId, TaskInstanceAssertionDto... expectedTasks) {
         Awaitility.await()
                 .pollInSameThread()
-                .atMost(TIMEOUT)
                 .until(() -> getTasks(originProcessId), is(equalTo(Set.of(expectedTasks))));
     }
 
@@ -129,7 +133,6 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
 
         Awaitility.await()
                 .pollInSameThread()
-                .atMost(TIMEOUT)
                 .until(() -> processUpdateQueryRepository.findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, messageTypeName, idempotenceId)
                         .map(ProcessUpdate::isHandled)
                         .orElse(false)
@@ -139,7 +142,6 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
     protected void assertProcessInstanceCompleted(String originProcessId) {
         Awaitility.await()
                 .pollInSameThread()
-                .atMost(TIMEOUT)
                 .until(() -> {
                     Optional<ProcessInstanceDTO> processInstanceDTO = getProcessInstance(originProcessId);
                     return processInstanceDTO.isPresent() && ProcessState.COMPLETED.name().equals(processInstanceDTO.get().getState());
@@ -155,7 +157,6 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
     protected void assertProcessInstanceCreated(String originProcessId, String processName) {
         Awaitility.await()
                 .pollInSameThread()
-                .atMost(TIMEOUT)
                 .until(() -> {
                     Optional<ProcessInstanceDTO> processInstanceDTO = getProcessInstance(originProcessId);
                     return processInstanceDTO.isPresent() &&

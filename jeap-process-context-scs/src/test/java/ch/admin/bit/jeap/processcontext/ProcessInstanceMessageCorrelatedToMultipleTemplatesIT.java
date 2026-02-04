@@ -33,7 +33,6 @@ class ProcessInstanceMessageCorrelatedToMultipleTemplatesIT extends ProcessInsta
 
         Awaitility.await()
                 .pollInSameThread()
-                .atMost(TIMEOUT)
                 .until(() -> messageQueryRepository.findByMessageNameAndIdempotenceId(
                         sentFirstEvent.getType().getName(), sentFirstEvent.getIdentity().getIdempotenceId()).isPresent());
 

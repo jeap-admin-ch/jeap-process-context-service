@@ -14,6 +14,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.criteria.Root;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -27,9 +28,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
-import static java.util.stream.Collectors.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,6 +57,15 @@ class ProcessInstanceJpaRepositoryTest {
     private ProcessInstanceJpaRepository repository;
     @Autowired
     private MessageRepository messageRepository;
+    @Autowired
+    private MessageReferenceJpaRepository messageReferenceJpaRepository;
+
+    private JpaRepositoryTestSupport jpaRepositoryTestSupport;
+
+    @BeforeEach
+    void setUp() {
+        jpaRepositoryTestSupport = new JpaRepositoryTestSupport(messageReferenceJpaRepository);
+    }
 
     @Test
     void testFindUncompletedProcessInstancesHavingProcessData() {
@@ -128,15 +140,11 @@ class ProcessInstanceJpaRepositoryTest {
     void testNextSnapshotVersion() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         assertEquals(0, processInstance.getLatestSnapshotVersion());
-        Integer snapshotVersionPrePersisting = repository.getLatestProcessSnapshotVersion(processInstance.getOriginProcessId());
-        assertThat(snapshotVersionPrePersisting).isNull();
 
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
         entityManager.detach(processInstanceSaved);
         Optional<ProcessInstance> processInstanceReadOptional = repository.findByOriginProcessId(processInstance.getOriginProcessId());
-        Integer snapshotVersionAfterPersisting = repository.getLatestProcessSnapshotVersion(processInstance.getOriginProcessId());
 
-        assertThat(snapshotVersionAfterPersisting).isZero();
         assertTrue(processInstanceReadOptional.isPresent());
         ProcessInstance persistedProcessInstanceRead = processInstanceReadOptional.get();
         assertEquals(0, persistedProcessInstanceRead.getLatestSnapshotVersion());
@@ -145,11 +153,8 @@ class ProcessInstanceJpaRepositoryTest {
         ProcessInstance processInstanceReadSaved = repository.saveAndFlush(persistedProcessInstanceRead);
         entityManager.detach(processInstanceReadSaved);
         Optional<ProcessInstance> processInstanceReadAgainOptional = repository.findByOriginProcessId(processInstance.getOriginProcessId());
-        Integer snapshotVersionAfterNext = repository.getLatestProcessSnapshotVersion(processInstance.getOriginProcessId());
 
-        assertThat(snapshotVersionAfterNext).isEqualTo(1);
-        assertTrue(processInstanceReadAgainOptional.isPresent());
-        assertEquals(1, processInstanceReadAgainOptional.get().getLatestSnapshotVersion());
+        assertEquals(2, processInstanceReadAgainOptional.orElseThrow().nextSnapshotVersion());
     }
 
     @Test
@@ -303,34 +308,6 @@ class ProcessInstanceJpaRepositoryTest {
         entityManager.createQuery(update).executeUpdate();
         entityManager.flush();
     }
-
-    @Test
-    void setInitialTemplateHashIfNotSet() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
-        repository.saveAndFlush(processInstance);
-        setTemplateHashToNull(processInstance);
-
-        assertNull(repository.getReferenceById(processInstance.getId()).getProcessTemplateHash());
-
-        ProcessTemplate template = processInstance.getProcessTemplate();
-        repository.setInitialTemplateHashIfNotSet(template.getName(), "updated-hash");
-        entityManager.clear();
-
-        assertEquals("updated-hash",
-                repository.getReferenceById(processInstance.getId()).getProcessTemplateHash());
-    }
-
-    private void setTemplateHashToNull(ProcessInstance processInstance) {
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaUpdate<ProcessInstance> update = builder.createCriteriaUpdate(ProcessInstance.class);
-        Root<ProcessInstance> root = update.from(ProcessInstance.class);
-        update.set("processTemplateHash", null)
-                .where(builder.equal(root.get("id"), processInstance.getId()));
-        entityManager.createQuery(update).executeUpdate();
-        entityManager.flush();
-        entityManager.clear();
-    }
-
     @Test
     void existsByOriginProcessId() {
         ProcessInstance processInstance = ProcessInstanceStubs.createCompletedProcessInstance();
@@ -424,83 +401,6 @@ class ProcessInstanceJpaRepositoryTest {
     }
 
     @Test
-    void testFindEventReferences() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
-        String templateName = processInstance.getProcessTemplateName();
-        Message e1 = saveEvent("e1",
-                Set.of(createEventData(templateName, "d1-a"), createEventData(templateName, "d1-b")),
-                Set.of(OriginTaskId.from(templateName, "i1-a"), OriginTaskId.from(templateName, "i1-b")), "traceIdFore1");
-        MessageReferenceMessageDTO reference1 = processInstance.addMessage(e1).messageReference();
-        Message e2 = saveEvent("e2",
-                Set.of(createEventData(templateName, "d2")),
-                Set.of(OriginTaskId.from(templateName, "i2")), "traceIdFore2");
-        MessageReferenceMessageDTO reference2 = processInstance.addMessage(e2).messageReference();
-        Message e3 = saveEvent("e3", Set.of(), Set.of(), "traceIdFore3");
-        MessageReferenceMessageDTO reference3 = processInstance.addMessage(e3).messageReference();
-        saveEvent("e4",
-                Set.of(createEventData("other", "d4")),
-                Set.of(OriginTaskId.from("other", "i4")), "traceIdFore4");
-        ProcessInstance otherProcessInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
-        Message eother = saveEvent("eother",
-                Set.of(createEventData(templateName, "dother")),
-                Set.of(OriginTaskId.from(templateName, "idother")), "traceIdForeother");
-        otherProcessInstance.addMessage(eother);
-        repository.save(otherProcessInstance);
-        repository.saveAndFlush(processInstance);
-
-
-        // EventReferencesEventData
-        List<MessageReferenceMessageData> messageReferenceMessageData = repository.findMessageReferencesMessageData(processInstance.getId());
-
-        assertThat(messageReferenceMessageData).hasSize(3);
-        Map<UUID, Set<MessageReferenceMessageDataDTO>> eventDataByReferenceId = messageReferenceMessageData.stream().collect(groupingBy(MessageReferenceMessageData::getMessageReferenceId,
-                mapping(d -> MessageReferenceMessageDataDTO.builder()
-                        .messageDataKey(d.getMessageDataKey())
-                        .messageDataValue(d.getMessageDataValue())
-                        .messageDataRole(d.getMessageDataRole())
-                        .build(), toSet())));
-        assertThat(eventDataByReferenceId).hasSize(2);
-        assertThat(eventDataByReferenceId.get(reference1.getMessageReferenceId())).hasSize(2);
-        assertThat(eventDataByReferenceId).containsEntry(reference1.getMessageReferenceId(), reference1.getMessageData());
-        assertThat(eventDataByReferenceId.get(reference2.getMessageReferenceId())).hasSize(1);
-        assertThat(eventDataByReferenceId).containsEntry(reference2.getMessageReferenceId(), reference2.getMessageData());
-
-
-        // EventReferencesRelatedOriginTaskIds
-        List<MessageReferenceRelatedTaskId> eventReferenceTaskIds = repository.findMessageReferencesRelatedOriginTaskIds(processInstance.getId());
-
-        assertThat(eventReferenceTaskIds).hasSize(3);
-        Map<UUID, Set<String>> taskIdsByReferenceId = eventReferenceTaskIds.stream().collect(groupingBy(MessageReferenceRelatedTaskId::getMessageReferenceId,
-                mapping(MessageReferenceRelatedTaskId::getRelatedOriginTaskId, toSet())));
-        assertThat(taskIdsByReferenceId).hasSize(2);
-        assertThat(taskIdsByReferenceId.get(reference1.getMessageReferenceId())).hasSize(2);
-        assertThat(taskIdsByReferenceId).containsEntry(reference1.getMessageReferenceId(), reference1.getRelatedOriginTaskIds());
-        assertThat(taskIdsByReferenceId.get(reference2.getMessageReferenceId())).hasSize(1);
-        assertThat(taskIdsByReferenceId).containsEntry(reference2.getMessageReferenceId(), reference2.getRelatedOriginTaskIds());
-
-
-        // EventReferencesEvents
-        List<MessageReferenceMessage> events = repository.findMessageReferencesMessages(processInstance.getId());
-
-        assertThat(events).hasSize(3);
-        assertThat(events.stream().map(e -> MessageReferenceMessageDTO.builder()
-                .messageReferenceId(e.getMessageReferenceId())
-                .messageId(e.getMessageId())
-                .messageName(e.getMessageName())
-                .traceId(e.getTraceId())
-                .messageReceivedAt(e.getMessageReceivedAt().truncatedTo(ChronoUnit.MILLIS).withFixedOffsetZone())
-                .messageCreatedAt(e.getMessageCreatedAt().truncatedTo(ChronoUnit.MILLIS).withFixedOffsetZone())
-                .messageData(Set.of())
-                .relatedOriginTaskIds(Set.of())
-                .build()).collect(toSet())
-        ).containsOnly(
-                toEventReferenceEventDTO(reference1.getMessageReferenceId(), e1),
-                toEventReferenceEventDTO(reference2.getMessageReferenceId(), e2),
-                toEventReferenceEventDTO(reference3.getMessageReferenceId(), e3)
-        );
-    }
-
-    @Test
     void areAllTasksInFinalState_singleCompletedTask_expectTrue() {
         ProcessInstance processInstance = ProcessInstanceStubs.createCompletedProcessInstance();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
@@ -567,31 +467,123 @@ class ProcessInstanceJpaRepositoryTest {
                 .isFalse();
     }
 
-    private MessageReferenceMessageDTO toEventReferenceEventDTO(UUID eventReferenceId, Message message) {
-        return MessageReferenceMessageDTO.builder()
-                .messageReferenceId(eventReferenceId)
-                .messageId(message.getId())
-                .messageName(message.getMessageName())
-                .messageReceivedAt(message.getReceivedAt().truncatedTo(ChronoUnit.MILLIS).withFixedOffsetZone())
-                .messageCreatedAt(message.getMessageCreatedAt().truncatedTo(ChronoUnit.MILLIS).withFixedOffsetZone())
-                .traceId(message.getTraceId())
-                .messageData(Set.of())
-                .relatedOriginTaskIds(Set.of())
-                .build();
+    @Test
+    void findMessageReferencesByMessageType_multipleMessages_returnsLatest() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        ProcessInstance savedProcessInstance = repository.saveAndFlush(processInstance);
+
+        Message oldMessage = saveEvent("TestMessageType", Set.of(), Set.of(), "traceId1", ZonedDateTime.now().minusMinutes(10));
+        Message newMessage = saveEvent("TestMessageType", Set.of(), Set.of(), "traceId2", ZonedDateTime.now());
+        Message otherTypeMessage = saveEvent("OtherMessageType", Set.of(), Set.of(), "traceId3");
+
+        jpaRepositoryTestSupport.createAndPersist(oldMessage, savedProcessInstance);
+        jpaRepositoryTestSupport.createAndPersist(newMessage, savedProcessInstance);
+        jpaRepositoryTestSupport.createAndPersist(otherTypeMessage, savedProcessInstance);
+        messageReferenceJpaRepository.flush();
+
+        List<MessageReference> result = repository.findMessageReferencesByMessageType(
+                savedProcessInstance.getId(), "TestMessageType", PageRequest.of(0, 1));
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getMessageId()).isEqualTo(newMessage.getId());
     }
 
-    private MessageData createEventData(String templateName, String key) {
-        return MessageData.builder().key(key).value(key + "-value").templateName(templateName).build();
+    @Test
+    void findMessageReferencesByMessageType_noMatchingMessages_returnsEmpty() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        ProcessInstance savedProcessInstance = repository.saveAndFlush(processInstance);
+
+        Message message = saveEvent("SomeMessageType", Set.of(), Set.of(), "traceId1");
+        jpaRepositoryTestSupport.createAndPersist(message, savedProcessInstance);
+        messageReferenceJpaRepository.flush();
+
+        List<MessageReference> result = repository.findMessageReferencesByMessageType(
+                savedProcessInstance.getId(), "NonExistentType", PageRequest.of(0, 1));
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void findMessageReferencesByMessageTypeAndOriginTaskId_multipleMessages_returnsLatestWithMatchingTaskId() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        ProcessInstance savedProcessInstance = repository.saveAndFlush(processInstance);
+        String templateName = processInstance.getProcessTemplateName();
+
+        Message oldMessage = saveEvent("TestMessageType",
+                Set.of(),
+                Set.of(OriginTaskId.from(templateName, "task-1")),
+                "traceId1", ZonedDateTime.now().minusMinutes(10));
+        Message newMessage = saveEvent("TestMessageType",
+                Set.of(),
+                Set.of(OriginTaskId.from(templateName, "task-1")),
+                "traceId2", ZonedDateTime.now());
+        Message differentTaskMessage = saveEvent("TestMessageType",
+                Set.of(),
+                Set.of(OriginTaskId.from(templateName, "task-2")),
+                "traceId3");
+
+        jpaRepositoryTestSupport.createAndPersist(oldMessage, savedProcessInstance);
+        jpaRepositoryTestSupport.createAndPersist(newMessage, savedProcessInstance);
+        jpaRepositoryTestSupport.createAndPersist(differentTaskMessage, savedProcessInstance);
+        messageReferenceJpaRepository.flush();
+
+        List<MessageReference> result = repository.findMessageReferencesByMessageTypeAndOriginTaskId(
+                savedProcessInstance.getId(), "TestMessageType", "task-1", PageRequest.of(0, 1));
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getMessageId()).isEqualTo(newMessage.getId());
+    }
+
+    @Test
+    void findMessageReferencesByMessageTypeAndOriginTaskId_noMatchingTaskId_returnsEmpty() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        ProcessInstance savedProcessInstance = repository.saveAndFlush(processInstance);
+        String templateName = processInstance.getProcessTemplateName();
+
+        Message message = saveEvent("TestMessageType",
+                Set.of(),
+                Set.of(OriginTaskId.from(templateName, "task-1")),
+                "traceId1");
+        jpaRepositoryTestSupport.createAndPersist(message, savedProcessInstance);
+        messageReferenceJpaRepository.flush();
+
+        List<MessageReference> result = repository.findMessageReferencesByMessageTypeAndOriginTaskId(
+                savedProcessInstance.getId(), "TestMessageType", "non-existent-task", PageRequest.of(0, 1));
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void findMessageReferencesByMessageTypeAndOriginTaskId_wrongTemplateName_returnsEmpty() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        ProcessInstance savedProcessInstance = repository.saveAndFlush(processInstance);
+
+        Message message = saveEvent("TestMessageType",
+                Set.of(),
+                Set.of(OriginTaskId.from("other-template", "task-1")),
+                "traceId1");
+        jpaRepositoryTestSupport.createAndPersist(message, savedProcessInstance);
+        messageReferenceJpaRepository.flush();
+
+        List<MessageReference> result = repository.findMessageReferencesByMessageTypeAndOriginTaskId(
+                savedProcessInstance.getId(), "TestMessageType", "task-1", PageRequest.of(0, 1));
+
+        assertThat(result).isEmpty();
     }
 
     private Message saveEvent(String name, Set<MessageData> messageData, Set<OriginTaskId> originTaskIds, String traceId) {
+        return saveEvent(name, messageData, originTaskIds, traceId, ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+    }
+
+    private Message saveEvent(String name, Set<MessageData> messageData, Set<OriginTaskId> originTaskIds,
+                              String traceId, ZonedDateTime createdAt) {
         Message message = Message.messageBuilder()
                 .messageId(Generators.timeBasedEpochGenerator().generate().toString())
                 .idempotenceId(Generators.timeBasedEpochGenerator().generate().toString())
                 .messageName(name)
                 .messageData(messageData)
                 .originTaskIds(originTaskIds)
-                .createdAt(ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS))
+                .createdAt(createdAt)
                 .messageCreatedAt(ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS))
                 .traceId(traceId)
                 .build();

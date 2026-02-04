@@ -57,7 +57,6 @@ class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
         assertProcessInstanceCompleted(originProcessId);
         assertSnapshotCreatedEvent(1);
         Awaitility.await()
-                .atMost(TIMEOUT)
                 .pollInterval(Duration.ofSeconds(2))
                 .until(() -> relationListenerStub.getRelations(originProcessId).size() == 4);
 

@@ -150,15 +150,18 @@ class ProcessInstanceTest {
     }
 
     void completeTask(ProcessInstance processInstance, String originTaskId, String messageName) {
-        AddedMessage addedMessage = processInstance.addMessage(Message.messageBuilder()
+        Message message = Message.messageBuilder()
                 .messageId(UUID.randomUUID().toString())
                 .idempotenceId("idempotenceId")
                 .messageName(messageName)
                 .originTaskIds(Set.of(OriginTaskId.from("template", originTaskId)))
                 .createdAt(ZonedDateTime.now())
                 .messageCreatedAt(ZonedDateTime.now())
-                .build());
-        processInstance.evaluateCompletedTasks(addedMessage.messageReference());
+                .build();
+        MessageReferenceMessageDTO referenceMessageDTO = MessageReferenceMessageDTO
+                .of(processInstance.getProcessTemplateName(), UUID.randomUUID(), message);
+        processInstance.evaluateCompletedTasks(referenceMessageDTO);
+        processInstance.updateState();
     }
 
     void completeTask(ProcessInstance processInstance, String originTaskId) {
@@ -235,7 +238,7 @@ class ProcessInstanceTest {
                 .messageCreatedAt(ZonedDateTime.now())
                 .build();
 
-        processInstance.addMessage(domainMessage);
+        processInstance.copyMessageDataToProcessData(domainMessage);
 
         Set<ProcessData> processDataSet = processInstance.getProcessData();
         assertEquals(0, processDataSet.size());
@@ -259,7 +262,7 @@ class ProcessInstanceTest {
                 .messageCreatedAt(ZonedDateTime.now())
                 .build();
 
-        processInstance.addMessage(domainMessage);
+        processInstance.copyMessageDataToProcessData(domainMessage);
 
         Set<ProcessData> processDataSet = processInstance.getProcessData();
         assertEquals(0, processDataSet.size());
@@ -289,54 +292,14 @@ class ProcessInstanceTest {
                 .messageCreatedAt(ZonedDateTime.now())
                 .build();
 
-        processInstance.addMessage(domainMessage1);
-        processInstance.addMessage(domainMessage2);
+        processInstance.copyMessageDataToProcessData(domainMessage1);
+        processInstance.copyMessageDataToProcessData(domainMessage2);
 
         Set<ProcessData> processDataSet = processInstance.getProcessData();
         assertTrue(processDataSet.contains(new ProcessData("targetKeyName", "someValue", "someRole")));
         assertTrue(processDataSet.contains(new ProcessData("targetKeyName", "someValueOtherValue", "someOtherRole")));
         assertTrue(processDataSet.contains(new ProcessData("anotherTargetKeyName", "anotherValue")));
         assertEquals(3, processDataSet.size());
-    }
-
-    @Test
-    void evaluateLastEvent() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventData();
-
-        ZonedDateTime now = ZonedDateTime.now();
-
-        Message domainMessage1 = Message.messageBuilder()
-                .messageName("sourceEventName")
-                .messageId("oldestEvent")
-                .idempotenceId("idempotenceIdOldest")
-                .createdAt(now.minusDays(2))
-                .messageCreatedAt(now.minusDays(2))
-                .build();
-        Message domainMessage2 = Message.messageBuilder()
-                .messageName("anotherSourceEventName")
-                .messageId("middleEvent")
-                .idempotenceId("idempotenceIdMiddle")
-                .messageData(Set.of())
-                .createdAt(now.minusDays(1))
-                .messageCreatedAt(now.minusDays(1))
-                .build();
-        Message domainMessage3 = Message.messageBuilder()
-                .messageName("anotherSourceEventName")
-                .messageId("newewstEvent")
-                .idempotenceId("idempotenceIdNewest")
-                .messageData(Set.of())
-                .createdAt(now)
-                .messageCreatedAt(now)
-                .build();
-
-
-        processInstance.addMessage(domainMessage3);
-        processInstance.addMessage(domainMessage2);
-        processInstance.addMessage(domainMessage1);
-
-        Optional<ZonedDateTime> lastEventDateOptional = processInstance.getLastMessageDateTime();
-
-        assertEquals(now, lastEventDateOptional.orElseThrow());
     }
 
     @Test

@@ -1,6 +1,5 @@
 package ch.admin.bit.jeap.processcontext.domain.message;
 
-
 import java.util.Set;
 import java.util.UUID;
 
@@ -14,5 +13,4 @@ public interface MessageRepository extends MessageQueryRepository {
     void deleteOriginTaskIdByMessageIds(Set<UUID> messageIds);
 
     void deleteMessageByIds(Set<UUID> messageIds);
-
 }

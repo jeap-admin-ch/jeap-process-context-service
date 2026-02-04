@@ -13,7 +13,6 @@ import lombok.ToString;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import static lombok.AccessLevel.PACKAGE;
@@ -48,10 +47,14 @@ public class TaskInstance extends MutableDomainEntity {
     private String originTaskId;
 
     @ToString.Exclude
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "process_instance_id")
-    @Getter(value = PACKAGE)
+    //@Getter(value = PACKAGE)
     private ProcessInstance processInstance;
+
+    ProcessInstance getProcessInstance() {
+        return processInstance;
+    }
 
     @Override
     public ZonedDateTime getCreatedAt() {
@@ -104,12 +107,6 @@ public class TaskInstance extends MutableDomainEntity {
         return new TaskInstance(taskType, owner, TaskState.UNKNOWN, null, timestamp, null);
     }
 
-    void plan(String originTaskId, ZonedDateTime timestamp) {
-        this.originTaskId = originTaskId;
-        state = TaskState.PLANNED;
-        plannedAt = timestamp;
-    }
-
     void notRequired() {
         state = TaskState.NOT_REQUIRED;
     }
@@ -138,22 +135,36 @@ public class TaskInstance extends MutableDomainEntity {
     }
 
     void evaluateIfCompleted(MessageReferenceMessageDTO messageReference) {
-        if (Set.of(TaskState.PLANNED, TaskState.NOT_PLANNED).contains(state)) {
-            if (taskType.isPresent() && taskType.get().getCompletedByDomainEvent() != null && isCompleted(messageReference)) {
-                state = TaskState.COMPLETED;
-                completedAt = messageReference.getMessageCreatedAt();
-                completedBy = messageReference.getMessageId();
-            }
+        if (!state.isFinalState() && taskType.isPresent() && taskType.get().getCompletedByDomainEvent() != null && isCompleted(messageReference)) {
+            completeByMessage(messageReference.getMessageId(), messageReference.getMessageCreatedAt());
         }
     }
 
+    void completeByMessage(UUID messageId, ZonedDateTime messageCreatedAt) {
+        state = TaskState.COMPLETED;
+        completedAt = messageCreatedAt;
+        completedBy = messageId;
+    }
+
     private boolean isCompleted(MessageReferenceMessageDTO messageReference) {
-        if (taskType.isPresent() && TaskCardinality.SINGLE_INSTANCE == taskType.get().getCardinality()) {
-            return messageReference.getMessageName().equals(taskType.get().getCompletedByDomainEvent());
+        TaskType type = taskType.orElseThrow();
+        boolean completedByThisMessage = messageReference.getMessageName().equals(type.getCompletedByDomainEvent());
+        if (TaskCardinality.SINGLE_INSTANCE == type.getCardinality()) {
+            return completedByThisMessage;
         } else {
-            return taskType.isPresent() && messageReference.getMessageName().equals(taskType.get().getCompletedByDomainEvent())
-                    && messageReference.getRelatedOriginTaskIds().contains(originTaskId);
+            return completedByThisMessage && messageReference.getRelatedOriginTaskIds().contains(originTaskId);
         }
+    }
+
+    /**
+     * @return the domain event name this task instance is waiting for to be completed, or empty if the task is in a
+     * final state or if the task type does not configure completion by domain event.
+     */
+    Optional<TaskWaitingToBeCompletedByMessage> waitingToBeCompletedByDomainEvent() {
+        if (state.isFinalState() || taskType.isEmpty()) {
+            return Optional.empty();
+        }
+        return TaskWaitingToBeCompletedByMessage.of(this, taskType.get(), originTaskId);
     }
 
 }

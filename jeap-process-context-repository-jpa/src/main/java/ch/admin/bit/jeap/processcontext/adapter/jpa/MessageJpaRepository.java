@@ -57,8 +57,8 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
      */
     @Query("""
             select case when exists (
-                select 1 from ProcessInstance p
-                join p.messageReferences r
+                select 1 from MessageReference r
+                join r.processInstance p
                 join events e on e.id = r.messageId
                 where p.id = :processInstanceId and e.messageName = :messageType
             ) then true else false end
@@ -71,8 +71,8 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
      */
     @Query("""
             select case when exists (
-                select 1 from ProcessInstance p
-                join p.messageReferences r
+                select 1 from MessageReference r
+                join r.processInstance p
                 join events e on e.id = r.messageId
                 where p.id = :processInstanceId and e.messageName in :messageTypes
             ) then true else false end
@@ -85,8 +85,8 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
      */
     @Query("""
             select d.key as key, d.value as value, d.role as role
-            from ProcessInstance p
-            join p.messageReferences r
+            from MessageReference r
+            join r.processInstance p
             join events e on e.id = r.messageId
             join e.messageData d
             where p.id = :processInstanceId
@@ -101,8 +101,8 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
      */
     @Query("""
             select e.messageName as messageName, count(e) as messageCount
-            from ProcessInstance p
-            join p.messageReferences r
+            from MessageReference r
+            join r.processInstance p
             join events e on e.id = r.messageId
             where p.id = :processInstanceId and e.messageName in :messageTypes
             group by e.messageName
@@ -115,8 +115,8 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
      */
     @Query("""
             select count(distinct e)
-            from ProcessInstance p
-            join p.messageReferences r
+            from MessageReference r
+            join r.processInstance p
             join events e on e.id = r.messageId
             join e.messageData d
             where p.id = :processInstanceId
@@ -135,8 +135,8 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
      */
     @Query("""
             select case when exists (
-                select 1 from ProcessInstance p
-                join p.messageReferences r
+                select 1 from MessageReference r
+                join r.processInstance p
                 join events e on e.id = r.messageId
                 join e.messageData d
                 where p.id = :processInstanceId
@@ -156,8 +156,8 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
      */
     @Query("""
             select case when exists (
-                select 1 from ProcessInstance p
-                join p.messageReferences r
+                select 1 from MessageReference r
+                join r.processInstance p
                 join events e on e.id = r.messageId
                 join e.messageData d
                 where p.id = :processInstanceId
