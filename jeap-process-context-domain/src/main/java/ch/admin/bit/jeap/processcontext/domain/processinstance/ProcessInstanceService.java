@@ -218,8 +218,12 @@ public class ProcessInstanceService {
                 relationService.onNewProcessData(processInstance, addedMessage.newProcessData());
             }
 
-            metricsListener.timed("pcs_process_single_update", Map.of("updateType", update.getProcessUpdateType().name()),
-                    () -> updateProcessInstance(processInstance, update, messageReferenceMessageDTO, message));
+            metricsListener.timed("pcs_process_single_update", Map.of("updateType", update.getProcessUpdateType().name()), () -> {
+                updateProcessInstance(processInstance, update, messageReferenceMessageDTO, message);
+                // Check for tasks that have been planned in the current iteration, and migt have been completed
+                // by events received earlier
+                processInstance.evaluateCompletedTasks();
+            });
         }
 
         countCompletionIfCompleted(processInstance, stateBeforeUpdate);

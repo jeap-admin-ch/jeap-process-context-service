@@ -181,6 +181,13 @@ public class ProcessInstance extends MutableDomainEntity {
         updateProcessState();
     }
 
+    void evaluateCompletedTasks() {
+        for (MessageReferenceMessageDTO messageReference : this.getMessageReferences()) {
+            evaluateCompletedTasks(messageReference);
+        }
+        updateProcessState();
+    }
+
     /**
      * Evaluate the snapshot conditions defined for this process and for every condition that
      * triggers a new snapshot return the name of the snapshot triggered.
