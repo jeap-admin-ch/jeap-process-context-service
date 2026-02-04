@@ -14,7 +14,6 @@ import ch.admin.bit.jeap.security.resource.semanticAuthentication.SemanticApplic
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.JeapAuthenticationTestTokenBuilder;
 import ch.admin.bit.jeap.test.processcontext.KafkaIntegrationTestConfig;
-import ch.admin.bit.jeap.test.processcontext.KafkaIntegrationTestConfig.TestMessageProcessingFailedEventListener;
 import ch.admin.bit.jeap.test.processcontext.TestApp;
 import com.fasterxml.uuid.Generators;
 import lombok.extern.slf4j.Slf4j;
@@ -69,9 +68,6 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
     protected ProcessTemplateRepository processTemplateRepository;
     @Autowired
     private KafkaListenerEndpointRegistry registry;
-
-    @Autowired
-    TestMessageProcessingFailedEventListener testMessageProcessingFailedEventListener;
 
     @MockitoBean
     private TranslateService translateService;

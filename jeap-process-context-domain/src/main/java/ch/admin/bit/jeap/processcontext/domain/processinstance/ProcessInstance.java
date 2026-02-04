@@ -34,16 +34,18 @@ import static org.springframework.util.StringUtils.hasText;
 
 @SuppressWarnings({"FieldMayBeFinal", "JpaDataSourceORMInspection"}) // JPA spec mandates non-final fields
 @NoArgsConstructor(access = PROTECTED) // for JPA
-@ToString
+@ToString(onlyExplicitlyIncluded = true)
 @Entity
 @Slf4j
 public class ProcessInstance extends MutableDomainEntity {
 
+    @ToString.Include
     @Id
     @NotNull
     @Getter
     private UUID id = Generators.timeBasedEpochGenerator().generate();
 
+    @ToString.Include
     @Column(unique = true)
     @NotNull
     @Getter
@@ -57,6 +59,7 @@ public class ProcessInstance extends MutableDomainEntity {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "processInstance")
     private Set<ProcessRelation> processRelations;
 
+    @ToString.Include
     @NotNull
     @Enumerated(EnumType.STRING)
     @Getter
@@ -65,6 +68,7 @@ public class ProcessInstance extends MutableDomainEntity {
     @Embedded
     ProcessCompletion processCompletion;
 
+    @ToString.Include
     @NotNull
     @Column(name = "template_name")
     @Getter
