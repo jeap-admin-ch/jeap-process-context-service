@@ -5,10 +5,7 @@ import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceDTO
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceQueryRepository;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessSnapshotRepository;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.RelationRepository;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -25,6 +22,7 @@ class ProcessInstanceViewService {
     private final MessageRepository messageRepository;
     private final MessageReferenceRepository messageReferenceRepository;
     private final RelationRepository relationRepository;
+    private final ProcessDataRepository processDataRepository;
 
     public Optional<ProcessInstanceDTO> createDto(String originProcessId) {
         return repository.findByOriginProcessId(originProcessId)
@@ -33,7 +31,7 @@ class ProcessInstanceViewService {
     }
 
     private ProcessInstanceDTO createDtoFromProcessInstance(ProcessInstance p) {
-        return ProcessInstanceDTOFactory.createFromProcessInstance(p, translateService, processRelationsService, messageRepository, messageReferenceRepository, relationRepository);
+        return ProcessInstanceDTOFactory.createFromProcessInstance(p, translateService, processRelationsService, messageRepository, messageReferenceRepository, relationRepository, processDataRepository);
     }
 
     private Optional<ProcessInstanceDTO> createDtoFromProcessSnapshot(String originProcessId) {

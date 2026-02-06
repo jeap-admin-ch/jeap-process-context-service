@@ -58,6 +58,10 @@ class ProcessInstanceJpaRepositoryTest {
     @Autowired
     private MessageRepository messageRepository;
     @Autowired
+    private ProcessDataRepository processDataRepository;
+    @Autowired
+    private ProcessInstanceRepository processInstanceRepository;
+    @Autowired
     private MessageReferenceJpaRepository messageReferenceJpaRepository;
 
     private JpaRepositoryTestSupport jpaRepositoryTestSupport;
@@ -69,7 +73,7 @@ class ProcessInstanceJpaRepositoryTest {
 
     @Test
     void testFindUncompletedProcessInstancesHavingProcessData() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository, processInstanceRepository, processDataRepository);
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
         final String originProcessId = processInstanceSaved.getOriginProcessId();
         final String templateName = processInstanceSaved.getProcessTemplateName();
@@ -97,7 +101,7 @@ class ProcessInstanceJpaRepositoryTest {
 
     @Test
     void testFindUncompletedProcessInstancesHavingProcessDataWithoutRole() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository, processInstanceRepository, processDataRepository);
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
         final String originProcessId = processInstanceSaved.getOriginProcessId();
         final String templateName = processInstanceSaved.getProcessTemplateName();
@@ -130,7 +134,6 @@ class ProcessInstanceJpaRepositoryTest {
 
         assertTrue(processInstanceReadOptional.isPresent());
         ProcessInstance persistedProcessInstanceRead = processInstanceReadOptional.get();
-        assertEquals(processInstance.getProcessData(), persistedProcessInstanceRead.getProcessData());
         assertEquals(1, persistedProcessInstanceRead.getTasks().size());
         assertEquals(processInstance.getTasks().getFirst().getOriginTaskId(), persistedProcessInstanceRead.getTasks().getFirst().getOriginTaskId());
         assertTrue(persistedProcessInstanceRead.getProcessCompletion().isEmpty());
@@ -226,7 +229,7 @@ class ProcessInstanceJpaRepositoryTest {
 
     @Test
     void save_havingProcessDataEventData_expectEntityToBePersistedSuccessfully() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository, processInstanceRepository, processDataRepository);
 
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
         entityManager.detach(processInstanceSaved);
@@ -234,18 +237,18 @@ class ProcessInstanceJpaRepositoryTest {
 
         assertTrue(processInstanceReadOptional.isPresent());
         ProcessInstance persistedProcessInstanceRead = processInstanceReadOptional.get();
-        assertEquals(processInstance.getProcessData(), persistedProcessInstanceRead.getProcessData());
+        assertEquals(3, processDataRepository.findByProcessInstanceId(persistedProcessInstanceRead.getId()).size());
         assertEquals(1, persistedProcessInstanceRead.getTasks().size());
         assertEquals(processInstance.getTasks().getFirst().getOriginTaskId(), persistedProcessInstanceRead.getTasks().getFirst().getOriginTaskId());
     }
 
     @Test
     void findIdOriginProcessIdByStateAndModifiedAtBefore_processInstanceCompleted_processInstanceFound() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository, processInstanceRepository, processDataRepository);
         ReflectionTestUtils.setField(processInstance, "state", ProcessState.COMPLETED);
         repository.saveAndFlush(processInstance);
 
-        repository.saveAndFlush(ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository));
+        repository.saveAndFlush(ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository, processInstanceRepository, processDataRepository));
 
         final Slice<ProcessInstanceQueryResult> completedProcessInstances = repository.findIdOriginProcessIdByStateAndModifiedAtBefore(ProcessState.COMPLETED, ZonedDateTime.now().plusDays(1), Pageable.ofSize(100));
         assertEquals(1, completedProcessInstances.getNumberOfElements());
@@ -256,11 +259,11 @@ class ProcessInstanceJpaRepositoryTest {
 
     @Test
     void findIdOriginProcessIdByStateAndModifiedAtBefore_processInstanceCompletedButNotOld_processInstanceNotFound() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository, processInstanceRepository, processDataRepository);
         ReflectionTestUtils.setField(processInstance, "state", ProcessState.COMPLETED);
         repository.saveAndFlush(processInstance);
 
-        repository.saveAndFlush(ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository));
+        repository.saveAndFlush(ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository, processInstanceRepository, processDataRepository));
 
         final Slice<ProcessInstanceQueryResult> completedProcessInstances = repository.findIdOriginProcessIdByStateAndModifiedAtBefore(ProcessState.COMPLETED, ZonedDateTime.now().minusDays(1), Pageable.ofSize(100));
         assertEquals(0, completedProcessInstances.getNumberOfElements());
@@ -346,22 +349,22 @@ class ProcessInstanceJpaRepositoryTest {
     void testFindProcessInstanceByProcessData() {
         PageRequest pageRequest = PageRequest.of(0, 10);
 
-        ProcessInstance processInstance1 = ProcessInstanceStubs.createProcessWithSingleTaskInstance(
+        ProcessInstance processInstance1 = ProcessInstanceStubs.createProcessWithSingleTaskInstanceSavingProcessData(
                 "someTemplateName",
-                Set.of(new ProcessData(R1, V1), new ProcessData(R2, V2)));
+                List.of(new ProcessData(R1, V1), new ProcessData(R2, V2)), processInstanceRepository, processDataRepository);
         repository.save(processInstance1);
 
-        ProcessInstance processInstance2 = ProcessInstanceStubs.createProcessWithSingleTaskInstance(
+        ProcessInstance processInstance2 = ProcessInstanceStubs.createProcessWithSingleTaskInstanceSavingProcessData(
                 "someTemplateName",
-                Set.of(new ProcessData(R1, V1)));
+                List.of(new ProcessData(R1, V1)), processInstanceRepository, processDataRepository);
         repository.save(processInstance2);
 
         ProcessInstance processInstance3 = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         repository.save(processInstance3);
 
-        ProcessInstance processInstance4 = ProcessInstanceStubs.createProcessWithSingleTaskInstance(
+        ProcessInstance processInstance4 = ProcessInstanceStubs.createProcessWithSingleTaskInstanceSavingProcessData(
                 "someTemplateName",
-                Set.of(new ProcessData(R2, V3), new ProcessData(R3, V3)));
+                List.of(new ProcessData(R2, V3), new ProcessData(R3, V3)), processInstanceRepository, processDataRepository);
         repository.save(processInstance4);
 
         // Find all: We expect 3
@@ -369,19 +372,19 @@ class ProcessInstanceJpaRepositoryTest {
         assertEquals(4, processInstanceList.size());
 
         // Find with ProcessData Value V1
-        Page<ProcessInstance> processInstancePage = repository.findDistinctByProcessData_value(V1, pageRequest);
+        Page<ProcessInstance> processInstancePage = repository.findByProcessDataValue(V1, pageRequest);
         assertEquals(2, processInstancePage.getTotalElements());
 
         // Find with ProcessData Value V2
-        processInstancePage = repository.findDistinctByProcessData_value(V2, pageRequest);
+        processInstancePage = repository.findByProcessDataValue(V2, pageRequest);
         assertEquals(1, processInstancePage.getTotalElements());
 
         // Find with not existing ProcessData Value
-        processInstancePage = repository.findDistinctByProcessData_value("something that not exists", pageRequest);
+        processInstancePage = repository.findByProcessDataValue("something that not exists", pageRequest);
         assertEquals(0, processInstancePage.getTotalElements());
 
         // Find distinct with ProcessData Value V3
-        processInstancePage = repository.findDistinctByProcessData_value(V3, pageRequest);
+        processInstancePage = repository.findByProcessDataValue(V3, pageRequest);
         assertEquals(1, processInstancePage.getTotalElements());
     }
 

@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.processcontext.ProcessInstanceMockS3ITBase;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.ProcessInstanceController;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceDTO;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceService;
@@ -36,6 +37,8 @@ class ProcessInstanceProcessDataMessageDataMigrationIT extends ProcessInstanceMo
     @Autowired
     private ProcessInstanceRepository processInstanceRepository;
     @Autowired
+    private ProcessDataRepository processDataRepository;
+    @Autowired
     private ProcessInstanceController processInstanceController;
     @Autowired
     private MessageReferenceRepository messageReferenceRepository;
@@ -62,7 +65,7 @@ class ProcessInstanceProcessDataMessageDataMigrationIT extends ProcessInstanceMo
 
         transactions.withinNewTransaction(() -> {
             ProcessInstance processInstance = processInstanceRepository.findByOriginProcessId(originProcessId).orElseThrow();
-            assertThat(processInstance.getProcessData()).hasSize(1);
+            assertThat(processDataRepository.findByProcessInstanceId(processInstance.getId())).hasSize(1);
             assertThat(messageReferenceRepository.findByProcessInstanceId(processInstance.getId())).hasSize(2);
             assertThat(processInstance.getProcessTemplate().getProcessDataTemplates()).isEmpty();
         });

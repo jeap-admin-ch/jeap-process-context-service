@@ -5,7 +5,6 @@ import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult;
-import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessDataTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationPattern;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
@@ -51,10 +50,6 @@ public class ProcessInstance extends MutableDomainEntity {
 
     @NotNull
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "processInstance")
-    private Set<ProcessData> processData;
-
-    @NotNull
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "processInstance")
     private Set<ProcessRelation> processRelations;
 
     @ToString.Include
@@ -83,9 +78,6 @@ public class ProcessInstance extends MutableDomainEntity {
     @Transient
     private ProcessContextFactory processContextFactory;
 
-    @Getter
-    private ZonedDateTime lastCorrelationAt;
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "processInstance")
     private List<TaskInstance> tasks = new ArrayList<>();
 
@@ -101,7 +93,6 @@ public class ProcessInstance extends MutableDomainEntity {
         Objects.requireNonNull(processTemplate, "Process template is mandatory");
         Objects.requireNonNull(processContextFactory, "Process context factory is mandatory");
         this.originProcessId = originProcessId;
-        this.processData = new HashSet<>();
         this.processRelations = new HashSet<>();
         this.processTemplate = processTemplate;
         this.processTemplateName = processTemplate.getName();
@@ -254,55 +245,6 @@ public class ProcessInstance extends MutableDomainEntity {
         return super.getModifiedAt();
     }
 
-    /**
-     * @return The (unmodifiable) set of process data associated with this process instance.
-     */
-    public Set<ProcessData> getProcessData() {
-        return unmodifiableSet(processData);
-    }
-
-    /**
-     * Copies the EventData to the ProcessData, if the Template defines this
-     *
-     * @param message the incoming message containing data to copy
-     * @return list of newly created ProcessData entries
-     */
-    List<ProcessData> copyMessageDataToProcessData(Message message) {
-        String messageName = message.getMessageName();
-        Set<MessageData> messageData = message.getMessageData(processTemplateName);
-        List<ProcessDataTemplate> processDataTemplates = processTemplate.getProcessDataTemplatesBySourceMessageName(messageName);
-        List<ProcessData> addedProcessData = new ArrayList<>();
-        processDataTemplates.forEach(template ->
-                applyProcessDataTemplate(addedProcessData, messageName, messageData, template));
-        return addedProcessData;
-    }
-
-    private void applyProcessDataTemplate(List<ProcessData> addedProcessData,
-                                          String messageName, Set<MessageData> messageDataSet,
-                                          ProcessDataTemplate processDataTemplate) {
-        String sourceKey = processDataTemplate.getSourceMessageDataKey();
-        String targetKey = processDataTemplate.getKey();
-        messageDataSet.forEach(messageData -> {
-            if (sourceKey.equals(messageData.getKey())) {
-                ProcessData data = addProcessData(messageName, targetKey, messageData);
-                if (data != null) {
-                    addedProcessData.add(data);
-                }
-            }
-        });
-    }
-
-    private ProcessData addProcessData(String messageName, String targetKey, MessageData messageData) {
-        ProcessData processDataItem = new ProcessData(targetKey, messageData.getValue(), messageData.getRole());
-        if (processData.add(processDataItem)) {
-            processDataItem.setProcessInstance(this);
-            log.debug("Added process data to process instance {}: messageName: {}, key: {}, value: {}, role: {}",
-                    id, messageName, targetKey, messageData.getValue(), messageData.getRole());
-            return processDataItem;
-        }
-        return null;
-    }
-
     public Set<ProcessRelation> getProcessRelations() {
         return unmodifiableSet(processRelations);
     }
@@ -339,10 +281,6 @@ public class ProcessInstance extends MutableDomainEntity {
             }
 
         });
-    }
-
-    void correlatedAt(ZonedDateTime lastCorrelationAt) {
-        this.lastCorrelationAt = lastCorrelationAt;
     }
 
     /**

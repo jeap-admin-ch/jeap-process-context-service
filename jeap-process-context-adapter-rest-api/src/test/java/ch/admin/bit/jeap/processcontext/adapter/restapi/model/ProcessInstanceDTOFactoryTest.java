@@ -31,8 +31,7 @@ import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,6 +41,7 @@ class ProcessInstanceDTOFactoryTest {
     private MessageReferenceRepository messageReferenceRepository;
     private TranslateService translateService;
     private RelationRepository relationRepository;
+    private ProcessDataRepository processDataRepository;
 
     @BeforeEach
     void setUp() {
@@ -49,6 +49,7 @@ class ProcessInstanceDTOFactoryTest {
         messageReferenceRepository = mock(MessageReferenceRepository.class);
         translateService = mock(TranslateService.class);
         relationRepository = mock(RelationRepository.class);
+        processDataRepository = mock(ProcessDataRepository.class);
         when(translateService.translateUserDataKey(anyString())).thenAnswer(invocation -> createLabels(invocation.getArgument(0)));
         when(translateService.translateUserDataKey(anyString(), anyString())).thenAnswer(invocation -> createLabels(invocation.getArgument(1)));
         when(translateService.translateUserDataKey(anyString(), eq(null))).thenAnswer(invocation -> createLabels(invocation.getArgument(0)));
@@ -63,7 +64,7 @@ class ProcessInstanceDTOFactoryTest {
     @Test
     void createFromProcessInstance() {
         String templateName = "template";
-        Set<ProcessData> processData = Set.of(
+        List<ProcessData> processData = List.of(
                 new ProcessData("some-name-1", "some-value-1"),
                 new ProcessData("some-name-2", "some-value-2")
         );
@@ -74,7 +75,10 @@ class ProcessInstanceDTOFactoryTest {
                         messageDataKeys(message.getMessageData().stream().map(MessageData::getKey).collect(Collectors.toSet())).
                         build()).
                 collect(Collectors.toSet());
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance(templateName, taskData, processData);
+        ProcessInstanceRepository processInstanceRepository = mock(ProcessInstanceRepository.class);
+        when(processInstanceRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstanceSavingProcessAndTaskData(templateName, taskData, processData, processInstanceRepository, processDataRepository);
+        when(processDataRepository.findByProcessInstanceId(processInstance.getId())).thenReturn(processData);
         ReflectionTestUtils.setField(processInstance, "processCompletion", new ProcessCompletion(
                 ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion.SUCCEEDED, "all good", ZonedDateTime.now()));
         TaskInstance expectedTask = processInstance.getTasks().getFirst();
@@ -113,7 +117,7 @@ class ProcessInstanceDTOFactoryTest {
         when(messageReferenceRepository.findByProcessInstanceId(processInstance.getId())).thenReturn(messageReferenceMessageDTOs);
 
         ProcessInstanceDTO processInstanceDTO = ProcessInstanceDTOFactory
-                .createFromProcessInstance(processInstance, translateService, processRelationsService, messageRepository, messageReferenceRepository, relationRepository);
+                .createFromProcessInstance(processInstance, translateService, processRelationsService, messageRepository, messageReferenceRepository, relationRepository, processDataRepository);
 
         assertEquals(processInstance.getState().name(), processInstanceDTO.getState());
         assertEquals(processInstance.getOriginProcessId(), processInstanceDTO.getOriginProcessId());
@@ -158,7 +162,7 @@ class ProcessInstanceDTOFactoryTest {
         assertThat(relationDTO.getCreatedAt()).isNotNull();
     }
 
-    private ProcessDataDTO[] toProcessDataDTO(Set<ProcessData> processData) {
+    private ProcessDataDTO[] toProcessDataDTO(List<ProcessData> processData) {
         return processData.stream()
                 .map(pd -> new ProcessDataDTO(pd.getKey(), pd.getValue(), pd.getRole()))
                 .toArray(ProcessDataDTO[]::new);

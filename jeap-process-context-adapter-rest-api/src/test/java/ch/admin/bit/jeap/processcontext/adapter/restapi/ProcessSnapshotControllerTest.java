@@ -59,6 +59,8 @@ class ProcessSnapshotControllerTest {
     private MessageRepository messageRepository;
     @MockitoBean
     private MessageReferenceRepository messageReferenceRepository;
+    @MockitoBean
+    private ProcessDataRepository processDataRepository;
 
     private static final SemanticApplicationRole SNAPSHOT_VIEW_ROLE = SemanticApplicationRole.builder()
             .system("jme")

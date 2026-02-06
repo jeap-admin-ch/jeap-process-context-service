@@ -55,6 +55,8 @@ class ProcessInstanceControllerTest {
     @MockitoBean
     private RelationRepository relationRepository;
     @MockitoBean
+    private ProcessDataRepository processDataRepository;
+    @MockitoBean
     private TranslateService translateService;
 
     private final Map<String, String> reason = Map.of("de", "Alle Prozessaufgaben haben einen Endzustand erreicht",
@@ -199,10 +201,7 @@ class ProcessInstanceControllerTest {
 
     @Test
     void testFindProcessInstanceByProcessData_withProcessData_thenOK() throws Exception {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance(
-                "templateName",
-                Set.of(new ProcessData("r1", "v1"),
-                        new ProcessData("r2", "v2")));
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance("templateName");
         doReturn(new PageImpl<>(List.of(processInstance)))
                 .when(repository)
                 .findByProcessData("v1", PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt")));

@@ -47,6 +47,8 @@ class ProcessSnapshotServiceTest {
     private MessageReferenceRepository messageReferenceRepository;
     @Mock
     private ProcessSnapshotEventProducer processSnapshotEventProducer;
+    @Mock
+    private ProcessDataRepository processDataRepository;
 
     private PcsConfigProperties pcsConfigProperties;
 
@@ -63,7 +65,8 @@ class ProcessSnapshotServiceTest {
                 processRelationsService,
                 messageRepository,
                 messageReferenceRepository,
-                processSnapshotEventProducer);
+                processSnapshotEventProducer,
+                processDataRepository);
     }
 
     @Test
@@ -123,7 +126,7 @@ class ProcessSnapshotServiceTest {
         when(processInstance.getProcessTemplateName()).thenReturn(templateName);
         when(processInstance.getState()).thenReturn(ProcessState.STARTED);
         when(processInstance.getCreatedAt()).thenReturn(processCreatedAt);
-        when(processInstance.getProcessData()).thenReturn(Set.of());
+        when(processDataRepository.findByProcessInstanceId(any())).thenReturn(List.of());
         when(processInstance.getTasks()).thenReturn(List.of());
         when(translateService.translateProcessTemplateName(templateName)).
                 thenReturn(Map.of(Language.FR.name().toLowerCase(), templateDescription));
@@ -161,7 +164,7 @@ class ProcessSnapshotServiceTest {
         var processCompletion = mock(ProcessCompletion.class);
         when(processCompletion.getCompletedAt()).thenReturn(processCompletedAt);
         when(processInstance.getProcessCompletion()).thenReturn(Optional.of(processCompletion));
-        when(processInstance.getProcessData()).thenReturn(Set.of(processDataWithRole, processDataWithoutRole));
+        when(processDataRepository.findByProcessInstanceId(any())).thenReturn(List.of(processDataWithRole, processDataWithoutRole));
         when(processInstance.getTasks()).thenReturn(List.of(plannedTaskWithOriginTaskId, completedTaskWithoutOriginTaskId));
         MessageReferenceMessageDTO messagePlannedBy = mock(MessageReferenceMessageDTO.class);
         when(messagePlannedBy.getMessageId()).thenReturn(taskPlannedByMessageId);
@@ -279,7 +282,7 @@ class ProcessSnapshotServiceTest {
         when(processInstance.getProcessTemplateName()).thenReturn(templateName);
         when(processInstance.getState()).thenReturn(ProcessState.STARTED);
         when(processInstance.getCreatedAt()).thenReturn(processCreatedAt);
-        when(processInstance.getProcessData()).thenReturn(Set.of());
+        when(processDataRepository.findByProcessInstanceId(any())).thenReturn(List.of());
         when(processInstance.getTasks()).thenReturn(List.of());
         when(processInstance.getProcessTemplate()).thenReturn(processTemplate);
         when(processInstance.nextSnapshotVersion()).thenReturn(1);

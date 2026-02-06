@@ -100,7 +100,7 @@ class ProcessUpdateJpaRepositoryTest {
         assertThat(processUpdate.getId()).isEqualTo(id);
         assertThat(processUpdate.getProcessUpdateType()).isEqualByComparingTo(processUpdateType);
         assertThat(processUpdate.getOriginProcessId()).isEqualTo(ORIGIN_PROCESS_ID);
-        assertThat(processUpdate.getMessageReference()).isEqualTo(Optional.ofNullable(eventReference));
+        assertThat(processUpdate.getMessageReference()).isEqualTo(eventReference);
         assertThat(processUpdate.getMessageName()).isEqualTo(eventName);
         assertThat(processUpdate.getIdempotenceId()).isEqualTo(idempotenceId);
         assertThat(processUpdate.getName()).isEqualTo(name);

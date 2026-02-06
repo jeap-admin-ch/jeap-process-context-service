@@ -22,8 +22,8 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
 
     String FIND_UNCOMPLETED_PROCESS_INSTANCES_HAVING_PROCESS_DATA_BASE_QUERY =
             """
-                    SELECT p.originProcessId FROM ProcessInstance p INNER JOIN p.processData d \
-                    WHERE p.processTemplateName = :processTemplateName AND p.state <> 'COMPLETED' \
+                    SELECT p.originProcessId FROM ProcessInstance p, ProcessData d \
+                    WHERE d.processInstance = p AND p.processTemplateName = :processTemplateName AND p.state <> 'COMPLETED' \
                     AND d.key = :processDataKey AND d.value = :processDataValue\
                     """;
 
@@ -82,7 +82,8 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
             @Param("lastModifiedAfter") ZonedDateTime lastModifiedAfter,
             Pageable pageable);
 
-    Page<ProcessInstance> findDistinctByProcessData_value(@Param("processData") String processData, Pageable pageable);
+    @Query("SELECT DISTINCT p FROM ProcessInstance p, ProcessData d WHERE d.processInstance = p AND d.value = :processData")
+    Page<ProcessInstance> findByProcessDataValue(@Param("processData") String processData, Pageable pageable);
 
     @Modifying
     @Query(nativeQuery = true, value = "DELETE FROM event_reference e WHERE e.process_instance_id in (:processInstanceIds) ")

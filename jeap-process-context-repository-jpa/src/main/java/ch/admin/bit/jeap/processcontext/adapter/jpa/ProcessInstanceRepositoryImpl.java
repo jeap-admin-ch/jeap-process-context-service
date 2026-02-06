@@ -67,7 +67,7 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
 
     @Override
     public Page<ProcessInstance> findByProcessData(String processData, Pageable pageable) {
-        return processInstanceJpaRepository.findDistinctByProcessData_value(processData, pageable).map(this::setProcessTemplateReference);
+        return processInstanceJpaRepository.findByProcessDataValue(processData, pageable).map(this::setProcessTemplateReference);
     }
 
     @Override

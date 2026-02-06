@@ -34,6 +34,7 @@ public class ProcessSnapshotService {
     private final MessageRepository messageRepository;
     private final MessageReferenceRepository messageReferenceRepository;
     private final ProcessSnapshotEventProducer processSnapshotEventProducer;
+    private final ProcessDataRepository processDataRepository;
 
     @SuppressWarnings("java:S112")
     @PostConstruct
@@ -69,7 +70,7 @@ public class ProcessSnapshotService {
             processSnapshot.setCompletionReasonLabel("label");
             processSnapshot.setCompletionConclusion(String.valueOf(processCompletion.getConclusion()));
         }
-        processSnapshot.setProcessData(processInstance.getProcessData().stream()
+        processSnapshot.setProcessData(processDataRepository.findByProcessInstanceId(processInstance.getId()).stream()
                 .map(ProcessSnapshotService::toProcessData).toList());
         processSnapshot.setTasks(processInstance.getTasks().stream()
                 .map(task -> toTask(processInstance, task)).toList());

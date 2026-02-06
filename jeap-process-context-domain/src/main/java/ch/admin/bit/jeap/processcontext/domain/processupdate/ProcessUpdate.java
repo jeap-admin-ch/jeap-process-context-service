@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -57,8 +56,8 @@ public class ProcessUpdate extends MutableDomainEntity {
     @Getter
     private String idempotenceId;
 
-    public Optional<UUID> getMessageReference() {
-        return Optional.ofNullable(messageReference);
+    public UUID getMessageReference() {
+        return messageReference;
     }
 
     @Builder(builderMethodName = "messageReceived", builderClassName = "ProcessUpdateMessageReceivedBuilder")

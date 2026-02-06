@@ -1,8 +1,6 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceStubs;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import jakarta.persistence.EntityManager;
@@ -12,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,15 +32,40 @@ class ProcessDataJpaRepositoryTest {
     private ProcessDataJpaRepository processDataJpaRepository;
 
     @Autowired
+    private ProcessDataRepository processDataRepository;
+
+    @Autowired
+    private ProcessInstanceRepository processInstanceRepository;
+
+    @Autowired
     private ProcessInstanceJpaRepository processInstanceJpaRepository;
+
+    @Test
+    void saveIfNew() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessData data1 = new ProcessData("key1", "value1");
+        ProcessData data2 = new ProcessData("key1", "value2");
+        ReflectionTestUtils.setField(data1, "processInstance", processInstance);
+        ReflectionTestUtils.setField(data2, "processInstance", processInstance);
+
+        assertThat(processDataRepository.saveIfNew(data1))
+                .isTrue();
+        assertThat(processDataRepository.saveIfNew(data2))
+                .isTrue();
+        assertThat(processDataRepository.saveIfNew(data1))
+                .isFalse();
+        assertThat(processDataRepository.saveIfNew(data2))
+                .isFalse();
+    }
 
     @Test
     void findByProcessInstanceAndKey_findsMatchingProcessData() {
         ProcessData data1 = new ProcessData("key1", "value1");
         ProcessData data2 = new ProcessData("key1", "value2");
         ProcessData data3 = new ProcessData("key2", "value3");
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance(
-                "template", Set.of(data1, data2, data3));
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstanceSavingProcessData(
+                "template", List.of(data1, data2, data3), processInstanceRepository, processDataRepository);
         processInstanceJpaRepository.saveAndFlush(processInstance);
         entityManager.clear();
 
@@ -58,8 +81,8 @@ class ProcessDataJpaRepositoryTest {
     @Test
     void findByProcessInstanceAndKey_noMatch_returnsEmptyList() {
         ProcessData data = new ProcessData("key1", "value1");
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance(
-                "template", Set.of(data));
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstanceSavingProcessData(
+                "template", List.of(data), processInstanceRepository, processDataRepository);
         processInstanceJpaRepository.saveAndFlush(processInstance);
         entityManager.clear();
 
@@ -74,8 +97,8 @@ class ProcessDataJpaRepositoryTest {
         ProcessData data1 = new ProcessData("key1", "value1", "roleA");
         ProcessData data2 = new ProcessData("key1", "value2", "roleB");
         ProcessData data3 = new ProcessData("key1", "value3", "roleA");
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance(
-                "template", Set.of(data1, data2, data3));
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstanceSavingProcessData(
+                "template", List.of(data1, data2, data3), processInstanceRepository, processDataRepository);
         processInstanceJpaRepository.saveAndFlush(processInstance);
         entityManager.clear();
 
@@ -91,8 +114,8 @@ class ProcessDataJpaRepositoryTest {
     @Test
     void findByProcessInstanceAndKeyAndRole_noMatchingRole_returnsEmptyList() {
         ProcessData data = new ProcessData("key1", "value1", "roleA");
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance(
-                "template", Set.of(data));
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstanceSavingProcessData(
+                "template", List.of(data), processInstanceRepository, processDataRepository);
         processInstanceJpaRepository.saveAndFlush(processInstance);
         entityManager.clear();
 
@@ -105,13 +128,13 @@ class ProcessDataJpaRepositoryTest {
     @Test
     void findByProcessInstanceAndKey_doesNotReturnDataFromOtherProcessInstances() {
         ProcessData data1 = new ProcessData("key1", "value1");
-        ProcessInstance processInstance1 = ProcessInstanceStubs.createProcessWithSingleTaskInstance(
-                "template", Set.of(data1));
+        ProcessInstance processInstance1 = ProcessInstanceStubs.createProcessWithSingleTaskInstanceSavingProcessData(
+                "template", List.of(data1), processInstanceRepository, processDataRepository);
         processInstanceJpaRepository.saveAndFlush(processInstance1);
 
         ProcessData data2 = new ProcessData("key1", "value2");
-        ProcessInstance processInstance2 = ProcessInstanceStubs.createProcessWithSingleTaskInstance(
-                "template", Set.of(data2));
+        ProcessInstance processInstance2 = ProcessInstanceStubs.createProcessWithSingleTaskInstanceSavingProcessData(
+                "template", List.of(data2), processInstanceRepository, processDataRepository);
         processInstanceJpaRepository.saveAndFlush(processInstance2);
         entityManager.clear();
 

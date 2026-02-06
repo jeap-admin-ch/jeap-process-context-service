@@ -1,7 +1,6 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
-import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotCondition;
@@ -217,89 +216,6 @@ class ProcessInstanceTest {
         Field processTemplateField = obj.getClass().getDeclaredField(fieldName);
         processTemplateField.setAccessible(true);
         processTemplateField.set(obj, Optional.empty());
-    }
-
-    @Test
-    void copyEventDataToProcessData_NoTemplateDefined() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
-        MessageData messageData = MessageData.builder()
-                .templateName(processInstance.getProcessTemplateName())
-                .key("sourceEventDatakey")
-                .value("someValue")
-                .role("someRole")
-                .build();
-        Message domainMessage = Message.messageBuilder()
-                .messageName("sourceEventName")
-                .messageId("eventId")
-                .idempotenceId("idempotenceId")
-                .originTaskIds(Set.of())
-                .messageData(Set.of(messageData))
-                .createdAt(ZonedDateTime.now())
-                .messageCreatedAt(ZonedDateTime.now())
-                .build();
-
-        processInstance.copyMessageDataToProcessData(domainMessage);
-
-        Set<ProcessData> processDataSet = processInstance.getProcessData();
-        assertEquals(0, processDataSet.size());
-    }
-
-    @Test
-    void copyEventDataToProcessData_NoEventNameMatches() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventData();
-        MessageData messageData = MessageData.builder()
-                .templateName(processInstance.getProcessTemplateName())
-                .key("sourceEventDatakey")
-                .value("someValue")
-                .role("someRole")
-                .build();
-        Message domainMessage = Message.messageBuilder()
-                .messageName("sourceEventName")
-                .idempotenceId("idempotenceId")
-                .messageId("eventId")
-                .messageData(Set.of(messageData))
-                .createdAt(ZonedDateTime.now())
-                .messageCreatedAt(ZonedDateTime.now())
-                .build();
-
-        processInstance.copyMessageDataToProcessData(domainMessage);
-
-        Set<ProcessData> processDataSet = processInstance.getProcessData();
-        assertEquals(0, processDataSet.size());
-    }
-
-    @Test
-    void copyEventDataToProcessData() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventData();
-        String templateName = processInstance.getProcessTemplateName();
-        MessageData messageData1 = new MessageData(templateName, "sourceEventDataKey", "someValue", "someRole");
-        MessageData messageData2 = new MessageData(templateName, "sourceEventDataKey", "someValueOtherValue", "someOtherRole");
-        MessageData messageData3 = new MessageData(templateName, "anotherSourceEventDataKey", "anotherValue");
-        Message domainMessage1 = Message.messageBuilder()
-                .messageName("sourceEventName")
-                .idempotenceId("idempotenceId")
-                .messageId("eventId")
-                .messageData(Set.of(messageData1, messageData2))
-                .createdAt(ZonedDateTime.now())
-                .messageCreatedAt(ZonedDateTime.now())
-                .build();
-        Message domainMessage2 = Message.messageBuilder()
-                .messageName("anotherSourceEventName")
-                .idempotenceId("idempotenceId")
-                .messageId("eventId")
-                .messageData(Set.of(messageData3))
-                .createdAt(ZonedDateTime.now())
-                .messageCreatedAt(ZonedDateTime.now())
-                .build();
-
-        processInstance.copyMessageDataToProcessData(domainMessage1);
-        processInstance.copyMessageDataToProcessData(domainMessage2);
-
-        Set<ProcessData> processDataSet = processInstance.getProcessData();
-        assertTrue(processDataSet.contains(new ProcessData("targetKeyName", "someValue", "someRole")));
-        assertTrue(processDataSet.contains(new ProcessData("targetKeyName", "someValueOtherValue", "someOtherRole")));
-        assertTrue(processDataSet.contains(new ProcessData("anotherTargetKeyName", "anotherValue")));
-        assertEquals(3, processDataSet.size());
     }
 
     @Test

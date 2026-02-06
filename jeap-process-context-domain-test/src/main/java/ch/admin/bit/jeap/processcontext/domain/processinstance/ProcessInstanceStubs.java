@@ -3,17 +3,13 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
-import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextRepositoryFacade;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import com.fasterxml.uuid.Generators;
-import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
-import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -31,11 +27,7 @@ public class ProcessInstanceStubs {
         return createProcessWithSingleTaskInstance("template");
     }
 
-    public ProcessInstance createProcessWithSingleTaskInstance(String templateName) {
-        return createProcessWithSingleTaskInstance(templateName, Set.of());
-    }
-
-    public ProcessInstance createProcessWithSingleTaskInstance(String processTemplateName, Set<ProcessData> processData) {
+    public ProcessInstance createProcessWithSingleTaskInstance(String processTemplateName) {
         TaskType taskType = TaskType.builder()
                 .name(task)
                 .lifecycle(TaskLifecycle.STATIC)
@@ -52,8 +44,37 @@ public class ProcessInstanceStubs {
         ProcessInstance processInstance = ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
         processInstance.start();
         repositoryFacadeStub.setProcessInstance(processInstance);
-        setProcessData(processInstance, processData);
         return processInstance;
+    }
+
+    public ProcessInstance createProcessWithSingleTaskInstanceSavingProcessData(String processTemplateName, List<ProcessData> processData,
+                                                                                ProcessInstanceRepository processInstanceRepository,
+                                                                                ProcessDataRepository processDataRepository) {
+        ProcessInstance processInstance = createProcessWithSingleTaskInstance(processTemplateName);
+        return saveProcessData(processInstance, processData, processInstanceRepository, processDataRepository);
+    }
+
+    public ProcessInstance createProcessWithSingleTaskInstanceSavingProcessAndTaskData(String processTemplateName, Set<TaskData> taskData,
+                                                                                       List<ProcessData> processData,
+                                                                                       ProcessInstanceRepository processInstanceRepository,
+                                                                                       ProcessDataRepository processDataRepository) {
+        TaskType taskType = TaskType.builder()
+                .name(task)
+                .lifecycle(TaskLifecycle.STATIC)
+                .cardinality(TaskCardinality.SINGLE_INSTANCE)
+                .taskData(taskData)
+                .build();
+        ProcessTemplate processTemplate = ProcessTemplate.builder()
+                .name(processTemplateName)
+                .templateHash("hash")
+                .taskTypes(singletonList(taskType))
+                .build();
+        ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
+        ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
+        ProcessInstance processInstance = ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
+        processInstance.start();
+        repositoryFacadeStub.setProcessInstance(processInstance);
+        return saveProcessData(processInstance, processData, processInstanceRepository, processDataRepository);
     }
 
     public ProcessInstance createProcessWithoutTaskInstance() {
@@ -123,43 +144,11 @@ public class ProcessInstanceStubs {
         return new ProcessContextFactory(repositoryFacade);
     }
 
-    public ProcessInstance createProcessWithSingleTaskInstance(String templateName, Set<TaskData> taskData, Set<ProcessData> processData) {
-        TaskType taskType = TaskType.builder()
-                .name(task)
-                .lifecycle(TaskLifecycle.STATIC)
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .taskData(taskData)
-                .build();
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name(templateName)
-                .templateHash("hash")
-                .taskTypes(singletonList(
-                        taskType))
-                .build();
-        ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
-        ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
-        ProcessInstance processInstance = ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
-        processInstance.start();
-        repositoryFacadeStub.setProcessInstance(processInstance);
-        Message message = Message.messageBuilder()
-                .messageName(event)
-                .messageId("eventId")
-                .idempotenceId("idempotenceId")
-                .originTaskIds(OriginTaskId.from(templateName, Set.of("taskId1", "taskId2")))
-                .messageData(Set.of(new MessageData(templateName, "myKey", "myValue")))
-                .createdAt(ZonedDateTime.now())
-                .messageCreatedAt(ZonedDateTime.now())
-                .build();
-        setProcessData(processInstance, processData);
-        return processInstance;
-    }
-
-    @SneakyThrows
-    private static void setProcessData(ProcessInstance processInstance, Set<ProcessData> processData) {
-        processData.forEach(pd -> pd.setProcessInstance(processInstance));
-        Field processDataField = ProcessInstance.class.getDeclaredField("processData");
-        processDataField.setAccessible(true);
-        processDataField.set(processInstance, new HashSet<>(processData));
+    private static ProcessInstance saveProcessData(ProcessInstance processInstance, List<ProcessData> processData, ProcessInstanceRepository processInstanceRepository, ProcessDataRepository processDataRepository) {
+        ProcessInstance savedProcessInstance = processInstanceRepository.save(processInstance);
+        processData.forEach(pd -> pd.setProcessInstance(savedProcessInstance));
+        processData.forEach(processDataRepository::saveIfNew);
+        return savedProcessInstance;
     }
 
     public TaskInstance createTaskInstance(String name, int index, String originTaskId) {
@@ -174,7 +163,7 @@ public class ProcessInstanceStubs {
     }
 
     // Will persist the created events referenced by the created process instance to allow the process instance to be persisted and read back.
-    public static ProcessInstance createProcessWithEventDataProcessData(MessageRepository messageRepository) {
+    public static ProcessInstance createProcessWithEventDataProcessData(MessageRepository messageRepository, ProcessInstanceRepository processInstanceRepository, ProcessDataRepository processDataRepository) {
         TaskType firstTask = TaskType.builder()
                 .name(task)
                 .lifecycle(TaskLifecycle.STATIC)
@@ -234,13 +223,12 @@ public class ProcessInstanceStubs {
         // Create ProcessData corresponding to what would be derived from message data via ProcessDataTemplates
         // targetKeyName <- sourceEventDataKey (from sourceEventName message)
         // anotherTargetKeyName <- anotherSourceEventDataKey (from anotherSourceEventName message)
-        Set<ProcessData> processData = Set.of(
+        List<ProcessData> processData = List.of(
                 new ProcessData("targetKeyName", "someValue", "someRole"),
                 new ProcessData("targetKeyName", "someValueOtherValue", "someOtherRole"),
                 new ProcessData("anotherTargetKeyName", "anotherValue")
         );
-        setProcessData(processInstance, processData);
-        return processInstance;
+        return saveProcessData(processInstance, processData, processInstanceRepository, processDataRepository);
     }
 
     @SuppressWarnings("java:S5960") // this module provides test code to be used in tests

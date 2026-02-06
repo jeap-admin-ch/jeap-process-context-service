@@ -48,6 +48,8 @@ class ProcessInstanceServiceTest {
     @Mock
     private TaskService taskService;
     @Mock
+    private ProcessDataService processDataService;
+    @Mock
     private ProcessTemplateRepository processTemplateRepository;
     @Mock
     private MessageRepository messageRepository;
@@ -88,6 +90,7 @@ class ProcessInstanceServiceTest {
                 processUpdateQueryRepository,
                 processInstanceRepository,
                 taskService,
+                processDataService,
                 processTemplateRepository,
                 messageRepository,
                 messageReferenceRepository,
@@ -135,8 +138,6 @@ class ProcessInstanceServiceTest {
                 });
         when(messageReferenceRepository.save(any(MessageReference.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData())
-                .thenReturn(false);
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
@@ -162,8 +163,6 @@ class ProcessInstanceServiceTest {
                 .thenReturn(Optional.of(message));
         when(messageReferenceRepository.save(any(MessageReference.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData())
-                .thenReturn(false);
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
@@ -197,8 +196,6 @@ class ProcessInstanceServiceTest {
                 .thenReturn(Optional.of(message));
         when(messageReferenceRepository.save(any(MessageReference.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData())
-                .thenReturn(false);
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
@@ -235,8 +232,6 @@ class ProcessInstanceServiceTest {
                 .thenReturn(Optional.of(message));
         when(messageReferenceRepository.save(any(MessageReference.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData())
-                .thenReturn(false);
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
@@ -276,8 +271,6 @@ class ProcessInstanceServiceTest {
                 .thenReturn(Optional.of(message));
         when(messageReferenceRepository.save(any(MessageReference.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData())
-                .thenReturn(false);
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
@@ -311,8 +304,6 @@ class ProcessInstanceServiceTest {
                 .thenReturn(Optional.of(message));
         when(messageReferenceRepository.save(any(MessageReference.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData())
-                .thenReturn(false);
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
@@ -349,8 +340,6 @@ class ProcessInstanceServiceTest {
                 .thenReturn(Optional.of(message));
         when(messageReferenceRepository.save(any(MessageReference.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData())
-                .thenReturn(false);
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
@@ -359,8 +348,8 @@ class ProcessInstanceServiceTest {
     }
 
     @Test
-    void updateProcessState_correlatesByProcessData_producesOutdatedEvent() {
-        ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference messageReference =
+    void updateProcessState_correlatesByProcessData_correlatesMessageDirectly() {
+        ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference correlatedMessageReference =
                 ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference.builder()
                         .messageName("correlatedEvent")
                         .topicName("topicName")
@@ -375,7 +364,7 @@ class ProcessInstanceServiceTest {
                         .build();
         ProcessDataTemplate processDataTemplate = ProcessDataTemplate.builder()
                 .key("myProcessDataKey")
-                .sourceMessageName("correlatedEvent")
+                .sourceMessageName(DOMAIN_EVENT_NAME)
                 .sourceMessageDataKey("myMessageDataKey")
                 .build();
         TaskType staticTask = TaskType.builder()
@@ -387,7 +376,7 @@ class ProcessInstanceServiceTest {
                 .name(TEMPLATE_NAME)
                 .templateHash("hash")
                 .taskTypes(List.of(staticTask))
-                .messageReferences(List.of(messageReference))
+                .messageReferences(List.of(correlatedMessageReference))
                 .processDataTemplates(List.of(processDataTemplate))
                 .processRelationPatterns(List.of())
                 .build();
@@ -395,39 +384,37 @@ class ProcessInstanceServiceTest {
         Message message = createMessage();
         ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
-        // Add process data
         ProcessData processData = new ProcessData("myProcessDataKey", "myValue");
         processData.setProcessInstance(processInstance);
-        addProcessDataToInstance(processInstance, processData);
 
         Message correlatedMessage = createMessageWithName("correlatedEvent");
-
-        ProcessInstanceTemplate instanceTemplate = mock(ProcessInstanceTemplate.class);
-        when(instanceTemplate.getTemplateName()).thenReturn(TEMPLATE_NAME);
 
         when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
                 .thenReturn(List.of(processUpdate));
         when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
                 .thenReturn(Optional.of(processInstance));
-        when(processInstanceRepository.findProcessInstanceTemplate(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(instanceTemplate));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
         when(messageReferenceRepository.save(any(MessageReference.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(messageReferenceRepository.findByProcessInstanceId(processInstance.getId()))
-                .thenReturn(List.of());
+        when(processDataService.copyMessageDataToProcessData(processInstance, message))
+                .thenReturn(List.of(processData));
         when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData())
                 .thenReturn(true);
         when(processTemplateRepository.findByName(TEMPLATE_NAME))
                 .thenReturn(Optional.of(processTemplate));
+        when(messageReferenceRepository.findByProcessInstanceId(processInstance.getId()))
+                .thenReturn(List.of());
         when(messageRepository.findMessagesToCorrelate("correlatedEvent", TEMPLATE_NAME, "myMessageDataKey", "myValue"))
                 .thenReturn(List.of(correlatedMessage));
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
-        verify(processUpdateRepository).save(any(ProcessUpdate.class));
-        verify(internalMessageProducer).produceProcessContextOutdatedEventSynchronously(ORIGIN_PROCESS_ID);
+        // Verify the correlated message was directly applied (message reference saved for both original and correlated message)
+        verify(messageReferenceRepository, times(2)).save(any(MessageReference.class));
+        // Verify no ProcessUpdate was saved and no outdated event was produced
+        verify(processUpdateRepository, never()).save(any(ProcessUpdate.class));
+        verify(internalMessageProducer, never()).produceProcessContextOutdatedEventSynchronously(any());
     }
 
     @Test
@@ -436,6 +423,8 @@ class ProcessInstanceServiceTest {
         Message message = createMessage();
         ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
+        ProcessData processData = new ProcessData("someKey", "someValue");
+        processData.setProcessInstance(processInstance);
 
         when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
                 .thenReturn(List.of(processUpdate));
@@ -445,13 +434,15 @@ class ProcessInstanceServiceTest {
                 .thenReturn(Optional.of(message));
         when(messageReferenceRepository.save(any(MessageReference.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processDataService.copyMessageDataToProcessData(processInstance, message))
+                .thenReturn(List.of(processData));
         when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData())
                 .thenReturn(false);
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
-        verify(processUpdateRepository, never()).save(any(ProcessUpdate.class));
-        verify(internalMessageProducer, never()).produceProcessContextOutdatedEventSynchronously(any());
+        // Verify that correlation queries were not made (early exit because no template has process data correlation)
+        verify(messageReferenceRepository, never()).findByProcessInstanceId(any());
     }
 
     @Test
@@ -488,8 +479,6 @@ class ProcessInstanceServiceTest {
                 .thenReturn(Optional.of(message));
         when(messageReferenceRepository.save(any(MessageReference.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData())
-                .thenReturn(false);
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
@@ -547,8 +536,6 @@ class ProcessInstanceServiceTest {
                 .thenReturn(Optional.of(message));
         when(messageReferenceRepository.save(any(MessageReference.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData())
-                .thenReturn(false);
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
@@ -651,12 +638,4 @@ class ProcessInstanceServiceTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private void addProcessDataToInstance(ProcessInstance processInstance, ProcessData processData) {
-        processData.setProcessInstance(processInstance);
-        Set<ProcessData> processDataSet = (Set<ProcessData>) ReflectionTestUtils.getField(processInstance, "processData");
-        if (processDataSet != null) {
-            processDataSet.add(processData);
-        }
-    }
 }

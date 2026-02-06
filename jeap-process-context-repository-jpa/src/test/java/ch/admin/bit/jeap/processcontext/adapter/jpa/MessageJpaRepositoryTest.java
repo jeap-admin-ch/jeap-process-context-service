@@ -1,7 +1,9 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
 import ch.admin.bit.jeap.processcontext.domain.message.*;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceStubs;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
@@ -59,6 +61,12 @@ class MessageJpaRepositoryTest {
 
     @Autowired
     private ProcessInstanceJpaRepository processInstanceJpaRepository;
+
+    @Autowired
+    private ProcessDataRepository processDataRepository;
+
+    @Autowired
+    private ProcessInstanceRepository processInstanceRepository;
 
     @Autowired
     private MessageReferenceJpaRepository messageReferenceJpaRepository;
@@ -480,7 +488,7 @@ class MessageJpaRepositoryTest {
      * Creates a process instance with messages and persists the MessageReference entities.
      */
     private ProcessInstance createProcessInstanceWithPersistedMessageReferences() {
-        ProcessInstance processInstanceStub = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository);
+        ProcessInstance processInstanceStub = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository, processInstanceRepository, processDataRepository);
         return JpaRepositoryTestSupport.createProcessInstanceWithPersistedMessageReferences(processInstanceStub,
                 processInstanceJpaRepository, messageJpaRepository, messageReferenceJpaRepository);
     }

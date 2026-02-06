@@ -49,13 +49,14 @@ public class ProcessInstanceDTOFactory {
                                                                ProcessRelationsService processRelationsService,
                                                                MessageRepository messageRepository,
                                                                MessageReferenceRepository messageReferenceRepository,
-                                                               RelationRepository relationRepository) {
+                                                               RelationRepository relationRepository,
+                                                               ProcessDataRepository processDataRepository) {
         List<MessageReferenceMessageDTO> messageReferences = messageReferenceRepository.findByProcessInstanceId(processInstance.getId());
         List<MessageDTO> messages = createMessages(messageReferences);
         List<TaskInstanceDTO> tasks = createTasks(processInstance.getTasks(), messages, processInstance.getProcessTemplate().getName(), translateService, messageRepository);
         List<RelationDTO> relations = createRelations(relationRepository.findByProcessInstance(processInstance));
         List<ProcessRelationDTO> processRelations = createProcessRelations(processInstance, processRelationsService);
-        List<ProcessDataDTO> processDataDTOList = createProcessData(processInstance.getProcessData());
+        List<ProcessDataDTO> processDataDTOList = createProcessDataFromDomainObjects(processDataRepository.findByProcessInstanceId(processInstance.getId()));
         ProcessCompletionDTO processCompletion = ProcessCompletionDTO.create(processInstance.getProcessCompletion(), processInstance.getProcessTemplate().getName(), translateService);
 
         return ProcessInstanceDTO.builder()
@@ -136,7 +137,7 @@ public class ProcessInstanceDTOFactory {
                 .toList();
     }
 
-    static List<ProcessDataDTO> createProcessData(Set<ProcessData> processDataSet) {
+    static List<ProcessDataDTO> createProcessDataFromDomainObjects(List<ProcessData> processDataSet) {
         return processDataSet.stream()
                 .map(ProcessDataDTO::create)
                 .sorted(PROCESS_DATA_COMPARATOR)

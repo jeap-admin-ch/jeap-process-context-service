@@ -23,10 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -43,6 +40,7 @@ public class ProcessInstanceService {
     private final ProcessUpdateQueryRepository processUpdateQueryRepository;
     private final ProcessInstanceRepository processInstanceRepository;
     private final TaskService taskService;
+    private final ProcessDataService processDataService;
     private final ProcessTemplateRepository processTemplateRepository;
     private final MessageRepository messageRepository;
     private final MessageReferenceRepository messageReferenceRepository;
@@ -84,8 +82,6 @@ public class ProcessInstanceService {
         Lists.partition(processUpdates, pcsConfigProperties.getProcessInstanceUpdateApplicationBatchSize()).forEach(
                 batch -> processUpdates(originProcessId, batch)
         );
-        metricsListener.timed("jeap_pcs_late_correlate_message", Map.of(),
-                () -> correlateMessagesByProcessData(originProcessId));
     }
 
     private List<ProcessUpdate> findUnhandledProcessUpdates(String originProcessId) {
@@ -204,7 +200,10 @@ public class ProcessInstanceService {
     private void processUpdates(ProcessInstance processInstance, List<ProcessUpdate> processUpdates) {
         for (ProcessUpdate processUpdate : processUpdates) {
             try {
-                applyProcessUpdateAndReEvaluateProcessInstance(processInstance, processUpdate);
+                UUID messageId = processUpdate.getMessageReference();
+                Message message = messageRepository.findById(messageId)
+                        .orElseThrow(NotFoundException.messageNotFound(messageId, processInstance.getOriginProcessId()));
+                applyProcessUpdateAndReEvaluateProcessInstance(processInstance, message);
             } catch (Exception e) {
                 throw ProcessUpdateFailedException.createProcessUpdateFailed(processUpdate, e);
             }
@@ -221,25 +220,22 @@ public class ProcessInstanceService {
         processUpdates.forEach(update -> processUpdateRepository.markHandled(update.getId()));
     }
 
-    private void applyProcessUpdateAndReEvaluateProcessInstance(ProcessInstance processInstance, ProcessUpdate update) {
+    private void applyProcessUpdateAndReEvaluateProcessInstance(ProcessInstance processInstance, Message message) {
         ProcessState stateBeforeUpdate = processInstance.getState();
-        Optional<UUID> reference = update.getMessageReference();
 
-        if (reference.isPresent()) {
-            Message message = messageRepository.findById(reference.get())
-                    .orElseThrow(NotFoundException.messageNotFound(reference.get(), processInstance.getOriginProcessId()));
-
-            var newProcessProcessData = processInstance.copyMessageDataToProcessData(message);
-            var messageReferenceMessageDTO = addMessage(processInstance, message);
-            if (!newProcessProcessData.isEmpty()) {
-                relationService.onNewProcessData(processInstance, newProcessProcessData);
-            }
-
-            metricsListener.timed("pcs_process_single_update", Map.of("updateType", update.getProcessUpdateType().name()), () ->
-                    updateProcessInstance(processInstance, update, messageReferenceMessageDTO, message));
-            countCompletionIfCompleted(processInstance, stateBeforeUpdate);
-            createProcessSnapshotIfTriggered(processInstance);
+        var newProcessData = processDataService.copyMessageDataToProcessData(processInstance, message);
+        var messageReferenceMessageDTO = addMessage(processInstance, message);
+        if (!newProcessData.isEmpty()) {
+            relationService.onNewProcessData(processInstance, newProcessData);
+            metricsListener.timed("jeap_pcs_late_correlate_message", Map.of(),
+                    () -> correlateMessagesByProcessDataIfRequired(processInstance, newProcessData));
         }
+
+        metricsListener.timed("pcs_process_single_update", Map.of(), () ->
+                updateProcessInstance(processInstance, messageReferenceMessageDTO, message));
+        countCompletionIfCompleted(processInstance, stateBeforeUpdate);
+        createProcessSnapshotIfTriggered(processInstance);
+        processInstanceRepository.flush();
     }
 
     private MessageReferenceMessageDTO addMessage(ProcessInstance processInstance, Message message) {
@@ -259,22 +255,16 @@ public class ProcessInstanceService {
         }
     }
 
-    private void updateProcessInstance(ProcessInstance processInstance, ProcessUpdate processUpdate, MessageReferenceMessageDTO messageReferenceMessageDTO, Message message) {
-        switch (processUpdate.getProcessUpdateType()) {
-            case CREATE_PROCESS, DOMAIN_EVENT:
-                List<TaskInstance> plannedDomainEventTasks = planDomainEventTasks(processUpdate, processInstance, messageReferenceMessageDTO, message);
-                completeObservationTasks(processUpdate, processInstance, messageReferenceMessageDTO, message);
-                // Check for tasks that have been planned in the current iteration, which may have been completed by
-                // events received earlier
-                evaluatePlannedTasksCompletedByExistingMessages(plannedDomainEventTasks);
-                // Complete tasks completed by the current event
-                processInstance.evaluateCompletedTasks(messageReferenceMessageDTO);
-                processInstance.evaluateProcessRelations(message);
-                processInstance.updateState();
-                break;
-            default:
-                throw new RuntimeException("Update Type " + processUpdate.getProcessUpdateType() + " does not exist");
-        }
+    private void updateProcessInstance(ProcessInstance processInstance, MessageReferenceMessageDTO messageReferenceMessageDTO, Message message) {
+        List<TaskInstance> plannedDomainEventTasks = planDomainEventTasks(processInstance, messageReferenceMessageDTO, message);
+        completeObservationTasks(processInstance, messageReferenceMessageDTO, message);
+        // Check for tasks that have been planned in the current iteration, which may have been completed by
+        // events received earlier
+        evaluatePlannedTasksCompletedByExistingMessages(plannedDomainEventTasks);
+        // Complete tasks completed by the current event
+        processInstance.evaluateCompletedTasks(messageReferenceMessageDTO);
+        processInstance.evaluateProcessRelations(message);
+        processInstance.updateState();
     }
 
     void evaluatePlannedTasksCompletedByExistingMessages(List<TaskInstance> plannedDomainEventTasks) {
@@ -293,9 +283,9 @@ public class ProcessInstanceService {
         taskService.completePlannedTasksByExistingMessages(tasksWaitingForCompletionByDomainEvent);
     }
 
-    private List<TaskInstance> planDomainEventTasks(ProcessUpdate processUpdate, ProcessInstance processInstance, MessageReferenceMessageDTO messageReferenceMessageDTO, Message message) {
+    private List<TaskInstance> planDomainEventTasks(ProcessInstance processInstance, MessageReferenceMessageDTO messageReferenceMessageDTO, Message message) {
         return processInstance.getProcessTemplate().getTaskTypes().stream()
-                .filter(taskType -> processUpdate.getMessageName().equals(taskType.getPlannedByDomainEvent()))
+                .filter(taskType -> message.getMessageName().equals(taskType.getPlannedByDomainEvent()))
                 .flatMap(taskType -> planDomainEventTasks(processInstance, messageReferenceMessageDTO, message, taskType))
                 .toList();
     }
@@ -335,106 +325,84 @@ public class ProcessInstanceService {
         return processInstance.planDomainEventTask(taskType, taskId, timestamp, messageId);
     }
 
-    private void completeObservationTasks(ProcessUpdate processUpdate, ProcessInstance processInstance, MessageReferenceMessageDTO messageReferenceMessageDTO, Message message) {
+    private void completeObservationTasks(ProcessInstance processInstance, MessageReferenceMessageDTO messageReferenceMessageDTO, Message message) {
         processInstance.getProcessTemplate().getTaskTypes().stream()
-                .filter(taskType ->
-                        (TaskLifecycle.OBSERVED == taskType.getLifecycle()) &&
-                                (processUpdate.getMessageName().equals(taskType.getObservesDomainEvent())))
-                .forEach(taskType -> {
-                    TaskInstantiationCondition instantiationCondition = taskType.getInstantiationCondition();
-                    if (instantiationCondition == null || instantiationCondition.instantiate(createMessage(messageReferenceMessageDTO))) {
-                        processInstance.addObservationTask(taskType, message.getMessageId(), message.getMessageCreatedAt(), message.getId());
-                    }
-                });
+                .filter(taskType -> matchingObservationTask(message, taskType))
+                .forEach(taskType -> instantiateObservationTask(processInstance, messageReferenceMessageDTO, message, taskType));
     }
 
-    private void correlateMessagesByProcessData(String originProcessId) {
-        // Optimization: If no process templates define any event correlation by process data, we exit early here to avoid costly correlation queries
-        if (!processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData()) {
+    private static void instantiateObservationTask(ProcessInstance processInstance, MessageReferenceMessageDTO messageReferenceMessageDTO, Message message, TaskType taskType) {
+        TaskInstantiationCondition instantiationCondition = taskType.getInstantiationCondition();
+        if (instantiationCondition == null || instantiationCondition.instantiate(createMessage(messageReferenceMessageDTO))) {
+            processInstance.addObservationTask(taskType, message.getMessageId(), message.getMessageCreatedAt(), message.getId());
+        }
+    }
+
+    private static boolean matchingObservationTask(Message message, TaskType taskType) {
+        return (TaskLifecycle.OBSERVED == taskType.getLifecycle()) && (message.getMessageName().equals(taskType.getObservesDomainEvent()));
+    }
+
+    private void correlateMessagesByProcessDataIfRequired(ProcessInstance processInstance, List<ProcessData> newProcessData) {
+        // Optimization: If no process templates define any event correlation by process data, or no new process data
+        // has been added, we exit early here to avoid costly correlation queries.
+        if (!processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData() || newProcessData.isEmpty()) {
             return;
         }
 
-        boolean newEventsCorrelated = transactions.withinNewTransactionWithResult(() -> {
-            // Optimization: Most PCS process templates do not define any event correlation by process data, so we exit early here to avoid costly correlation queries
-            Optional<ProcessInstanceTemplate> processInstanceTemplate = processInstanceRepository.findProcessInstanceTemplate(originProcessId);
-            boolean anyEventsCorrelatedByProcessData = isAnyEventsCorrelatedByProcessData(processInstanceTemplate);
-            if (!anyEventsCorrelatedByProcessData) {
-                log.trace("Process template of process with originProcessId '{}' does not define any event correlation by process data", originProcessId);
-                return false;
-            }
-
-            Optional<ProcessInstance> processInstance = processInstanceRepository.findByOriginProcessId(originProcessId);
-            if (processInstance.isPresent()) {
-                return correlateMessagesByProcessData(processInstance.get());
-            } else {
-                log.info("Process with originProcessId '{}' not found. There is no message to correlate.", originProcessId);
-                return false;
-            }
-        });
-        if (newEventsCorrelated) {
-            internalMessageProducer.produceProcessContextOutdatedEventSynchronously(originProcessId);
+        // Optimization: Most PCS process templates do not define any event correlation by process data, so we exit
+        // early here to avoid costly correlation queries.
+        String originProcessId = processInstance.getOriginProcessId();
+        boolean anyEventsCorrelatedByProcessData = isAnyEventsCorrelatedByProcessData(processInstance.getProcessTemplateName());
+        if (!anyEventsCorrelatedByProcessData) {
+            log.trace("Process template of process with originProcessId '{}' does not define any event correlation by process data", originProcessId);
+            return;
         }
+
+        correlateMessagesByProcessData(processInstance, newProcessData);
     }
 
-    private boolean isAnyEventsCorrelatedByProcessData(Optional<ProcessInstanceTemplate> processInstanceTemplate) {
-        return processInstanceTemplate
-                .map(ProcessInstanceTemplate::getTemplateName)
-                .flatMap(processTemplateRepository::findByName)
+    private boolean isAnyEventsCorrelatedByProcessData(String templateName) {
+        return processTemplateRepository.findByName(templateName)
                 .map(ProcessTemplate::isAnyEventCorrelatedByProcessData)
                 .orElse(false);
     }
 
-    private boolean correlateMessagesByProcessData(ProcessInstance processInstance) {
-        ZonedDateTime lastCorrelationAt = processInstance.getLastCorrelationAt() != null ? processInstance.getLastCorrelationAt() : ZonedDateTime.of(LocalDateTime.MIN, ZoneId.systemDefault());
-
-        List<ProcessData> processDataList = processInstance.getProcessData().stream()
-                .filter(pd -> pd.getCreatedAt().isAfter(lastCorrelationAt)).toList();
-        log.debug("Found {} processData created after the last correlation of this process instance at {}", processDataList.size(), lastCorrelationAt.format(DateTimeFormatter.ISO_DATE_TIME));
+    private void correlateMessagesByProcessData(ProcessInstance processInstance, List<ProcessData> newProcessData) {
+        processInstanceRepository.flush();
 
         List<Message> eventsToCorrelate = new ArrayList<>();
         List<UUID> alreadyCorrelatedEventIds = messageReferenceRepository.findByProcessInstanceId(processInstance.getId())
                 .stream().map(MessageReferenceMessageDTO::getMessageId).toList();
 
-        for (ProcessData processData : processDataList) {
+        for (ProcessData processData : newProcessData) {
             Set<MessageReference> messageReferences = processInstance.getProcessTemplate().getDomainEventReferencesCorrelatedBy(processData.getKey());
             log.debug("Found {} messageReferences with processDataKey {}", messageReferences.size(), processData.getKey());
 
             for (MessageReference messageReference : messageReferences) {
-                List<Message> messageRepositoryEventsToCorrelate;
-                if (processData.getRole() != null) {
-                    if (alreadyCorrelatedEventIds.isEmpty()) {
-                        messageRepositoryEventsToCorrelate = messageRepository.findMessagesToCorrelate(messageReference.getMessageName(), processInstance.getProcessTemplateName(), messageReference.getCorrelatedByProcessData().getMessageDataKey(), processData.getValue(), processData.getRole());
-                    } else {
-                        messageRepositoryEventsToCorrelate = messageRepository.findMessagesToCorrelate(messageReference.getMessageName(), processInstance.getProcessTemplateName(), messageReference.getCorrelatedByProcessData().getMessageDataKey(), processData.getValue(), processData.getRole(), alreadyCorrelatedEventIds);
-                    }
-                } else {
-                    if (alreadyCorrelatedEventIds.isEmpty()) {
-                        messageRepositoryEventsToCorrelate = messageRepository.findMessagesToCorrelate(messageReference.getMessageName(), processInstance.getProcessTemplateName(), messageReference.getCorrelatedByProcessData().getMessageDataKey(), processData.getValue());
-                    } else {
-                        messageRepositoryEventsToCorrelate = messageRepository.findMessagesToCorrelate(messageReference.getMessageName(), processInstance.getProcessTemplateName(), messageReference.getCorrelatedByProcessData().getMessageDataKey(), processData.getValue(), alreadyCorrelatedEventIds);
-                    }
-                }
-                log.debug("Found {} old messages with messageName {}, messageDataKey {}, value {}, role {}", messageRepositoryEventsToCorrelate.size(), messageReference.getMessageName(), messageReference.getCorrelatedByProcessData().getMessageDataKey(), processData.getValue(), processData.getRole());
+                List<Message> messageRepositoryEventsToCorrelate = findEventsToCorrelateByProcessData(processInstance, processData, messageReference, alreadyCorrelatedEventIds);
                 eventsToCorrelate.addAll(messageRepositoryEventsToCorrelate);
             }
         }
 
-        log.debug("Found {} old messages in the db to correlate with this process instance", eventsToCorrelate.size());
+        log.info("Found {} old messages in the db to correlate with this process instance", eventsToCorrelate.size());
 
         for (Message message : eventsToCorrelate) {
-            var processUpdate = ProcessUpdate.messageReceived()
-                    .originProcessId(processInstance.getOriginProcessId())
-                    .messageReference(message.getId())
-                    .messageName(message.getMessageName())
-                    .idempotenceId(message.getIdempotenceId())
-                    .build();
-            processUpdateRepository.save(processUpdate);
+            applyProcessUpdateAndReEvaluateProcessInstance(processInstance, message);
         }
+    }
 
-        //Update the last correlation timestamp for this process instance
-        processInstance.correlatedAt(processDataList.stream().map(ProcessData::getCreatedAt).max(ZonedDateTime::compareTo).orElse(ZonedDateTime.now()));
-
-        return !eventsToCorrelate.isEmpty();
+    private List<Message> findEventsToCorrelateByProcessData(ProcessInstance processInstance, ProcessData processData, MessageReference messageReference, List<UUID> alreadyCorrelatedEventIds) {
+        if (processData.getRole() != null) {
+            if (alreadyCorrelatedEventIds.isEmpty()) {
+                return messageRepository.findMessagesToCorrelate(messageReference.getMessageName(), processInstance.getProcessTemplateName(), messageReference.getCorrelatedByProcessData().getMessageDataKey(), processData.getValue(), processData.getRole());
+            }
+            return messageRepository.findMessagesToCorrelate(messageReference.getMessageName(), processInstance.getProcessTemplateName(), messageReference.getCorrelatedByProcessData().getMessageDataKey(), processData.getValue(), processData.getRole(), alreadyCorrelatedEventIds);
+        } else {
+            if (alreadyCorrelatedEventIds.isEmpty()) {
+                return messageRepository.findMessagesToCorrelate(messageReference.getMessageName(), processInstance.getProcessTemplateName(), messageReference.getCorrelatedByProcessData().getMessageDataKey(), processData.getValue());
+            }
+            return messageRepository.findMessagesToCorrelate(messageReference.getMessageName(), processInstance.getProcessTemplateName(), messageReference.getCorrelatedByProcessData().getMessageDataKey(), processData.getValue(), alreadyCorrelatedEventIds);
+        }
     }
 
     private String getBatchSizeGroup(List<ProcessUpdate> processUpdates) {

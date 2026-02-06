@@ -110,7 +110,7 @@ class ProcessUpdateServiceTest {
         assertEquals(EVENT_NAME, processUpdateArgumentCaptor.getValue().getMessageName());
         assertEquals(IDEMPOTENCE_ID, processUpdateArgumentCaptor.getValue().getIdempotenceId());
         assertEquals(processUpdateType, processUpdateArgumentCaptor.getValue().getProcessUpdateType());
-        assertEquals(Optional.of(EVENT_REFERENCE), processUpdateArgumentCaptor.getValue().getMessageReference());
+        assertEquals(EVENT_REFERENCE, processUpdateArgumentCaptor.getValue().getMessageReference());
         assertEquals(name, processUpdateArgumentCaptor.getValue().getName());
     }
 }
