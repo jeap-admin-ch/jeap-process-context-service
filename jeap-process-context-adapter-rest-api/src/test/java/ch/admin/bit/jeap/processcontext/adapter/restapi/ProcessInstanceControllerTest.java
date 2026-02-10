@@ -57,6 +57,8 @@ class ProcessInstanceControllerTest {
     @MockitoBean
     private ProcessDataRepository processDataRepository;
     @MockitoBean
+    private TaskInstanceRepository taskInstanceRepository;
+    @MockitoBean
     private TranslateService translateService;
 
     private final Map<String, String> reason = Map.of("de", "Alle Prozessaufgaben haben einen Endzustand erreicht",
@@ -80,6 +82,8 @@ class ProcessInstanceControllerTest {
         String originProcessId = "123";
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         doReturn(Optional.of(processInstance)).when(repository).findByOriginProcessId(originProcessId);
+        TaskInstance taskInstance = ProcessInstanceStubs.createPlannedTaskInstance(processInstance);
+        when(taskInstanceRepository.findByProcessInstanceId(processInstance.getProcessTemplate(), processInstance.getId())).thenReturn(List.of(taskInstance));
 
         // Mock message reference repository to return the event message
         ZonedDateTime now = ZonedDateTime.now();
@@ -155,6 +159,8 @@ class ProcessInstanceControllerTest {
         String originProcessId = "123";
         ProcessInstance processInstance = ProcessInstanceStubs.createCompletedProcessInstance();
         doReturn(Optional.of(processInstance)).when(repository).findByOriginProcessId(originProcessId);
+        TaskInstance completedTask = ProcessInstanceStubs.createCompletedTaskInstance(processInstance);
+        when(taskInstanceRepository.findByProcessInstanceId(processInstance.getProcessTemplate(), processInstance.getId())).thenReturn(List.of(completedTask));
 
         Map<String, String> name = Map.of("de", processInstance.getProcessTemplate().getName(),
                 "fr", processInstance.getProcessTemplate().getName(),

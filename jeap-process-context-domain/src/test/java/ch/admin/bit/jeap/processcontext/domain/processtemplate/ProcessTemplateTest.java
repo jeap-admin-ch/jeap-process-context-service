@@ -69,4 +69,17 @@ class ProcessTemplateTest {
         assertSame(ProcessRelationRoleType.ORIGIN, aProcessRelationPattern.getRoleType());
         assertSame(ProcessRelationRoleVisibility.BOTH, aProcessRelationPattern.getVisibility());
     }
+
+    @Test
+    void getProcessRelationPatternsByMessageName_matchingName_returnsPatterns() {
+        List<ProcessRelationPattern> result = processTemplate.getProcessRelationPatternsByMessageName("msgName");
+        assertEquals(1, result.size());
+        assertEquals("ThisIsAProcessRelation", result.getFirst().getName());
+    }
+
+    @Test
+    void getProcessRelationPatternsByMessageName_nonMatchingName_returnsEmptyList() {
+        List<ProcessRelationPattern> result = processTemplate.getProcessRelationPatternsByMessageName("unknownMessage");
+        assertTrue(result.isEmpty());
+    }
 }

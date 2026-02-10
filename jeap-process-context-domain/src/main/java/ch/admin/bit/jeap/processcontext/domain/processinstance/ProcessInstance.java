@@ -1,13 +1,9 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
 import ch.admin.bit.jeap.processcontext.domain.MutableDomainEntity;
-import ch.admin.bit.jeap.processcontext.domain.message.Message;
-import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult;
-import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationPattern;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
-import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessCompletionCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.ProcessCompletionConditionResult;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessContext;
@@ -21,10 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion.SUCCEEDED;
-import static java.util.Collections.*;
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 import static lombok.AccessLevel.PROTECTED;
 import static org.springframework.util.StringUtils.hasText;
@@ -47,10 +42,6 @@ public class ProcessInstance extends MutableDomainEntity {
     @NotNull
     @Getter
     private String originProcessId;
-
-    @NotNull
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "processInstance")
-    private Set<ProcessRelation> processRelations;
 
     @ToString.Include
     @NotNull
@@ -78,9 +69,6 @@ public class ProcessInstance extends MutableDomainEntity {
     @Transient
     private ProcessContextFactory processContextFactory;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "processInstance")
-    private List<TaskInstance> tasks = new ArrayList<>();
-
     @Getter
     private int latestSnapshotVersion = 0;
 
@@ -93,19 +81,16 @@ public class ProcessInstance extends MutableDomainEntity {
         Objects.requireNonNull(processTemplate, "Process template is mandatory");
         Objects.requireNonNull(processContextFactory, "Process context factory is mandatory");
         this.originProcessId = originProcessId;
-        this.processRelations = new HashSet<>();
         this.processTemplate = processTemplate;
         this.processTemplateName = processTemplate.getName();
         this.processTemplateHash = processTemplate.getTemplateHash();
         this.processContextFactory = processContextFactory;
         this.state = ProcessState.STARTED;
+        this.createdAt = ZonedDateTime.now();
     }
 
     /**
-     * Creates a new ProcessInstance based on the given processTemplate. Callers must persist the returned
-     * ProcessInstance first, then call {@link #start()} to plan initial tasks.
-     * The reason the process instance needs to be persisted first before calling start is that conditions may need
-     * to access persisted data (e.g. messages) when evaluating process and task states.
+     * Creates a new ProcessInstance based on the given processTemplate.
      *
      * @param originProcessId       origin process id
      * @param processTemplate       the process template to base the process instance on
@@ -116,27 +101,6 @@ public class ProcessInstance extends MutableDomainEntity {
         return new ProcessInstance(originProcessId, processTemplate, processContextFactory);
     }
 
-    /**
-     * Start the process instance by planning initial tasks as defined in the process template. This needs to be invoked
-     * after persisting a new process instance created using {@link #createProcessInstance(String, ProcessTemplate, ProcessContextFactory)}.
-     * Creates task instances for all task types that are defined to be planned at process start.
-     * If the process is not in STARTED state, this method does nothing. As this method invokes {@link #updateState()}
-     * internally, the process instance must be persisted first in case task or process completion conditions require
-     * access to persisted data.
-     */
-    void start() {
-        if (state != ProcessState.STARTED) {
-            return;
-        }
-
-        Set<TaskType> taskTypesWithoutTaskInstance = TaskUtils.taskTypesWithoutTaskInstance(tasks, processTemplate);
-        taskTypesWithoutTaskInstance.stream()
-                .filter(TaskType::isPlannedAtProcessStart)
-                .map(type -> TaskInstance.createInitialTaskInstance(type, this, ZonedDateTime.now()))
-                .forEach(tasks::add);
-        updateState();
-    }
-
     public int nextSnapshotVersion() {
         latestSnapshotVersion++;
         return latestSnapshotVersion;
@@ -144,26 +108,6 @@ public class ProcessInstance extends MutableDomainEntity {
 
     public void registerSnapshot(String snapshotName) {
         snapshotNames.add(snapshotName);
-    }
-
-    TaskInstance registerNewTaskInUnknownState(TaskType taskType, ZonedDateTime timestamp) {
-        TaskInstance taskInstance = TaskInstance.createUnknownTaskInstance(taskType, this, timestamp);
-        tasks.add(taskInstance);
-        return taskInstance;
-    }
-
-    TaskInstance planDomainEventTask(TaskType taskType, String originTaskId, ZonedDateTime timestamp, UUID messageId) {
-        TaskInstance plannedTask = TaskInstance.createTaskInstanceWithOriginTaskId(taskType, this, originTaskId, timestamp, messageId);
-        tasks.add(plannedTask);
-        return plannedTask;
-    }
-
-    void addObservationTask(TaskType taskType, String messageId, ZonedDateTime timestamp, UUID messageUuid) {
-        tasks.add(TaskInstance.createTaskInstanceWithOriginTaskIdAndState(taskType, this, messageId, TaskState.COMPLETED, timestamp, messageUuid));
-    }
-
-    void evaluateCompletedTasks(MessageReferenceMessageDTO messageReference) {
-        getTasks().forEach(task -> task.evaluateIfCompleted(messageReference));
     }
 
     /**
@@ -184,22 +128,12 @@ public class ProcessInstance extends MutableDomainEntity {
                 collect(toSet());
     }
 
-    /**
-     * @return An (unmodifiable) list of Task instances in this process instance
-     */
-    public List<TaskInstance> getTasks() {
-        return unmodifiableList(tasks);
-    }
-
-    public List<TaskInstance> getOpenTasks() {
-        return getTasks().stream().filter(t -> !t.getState().isFinalState()).toList();
-    }
-
     public Optional<ProcessCompletion> getProcessCompletion() {
         ProcessCompletion reportedCompletion = processCompletion;
         if ((state == ProcessState.COMPLETED) && (reportedCompletion == null)) {
             // this is an 'old' process instance that completed without setting completion data -> create derived completion data
-            reportedCompletion = new ProcessCompletion(SUCCEEDED, "All tasks completed.", getModifiedAt());
+            ZonedDateTime completedAt = getModifiedAt() == null ? ZonedDateTime.now() : getModifiedAt();
+            reportedCompletion = new ProcessCompletion(SUCCEEDED, "All tasks completed.", completedAt);
         }
         return Optional.ofNullable(reportedCompletion);
     }
@@ -209,11 +143,7 @@ public class ProcessInstance extends MutableDomainEntity {
      */
     public void onAfterLoadFromPersistentState(ProcessTemplate processTemplate, ProcessContextFactory processContextFactory) {
         this.processContextFactory = processContextFactory;
-        if (this.processTemplate != null) {
-            throw new IllegalStateException("Cannot set process template - already set for process " + originProcessId);
-        }
         this.processTemplate = processTemplate;
-        tasks.forEach(task -> task.setTaskTypeFromTemplate(processTemplate));
     }
 
     void updateState() {
@@ -245,102 +175,8 @@ public class ProcessInstance extends MutableDomainEntity {
         return super.getModifiedAt();
     }
 
-    public Set<ProcessRelation> getProcessRelations() {
-        return unmodifiableSet(processRelations);
-    }
-
-    private void addProcessRelation(ProcessRelation processRelation) {
-        if (processRelations.add(processRelation)) {
-            processRelation.setProcessInstance(this);
-            processRelation.onPrePersist();
-            log.debug("Added process relation to process instance {}: {}", id, processRelation);
-        }
-    }
-
-    void evaluateProcessRelations(Message message) {
-        if (processTemplate.getProcessRelationPatterns().isEmpty()) {
-            // No processRelation pattern - no need to evaluate processRelations
-            return;
-        }
-
-        List<ProcessRelationPattern> patterns = processTemplate.getProcessRelationPatterns();
-        patterns.forEach(processRelationPattern -> {
-            String messageName = processRelationPattern.getSource().getMessageName();
-            String messageKey = processRelationPattern.getSource().getMessageDataKey();
-            if (messageName.equals(message.getMessageName())) {
-                Set<MessageData> messageDataSet = message.getMessageData(processTemplateName);
-                messageDataSet.forEach(messageData -> {
-                    if (messageKey.equals(messageData.getKey())) {
-                        //now we have a hit
-                        String msgDataValue = messageData.getValue();
-                        // create ProcessRelation
-                        ProcessRelation processRelation = ProcessRelation.createMatchingProcessRelation(processRelationPattern, msgDataValue);
-                        this.addProcessRelation(processRelation);
-                    }
-                });
-            }
-
-        });
-    }
-
-    /**
-     * @return If the process template has changed since the last time it was applied to this process instance, apply
-     * necessary migrations to existing tasks and return the list of newly planned tasks. If the template has not
-     * changed, return an empty optional.
-     */
-    public Optional<List<TaskInstance>> applyTemplateMigrationIfChanged() {
-        if (isTemplateChanged()) {
-            log.info("Applying template migrations to process {}", this.getOriginProcessId());
-
-            deleteTaskInstancesForDeletedTaskTypes();
-            List<TaskInstance> plannedTasks = planTaskInstancesForNewTaskTypes();
-
-            updateTemplateHash();
-
-            return Optional.of(plannedTasks);
-        }
-        return Optional.empty();
-    }
-
-    private boolean isTemplateChanged() {
-        return processTemplateHash != null &&
-                !processTemplate.getTemplateHash().equals(processTemplateHash);
-    }
-
-    private void updateTemplateHash() {
+    void updateTemplateHash() {
         this.processTemplateHash = processTemplate.getTemplateHash();
-    }
-
-    private void deleteTaskInstancesForDeletedTaskTypes() {
-        final List<TaskInstance> openTasks = this.getOpenTasks();
-        log.debug("Migration - Found {} open tasks in processInstance '{}'", openTasks.size(), this.getOriginProcessId());
-        final Set<String> allTaskNames = this.getProcessTemplate().getTaskNames();
-        final List<TaskInstance> taskToDelete = openTasks.stream().filter(openTask -> !allTaskNames.contains(openTask.getTaskTypeName())).toList();
-        log.debug("Migration - Found {} open tasks to set as deleted", taskToDelete.size());
-        for (TaskInstance task : taskToDelete) {
-            log.info("Migration - Set State DELETED for TaskInstance '{}'", task.getTaskTypeName());
-            task.delete();
-        }
-    }
-
-    private List<TaskInstance> planTaskInstancesForNewTaskTypes() {
-        final Set<String> taskInstanceNames = this.getTasks().stream().map(TaskInstance::getTaskTypeName).collect(Collectors.toUnmodifiableSet());
-        final Set<String> allTaskNames = new HashSet<>(this.getProcessTemplate().getTaskNames());
-        log.debug("Migration - Found {} task types in process template '{}'", allTaskNames.size(), this.getProcessTemplate().getName());
-        allTaskNames.removeAll(taskInstanceNames);
-        log.debug("Migration - Found {} new task types", allTaskNames.size());
-        List<TaskInstance> plannedTasks = new ArrayList<>();
-        for (String taskName : allTaskNames) {
-            TaskType taskType = processTemplate.getTaskTypeByName(taskName).orElseThrow(TaskPlanningException.invalidTaskType(taskName, originProcessId));
-            if (taskType.isPlannedAtProcessStart()) {
-                log.info("Migration - Plan new instance of task '{}'", taskName);
-                TaskInstance plannedTask = registerNewTaskInUnknownState(taskType, ZonedDateTime.now());
-                plannedTasks.add(plannedTask);
-            } else {
-                log.info("Migration - Task '{}' does not need upfront planning.", taskName);
-            }
-        }
-        return plannedTasks;
     }
 
     @Converter

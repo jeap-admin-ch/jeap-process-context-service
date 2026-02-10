@@ -1,14 +1,11 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
-import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskCardinality;
-import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskLifecycle;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,7 +16,7 @@ class TaskInstanceTest {
 
     @Test
     void createTaskInstanceWithOriginTaskId_optional() {
-        ProcessInstance process = ProcessInstanceStubs.createProcessWithSingleAndDynamicTaskInstances();
+        ProcessInstance process = ProcessInstanceStubs.createProcessWithSingleAndDynamicTasks();
         TaskType dynamicTaskType = process.getProcessTemplate().getTaskTypeByName(ProcessInstanceStubs.dynamicTaskName).orElseThrow();
         final String originTaskId = "origin-task-id";
         final ZonedDateTime timestamp = ZonedDateTime.now();
@@ -37,7 +34,7 @@ class TaskInstanceTest {
 
     @Test
     void createInitialTask_mandatory() {
-        ProcessInstance process = ProcessInstanceStubs.createProcessWithSingleAndDynamicTaskInstances();
+        ProcessInstance process = ProcessInstanceStubs.createProcessWithSingleAndDynamicTasks();
         TaskType mandatoryTaskType = process.getProcessTemplate().getTaskTypeByName(ProcessInstanceStubs.singleTaskName).orElseThrow();
         final ZonedDateTime timestamp = ZonedDateTime.now();
 
@@ -52,10 +49,10 @@ class TaskInstanceTest {
 
     @Test
     void setTaskTypeFromTemplate() throws Exception {
-        ProcessInstance process = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
+        ProcessInstance process = ProcessInstanceStubs.createProcessWithSingleDynamicTask();
         ProcessTemplate processTemplate = process.getProcessTemplate();
-        TaskInstance taskInstance = process.getTasks().getFirst();
-        TaskType taskType = taskInstance.requireTaskType();
+        TaskType taskType = processTemplate.getTaskTypeByName(ProcessInstanceStubs.singleTaskName).orElseThrow();
+        TaskInstance taskInstance = TaskInstance.createInitialTaskInstance(taskType, process, ZonedDateTime.now());
         setTaskTypeToOptionalEmpty(taskInstance);
 
         taskInstance.setTaskTypeFromTemplate(processTemplate);
@@ -64,38 +61,10 @@ class TaskInstanceTest {
     }
 
     @Test
-    void setTaskTypeFromTemplate_shouldThrowWhenTypeAlreadySet() {
-        ProcessInstance process = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
-        ProcessTemplate processTemplate = process.getProcessTemplate();
-        TaskInstance taskInstance = process.getTasks().getFirst();
-
-        assertThrows(IllegalStateException.class, () ->
-                taskInstance.setTaskTypeFromTemplate(processTemplate));
-    }
-
-    @Test
-    void setTaskTypeFromTemplate_whenTaskIstNotFound_thenShouldNoMoreThrowException() throws Exception {
-        ProcessInstance process = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
-        TaskType differentTaskType = TaskType.builder()
-                .name("foo")
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .lifecycle(TaskLifecycle.STATIC)
-                .build();
-        ProcessTemplate differentTemplate = ProcessTemplate.builder()
-                .name("name")
-                .templateHash("hash")
-                .taskTypes(List.of(differentTaskType)).build();
-        TaskInstance taskInstance = process.getTasks().getFirst();
-        setTaskTypeToOptionalEmpty(taskInstance);
-
-        taskInstance.setTaskTypeFromTemplate(differentTemplate);
-        assertThat(taskInstance.getTaskType()).isEmpty();
-    }
-
-    @Test
     void notRequired() {
-        ProcessInstance process = ProcessInstanceStubs.createProcessWithSingleAndDynamicInstanceTasksBothNotYetInstantiated();
-        TaskInstance taskInstance = process.getTasks().getFirst();
+        ProcessInstance process = ProcessInstanceStubs.createProcessWithSingleAndDynamicTasks();
+        TaskType taskType = process.getProcessTemplate().getTaskTypeByName(ProcessInstanceStubs.singleTaskName).orElseThrow();
+        TaskInstance taskInstance = TaskInstance.createInitialTaskInstance(taskType, process, ZonedDateTime.now());
 
         taskInstance.notRequired();
 

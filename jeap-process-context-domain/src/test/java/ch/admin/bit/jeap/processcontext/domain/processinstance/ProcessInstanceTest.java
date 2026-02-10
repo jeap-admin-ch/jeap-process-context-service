@@ -1,95 +1,32 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
-import ch.admin.bit.jeap.processcontext.domain.message.Message;
-import ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotCondition;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.snapshot.ProcessSnapshotConditionResult;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
-import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskCardinality;
-import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskLifecycle;
-import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Optional;
+import java.util.Set;
 
 import static ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceStubs.createProcessWithProcessSnapshotCondition;
-import static ch.admin.bit.jeap.processcontext.domain.processinstance.TaskState.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProcessInstanceTest {
 
     @Test
-    void startProcess() {
-        TaskType mandatoryTaskType = TaskType.builder()
-                .name("mandatory")
-                .lifecycle(TaskLifecycle.STATIC)
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .build();
-        TaskType multipleTaskType = TaskType.builder()
-                .name("multiple")
-                .lifecycle(TaskLifecycle.DYNAMIC)
-                .cardinality(TaskCardinality.MULTI_INSTANCE)
-                .build();
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name("template")
-                .templateHash("hash")
-                .taskTypes(List.of(mandatoryTaskType, multipleTaskType))
-                .build();
-
-        ProcessInstance processInstance = startProcessInstance(processTemplate);
-
-        TaskInstance firstTask = processInstance.getTasks().getFirst();
-        assertEquals(1, processInstance.getTasks().size());
-        assertNull(null, firstTask.getOriginTaskId());
-        assertEquals(processInstance, firstTask.getProcessInstance());
-        assertEquals(mandatoryTaskType, firstTask.requireTaskType());
-        assertEquals(PLANNED, firstTask.getState());
-    }
-
-    private static ProcessInstance startProcessInstance(ProcessTemplate processTemplate) {
-        ProcessContextRepositoryFacadeStub repositoryFacade = new ProcessContextRepositoryFacadeStub();
-        ProcessContextFactory processContextFactory = new ProcessContextFactory(repositoryFacade);
-        ProcessInstance processInstance = ProcessInstance.createProcessInstance("id", processTemplate, processContextFactory);
-        processInstance.start();
-        repositoryFacade.setProcessInstance(processInstance);
-        return processInstance;
-    }
-
-    @Test
-    void completeTask() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
-
-        completeTask(processInstance, "1");
-
-        assertSame(TaskState.COMPLETED, processInstance.getTasks().getFirst().getState());
-        assertSame(ProcessState.COMPLETED, processInstance.getState());
-    }
-
-    @Test
-    void updateProcessState_whenMandatoryTaskInstanceIsCompleted_thenShouldUpdateProcessStateToCompleted() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
-        TaskInstance task = processInstance.getTasks().getFirst();
-
-        completeTask(processInstance, task.getOriginTaskId());
-
-        assertSame(ProcessState.COMPLETED, processInstance.getState());
-    }
-
-    @Test
     void getProcessCompletion_whenInProgess_thenCompletionNotPresent() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleStaticTaskInstance();
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleStaticTask();
         assertSame(ProcessState.STARTED, processInstance.getState());
         assertFalse(processInstance.getProcessCompletion().isPresent());
     }
 
     @Test
     void getProcessCompletion_whenOldCompletedProcessInstanceWithoutCompletionData_thenCompletionDerivedFromProcessInstancePresent() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleStaticTaskInstance();
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleStaticTask();
         ReflectionTestUtils.setField(processInstance, "state", ProcessState.COMPLETED);
         ReflectionTestUtils.setField(processInstance, "modifiedAt", ZonedDateTime.now());
 
@@ -101,78 +38,10 @@ class ProcessInstanceTest {
     }
 
     @Test
-    void getProcessCompletion_whenCompleted_thenCompletionPresent() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
-        TaskInstance task = processInstance.getTasks().getFirst();
-        completeTask(processInstance, task.getOriginTaskId());
-
-        Optional<ProcessCompletion> completion = processInstance.getProcessCompletion();
-
-        assertTrue(completion.isPresent());
-        assertEquals(ProcessCompletionConclusion.SUCCEEDED, completion.get().getConclusion());
-        assertNotNull(completion.get().getCompletedAt());
-    }
-
-    @Test
-    void updateProcessState_whenNotAllMultipleTaskInstancesAreCompleted_thenShouldKeepProcessStateAsStarted_whenAllCompleted_thenProcessCompleted() {
-        TaskType mandatoryTaskType = TaskType.builder()
-                .name("single")
-                .lifecycle(TaskLifecycle.STATIC)
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .completedByDomainEvent("messageName2")
-                .build();
-        TaskType dynamicTaskType = TaskType.builder()
-                .name("dynamic")
-                .lifecycle(TaskLifecycle.DYNAMIC)
-                .cardinality(TaskCardinality.MULTI_INSTANCE)
-                .plannedByDomainEvent("messageName")
-                .completedByDomainEvent("messageName2")
-                .build();
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name("template")
-                .templateHash("hash")
-                .taskTypes(List.of(mandatoryTaskType, dynamicTaskType))
-                .build();
-        ProcessInstance processInstance = startProcessInstance(processTemplate);
-
-        processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-1", ZonedDateTime.now(), null);
-        processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-2", ZonedDateTime.now(), null);
-
-        completeTask(processInstance, "mandatory-id", "messageName2");
-        assertSame(ProcessState.STARTED, processInstance.getState());
-
-        completeTask(processInstance, "multiple-id-1", "messageName2");
-        assertSame(ProcessState.STARTED, processInstance.getState());
-
-        completeTask(processInstance, "multiple-id-2", "messageName2");
-        assertSame(ProcessState.COMPLETED, processInstance.getState());
-    }
-
-    void completeTask(ProcessInstance processInstance, String originTaskId, String messageName) {
-        Message message = Message.messageBuilder()
-                .messageId(UUID.randomUUID().toString())
-                .idempotenceId("idempotenceId")
-                .messageName(messageName)
-                .originTaskIds(Set.of(OriginTaskId.from("template", originTaskId)))
-                .createdAt(ZonedDateTime.now())
-                .messageCreatedAt(ZonedDateTime.now())
-                .build();
-        MessageReferenceMessageDTO referenceMessageDTO = MessageReferenceMessageDTO
-                .of(processInstance.getProcessTemplateName(), UUID.randomUUID(), message);
-        processInstance.evaluateCompletedTasks(referenceMessageDTO);
-        processInstance.updateState();
-    }
-
-    void completeTask(ProcessInstance processInstance, String originTaskId) {
-        completeTask(processInstance, originTaskId, "messageName");
-    }
-
-    @Test
     void onAfterLoadFromPersistentState() throws Exception {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTask();
         ProcessTemplate processTemplate = processInstance.getProcessTemplate();
         ProcessContextRepositoryFacadeStub repositoryFacade = new ProcessContextRepositoryFacadeStub();
-        repositoryFacade.setProcessInstance(processInstance);
         ProcessContextFactory processContextFactory = new ProcessContextFactory(repositoryFacade);
 
         onAfterLoadFromPersistentStateToNull(processInstance);
@@ -180,86 +49,14 @@ class ProcessInstanceTest {
         processInstance.onAfterLoadFromPersistentState(processTemplate, processContextFactory);
 
         assertSame(processTemplate, processInstance.getProcessTemplate());
-        assertSame(processTemplate.getTaskTypeByName(ProcessInstanceStubs.singleTaskName).orElseThrow(),
-                processInstance.getTasks().getFirst().requireTaskType());
-    }
-
-    @Test
-    void setProcessTemplate_shouldThrowIfAlreadySet() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
-        ProcessContextFactory processContextFactory = new ProcessContextFactory(new ProcessContextRepositoryFacadeStub());
-        ProcessTemplate processTemplate = processInstance.getProcessTemplate();
-
-        assertThrows(IllegalStateException.class, () ->
-                processInstance.onAfterLoadFromPersistentState(processTemplate, processContextFactory));
     }
 
     /**
      * Simulate empty template properties after loading the domain object from persistent state
      */
     private static void onAfterLoadFromPersistentStateToNull(ProcessInstance processInstance) throws Exception {
-        String fieldName = "processTemplate";
-        setFieldToNull(processInstance, fieldName);
+        ReflectionTestUtils.setField(processInstance, "processTemplate", null);
         assertNull(processInstance.getProcessTemplate());
-        for (TaskInstance task : processInstance.getTasks()) {
-            setFieldToOptionalEmpty(task, "taskType");
-        }
-    }
-
-    private static void setFieldToNull(Object obj, String fieldName) throws NoSuchFieldException, IllegalAccessException {
-        Field processTemplateField = obj.getClass().getDeclaredField(fieldName);
-        processTemplateField.setAccessible(true);
-        processTemplateField.set(obj, null);
-    }
-
-    private static void setFieldToOptionalEmpty(Object obj, String fieldName) throws NoSuchFieldException, IllegalAccessException {
-        Field processTemplateField = obj.getClass().getDeclaredField(fieldName);
-        processTemplateField.setAccessible(true);
-        processTemplateField.set(obj, Optional.empty());
-    }
-
-    @Test
-    void applyTemplateMigrationIfChanged_planTaskInstancesForNewTaskTypes_newTaskInstancesAdded() {
-        ProcessInstance processInstance = createProcessWithThreeTaskInstances();
-        TaskInstance taskInstanceCompleted = createTaskInstance("dont-touch-task-type", processInstance, COMPLETED);
-        TaskInstance taskInstanceToDelete = createTaskInstance("deleted-task-type", processInstance, PLANNED);
-        TaskInstance taskInstanceToNotDelete = createTaskInstance("deleted-task-type", processInstance, COMPLETED);
-        List<TaskInstance> taskInstances = new ArrayList<>();
-        taskInstances.add(taskInstanceCompleted);
-        taskInstances.add(taskInstanceToDelete);
-        taskInstances.add(taskInstanceToNotDelete);
-        ReflectionTestUtils.setField(processInstance, "processTemplateHash", "new");
-        ReflectionTestUtils.setField(processInstance, "tasks", taskInstances);
-
-        processInstance.applyTemplateMigrationIfChanged();
-
-        assertThat(processInstance.getTasks()).hasSize(4);
-        assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("dont-touch-task-type") && t.getState() == COMPLETED).count())).isEqualTo(1L);
-        assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("deleted-task-type") && t.getState() == DELETED).count())).isEqualTo(1L);
-        assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("deleted-task-type") && t.getState() == COMPLETED).count())).isEqualTo(1L);
-        assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("new-added-single-task-type") && t.getState() == UNKNOWN).count())).isEqualTo(1L);
-    }
-
-    @Test
-    void applyTemplateMigrationIfChanged_deleteTaskInstancesForDeletedTaskTypes_oldTaskInstancesDeleted() {
-        ProcessInstance processInstance = createProcessWithThreeTaskInstances();
-        TaskInstance taskInstanceCompleted = createTaskInstance("dont-touch-task-type", processInstance, COMPLETED);
-        TaskInstance taskInstanceToDelete = createTaskInstance("deleted-task-type", processInstance, PLANNED);
-        TaskInstance taskInstanceToNotDelete = createTaskInstance("deleted-task-type", processInstance, COMPLETED);
-        List<TaskInstance> taskInstances = new ArrayList<>();
-        taskInstances.add(taskInstanceCompleted);
-        taskInstances.add(taskInstanceToDelete);
-        taskInstances.add(taskInstanceToNotDelete);
-        ReflectionTestUtils.setField(processInstance, "processTemplateHash", "new");
-        ReflectionTestUtils.setField(processInstance, "tasks", taskInstances);
-
-        processInstance.applyTemplateMigrationIfChanged();
-
-        assertThat(processInstance.getTasks()).hasSize(4);
-        assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("dont-touch-task-type") && t.getState() == COMPLETED).count())).isEqualTo(1L);
-        assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("deleted-task-type") && t.getState() == DELETED).count())).isEqualTo(1L);
-        assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("deleted-task-type") && t.getState() == COMPLETED).count())).isEqualTo(1L);
-        assertThat((processInstance.getTasks().stream().filter(t -> t.getTaskTypeName().equals("new-added-single-task-type") && t.getState() == UNKNOWN).count())).isEqualTo(1L);
     }
 
     @Test
@@ -297,25 +94,5 @@ class ProcessInstanceTest {
         public ProcessSnapshotConditionResult triggerSnapshot(ProcessInstance processInstance) {
             return ProcessSnapshotConditionResult.triggeredFor("AlwaysTrueCondition");
         }
-    }
-
-    static ProcessInstance createProcessWithThreeTaskInstances() {
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name("template")
-                .templateHash("hash")
-                .taskTypes(List.of(
-                        TaskType.builder().name("dont-touch-task-type").cardinality(TaskCardinality.SINGLE_INSTANCE).lifecycle(TaskLifecycle.STATIC).build(),
-                        TaskType.builder().name("new-added-single-task-type").cardinality(TaskCardinality.SINGLE_INSTANCE).lifecycle(TaskLifecycle.STATIC).build(),
-                        TaskType.builder().name("new-added-dynamic-task-type").cardinality(TaskCardinality.MULTI_INSTANCE).lifecycle(TaskLifecycle.DYNAMIC).build()))
-                .build();
-        return startProcessInstance(processTemplate);
-    }
-
-    private TaskInstance createTaskInstance(String name, ProcessInstance processInstance, TaskState taskState) {
-        final TaskInstance taskInstance = TaskInstance.createInitialTaskInstance(TaskType.builder().name(name)
-                .cardinality(TaskCardinality.SINGLE_INSTANCE).lifecycle(TaskLifecycle.STATIC).build(), processInstance, ZonedDateTime.now());
-        ReflectionTestUtils.setField(taskInstance, "state", taskState);
-        return taskInstance;
-
     }
 }

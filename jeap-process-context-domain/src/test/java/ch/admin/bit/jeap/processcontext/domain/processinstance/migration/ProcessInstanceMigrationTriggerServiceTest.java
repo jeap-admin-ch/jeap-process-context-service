@@ -19,7 +19,7 @@ import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ProcessInstanceMigrationServiceTest {
+class ProcessInstanceMigrationTriggerServiceTest {
 
     private static final String CHANGED_TEMPLATE_ORIGIN_PROCESS_ID = "changedTemplateOriginProcessId";
 
@@ -32,8 +32,8 @@ class ProcessInstanceMigrationServiceTest {
 
     @Test
     void triggerMigrationForModifiedTemplates() {
-        ProcessInstanceMigrationService migrationService =
-                new ProcessInstanceMigrationService(processTemplateRepository, processInstanceRepository, internalMessageProducer);
+        ProcessInstanceMigrationTriggerService migrationService =
+                new ProcessInstanceMigrationTriggerService(processTemplateRepository, processInstanceRepository, internalMessageProducer);
         ZonedDateTime afterStub = ZonedDateTime.now();
         ProcessTemplate template = ProcessInstanceStubs.createSimpleProcessTemplate();
         when(processTemplateRepository.getAllTemplates()).thenReturn(List.of(template));

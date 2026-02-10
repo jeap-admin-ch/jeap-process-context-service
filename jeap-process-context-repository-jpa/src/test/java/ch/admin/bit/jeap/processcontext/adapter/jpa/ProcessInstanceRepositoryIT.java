@@ -12,7 +12,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,7 +44,7 @@ class ProcessInstanceRepositoryIT {
         ProcessTemplate processTemplate = ProcessTemplate.builder()
                 .name(processInstance.getProcessTemplateName())
                 .templateHash("ptHash")
-                .taskTypes(List.of(processInstance.getTasks().getFirst().requireTaskType()))
+                .taskTypes(processInstance.getProcessTemplate().getTaskTypes())
                 .build();
         doReturn(Optional.of(processTemplate)).when(processTemplateRepository).findByName(processInstance.getProcessTemplateName());
         processInstanceJpaRepository.saveAndFlush(processInstance);

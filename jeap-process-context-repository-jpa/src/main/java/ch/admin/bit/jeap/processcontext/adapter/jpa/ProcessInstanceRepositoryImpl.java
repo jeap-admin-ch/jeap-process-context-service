@@ -81,7 +81,7 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
 
     @Override
     public Slice<ProcessInstanceQueryResult> findProcessInstances(ProcessState processState, ZonedDateTime olderThan, Pageable pageable) {
-        return processInstanceJpaRepository.findIdOriginProcessIdByStateAndModifiedAtBefore(processState, olderThan, pageable);
+        return processInstanceJpaRepository.findIdOriginProcessIdByStateAndCreatedAtBefore(processState, olderThan, pageable);
     }
 
     private ProcessInstance setProcessTemplateReference(ProcessInstance processInstance) {
@@ -97,9 +97,9 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
 
     @Override
     public Slice<String> findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
-            ZonedDateTime lastModifiedAfter, ProcessTemplate template, Pageable pageable) {
+            ZonedDateTime createdAtAfter, ProcessTemplate template, Pageable pageable) {
         return processInstanceJpaRepository.findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
-                template.getName(), template.getTemplateHash(), lastModifiedAfter, pageable);
+                template.getName(), template.getTemplateHash(), createdAtAfter, pageable);
     }
 
     @Override

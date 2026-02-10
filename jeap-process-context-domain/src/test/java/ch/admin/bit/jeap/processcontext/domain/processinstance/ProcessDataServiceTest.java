@@ -32,7 +32,7 @@ class ProcessDataServiceTest {
 
     @Test
     void copyMessageDataToProcessData_noTemplateDefined() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTask();
 
         MessageData messageData = MessageData.builder()
                 .templateName(processInstance.getProcessTemplateName())
@@ -58,7 +58,7 @@ class ProcessDataServiceTest {
 
     @Test
     void copyMessageDataToProcessData_noEventNameMatches() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventData();
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithProcessData();
 
         MessageData messageData = MessageData.builder()
                 .templateName(processInstance.getProcessTemplateName())
@@ -83,7 +83,7 @@ class ProcessDataServiceTest {
 
     @Test
     void copyMessageDataToProcessData() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventData();
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithProcessData();
         String templateName = processInstance.getProcessTemplateName();
         // Simulate DB unique constraint: first save per (key, value, role) succeeds, duplicates return null
         Set<ProcessData> saved = new HashSet<>();
@@ -119,7 +119,7 @@ class ProcessDataServiceTest {
 
     @Test
     void copyMessageDataToProcessData_newDataForDifferentSourceEvent() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventData();
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithProcessData();
         String templateName = processInstance.getProcessTemplateName();
         when(processDataRepository.saveIfNew(any())).thenReturn(true);
 

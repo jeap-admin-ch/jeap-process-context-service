@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,8 +24,13 @@ interface ProcessDataJpaRepository extends JpaRepository<ProcessData, UUID> {
     @Modifying
     @Query(value = """
             insert into process_instance_process_data (id, process_instance_id, key_, value_, role, created_at)
-            values (:#{#pd.id},:#{#pd.processInstance.id},:#{#pd.key},:#{#pd.value},:#{#pd.role},:#{#pd.createdAt})
+            values (:id, :processInstanceId, :key, :value, :role, :createdAt)
             on conflict do nothing
             """, nativeQuery = true)
-    int saveIfNew(@Param("pd") ProcessData pd);
+    int saveIfNew(@Param("id") UUID id,
+                  @Param("processInstanceId") UUID processInstanceId,
+                  @Param("key") String key,
+                  @Param("value") String value,
+                  @Param("role") String role,
+                  @Param("createdAt") ZonedDateTime createdAt);
 }

@@ -50,10 +50,12 @@ public class ProcessInstanceDTOFactory {
                                                                MessageRepository messageRepository,
                                                                MessageReferenceRepository messageReferenceRepository,
                                                                RelationRepository relationRepository,
-                                                               ProcessDataRepository processDataRepository) {
+                                                               ProcessDataRepository processDataRepository,
+                                                               TaskInstanceRepository taskInstanceRepository) {
         List<MessageReferenceMessageDTO> messageReferences = messageReferenceRepository.findByProcessInstanceId(processInstance.getId());
         List<MessageDTO> messages = createMessages(messageReferences);
-        List<TaskInstanceDTO> tasks = createTasks(processInstance.getTasks(), messages, processInstance.getProcessTemplate().getName(), translateService, messageRepository);
+        List<TaskInstance> taskInstances = taskInstanceRepository.findByProcessInstanceId(processInstance.getProcessTemplate(), processInstance.getId());
+        List<TaskInstanceDTO> tasks = createTasks(taskInstances, messages, processInstance.getProcessTemplate().getName(), translateService, messageRepository);
         List<RelationDTO> relations = createRelations(relationRepository.findByProcessInstance(processInstance));
         List<ProcessRelationDTO> processRelations = createProcessRelations(processInstance, processRelationsService);
         List<ProcessDataDTO> processDataDTOList = createProcessDataFromDomainObjects(processDataRepository.findByProcessInstanceId(processInstance.getId()));

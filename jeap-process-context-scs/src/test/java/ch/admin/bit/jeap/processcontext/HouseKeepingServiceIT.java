@@ -243,7 +243,7 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
         CriteriaUpdate<ProcessInstance> criteriaUpdate = entityManager.getCriteriaBuilder().createCriteriaUpdate(ProcessInstance.class);
         Root<ProcessInstance> root = criteriaUpdate.from(ProcessInstance.class);
         criteriaUpdate.set("state", processState);
-        criteriaUpdate.set("modifiedAt", ZonedDateTime.now().minus(age));
+        criteriaUpdate.set("createdAt", ZonedDateTime.now().minus(age));
         criteriaUpdate.where(entityManager.getCriteriaBuilder().equal(root.get("id"), processInstance.getId()));
         entityManager.createQuery(criteriaUpdate).executeUpdate();
         processUpdateRepository.save(ProcessUpdate.messageReceived().originProcessId(originProcessId).messageName("test").messageReference(Generators.timeBasedEpochGenerator().generate()).idempotenceId("test").build());

@@ -32,6 +32,12 @@ class ProcessDataRepositoryImpl implements ProcessDataRepository {
 
     @Override
     public boolean saveIfNew(ProcessData processData) {
-        return processDataJpaRepository.saveIfNew(processData) > 0;
+        return processDataJpaRepository.saveIfNew(
+                processData.getId(),
+                processData.getProcessInstance().getId(),
+                processData.getKey(),
+                processData.getValue(),
+                processData.getRole(),
+                processData.getCreatedAt()) > 0;
     }
 }

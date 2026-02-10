@@ -27,24 +27,6 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
                     AND d.key = :processDataKey AND d.value = :processDataValue\
                     """;
 
-    String FIND_MESSAGE_REFERENCES_MESSAGE_DATA_QUERY = """
-                select r.id as messageReferenceId, d.key as messageDataKey, d.value as messageDataValue, d.role as messageDataRole
-                    from MessageReference r join r.processInstance p join events e on e.id = r.messageId join e.messageData d
-            where p.id = :processInstanceId and d.templateName = p.processTemplateName
-            """;
-
-    String FIND_MESSAGE_REFERENCES_RELATED_ORIGIN_TASK_IDS_QUERY = """
-                select r.id as messageReferenceId, oti.originTaskId as relatedOriginTaskId
-                from MessageReference r join r.processInstance p join events e on e.id = r.messageId join e.originTaskIds oti
-            where p.id = :processInstanceId and oti.templateName = p.processTemplateName
-            """;
-
-    String FIND_MESSAGE_REFERENCES_MESSAGES_QUERY = """
-                    select r.id as messageReferenceId, e.id as messageId, e.messageName as messageName, e.createdAt as messageReceivedAt, e.messageCreatedAt as messageCreatedAt, e.traceId as traceId
-                from MessageReference r join r.processInstance p join events e on e.id = r.messageId
-            where p.id = :processInstanceId
-            """;
-
     boolean existsByOriginProcessId(String originProcessId);
 
     Optional<ProcessInstance> findByOriginProcessId(String originProcessId);
@@ -69,17 +51,17 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
                                                                             @Param("processDataKey") String processDataKey,
                                                                             @Param("processDataValue") String processDataValue);
 
-    Slice<ProcessInstanceQueryResult> findIdOriginProcessIdByStateAndModifiedAtBefore(ProcessState state, ZonedDateTime modifiedBefore, Pageable pageable);
+    Slice<ProcessInstanceQueryResult> findIdOriginProcessIdByStateAndCreatedAtBefore(ProcessState state, ZonedDateTime modifiedBefore, Pageable pageable);
 
     @Query("""
             SELECT p.originProcessId FROM ProcessInstance p WHERE \
-            p.state <> 'COMPLETED' AND p.modifiedAt > :lastModifiedAfter AND \
+            p.state <> 'COMPLETED' AND p.createdAt > :createdAtAfter AND \
             p.processTemplateName = :templateName AND p.processTemplateHash <> :templateHash\
             """)
     Slice<String> findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
             @Param("templateName") String templatename,
             @Param("templateHash") String templateHash,
-            @Param("lastModifiedAfter") ZonedDateTime lastModifiedAfter,
+            @Param("createdAtAfter") ZonedDateTime createdAtAfter,
             Pageable pageable);
 
     @Query("SELECT DISTINCT p FROM ProcessInstance p, ProcessData d WHERE d.processInstance = p AND d.value = :processData")

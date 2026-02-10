@@ -3,7 +3,6 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance;
 import ch.admin.bit.jeap.processcontext.domain.PcsConfigProperties;
 import ch.admin.bit.jeap.processcontext.domain.StubMetricsListener;
 import ch.admin.bit.jeap.processcontext.domain.message.*;
-import ch.admin.bit.jeap.processcontext.domain.port.InternalMessageProducer;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationService;
@@ -46,7 +45,11 @@ class ProcessInstanceServiceTest {
     @Mock
     private ProcessInstanceRepository processInstanceRepository;
     @Mock
+    private TaskInstanceRepository taskInstanceRepository;
+    @Mock
     private TaskService taskService;
+    @Mock
+    private ProcessInstanceMigrationService processInstanceMigrationService;
     @Mock
     private ProcessDataService processDataService;
     @Mock
@@ -56,8 +59,6 @@ class ProcessInstanceServiceTest {
     @Mock
     private MessageReferenceRepository messageReferenceRepository;
     @Mock
-    private InternalMessageProducer internalMessageProducer;
-    @Mock
     private ProcessUpdateQueryRepository processUpdateQueryRepository;
     @Mock
     private ProcessUpdateRepository processUpdateRepository;
@@ -65,6 +66,8 @@ class ProcessInstanceServiceTest {
     private ProcessSnapshotService processSnapshotService;
     @Mock
     private RelationService relationService;
+    @Mock
+    private ProcessRelationRepository processRelationRepository;
     @Mock
     private PlatformTransactionManager transactionManager;
 
@@ -86,10 +89,11 @@ class ProcessInstanceServiceTest {
         lenient().doNothing().when(transactionManager).rollback(any());
 
         target = new ProcessInstanceService(
-                internalMessageProducer,
                 processUpdateQueryRepository,
                 processInstanceRepository,
+                taskInstanceRepository,
                 taskService,
+                processInstanceMigrationService,
                 processDataService,
                 processTemplateRepository,
                 messageRepository,
@@ -97,6 +101,7 @@ class ProcessInstanceServiceTest {
                 processUpdateRepository,
                 processSnapshotService,
                 relationService,
+                processRelationRepository,
                 processContextFactory,
                 transactions,
                 metricsListener,
@@ -133,7 +138,6 @@ class ProcessInstanceServiceTest {
                     ProcessInstance pi = invocation.getArgument(0);
                     // Simulate JPA behavior: clear transient fields and return the entity
                     clearTransientFields(pi);
-                    processContextRepositoryFacadeStub.setProcessInstance(pi);
                     return pi;
                 });
         when(messageReferenceRepository.save(any(MessageReference.class)))
@@ -199,10 +203,8 @@ class ProcessInstanceServiceTest {
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
-        // Verify a task was planned
-        assertThat(processInstance.getTasks()).hasSize(1);
-        assertThat(processInstance.getTasks().getFirst().getTaskTypeName()).isEqualTo("dynamicTask");
-        assertThat(processInstance.getTasks().getFirst().getState()).isEqualTo(TaskState.PLANNED);
+        // Verify a task was planned via the task service
+        verify(taskService).planDomainEventTask(eq(processInstance), eq(dynamicTaskType), any(), any(), any());
     }
 
     @Test
@@ -236,12 +238,9 @@ class ProcessInstanceServiceTest {
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
         // Two tasks should be planned (one for each origin task id)
-        assertThat(processInstance.getTasks()).hasSize(2);
-        Set<String> originTaskIds = Set.of(
-                processInstance.getTasks().get(0).getOriginTaskId(),
-                processInstance.getTasks().get(1).getOriginTaskId()
-        );
-        assertThat(originTaskIds).containsExactlyInAnyOrder("taskId1", "taskId2");
+        ArgumentCaptor<String> originTaskIdCaptor = ArgumentCaptor.forClass(String.class);
+        verify(taskService, times(2)).planDomainEventTask(eq(processInstance), eq(multiInstanceTaskType), originTaskIdCaptor.capture(), any(), any());
+        assertThat(originTaskIdCaptor.getAllValues()).containsExactlyInAnyOrder("taskId1", "taskId2");
     }
 
     @Test
@@ -275,7 +274,7 @@ class ProcessInstanceServiceTest {
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
         // No task should be planned due to condition returning false
-        assertThat(processInstance.getTasks()).isEmpty();
+        verify(taskService, never()).planDomainEventTask(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -307,10 +306,8 @@ class ProcessInstanceServiceTest {
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
-        // Observed task should be created in COMPLETED state
-        assertThat(processInstance.getTasks()).hasSize(1);
-        assertThat(processInstance.getTasks().getFirst().getTaskTypeName()).isEqualTo("observedTask");
-        assertThat(processInstance.getTasks().getFirst().getState()).isEqualTo(TaskState.COMPLETED);
+        // Observed task should be created via task service
+        verify(taskService).addObservationTask(processInstance, observedTaskType, message.getMessageId(), message.getMessageCreatedAt(), message.getId());
     }
 
     @Test
@@ -344,7 +341,7 @@ class ProcessInstanceServiceTest {
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
         // No task should be created due to condition returning false
-        assertThat(processInstance.getTasks()).isEmpty();
+        verify(taskService, never()).addObservationTask(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -412,9 +409,8 @@ class ProcessInstanceServiceTest {
 
         // Verify the correlated message was directly applied (message reference saved for both original and correlated message)
         verify(messageReferenceRepository, times(2)).save(any(MessageReference.class));
-        // Verify no ProcessUpdate was saved and no outdated event was produced
+        // Verify no ProcessUpdate was saved
         verify(processUpdateRepository, never()).save(any(ProcessUpdate.class));
-        verify(internalMessageProducer, never()).produceProcessContextOutdatedEventSynchronously(any());
     }
 
     @Test
@@ -446,7 +442,7 @@ class ProcessInstanceServiceTest {
     }
 
     @Test
-    void updateProcessState_staticTaskCompletedByDomainEvent_completesTaskAndProcess() {
+    void updateProcessState_staticTaskCompletedByDomainEvent_completesTask() {
         TaskType staticTask = TaskType.builder()
                 .name("staticTask")
                 .cardinality(TaskCardinality.SINGLE_INSTANCE)
@@ -462,14 +458,12 @@ class ProcessInstanceServiceTest {
         Message message = createMessage();
         ProcessUpdate processUpdate = createDomainEventUpdate(message);
 
-        // Create and start the process instance to create the static task
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
-        processInstance.start();
-        processContextRepositoryFacadeStub.setProcessInstance(processInstance);
 
-        // Verify the task was created
-        assertThat(processInstance.getTasks()).hasSize(1);
-        assertThat(processInstance.getTasks().getFirst().getState()).isEqualTo(TaskState.PLANNED);
+        // Create a planned task instance for the static task
+        TaskInstance plannedTask = TaskInstance.createInitialTaskInstance(staticTask, processInstance, ZonedDateTime.now());
+        when(taskInstanceRepository.getTaskInstancesInNonFinalStateOfTypes(processInstance.getProcessTemplate(), processInstance.getId(), Set.of("staticTask")))
+                .thenReturn(List.of(plannedTask));
 
         when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
                 .thenReturn(List.of(processUpdate));
@@ -482,10 +476,8 @@ class ProcessInstanceServiceTest {
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
-        // Task should be completed and process should be completed
-        assertThat(processInstance.getTasks()).hasSize(1);
-        assertThat(processInstance.getTasks().getFirst().getState()).isEqualTo(TaskState.COMPLETED);
-        assertThat(processInstance.getState()).isEqualTo(ProcessState.COMPLETED);
+        // Task should be evaluated for completion
+        verify(taskInstanceRepository).getTaskInstancesInNonFinalStateOfTypes(processInstance.getProcessTemplate(), processInstance.getId(), Set.of("staticTask"));
     }
 
     @Test
@@ -519,10 +511,8 @@ class ProcessInstanceServiceTest {
         Message message = createMessage();
         ProcessUpdate processUpdate = createDomainEventUpdate(message);
 
-        // Create process instance with old template and start it
+        // Create process instance with old template
         ProcessInstance processInstance = createProcessInstanceWithTemplate(oldTemplate);
-        processInstance.start();
-        assertThat(processInstance.getTasks()).hasSize(1);
 
         // Simulate loading from DB with new template (template hash changed)
         clearTransientFields(processInstance);
@@ -539,23 +529,200 @@ class ProcessInstanceServiceTest {
 
         target.updateProcessState(ORIGIN_PROCESS_ID);
 
-        // New task should have been planned by migration
-        assertThat(processInstance.getTasks()).hasSize(2);
-        Set<String> taskNames = Set.of(
-                processInstance.getTasks().get(0).getTaskTypeName(),
-                processInstance.getTasks().get(1).getTaskTypeName()
-        );
-        assertThat(taskNames).containsExactlyInAnyOrder("existingTask", "newTask");
+        // Migration service should have been called
+        verify(processInstanceMigrationService).applyTemplateMigrationIfChanged(processInstance);
+    }
+
+    @Test
+    void updateProcessState_matchingProcessRelationPattern_savesRelationViaRepository() {
+        ProcessRelationPattern pattern = ProcessRelationPattern.builder()
+                .name("myRelation")
+                .roleType(ProcessRelationRoleType.ORIGIN)
+                .originRole("originRole")
+                .targetRole("targetRole")
+                .visibility(ProcessRelationRoleVisibility.BOTH)
+                .source(ProcessRelationSource.builder()
+                        .messageName(DOMAIN_EVENT_NAME)
+                        .messageDataKey("dataKey")
+                        .build())
+                .build();
+        ProcessTemplate processTemplate = ProcessTemplate.builder()
+                .name(TEMPLATE_NAME)
+                .templateHash("hash")
+                .taskTypes(List.of(createStaticTaskType()))
+                .processRelationPatterns(List.of(pattern))
+                .build();
+        Message message = createMessage();
+        ProcessUpdate processUpdate = createDomainEventUpdate(message);
+        ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
+
+        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
+                .thenReturn(List.of(processUpdate));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
+        when(messageRepository.findById(message.getId()))
+                .thenReturn(Optional.of(message));
+        when(messageReferenceRepository.save(any(MessageReference.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        target.updateProcessState(ORIGIN_PROCESS_ID);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<ProcessRelation>> captor = ArgumentCaptor.forClass(List.class);
+        verify(processRelationRepository).saveAll(captor.capture());
+        List<ProcessRelation> savedRelations = captor.getValue();
+        assertThat(savedRelations).hasSize(1);
+        assertThat(savedRelations.getFirst().getName()).isEqualTo("myRelation");
+        assertThat(savedRelations.getFirst().getRelatedProcessId()).isEqualTo("dataValue");
+        assertThat(savedRelations.getFirst().getProcessInstance()).isSameAs(processInstance);
+    }
+
+    @Test
+    void updateProcessState_duplicateProcessRelation_doesNotSaveAgain() {
+        ProcessRelationPattern pattern = ProcessRelationPattern.builder()
+                .name("myRelation")
+                .roleType(ProcessRelationRoleType.ORIGIN)
+                .originRole("originRole")
+                .targetRole("targetRole")
+                .visibility(ProcessRelationRoleVisibility.BOTH)
+                .source(ProcessRelationSource.builder()
+                        .messageName(DOMAIN_EVENT_NAME)
+                        .messageDataKey("dataKey")
+                        .build())
+                .build();
+        ProcessTemplate processTemplate = ProcessTemplate.builder()
+                .name(TEMPLATE_NAME)
+                .templateHash("hash")
+                .taskTypes(List.of(createStaticTaskType()))
+                .processRelationPatterns(List.of(pattern))
+                .build();
+        Message message = createMessage();
+        ProcessUpdate processUpdate = createDomainEventUpdate(message);
+        ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
+
+        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
+                .thenReturn(List.of(processUpdate));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
+        when(messageRepository.findById(message.getId()))
+                .thenReturn(Optional.of(message));
+        when(messageReferenceRepository.save(any(MessageReference.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processRelationRepository.exists(eq(processInstance.getId()), any(ProcessRelation.class)))
+                .thenReturn(true);
+
+        target.updateProcessState(ORIGIN_PROCESS_ID);
+
+        verify(processRelationRepository, never()).saveAll(any());
+    }
+
+    @Test
+    void updateProcessState_noProcessRelationPatterns_doesNotSaveRelations() {
+        ProcessTemplate processTemplate = createSimpleProcessTemplate(); // has empty processRelationPatterns
+        Message message = createMessage();
+        ProcessUpdate processUpdate = createDomainEventUpdate(message);
+        ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
+
+        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
+                .thenReturn(List.of(processUpdate));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
+        when(messageRepository.findById(message.getId()))
+                .thenReturn(Optional.of(message));
+        when(messageReferenceRepository.save(any(MessageReference.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        target.updateProcessState(ORIGIN_PROCESS_ID);
+
+        verify(processRelationRepository, never()).saveAll(any());
+    }
+
+    @Test
+    void updateProcessState_processRelationPatternNonMatchingMessage_doesNotSaveRelations() {
+        ProcessRelationPattern pattern = ProcessRelationPattern.builder()
+                .name("myRelation")
+                .roleType(ProcessRelationRoleType.ORIGIN)
+                .originRole("originRole")
+                .targetRole("targetRole")
+                .visibility(ProcessRelationRoleVisibility.BOTH)
+                .source(ProcessRelationSource.builder()
+                        .messageName("otherEvent")
+                        .messageDataKey("dataKey")
+                        .build())
+                .build();
+        ProcessTemplate processTemplate = ProcessTemplate.builder()
+                .name(TEMPLATE_NAME)
+                .templateHash("hash")
+                .taskTypes(List.of(createStaticTaskType()))
+                .processRelationPatterns(List.of(pattern))
+                .build();
+        Message message = createMessage();
+        ProcessUpdate processUpdate = createDomainEventUpdate(message);
+        ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
+
+        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
+                .thenReturn(List.of(processUpdate));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
+        when(messageRepository.findById(message.getId()))
+                .thenReturn(Optional.of(message));
+        when(messageReferenceRepository.save(any(MessageReference.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        target.updateProcessState(ORIGIN_PROCESS_ID);
+
+        verify(processRelationRepository, never()).saveAll(any());
+    }
+
+    @Test
+    void updateProcessState_processRelationPatternNonMatchingDataKey_doesNotSaveRelations() {
+        ProcessRelationPattern pattern = ProcessRelationPattern.builder()
+                .name("myRelation")
+                .roleType(ProcessRelationRoleType.ORIGIN)
+                .originRole("originRole")
+                .targetRole("targetRole")
+                .visibility(ProcessRelationRoleVisibility.BOTH)
+                .source(ProcessRelationSource.builder()
+                        .messageName(DOMAIN_EVENT_NAME)
+                        .messageDataKey("nonExistentKey")
+                        .build())
+                .build();
+        ProcessTemplate processTemplate = ProcessTemplate.builder()
+                .name(TEMPLATE_NAME)
+                .templateHash("hash")
+                .taskTypes(List.of(createStaticTaskType()))
+                .processRelationPatterns(List.of(pattern))
+                .build();
+        Message message = createMessage();
+        ProcessUpdate processUpdate = createDomainEventUpdate(message);
+        ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
+
+        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
+                .thenReturn(List.of(processUpdate));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
+        when(messageRepository.findById(message.getId()))
+                .thenReturn(Optional.of(message));
+        when(messageReferenceRepository.save(any(MessageReference.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        target.updateProcessState(ORIGIN_PROCESS_ID);
+
+        verify(processRelationRepository, never()).saveAll(any());
     }
 
     // Helper methods to create test data
 
-    private ProcessTemplate createSimpleProcessTemplate() {
-        TaskType staticTask = TaskType.builder()
+    private static TaskType createStaticTaskType() {
+        return TaskType.builder()
                 .name("staticTask")
                 .cardinality(TaskCardinality.SINGLE_INSTANCE)
                 .lifecycle(TaskLifecycle.STATIC)
                 .build();
+    }
+
+    private ProcessTemplate createSimpleProcessTemplate() {
+        TaskType staticTask = createStaticTaskType();
         return ProcessTemplate.builder()
                 .name(TEMPLATE_NAME)
                 .templateHash("hash")
@@ -570,7 +737,6 @@ class ProcessInstanceServiceTest {
      */
     private ProcessInstance createProcessInstanceWithTemplate(ProcessTemplate processTemplate) {
         ProcessInstance processInstance = ProcessInstance.createProcessInstance(ORIGIN_PROCESS_ID, processTemplate, processContextFactory);
-        processContextRepositoryFacadeStub.setProcessInstance(processInstance);
         return processInstance;
     }
 
@@ -633,9 +799,6 @@ class ProcessInstanceServiceTest {
      */
     private void clearTransientFields(ProcessInstance processInstance) {
         ReflectionTestUtils.setField(processInstance, "processTemplate", null);
-        for (TaskInstance task : processInstance.getTasks()) {
-            ReflectionTestUtils.setField(task, "taskType", Optional.empty());
-        }
     }
 
 }

@@ -18,27 +18,27 @@ import static net.logstash.logback.argument.StructuredArguments.keyValue;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class ProcessInstanceMigrationService {
+public class ProcessInstanceMigrationTriggerService {
 
     private final ProcessTemplateRepository processTemplateRepository;
     private final ProcessInstanceRepository processInstanceRepository;
     private final InternalMessageProducer internalMessageProducer;
 
     /**
-     * Trigger a migration for all not-completed process instances with <pre>modifiedAt &gt; lastModifiedAfter</pre>
+     * Trigger a migration for all not-completed process instances with <pre>modifiedAt &gt; createdAtAfter</pre>
      * for which the template has been modified.
      */
     @Async
-    public void triggerMigrationForModifiedTemplates(ZonedDateTime lastModifiedAfter) {
+    public void triggerMigrationForModifiedTemplates(ZonedDateTime createdAtAfter) {
         processTemplateRepository.getAllTemplates()
-                .forEach(template -> triggerMigrationForTemplateIfModified(template, lastModifiedAfter));
+                .forEach(template -> triggerMigrationForTemplateIfModified(template, createdAtAfter));
     }
 
-    private void triggerMigrationForTemplateIfModified(ProcessTemplate template, ZonedDateTime lastModifiedAfter) {
+    private void triggerMigrationForTemplateIfModified(ProcessTemplate template, ZonedDateTime createdAtAfter) {
         Pageable pageable = Pageable.ofSize(10);
         while (pageable.isPaged()) {
             Slice<String> changedTemplateOriginProcessIds = processInstanceRepository
-                    .findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(lastModifiedAfter, template, pageable);
+                    .findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(createdAtAfter, template, pageable);
 
             changedTemplateOriginProcessIds.forEach(this::sendProcessOutdatedEvent);
 

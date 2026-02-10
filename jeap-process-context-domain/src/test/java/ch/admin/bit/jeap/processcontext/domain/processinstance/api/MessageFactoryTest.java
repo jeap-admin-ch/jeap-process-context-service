@@ -18,7 +18,7 @@ class MessageFactoryTest {
 
     @Test
     void createMessage() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTask();
         String templateName = processInstance.getProcessTemplateName();
         Set<String> taskNames = Set.of("taskId1", "taskId2");
         Message domainMessage = Message.messageBuilder()

@@ -12,8 +12,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 
 @ToString(onlyExplicitlyIncluded = true)
 public final class ProcessTemplate {
@@ -51,6 +50,8 @@ public final class ProcessTemplate {
 
     private final List<ProcessRelationPattern> processRelationPatterns;
 
+    private final Map<String, List<ProcessRelationPattern>> processRelationPatternsByMessageName;
+
     private final List<ProcessSnapshotCondition> processSnapshotConditions;
 
     private final boolean anyEventCorrelatedByProcessData;
@@ -84,7 +85,9 @@ public final class ProcessTemplate {
         } else {
             this.processCompletionConditions = List.copyOf(processCompletionConditions);
         }
-        this.processRelationPatterns = processRelationPatterns;
+        this.processRelationPatterns = Objects.requireNonNullElseGet(processRelationPatterns, List::of);
+        this.processRelationPatternsByMessageName = this.processRelationPatterns.stream()
+                .collect(groupingBy(pattern -> pattern.getSource().getMessageName()));
         this.processSnapshotConditions = processSnapshotConditions != null ? processSnapshotConditions : List.of();
         this.anyEventCorrelatedByProcessData = this.messageReferences.stream()
                 .anyMatch(ref -> ref.getCorrelatedByProcessData() != null);
@@ -143,11 +146,22 @@ public final class ProcessTemplate {
         return Collections.unmodifiableList(processRelationPatterns);
     }
 
+    public List<ProcessRelationPattern> getProcessRelationPatternsByMessageName(String messageName) {
+        return processRelationPatternsByMessageName.getOrDefault(messageName, List.of());
+    }
+
     public List<ProcessSnapshotCondition> getProcessSnapshotConditions() {
         return Collections.unmodifiableList(processSnapshotConditions);
     }
 
     public boolean isAnyEventCorrelatedByProcessData() {
         return anyEventCorrelatedByProcessData;
+    }
+
+    public Set<String> getTaskTypeNamesPotentiallyCompletedBy(String messageType) {
+        return taskTypes.stream()
+                .filter(type -> messageType.equals(type.getCompletedByDomainEvent()))
+                .map(TaskType::getName)
+                .collect(toSet());
     }
 }

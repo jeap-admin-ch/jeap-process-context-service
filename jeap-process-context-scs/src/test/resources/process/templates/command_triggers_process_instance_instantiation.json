@@ -4,16 +4,15 @@
     {
       "name": "mandatory",
       "completedBy": {
-        "domainEvent": "TestCreateProcessInstanceCommand"
+        "message": "TestCreateProcessInstanceCommand"
       }
     }
   ],
-  "events": [
+  "messages": [
     {
-      "eventName": "TestCreateProcessInstanceCommand",
+      "messageName": "TestCreateProcessInstanceCommand",
       "topicName": "topic.testcreateprocessinstance",
       "triggersProcessInstantiation": true
     }
-  ],
-  "processData": []
+  ]
 }

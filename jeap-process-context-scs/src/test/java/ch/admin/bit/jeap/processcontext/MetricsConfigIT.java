@@ -4,7 +4,6 @@ import ch.admin.bit.jeap.processcontext.adapter.objectstorage.S3ProcessSnapshotR
 import ch.admin.bit.jeap.processcontext.event.test1.SubjectReference;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1EventReferences;
-import ch.admin.bit.jeap.processcontext.event.test2.Test2Event;
 import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
 import ch.admin.bit.jeap.processcontext.testevent.Test2EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
@@ -101,10 +100,9 @@ class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
     }
 
     private void sendTest2Event(String s) {
-        Test2Event event2 = Test2EventBuilder.createForProcessId(originProcessId)
+        sendSync("topic.test2", Test2EventBuilder.createForProcessId(originProcessId)
                 .objectId(s)
-                .build();
-        sendSync("topic.test2", event2);
+                .build());
     }
 
     @Override

@@ -7,7 +7,6 @@ import com.fasterxml.uuid.Generators;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -32,7 +31,7 @@ public final class ProcessInstanceStubs {
                 .build();
     }
 
-    public static ProcessInstance createProcessWithSingleDynamicTaskInstance() {
+    public static ProcessInstance createProcessWithSingleDynamicTask() {
         TaskType taskType = TaskType.builder()
                 .name(singleTaskName)
                 .lifecycle(TaskLifecycle.DYNAMIC)
@@ -45,12 +44,10 @@ public final class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(List.of(taskType))
                 .build();
-        ProcessInstance processInstance = startProcessInstance(processTemplate);
-        processInstance.planDomainEventTask(taskType, "taskId", ZonedDateTime.now(), null);
-        return processInstance;
+        return startProcessInstance(processTemplate);
     }
 
-    static ProcessInstance createProcessWithSingleStaticTaskInstance() {
+    static ProcessInstance createProcessWithSingleStaticTask() {
         TaskType taskType = TaskType.builder()
                 .name(singleTaskName)
                 .lifecycle(TaskLifecycle.STATIC)
@@ -65,7 +62,7 @@ public final class ProcessInstanceStubs {
         return startProcessInstance(processTemplate);
     }
 
-    static ProcessInstance createProcessWithSingleAndDynamicTaskInstances() {
+    static ProcessInstance createProcessWithSingleAndDynamicTasks() {
         TaskType mandatoryTaskType = TaskType.builder()
                 .name(singleTaskName)
                 .lifecycle(TaskLifecycle.STATIC)
@@ -83,34 +80,6 @@ public final class ProcessInstanceStubs {
                 .taskTypes(List.of(mandatoryTaskType, dynamicTaskType))
                 .build();
         ProcessInstance processInstance = startProcessInstance(processTemplate);
-        processInstance.planDomainEventTask(dynamicTaskType, "taskId", ZonedDateTime.now(), null);
-        return processInstance;
-    }
-
-    static ProcessInstance createProcessWithSingleAndDynamicInstanceTasksBothNotYetInstantiated() {
-        TaskType mandatoryTaskType = TaskType.builder()
-                .name(singleTaskName)
-                .lifecycle(TaskLifecycle.STATIC)
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .plannedByDomainEvent("messageName")
-                .completedByDomainEvent("messageName2")
-                .build();
-        TaskType dynamicTaskType = TaskType.builder()
-                .name(dynamicTaskName)
-                .lifecycle(TaskLifecycle.DYNAMIC)
-                .cardinality(TaskCardinality.MULTI_INSTANCE)
-                .plannedByDomainEvent("messageName")
-                .completedByDomainEvent("messageName2")
-                .build();
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name("template")
-                .templateHash("hash")
-                .taskTypes(List.of(mandatoryTaskType, dynamicTaskType))
-                .build();
-        ProcessInstance processInstance = startProcessInstance(processTemplate);
-        processInstance.planDomainEventTask(mandatoryTaskType, "mandatory-id", ZonedDateTime.now(), null);
-        processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-1", ZonedDateTime.now(), null);
-        processInstance.planDomainEventTask(dynamicTaskType, "multiple-id-2", ZonedDateTime.now(), null);
         return processInstance;
     }
 
@@ -129,7 +98,7 @@ public final class ProcessInstanceStubs {
      *
      * </pre>
      */
-    public static ProcessInstance createProcessWithEventData() {
+    public static ProcessInstance createProcessWithProcessData() {
         TaskType firstTask = TaskType.builder()
                 .name(task1)
                 .lifecycle(TaskLifecycle.STATIC)
@@ -203,9 +172,6 @@ public final class ProcessInstanceStubs {
     private static ProcessInstance startProcessInstance(ProcessTemplate processTemplate) {
         ProcessContextRepositoryFacadeStub repositoryFacade = new ProcessContextRepositoryFacadeStub();
         ProcessContextFactory processContextFactory = new ProcessContextFactory(repositoryFacade);
-        ProcessInstance processInstance = ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
-        processInstance.start();
-        repositoryFacade.setProcessInstance(processInstance);
-        return processInstance;
+        return ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
     }
 }

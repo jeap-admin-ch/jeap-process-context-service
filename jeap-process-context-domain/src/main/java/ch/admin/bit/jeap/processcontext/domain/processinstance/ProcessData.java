@@ -56,6 +56,7 @@ public class ProcessData extends ImmutableDomainEntity {
         this.role = role;
     }
 
+    @Override
     public ZonedDateTime getCreatedAt() {
         return super.getCreatedAt();
     }

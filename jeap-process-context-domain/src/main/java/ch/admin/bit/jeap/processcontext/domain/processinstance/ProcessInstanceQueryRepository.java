@@ -46,10 +46,10 @@ public interface ProcessInstanceQueryRepository {
      */
     Set<String> findUncompletedProcessInstancesHavingProcessData(String processTemplateName, String processDataKey, String processDataValue, String processDataRole);
 
-    Slice<ProcessInstanceQueryResult> findProcessInstances(ProcessState state, ZonedDateTime modifiedAt, Pageable pageable);
+    Slice<ProcessInstanceQueryResult> findProcessInstances(ProcessState state, ZonedDateTime olderThan, Pageable pageable);
 
     Slice<String> findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
-            ZonedDateTime lastModifiedAfter, ProcessTemplate template, Pageable ofSize);
+            ZonedDateTime createdAtAfter, ProcessTemplate template, Pageable ofSize);
 
     /**
      * Get information about the process template associated with the process instance having the given origin process id.

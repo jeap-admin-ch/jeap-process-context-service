@@ -9,13 +9,13 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static lombok.AccessLevel.PACKAGE;
 import static lombok.AccessLevel.PROTECTED;
 
 @SuppressWarnings({"FieldMayBeFinal", "JpaDataSourceORMInspection"}) // JPA spec mandates non-final fields
@@ -26,7 +26,7 @@ public class TaskInstance extends MutableDomainEntity {
 
     @Id
     @NotNull
-    @Getter(PACKAGE)
+    @Getter
     private UUID id = Generators.timeBasedEpochGenerator().generate();
 
     @NotNull
@@ -34,6 +34,7 @@ public class TaskInstance extends MutableDomainEntity {
     @Getter
     private String taskTypeName;
 
+    @Setter
     @Transient
     @Getter
     private Optional<TaskType> taskType = Optional.empty();
@@ -49,10 +50,9 @@ public class TaskInstance extends MutableDomainEntity {
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "process_instance_id")
-    //@Getter(value = PACKAGE)
     private ProcessInstance processInstance;
 
-    ProcessInstance getProcessInstance() {
+    public ProcessInstance getProcessInstance() {
         return processInstance;
     }
 
@@ -116,20 +116,18 @@ public class TaskInstance extends MutableDomainEntity {
         completedAt = timestamp;
     }
 
-    void delete() {
-        state = TaskState.DELETED;
-    }
-
     public TaskType requireTaskType() {
         return this.getTaskType().orElseThrow(() -> TaskTypeException.createTaskTypeDeleted(this.getTaskTypeName()));
     }
 
     /**
-     * Set task type from template after re-loading the domain object from persistent state
+     * Set task type from template after re-loading the domain object from persistent state. Does nothing if the task
+     * type is already set, for example if the entity has not been re-loaded but is still attached to the persistence
+     * context and thus still has the task type set from before.
      */
-    void setTaskTypeFromTemplate(ProcessTemplate processTemplate) {
-        if (this.taskType.isPresent()) {
-            throw new IllegalStateException("Cannot set task type - already set for task " + taskTypeName + " in process " + processInstance.getOriginProcessId());
+    public void setTaskTypeFromTemplate(ProcessTemplate processTemplate) {
+        if (taskType.isPresent()) {
+            return;
         }
         taskType = processTemplate.getTaskTypeByName(taskTypeName);
     }
@@ -166,5 +164,4 @@ public class TaskInstance extends MutableDomainEntity {
         }
         return TaskWaitingToBeCompletedByMessage.of(this, taskType.get(), originTaskId);
     }
-
 }

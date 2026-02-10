@@ -23,6 +23,7 @@ class ProcessInstanceViewService {
     private final MessageReferenceRepository messageReferenceRepository;
     private final RelationRepository relationRepository;
     private final ProcessDataRepository processDataRepository;
+    private final TaskInstanceRepository taskInstanceRepository;
 
     public Optional<ProcessInstanceDTO> createDto(String originProcessId) {
         return repository.findByOriginProcessId(originProcessId)
@@ -31,7 +32,7 @@ class ProcessInstanceViewService {
     }
 
     private ProcessInstanceDTO createDtoFromProcessInstance(ProcessInstance p) {
-        return ProcessInstanceDTOFactory.createFromProcessInstance(p, translateService, processRelationsService, messageRepository, messageReferenceRepository, relationRepository, processDataRepository);
+        return ProcessInstanceDTOFactory.createFromProcessInstance(p, translateService, processRelationsService, messageRepository, messageReferenceRepository, relationRepository, processDataRepository, taskInstanceRepository);
     }
 
     private Optional<ProcessInstanceDTO> createDtoFromProcessSnapshot(String originProcessId) {

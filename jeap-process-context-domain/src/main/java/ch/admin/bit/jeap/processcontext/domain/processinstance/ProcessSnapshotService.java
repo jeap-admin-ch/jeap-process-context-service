@@ -35,6 +35,7 @@ public class ProcessSnapshotService {
     private final MessageReferenceRepository messageReferenceRepository;
     private final ProcessSnapshotEventProducer processSnapshotEventProducer;
     private final ProcessDataRepository processDataRepository;
+    private final TaskInstanceRepository taskInstanceRepository;
 
     @SuppressWarnings("java:S112")
     @PostConstruct
@@ -72,7 +73,8 @@ public class ProcessSnapshotService {
         }
         processSnapshot.setProcessData(processDataRepository.findByProcessInstanceId(processInstance.getId()).stream()
                 .map(ProcessSnapshotService::toProcessData).toList());
-        processSnapshot.setTasks(processInstance.getTasks().stream()
+        List<TaskInstance> taskInstances = taskInstanceRepository.findByProcessInstanceId(processInstance.getProcessTemplate(), processInstance.getId());
+        processSnapshot.setTasks(taskInstances.stream()
                 .map(task -> toTask(processInstance, task)).toList());
         List<ProcessRelationView> processRelations = processRelationsService.createProcessRelations(processInstance);
         processSnapshot.setProcessRelations(processRelations.stream()

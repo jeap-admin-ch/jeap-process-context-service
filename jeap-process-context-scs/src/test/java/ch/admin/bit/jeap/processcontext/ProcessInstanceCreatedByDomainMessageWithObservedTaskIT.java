@@ -1,17 +1,12 @@
 package ch.admin.bit.jeap.processcontext;
 
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.TaskState;
+import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceDTO;
 import ch.admin.bit.jeap.processcontext.event.test1.TestCreatingProcessInstanceAndTaskEvent;
 import ch.admin.bit.jeap.processcontext.testevent.TestCreatingProcessInstanceAndTaskEventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,14 +15,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ProcessInstanceCreatedByDomainMessageWithObservedTaskIT extends ProcessInstanceMockS3ITBase {
 
     private static final String PROCESS_TEMPLATE_NAME = "domainEventTriggersProcessAndTaskInstantiation";
-    @Autowired
-    private ProcessInstanceRepository processInstanceRepository;
 
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
     void testProcessInstantiationWithDomainEventAndCorrelation() {
-
-        assertThat(processInstanceRepository.findByOriginProcessId(originProcessId)).isNotPresent();
 
         // Send event that triggers the process instantiation and creates an observed task
         sendTestCreatingProcessInstanceAndTaskEvent();
@@ -37,11 +28,9 @@ class ProcessInstanceCreatedByDomainMessageWithObservedTaskIT extends ProcessIns
         // When the second event got correlated to the process it will complete the process
         assertProcessInstanceCompleted(originProcessId);
 
-        Optional<ProcessInstance> processInstance = processInstanceRepository.findByOriginProcessId(originProcessId);
-
-        assertThat(processInstance).isPresent();
-        assertThat(processInstance.get().getTasks()).hasSize(1);
-        assertThat(processInstance.get().getTasks().getFirst().getState()).isEqualTo(TaskState.COMPLETED);
+        ProcessInstanceDTO processInstanceDTO = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
+        assertThat(processInstanceDTO.getTasks()).hasSize(1);
+        assertThat(processInstanceDTO.getTasks().getFirst().getState()).isEqualTo("COMPLETED");
     }
 
     private void sendTestCreatingProcessInstanceAndTaskEvent() {

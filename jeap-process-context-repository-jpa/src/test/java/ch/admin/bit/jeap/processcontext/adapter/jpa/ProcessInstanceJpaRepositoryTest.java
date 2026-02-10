@@ -63,6 +63,8 @@ class ProcessInstanceJpaRepositoryTest {
     private ProcessInstanceRepository processInstanceRepository;
     @Autowired
     private MessageReferenceJpaRepository messageReferenceJpaRepository;
+    @Autowired
+    private TaskInstanceJpaRepository taskInstanceJpaRepository;
 
     private JpaRepositoryTestSupport jpaRepositoryTestSupport;
 
@@ -134,8 +136,6 @@ class ProcessInstanceJpaRepositoryTest {
 
         assertTrue(processInstanceReadOptional.isPresent());
         ProcessInstance persistedProcessInstanceRead = processInstanceReadOptional.get();
-        assertEquals(1, persistedProcessInstanceRead.getTasks().size());
-        assertEquals(processInstance.getTasks().getFirst().getOriginTaskId(), persistedProcessInstanceRead.getTasks().getFirst().getOriginTaskId());
         assertTrue(persistedProcessInstanceRead.getProcessCompletion().isEmpty());
     }
 
@@ -238,19 +238,17 @@ class ProcessInstanceJpaRepositoryTest {
         assertTrue(processInstanceReadOptional.isPresent());
         ProcessInstance persistedProcessInstanceRead = processInstanceReadOptional.get();
         assertEquals(3, processDataRepository.findByProcessInstanceId(persistedProcessInstanceRead.getId()).size());
-        assertEquals(1, persistedProcessInstanceRead.getTasks().size());
-        assertEquals(processInstance.getTasks().getFirst().getOriginTaskId(), persistedProcessInstanceRead.getTasks().getFirst().getOriginTaskId());
     }
 
     @Test
-    void findIdOriginProcessIdByStateAndModifiedAtBefore_processInstanceCompleted_processInstanceFound() {
+    void findIdOriginProcessIdByStateAndCreatedAtBefore_processInstanceCompleted_processInstanceFound() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository, processInstanceRepository, processDataRepository);
         ReflectionTestUtils.setField(processInstance, "state", ProcessState.COMPLETED);
         repository.saveAndFlush(processInstance);
 
         repository.saveAndFlush(ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository, processInstanceRepository, processDataRepository));
 
-        final Slice<ProcessInstanceQueryResult> completedProcessInstances = repository.findIdOriginProcessIdByStateAndModifiedAtBefore(ProcessState.COMPLETED, ZonedDateTime.now().plusDays(1), Pageable.ofSize(100));
+        final Slice<ProcessInstanceQueryResult> completedProcessInstances = repository.findIdOriginProcessIdByStateAndCreatedAtBefore(ProcessState.COMPLETED, ZonedDateTime.now().plusDays(1), Pageable.ofSize(100));
         assertEquals(1, completedProcessInstances.getNumberOfElements());
         final ProcessInstanceQueryResult processInstanceQueryResult = completedProcessInstances.iterator().next();
         assertEquals(processInstance.getId(), processInstanceQueryResult.getId());
@@ -258,39 +256,39 @@ class ProcessInstanceJpaRepositoryTest {
     }
 
     @Test
-    void findIdOriginProcessIdByStateAndModifiedAtBefore_processInstanceCompletedButNotOld_processInstanceNotFound() {
+    void findIdOriginProcessIdByStateAndCreatedAtBefore_processInstanceCompletedButNotOld_processInstanceNotFound() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository, processInstanceRepository, processDataRepository);
         ReflectionTestUtils.setField(processInstance, "state", ProcessState.COMPLETED);
         repository.saveAndFlush(processInstance);
 
         repository.saveAndFlush(ProcessInstanceStubs.createProcessWithEventDataProcessData(messageRepository, processInstanceRepository, processDataRepository));
 
-        final Slice<ProcessInstanceQueryResult> completedProcessInstances = repository.findIdOriginProcessIdByStateAndModifiedAtBefore(ProcessState.COMPLETED, ZonedDateTime.now().minusDays(1), Pageable.ofSize(100));
+        final Slice<ProcessInstanceQueryResult> completedProcessInstances = repository.findIdOriginProcessIdByStateAndCreatedAtBefore(ProcessState.COMPLETED, ZonedDateTime.now().minusDays(1), Pageable.ofSize(100));
         assertEquals(0, completedProcessInstances.getNumberOfElements());
     }
 
     @Test
     void findUncompletedProcessInstanceOriginIdsByTemplateHashChanged() {
         // Given three process instances:
-        // - Non-complete instance with modifiedAt now
-        // - Complete instance with modifiedAt now
-        // - Non-complete nstance with modifiedAt < 1 year old
+        // - Non-complete instance with createdAt now
+        // - Complete instance with createdAt now
+        // - Non-complete nstance with createdAt < 1 year old
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
         ProcessInstance completedProcessInstance = ProcessInstanceStubs.createCompletedProcessInstance();
         repository.saveAndFlush(completedProcessInstance);
         ProcessInstance oldProcessInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         repository.saveAndFlush(oldProcessInstance);
-        setModifiedAtToMinusOneYear(oldProcessInstance);
+        setCreatedAtToMinusOneYear(oldProcessInstance);
         ProcessTemplate template = processInstance.getProcessTemplate();
 
         // When retrieving all non-complete instances that are at most 1 day old
-        ZonedDateTime lastModifiedAfter = processInstanceSaved.getModifiedAt().minusDays(1);
+        ZonedDateTime createdAtAfter = processInstanceSaved.getCreatedAt().minusDays(1);
         Slice<String> results =
                 repository.findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
-                        template.getName(), "different-hash", lastModifiedAfter, Pageable.ofSize(5));
+                        template.getName(), "different-hash", createdAtAfter, Pageable.ofSize(5));
 
-        // Then expect only the now modified non-completed instance to be returned
+        // Then expect only the now created non-completed instance to be returned
         assertEquals(1, results.getNumberOfElements());
         assertEquals(processInstance.getOriginProcessId(), results.getContent().getFirst(),
                 "Only new non-completed process instance is found");
@@ -298,19 +296,20 @@ class ProcessInstanceJpaRepositoryTest {
         // When retrieving all non-complete instances that are at most 1 day old with an up-to-date-has
         Slice<String> sameHashResults =
                 repository.findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
-                        template.getName(), template.getTemplateHash(), lastModifiedAfter, Pageable.ofSize(5));
+                        template.getName(), template.getTemplateHash(), createdAtAfter, Pageable.ofSize(5));
         assertTrue(sameHashResults.isEmpty());
     }
 
-    private void setModifiedAtToMinusOneYear(ProcessInstance oldProcessInstance) {
+    private void setCreatedAtToMinusOneYear(ProcessInstance oldProcessInstance) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaUpdate<ProcessInstance> update = builder.createCriteriaUpdate(ProcessInstance.class);
         Root<ProcessInstance> root = update.from(ProcessInstance.class);
-        update.set("modifiedAt", ZonedDateTime.now().minusYears(1))
+        update.set("createdAt", ZonedDateTime.now().minusYears(1))
                 .where(builder.equal(root.get("id"), oldProcessInstance.getId()));
         entityManager.createQuery(update).executeUpdate();
         entityManager.flush();
     }
+
     @Test
     void existsByOriginProcessId() {
         ProcessInstance processInstance = ProcessInstanceStubs.createCompletedProcessInstance();
@@ -405,8 +404,10 @@ class ProcessInstanceJpaRepositoryTest {
 
     @Test
     void areAllTasksInFinalState_singleCompletedTask_expectTrue() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createCompletedProcessInstance();
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
+        saveTask(ProcessInstanceStubs.task, "origin-1", TaskState.COMPLETED, processInstanceSaved);
+        entityManager.flush();
 
         boolean result = repository.areAllTasksInFinalState(processInstanceSaved.getId());
 
@@ -418,6 +419,9 @@ class ProcessInstanceJpaRepositoryTest {
     void areAllTasksInFinalState_twoPlannedTasks_expectFalse() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoPlannedTaskInstances();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
+        saveTask(ProcessInstanceStubs.task, "origin-1", TaskState.PLANNED, processInstanceSaved);
+        saveTask(ProcessInstanceStubs.task2, "origin-2", TaskState.PLANNED, processInstanceSaved);
+        entityManager.flush();
 
         boolean result = repository.areAllTasksInFinalState(processInstanceSaved.getId());
 
@@ -427,8 +431,11 @@ class ProcessInstanceJpaRepositoryTest {
 
     @Test
     void areAllTasksInFinalState_twoTasksPlannedAndCompleted_expectFalse() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoTaskInstancesPlannedAndCompleted();
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoPlannedTaskInstances();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
+        saveTask(ProcessInstanceStubs.task, "origin-1", TaskState.PLANNED, processInstanceSaved);
+        saveTask(ProcessInstanceStubs.task2, "origin-2", TaskState.COMPLETED, processInstanceSaved);
+        entityManager.flush();
 
         boolean result = repository.areAllTasksInFinalState(processInstanceSaved.getId());
 
@@ -438,8 +445,11 @@ class ProcessInstanceJpaRepositoryTest {
 
     @Test
     void areAllTasksInFinalState_twoCompletedTasks_expectTrue() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoCompletedTaskInstances();
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoPlannedTaskInstances();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
+        saveTask(ProcessInstanceStubs.task, "origin-1", TaskState.COMPLETED, processInstanceSaved);
+        saveTask(ProcessInstanceStubs.task2, "origin-2", TaskState.COMPLETED, processInstanceSaved);
+        entityManager.flush();
 
         boolean result = repository.areAllTasksInFinalState(processInstanceSaved.getId());
 
@@ -449,8 +459,11 @@ class ProcessInstanceJpaRepositoryTest {
 
     @Test
     void areAllTasksInFinalState_twoFinalStateTasks_expectTrue() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoTaskInstancesNotRequiredAndDeleted();
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoPlannedTaskInstances();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
+        saveTask(ProcessInstanceStubs.task, "origin-1", TaskState.NOT_REQUIRED, processInstanceSaved);
+        saveTask(ProcessInstanceStubs.task2, "origin-2", TaskState.DELETED, processInstanceSaved);
+        entityManager.flush();
 
         boolean result = repository.areAllTasksInFinalState(processInstanceSaved.getId());
 
@@ -462,7 +475,6 @@ class ProcessInstanceJpaRepositoryTest {
     void areAllTasksInFinalState_noTasksExpectFalse() {
         ProcessInstance completedProcessInstance = ProcessInstanceStubs.createProcessWithoutTaskInstance();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(completedProcessInstance);
-        assertThat(processInstanceSaved.getTasks()).isEmpty();
 
         boolean result = repository.areAllTasksInFinalState(processInstanceSaved.getId());
 
@@ -591,6 +603,13 @@ class ProcessInstanceJpaRepositoryTest {
                 .traceId(traceId)
                 .build();
         return messageRepository.save(message);
+    }
+
+    private void saveTask(String name, String originTaskId, TaskState state, ProcessInstance processInstance) {
+        TaskInstance task = ProcessInstanceStubs.createTaskInstance(name, 0, originTaskId);
+        ReflectionTestUtils.setField(task, "processInstance", processInstance);
+        ReflectionTestUtils.setField(task, "state", state);
+        taskInstanceJpaRepository.save(task);
     }
 
 }

@@ -2,7 +2,6 @@ package ch.admin.bit.jeap.processcontext;
 
 import ch.admin.bit.jeap.processcontext.command.test.createprocessinstance.TestCreateProcessInstanceCommand;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
-import ch.admin.bit.jeap.processcontext.domain.tx.Transactions;
 import ch.admin.bit.jeap.processcontext.testevent.TestCreateProcessInstanceCommandBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
@@ -19,8 +18,6 @@ class ProcessInstanceCreatedByCommandIT extends ProcessInstanceMockS3ITBase {
     private static final String PROCESS_TEMPLATE_NAME = "commandTriggersProcessInstantiation";
     @Autowired
     private ProcessInstanceRepository processInstanceRepository;
-    @Autowired
-    private Transactions transactions;
 
     @Test
     @WithAuthentication("viewAndCreateRoleToken")

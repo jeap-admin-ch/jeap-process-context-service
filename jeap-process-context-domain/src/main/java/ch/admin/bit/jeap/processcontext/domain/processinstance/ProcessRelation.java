@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
+import ch.admin.bit.jeap.processcontext.domain.ImmutableDomainEntity;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationPattern;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationRoleType;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationRoleVisibility;
@@ -18,17 +19,16 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @Table(name="process_instance_process_relations")
 @NoArgsConstructor(access = PROTECTED, force = true) // for JPA
-public class ProcessRelation {
+public class ProcessRelation extends ImmutableDomainEntity {
 
     @Id
     @NotNull
     @EqualsAndHashCode.Exclude
     private UUID id = Generators.timeBasedEpochGenerator().generate();
 
-    @Setter(PACKAGE)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
@@ -38,47 +38,44 @@ public class ProcessRelation {
     @NotNull
     private String name;
 
-    @NonNull
+    @NotNull
     @Enumerated(EnumType.STRING)
     private ProcessRelationRoleType roleType;
 
-    @NonNull
+    @NotNull
     private String originRole;
 
-    @NonNull
+    @NotNull
     private String targetRole;
 
-    @NonNull
+    @NotNull
     @Enumerated(EnumType.STRING)
     private ProcessRelationRoleVisibility visibilityType;
 
-    @NonNull
+    @NotNull
     private String relatedProcessId;
 
-    @EqualsAndHashCode.Exclude
-    private ZonedDateTime createdAt;
-
     @Builder(access = PACKAGE)
-    private ProcessRelation(@NonNull String name,
+    private ProcessRelation(@NonNull ProcessInstance processInstance,
+                            @NonNull String name,
                             @NonNull ProcessRelationRoleType roleType,
                             @NonNull String originRole,
                             @NonNull String targetRole,
                             @NonNull ProcessRelationRoleVisibility visibilityTyp,
                             @NonNull String relatedProcessId) {
+        this.processInstance = processInstance;
         this.name = name;
         this.roleType = roleType;
         this.originRole = originRole;
         this.targetRole = targetRole;
         this.visibilityType = visibilityTyp;
         this.relatedProcessId = relatedProcessId;
+        this.createdAt = ZonedDateTime.now();
     }
 
-    void onPrePersist() {
-        createdAt = ZonedDateTime.now();
-    }
-
-    protected static ProcessRelation createMatchingProcessRelation(ProcessRelationPattern processRelationPattern, String relatedProcessId) {
+    protected static ProcessRelation createMatchingProcessRelation(ProcessInstance processInstance, ProcessRelationPattern processRelationPattern, String relatedProcessId) {
         return ProcessRelation.builder()
+                .processInstance(processInstance)
                 .name(processRelationPattern.getName())
                 .roleType(processRelationPattern.getRoleType())
                 .originRole(processRelationPattern.getOriginRole())

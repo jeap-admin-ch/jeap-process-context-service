@@ -31,7 +31,7 @@ class TaskInstanceDTOTest {
     @Test
     void create() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
-        TaskInstance taskInstance = processInstance.getTasks().getFirst();
+        TaskInstance taskInstance = ProcessInstanceStubs.createPlannedTaskInstance(processInstance);
 
         TranslateService translateService = mock(TranslateService.class);
         when(translateService.translateProcessTemplateName(anyString())).thenAnswer(invocation -> createLabels(invocation.getArgument(1)));

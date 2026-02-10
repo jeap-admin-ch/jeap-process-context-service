@@ -52,7 +52,6 @@ class ProcessInstanceRepositoryImplTest {
         Optional<ProcessInstance> processInstanceOptional = processInstanceRepository.findByOriginProcessId(originProcessId);
 
         assertTrue(processInstanceOptional.isPresent());
-        ProcessInstance processInstance = processInstanceOptional.get();
     }
 
     @Test

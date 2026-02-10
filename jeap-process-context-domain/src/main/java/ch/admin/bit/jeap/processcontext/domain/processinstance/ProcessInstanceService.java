@@ -2,9 +2,9 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
 import ch.admin.bit.jeap.processcontext.domain.PcsConfigProperties;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
+import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
-import ch.admin.bit.jeap.processcontext.domain.port.InternalMessageProducer;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationService;
@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static ch.admin.bit.jeap.processcontext.domain.processinstance.api.MessageFactory.createMessage;
+import static java.util.stream.Collectors.toSet;
 import static net.logstash.logback.argument.StructuredArguments.keyValue;
 
 @Component
@@ -36,10 +37,11 @@ import static net.logstash.logback.argument.StructuredArguments.keyValue;
 public class ProcessInstanceService {
     private static final String ORIGIN_PROCESS_ID = "originProcessId";
 
-    private final InternalMessageProducer internalMessageProducer;
     private final ProcessUpdateQueryRepository processUpdateQueryRepository;
     private final ProcessInstanceRepository processInstanceRepository;
+    private final TaskInstanceRepository taskInstanceRepository;
     private final TaskService taskService;
+    private final ProcessInstanceMigrationService processInstanceMigrationService;
     private final ProcessDataService processDataService;
     private final ProcessTemplateRepository processTemplateRepository;
     private final MessageRepository messageRepository;
@@ -47,6 +49,7 @@ public class ProcessInstanceService {
     private final ProcessUpdateRepository processUpdateRepository;
     private final ProcessSnapshotService processSnapshotService;
     private final RelationService relationService;
+    private final ProcessRelationRepository processRelationRepository;
     private final ProcessContextFactory processContextFactory;
     private final Transactions transactions;
     private final MetricsListener metricsListener;
@@ -58,7 +61,7 @@ public class ProcessInstanceService {
         ProcessInstance processInstance = ProcessInstance.createProcessInstance(originProcessId, processTemplate, processContextFactory);
         ProcessInstance managedEntity = processInstanceRepository.save(processInstance);
         managedEntity.onAfterLoadFromPersistentState(processTemplate, processContextFactory);
-        managedEntity.start();
+        planInitialTasks(managedEntity);
 
         log.info("Creating process {} with origin process ID {} from template {}", processInstance.getId(), originProcessId, processTemplateName);
         metricsListener.processInstanceCreated(processTemplateName);
@@ -67,6 +70,22 @@ public class ProcessInstanceService {
         countCompletionIfCompleted(processInstance, ProcessState.STARTED);
 
         return managedEntity;
+    }
+
+    /**
+     * Start the process instance by planning initial tasks as defined in the process template. Creates task instances
+     * for all task types that are defined to be planned at process start. As this method invokes
+     * {@link ProcessInstance#updateState()} internally, the process instance must be persisted first in case task or
+     * process completion conditions require access to persisted data.
+     */
+    private void planInitialTasks(ProcessInstance processInstance) {
+        List<TaskInstance> taskInstances = processInstance.getProcessTemplate().getTaskTypes().stream()
+                .filter(TaskType::isPlannedAtProcessStart)
+                .map(type -> TaskInstance.createInitialTaskInstance(type, processInstance, ZonedDateTime.now()))
+                .toList();
+        taskInstanceRepository.saveAll(taskInstances);
+        processInstanceRepository.flush();
+        processInstance.updateState();
     }
 
     @Timed(value = "jeap_pcs_update_migrate", description = "Migrate process template", percentiles = {0.5, 0.8, 0.95, 0.99})
@@ -108,7 +127,7 @@ public class ProcessInstanceService {
 
     private void applyTemplateMigrationsIfRequired(ProcessInstance processInstance) {
         ProcessState stateBeforeMigration = processInstance.getState();
-        Optional<List<TaskInstance>> listOfTasksPlannedByMigration = processInstance.applyTemplateMigrationIfChanged();
+        Optional<List<TaskInstance>> listOfTasksPlannedByMigration = processInstanceMigrationService.applyTemplateMigrationIfChanged(processInstance);
         if (listOfTasksPlannedByMigration.isPresent()) {
             List<TaskInstance> tasksPlannedByMigration = listOfTasksPlannedByMigration.get();
             // Evaluate if any of the tasks planned by the migration can be completed immediately because they are
@@ -262,9 +281,56 @@ public class ProcessInstanceService {
         // events received earlier
         evaluatePlannedTasksCompletedByExistingMessages(plannedDomainEventTasks);
         // Complete tasks completed by the current event
-        processInstance.evaluateCompletedTasks(messageReferenceMessageDTO);
-        processInstance.evaluateProcessRelations(message);
+        evaluateCompletedTasks(processInstance, messageReferenceMessageDTO);
+        evaluateProcessRelations(processInstance, message);
         processInstance.updateState();
+    }
+
+    private void evaluateProcessRelations(ProcessInstance processInstance, Message message) {
+        List<ProcessRelationPattern> patterns = processInstance.getProcessTemplate()
+                .getProcessRelationPatternsByMessageName(message.getMessageName());
+        if (patterns.isEmpty()) {
+            return;
+        }
+
+        Set<MessageData> messageDataSet = message.getMessageData(processInstance.getProcessTemplateName());
+        List<ProcessRelation> newRelations = new ArrayList<>();
+        for (ProcessRelationPattern pattern : patterns) {
+            String messageKey = pattern.getSource().getMessageDataKey();
+            for (MessageData messageData : messageDataSet) {
+                if (messageKey.equals(messageData.getKey())) {
+                    ProcessRelation processRelation = ProcessRelation.createMatchingProcessRelation(processInstance, pattern, messageData.getValue());
+                    if (!processRelationRepository.exists(processInstance.getId(), processRelation)) {
+                        newRelations.add(processRelation);
+                    }
+                }
+            }
+        }
+
+        if (!newRelations.isEmpty()) {
+            processRelationRepository.saveAll(newRelations);
+            log.debug("Saved {} new process relations for process instance {}", newRelations.size(), processInstance.getId());
+        }
+    }
+
+    private void evaluateCompletedTasks(ProcessInstance processInstance, MessageReferenceMessageDTO messageReference) {
+        // Make sure planned tasks are visible to the repository before querying for tasks to complete
+        processInstanceRepository.flush();
+
+        Set<String> taskTypesCompletedByDomainEvent = processInstance.getProcessTemplate().getTaskTypes().stream()
+                .filter(type -> messageReference.getMessageName().equals(type.getCompletedByDomainEvent()))
+                .map(TaskType::getName)
+                .collect(toSet());
+        if (taskTypesCompletedByDomainEvent.isEmpty()) {
+            return;
+        }
+
+        List<TaskInstance> openTaskInstances = taskInstanceRepository.getTaskInstancesInNonFinalStateOfTypes(
+                processInstance.getProcessTemplate(), processInstance.getId(), taskTypesCompletedByDomainEvent);
+        openTaskInstances.forEach(taskInstance -> taskInstance.evaluateIfCompleted(messageReference));
+
+        // Flush latest task state changes to tbe database
+        taskInstanceRepository.flush();
     }
 
     void evaluatePlannedTasksCompletedByExistingMessages(List<TaskInstance> plannedDomainEventTasks) {
@@ -281,60 +347,53 @@ public class ProcessInstanceService {
 
         // Check if any of these tasks can be completed now because the event has been received before
         taskService.completePlannedTasksByExistingMessages(tasksWaitingForCompletionByDomainEvent);
+        taskInstanceRepository.flush();
     }
 
     private List<TaskInstance> planDomainEventTasks(ProcessInstance processInstance, MessageReferenceMessageDTO messageReferenceMessageDTO, Message message) {
-        return processInstance.getProcessTemplate().getTaskTypes().stream()
+        List<TaskInstance> taskInstances = processInstance.getProcessTemplate().getTaskTypes().stream()
                 .filter(taskType -> message.getMessageName().equals(taskType.getPlannedByDomainEvent()))
                 .flatMap(taskType -> planDomainEventTasks(processInstance, messageReferenceMessageDTO, message, taskType))
+                .filter(Objects::nonNull)
                 .toList();
+        taskInstanceRepository.flush();
+        return taskInstances;
     }
 
     private Stream<TaskInstance> planDomainEventTasks(ProcessInstance processInstance, MessageReferenceMessageDTO messageReferenceMessageDTO, Message message, TaskType taskType) {
         TaskInstantiationCondition instantiationCondition = taskType.getInstantiationCondition();
         if (instantiationCondition == null || instantiationCondition.instantiate(createMessage(messageReferenceMessageDTO))) {
             if (taskType.getCardinality() == TaskCardinality.SINGLE_INSTANCE) {
-                TaskInstance plannedTask = planSingleInstanceDomainEventTaskIfNotExists(processInstance, messageReferenceMessageDTO, taskType, message.getMessageId(), message.getMessageCreatedAt(), message.getId());
-                return Stream.of(plannedTask);
+                return planSingleInstanceDomainEventTaskIfNotExists(processInstance, messageReferenceMessageDTO, taskType, message.getMessageId(), message.getMessageCreatedAt(), message.getId())
+                        .stream();
             } else {
                 return messageReferenceMessageDTO.getRelatedOriginTaskIds().stream()
-                        .map(originTaskId -> processInstance.planDomainEventTask(taskType, originTaskId, message.getMessageCreatedAt(), message.getId()));
+                        .flatMap(originTaskId -> taskService.planDomainEventTask(processInstance, taskType, originTaskId, message.getMessageCreatedAt(), message.getId()).stream());
             }
         }
         return Stream.empty();
     }
 
-    private TaskInstance planSingleInstanceDomainEventTaskIfNotExists(ProcessInstance processInstance, MessageReferenceMessageDTO eventReference, TaskType taskType, String eventId, ZonedDateTime timestamp, UUID messageId) {
-        List<TaskInstance> existingTaskInstancesForTaskType = processInstance.getTasks().stream()
-                .filter(task -> task.getTaskType().isPresent())
-                .filter(task -> task.getTaskType().get().equals(taskType)).toList();
+    private Optional<TaskInstance> planSingleInstanceDomainEventTaskIfNotExists(ProcessInstance processInstance, MessageReferenceMessageDTO eventReference, TaskType taskType, String eventId, ZonedDateTime timestamp, UUID messageId) {
         Set<String> relatedOriginTaskIds = eventReference.getRelatedOriginTaskIds();
         if (relatedOriginTaskIds.size() > 1) {
             throw TaskPlanningException.singleInstanceTaskMultipleIds(taskType, relatedOriginTaskIds);
         }
-
         String taskId = relatedOriginTaskIds.isEmpty() ? eventId : relatedOriginTaskIds.iterator().next();
-        if (!existingTaskInstancesForTaskType.isEmpty()) {
-            boolean isNewTaskId = existingTaskInstancesForTaskType.stream()
-                    .noneMatch(instance -> instance.getOriginTaskId().equals(taskId));
-            if (isNewTaskId) {
-                throw TaskPlanningException.createTaskAlreadyPlanned(taskId, taskType, existingTaskInstancesForTaskType);
-            }
-            return null;
-        }
-        return processInstance.planDomainEventTask(taskType, taskId, timestamp, messageId);
+        return taskService.planDomainEventTask(processInstance, taskType, taskId, timestamp, messageId);
     }
 
     private void completeObservationTasks(ProcessInstance processInstance, MessageReferenceMessageDTO messageReferenceMessageDTO, Message message) {
         processInstance.getProcessTemplate().getTaskTypes().stream()
                 .filter(taskType -> matchingObservationTask(message, taskType))
                 .forEach(taskType -> instantiateObservationTask(processInstance, messageReferenceMessageDTO, message, taskType));
+        taskInstanceRepository.flush();
     }
 
-    private static void instantiateObservationTask(ProcessInstance processInstance, MessageReferenceMessageDTO messageReferenceMessageDTO, Message message, TaskType taskType) {
+    private void instantiateObservationTask(ProcessInstance processInstance, MessageReferenceMessageDTO messageReferenceMessageDTO, Message message, TaskType taskType) {
         TaskInstantiationCondition instantiationCondition = taskType.getInstantiationCondition();
         if (instantiationCondition == null || instantiationCondition.instantiate(createMessage(messageReferenceMessageDTO))) {
-            processInstance.addObservationTask(taskType, message.getMessageId(), message.getMessageCreatedAt(), message.getId());
+            taskService.addObservationTask(processInstance, taskType, message.getMessageId(), message.getMessageCreatedAt(), message.getId());
         }
     }
 
@@ -384,7 +443,9 @@ public class ProcessInstanceService {
             }
         }
 
-        log.info("Found {} old messages in the db to correlate with this process instance", eventsToCorrelate.size());
+        if (!eventsToCorrelate.isEmpty()) {
+            log.info("Found {} old messages in the db to correlate with this process instance", eventsToCorrelate.size());
+        }
 
         for (Message message : eventsToCorrelate) {
             applyProcessUpdateAndReEvaluateProcessInstance(processInstance, message);

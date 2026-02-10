@@ -18,9 +18,7 @@ class ProcessContextFactoryTest {
 
     @Test
     void createProcessContext() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTaskInstance();
-        String templateName = processInstance.getProcessTemplateName();
-        Set<String> taskNames = Set.of("taskId1", "taskId2");
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTask();
         ReflectionTestUtils.setField(processInstance, "processCompletion", new ProcessCompletion(
                 ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion.SUCCEEDED, "all good", ZonedDateTime.now()));
 

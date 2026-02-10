@@ -42,6 +42,7 @@ class ProcessInstanceDTOFactoryTest {
     private TranslateService translateService;
     private RelationRepository relationRepository;
     private ProcessDataRepository processDataRepository;
+    private TaskInstanceRepository taskInstanceRepository;
 
     @BeforeEach
     void setUp() {
@@ -50,6 +51,7 @@ class ProcessInstanceDTOFactoryTest {
         translateService = mock(TranslateService.class);
         relationRepository = mock(RelationRepository.class);
         processDataRepository = mock(ProcessDataRepository.class);
+        taskInstanceRepository = mock(TaskInstanceRepository.class);
         when(translateService.translateUserDataKey(anyString())).thenAnswer(invocation -> createLabels(invocation.getArgument(0)));
         when(translateService.translateUserDataKey(anyString(), anyString())).thenAnswer(invocation -> createLabels(invocation.getArgument(1)));
         when(translateService.translateUserDataKey(anyString(), eq(null))).thenAnswer(invocation -> createLabels(invocation.getArgument(0)));
@@ -81,7 +83,7 @@ class ProcessInstanceDTOFactoryTest {
         when(processDataRepository.findByProcessInstanceId(processInstance.getId())).thenReturn(processData);
         ReflectionTestUtils.setField(processInstance, "processCompletion", new ProcessCompletion(
                 ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion.SUCCEEDED, "all good", ZonedDateTime.now()));
-        TaskInstance expectedTask = processInstance.getTasks().getFirst();
+        TaskInstance expectedTask = ProcessInstanceStubs.createPlannedTaskInstance(processInstance);
         ReflectionTestUtils.setField(expectedTask, "plannedBy",  messages.getFirst().getId());
         ReflectionTestUtils.setField(expectedTask, "completedBy",  messages.get(1).getId());
 
@@ -115,9 +117,10 @@ class ProcessInstanceDTOFactoryTest {
             messageReferenceMessageDTOs.add(toMessageReferenceDTO(uuidGenerator, templateName, message));
         }
         when(messageReferenceRepository.findByProcessInstanceId(processInstance.getId())).thenReturn(messageReferenceMessageDTOs);
+        when(taskInstanceRepository.findByProcessInstanceId(processInstance.getProcessTemplate(), processInstance.getId())).thenReturn(List.of(expectedTask));
 
         ProcessInstanceDTO processInstanceDTO = ProcessInstanceDTOFactory
-                .createFromProcessInstance(processInstance, translateService, processRelationsService, messageRepository, messageReferenceRepository, relationRepository, processDataRepository);
+                .createFromProcessInstance(processInstance, translateService, processRelationsService, messageRepository, messageReferenceRepository, relationRepository, processDataRepository, taskInstanceRepository);
 
         assertEquals(processInstance.getState().name(), processInstanceDTO.getState());
         assertEquals(processInstance.getOriginProcessId(), processInstanceDTO.getOriginProcessId());

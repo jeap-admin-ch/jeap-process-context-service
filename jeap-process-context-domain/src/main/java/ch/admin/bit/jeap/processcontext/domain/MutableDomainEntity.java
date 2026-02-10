@@ -9,11 +9,10 @@ import lombok.Getter;
 import java.time.ZonedDateTime;
 
 @MappedSuperclass
-@SuppressWarnings({"java:S1068", "findbugs:URF_UNREAD_FIELD"}) // modifiedAt are never read, only used by JPA
 public abstract class MutableDomainEntity extends ImmutableDomainEntity {
 
     @Getter(value = AccessLevel.PROTECTED)
-    private ZonedDateTime modifiedAt;
+    protected ZonedDateTime modifiedAt;
 
     @SuppressWarnings("unused")
     @Version

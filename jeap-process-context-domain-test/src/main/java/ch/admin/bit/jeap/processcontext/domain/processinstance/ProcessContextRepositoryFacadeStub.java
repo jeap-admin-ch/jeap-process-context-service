@@ -9,15 +9,15 @@ import java.util.UUID;
 
 public class ProcessContextRepositoryFacadeStub implements ProcessContextRepositoryFacade {
 
-    private ProcessInstance processInstance;
+    private boolean allTasksInFinalState = false;
 
     @Override
     public boolean areAllTasksInFinalState(UUID processInstanceId) {
-        if (processInstance == null) {
-            return false;
-        }
-        return processInstance.getTasks().stream()
-                .allMatch(task -> task.getState().isFinalState());
+        return allTasksInFinalState;
+    }
+
+    public void setAllTasksInFinalState(boolean allTasksInFinalState) {
+        this.allTasksInFinalState = allTasksInFinalState;
     }
 
     @Override
@@ -67,9 +67,5 @@ public class ProcessContextRepositoryFacadeStub implements ProcessContextReposit
 
     private static UnsupportedOperationException unsupported() {
         return new UnsupportedOperationException("Not supported in stub");
-    }
-
-    public void setProcessInstance(ProcessInstance processInstance) {
-        this.processInstance = processInstance;
     }
 }

@@ -8,7 +8,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -26,7 +29,7 @@ public class ProcessRelationsService {
      * 2. Create ProcessRelationViews from other ProcessInstances where the processInstanceId is stored.
      */
     public List<ProcessRelationView> createProcessRelations(ProcessInstance processInstance) {
-        Set<ProcessRelation> processRelations = processInstance.getProcessRelations();
+        List<ProcessRelation> processRelations = processRelationRepository.findAllByProcessInstanceId(processInstance.getId());
         List<ProcessRelationView> processRelationViewList =
                 new ArrayList<>(processRelations.stream()
                         .filter(processRelation -> processRelation.getVisibilityType() != ProcessRelationRoleVisibility.TARGET)
@@ -44,7 +47,7 @@ public class ProcessRelationsService {
      */
     private List<ProcessRelationView> findExternalProcessRelations(String originProcessId) {
 
-        List<ProcessRelation> processRelationList = this.processRelationRepository.findByRelatedProcessId(originProcessId);
+        List<ProcessRelation> processRelationList = this.processRelationRepository.findAllByRelatedProcessId(originProcessId);
         return processRelationList.stream()
                 // Take only these processRelation, which have the visibility BOTH or TARGET
                 .filter(processRelation -> processRelation.getVisibilityType() != ProcessRelationRoleVisibility.ORIGIN)

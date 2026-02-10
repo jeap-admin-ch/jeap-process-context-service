@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.processcontext;
 
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceQueryRepository;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.migration.ProcessInstanceMigrationService;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.migration.ProcessInstanceMigrationTriggerService;
 import ch.admin.bit.jeap.processcontext.domain.tx.Transactions;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
 import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
@@ -21,7 +21,7 @@ import static org.awaitility.Awaitility.await;
 class ProcessInstanceTemplateMigrationIT extends ProcessInstanceMockS3ITBase {
 
     @Autowired
-    private ProcessInstanceMigrationService processInstanceMigrationService;
+    private ProcessInstanceMigrationTriggerService processInstanceMigrationTriggerService;
     @Autowired
     private EntityManager entityManager;
     @Autowired
@@ -44,7 +44,7 @@ class ProcessInstanceTemplateMigrationIT extends ProcessInstanceMockS3ITBase {
                 .executeUpdate());
 
         // Trigger migration for process instances with changed template hash
-        processInstanceMigrationService.triggerMigrationForModifiedTemplates(ZonedDateTime.now().minusYears(1));
+        processInstanceMigrationTriggerService.triggerMigrationForModifiedTemplates(ZonedDateTime.now().minusYears(1));
 
         // Wait until migration has been applied (detected by hash updated after migrations have been applied)
         String expectedHash = processTemplateRepository.findByName(processTemplateName).orElseThrow().getTemplateHash();
