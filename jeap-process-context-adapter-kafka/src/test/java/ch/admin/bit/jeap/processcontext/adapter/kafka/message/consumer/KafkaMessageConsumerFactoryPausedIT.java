@@ -3,11 +3,9 @@ package ch.admin.bit.jeap.processcontext.adapter.kafka.message.consumer;
 import ch.admin.bit.jeap.messaging.kafka.test.KafkaIntegrationTestBase;
 import ch.admin.bit.jeap.processcontext.adapter.test.kafka.config.TestApp;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageReceiver;
-import ch.admin.bit.jeap.processcontext.domain.processevent.ProcessEventService;
-import ch.admin.bit.jeap.processcontext.domain.port.InternalMessageProducer;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
-import org.junit.jupiter.api.BeforeEach;
+import ch.admin.bit.jme.test.JmeSimpleTestEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -15,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.listener.CommonErrorHandler;
-import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -29,7 +26,6 @@ import static org.mockito.Mockito.*;
 @SpringBootTest(
         properties = {
                 "jeap.processcontext.kafka.message-consumer-paused=true",
-                "jeap.processcontext.kafka.topic.process-changed-internal=changed",
                 "jeap.processcontext.kafka.topic.process-outdated-internal=outdated",
                 "jeap.processcontext.kafka.topic.process-snapshot-created=process-snapshot-created",
                 "jeap.messaging.kafka.consume-without-contract-allowed=true",
@@ -53,15 +49,7 @@ class KafkaMessageConsumerFactoryPausedIT extends KafkaIntegrationTestBase {
     @MockitoBean
     protected ProcessInstanceService processInstanceService;
     @MockitoBean
-    protected ProcessEventService processEventService;
-    @MockitoBean
     protected ProcessTemplateRepository processTemplateRepository;
-
-    @BeforeEach
-    void waitForKafkaListener() {
-        registry.getListenerContainers()
-                .forEach(c -> ContainerTestUtils.waitForAssignment(c, 1));
-    }
 
     @Test
     void whenEventReceivedConsumerIsNotAutoStarted_makeSureItIsPaused() {
@@ -71,7 +59,7 @@ class KafkaMessageConsumerFactoryPausedIT extends KafkaIntegrationTestBase {
         kafkaMessageConsumerFactory.startConsumer(TEST_DOMAIN_EVENT_TOPIC, "message1", null, recv);
 
         // When: Produce a message on the topic where no consumer should be active
-        sendSync(TEST_DOMAIN_EVENT_TOPIC, KafkaMessageConsumerFactoryIT.createDomainEvent());
+        sendSync(TEST_DOMAIN_EVENT_TOPIC, createDomainEvent());
 
         // Then: Make sure the message is not received, and the consumer is not active
         assertThat(messageReceived)
@@ -88,5 +76,13 @@ class KafkaMessageConsumerFactoryPausedIT extends KafkaIntegrationTestBase {
         verify(errorHandlerMock, never()).handleBatch(any(), any(), any(), any(), any());
         verify(errorHandlerMock, never()).handleRemaining(any(), any(), any(), any());
         verify(errorHandlerMock, never()).handleOtherException(any(), any(), any(), anyBoolean());
+    }
+
+    private static JmeSimpleTestEvent createDomainEvent() {
+        return JmeSimpleTestEventBuilder.create()
+                .idempotenceId("idempotence-id")
+                .message("test")
+                .serviceName("service-name")
+                .build();
     }
 }

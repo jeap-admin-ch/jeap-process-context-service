@@ -33,7 +33,6 @@ class ProcessContextKafkaConfigurationTest {
             assertTrue(configuration.getFilters().isEmpty());
         }
 
-        @SuppressWarnings("unchecked")
         @Test
         @DisplayName("binds filters correctly from configuration properties")
         @SuppressWarnings("unchecked")

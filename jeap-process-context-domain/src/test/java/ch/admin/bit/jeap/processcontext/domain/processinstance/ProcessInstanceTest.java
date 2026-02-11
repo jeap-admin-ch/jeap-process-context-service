@@ -38,7 +38,7 @@ class ProcessInstanceTest {
     }
 
     @Test
-    void onAfterLoadFromPersistentState() throws Exception {
+    void onAfterLoadFromPersistentState() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTask();
         ProcessTemplate processTemplate = processInstance.getProcessTemplate();
         ProcessContextRepositoryFacadeStub repositoryFacade = new ProcessContextRepositoryFacadeStub();
@@ -54,7 +54,7 @@ class ProcessInstanceTest {
     /**
      * Simulate empty template properties after loading the domain object from persistent state
      */
-    private static void onAfterLoadFromPersistentStateToNull(ProcessInstance processInstance) throws Exception {
+    private static void onAfterLoadFromPersistentStateToNull(ProcessInstance processInstance) {
         ReflectionTestUtils.setField(processInstance, "processTemplate", null);
         assertNull(processInstance.getProcessTemplate());
     }

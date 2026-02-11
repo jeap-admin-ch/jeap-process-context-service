@@ -736,8 +736,7 @@ class ProcessInstanceServiceTest {
      * The processContextFactory from the service setup is used.
      */
     private ProcessInstance createProcessInstanceWithTemplate(ProcessTemplate processTemplate) {
-        ProcessInstance processInstance = ProcessInstance.createProcessInstance(ORIGIN_PROCESS_ID, processTemplate, processContextFactory);
-        return processInstance;
+        return ProcessInstance.createProcessInstance(ORIGIN_PROCESS_ID, processTemplate, processContextFactory);
     }
 
     private Message createMessage() {
