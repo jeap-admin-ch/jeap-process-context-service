@@ -5,7 +5,6 @@ import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceSe
 import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessContextOutdatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -19,7 +18,6 @@ public class ProcessContextOutdatedEventConsumer {
     private final ProcessInstanceService processInstanceService;
 
     @KafkaListener(groupId = "${spring.application.name}-event-received",
-            autoStartup = "${jeap.processcontext.process-updates.auto-start:true}",
             topics = TopicConfiguration.PROCESS_OUTDATED_TOPIC_NAME)
     public void consumeProcessContextUpdatedEvent(final ProcessContextOutdatedEvent event, Acknowledgment ack) {
         String originProcessId = event.getProcessId();

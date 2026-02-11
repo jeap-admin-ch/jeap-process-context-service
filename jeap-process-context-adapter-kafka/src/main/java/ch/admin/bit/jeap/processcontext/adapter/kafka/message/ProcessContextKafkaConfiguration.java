@@ -1,4 +1,4 @@
-package ch.admin.bit.jeap.processcontext.adapter.kafka.message.filter;
+package ch.admin.bit.jeap.processcontext.adapter.kafka.message;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,8 +10,9 @@ import java.util.Map;
 @Configuration
 @ConfigurationProperties(prefix = "jeap.processcontext.kafka")
 @Data
-public class MessageFiltersConfiguration {
+public class ProcessContextKafkaConfiguration {
 
     Map<String, String> filters = new HashMap<>();
 
+    boolean messageConsumerPaused = false;
 }

@@ -55,7 +55,7 @@ class KafkaMessageConsumerFactoryIT extends KafkaAdapterIntegrationTestBase {
         assertEquals(event.getIdentity().getId(), receivedEvent.get().getIdentity().getId());
     }
 
-    private static AvroMessage createDomainEvent() {
+    static AvroMessage createDomainEvent() {
         return ProcessInstanceCreatedEventBuilder.create()
                 .processName("process")
                 .systemName("TEST")

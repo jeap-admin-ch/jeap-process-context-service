@@ -4,8 +4,8 @@ import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
 import ch.admin.bit.jeap.messaging.kafka.spring.JeapKafkaBeanNames;
+import ch.admin.bit.jeap.processcontext.adapter.kafka.message.ProcessContextKafkaConfiguration;
 import ch.admin.bit.jeap.processcontext.adapter.kafka.message.filter.MessageFilterConfigurationException;
-import ch.admin.bit.jeap.processcontext.adapter.kafka.message.filter.MessageFiltersConfiguration;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageReceiver;
 import ch.admin.bit.jeap.processcontext.domain.port.MessageConsumerFactory;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageFilter;
@@ -37,30 +37,35 @@ public class KafkaMessageConsumerFactory implements MessageConsumerFactory {
 
     private final List<ConcurrentMessageListenerContainer<?, ?>> containers = new CopyOnWriteArrayList<>();
 
-    private final MessageFiltersConfiguration messageFiltersConfiguration;
+    private final ProcessContextKafkaConfiguration processContextKafkaConfiguration;
 
-    public KafkaMessageConsumerFactory(@Value("${spring.application.name}") String appName, KafkaProperties kafkaProperties, BeanFactory beanFactory, MessageFiltersConfiguration messageFiltersConfiguration) {
+    public KafkaMessageConsumerFactory(@Value("${spring.application.name}") String appName, KafkaProperties kafkaProperties, BeanFactory beanFactory, ProcessContextKafkaConfiguration processContextKafkaConfiguration) {
         this.appName = appName;
         this.kafkaProperties = kafkaProperties;
         this.beanFactory = beanFactory;
         this.jeapKafkaBeanNames = new JeapKafkaBeanNames(kafkaProperties.getDefaultClusterName());
-        this.messageFiltersConfiguration = messageFiltersConfiguration;
+        this.processContextKafkaConfiguration = processContextKafkaConfiguration;
     }
 
     @Override
     public void startConsumer(String topicName, String messageName, String clusterName, MessageReceiver messageReceiver) {
+        if (processContextKafkaConfiguration.isMessageConsumerPaused()) {
+            log.info("Message consumer is paused via configuration, skipping consumer start for message '{}' on topic '{}'", messageName, topicName);
+            return;
+        }
+
         if (!StringUtils.hasText(clusterName)) {
             clusterName = kafkaProperties.getDefaultClusterName();
         }
 
-        log.info("Starting domain event listener for event '{}' on topic '{}' on cluster '{}'", messageName, topicName, clusterName);
+        log.info("Starting message consumer for message '{}' on topic '{}' on cluster '{}'", messageName, topicName, clusterName);
 
-        KafkaMessageListener listener = new KafkaMessageListener(messageName, messageReceiver, getMessageFilterInstanceForMessageName(messageName, messageFiltersConfiguration));
+        KafkaMessageListener listener = new KafkaMessageListener(messageName, messageReceiver, getMessageFilterInstanceForMessageName(messageName, processContextKafkaConfiguration));
         startConsumer(topicName, messageName, clusterName, listener);
     }
 
-    private MessageFilter<AvroMessage> getMessageFilterInstanceForMessageName(String messageName, MessageFiltersConfiguration messageFiltersConfiguration) {
-        String className = messageFiltersConfiguration.getFilters().get(messageName);
+    private MessageFilter<AvroMessage> getMessageFilterInstanceForMessageName(String messageName, ProcessContextKafkaConfiguration processContextKafkaConfiguration) {
+        String className = processContextKafkaConfiguration.getFilters().get(messageName);
         if (StringUtils.hasText(className)) {
             log.info("Found message filter for message type '{}': {}", messageName, className);
             return newMessageFilterInstance(className);

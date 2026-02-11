@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.adapter.kafka.message.filter;
 
+import ch.admin.bit.jeap.processcontext.adapter.kafka.message.ProcessContextKafkaConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -13,13 +14,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-class MessageFiltersConfigurationTest {
+class ProcessContextKafkaConfigurationTest {
 
-    private MessageFiltersConfiguration configuration;
+    private ProcessContextKafkaConfiguration configuration;
 
     @BeforeEach
     void setUp() {
-        configuration = new MessageFiltersConfiguration();
+        configuration = new ProcessContextKafkaConfiguration();
     }
 
     @Nested
@@ -34,6 +35,7 @@ class MessageFiltersConfigurationTest {
 
         @Test
         @DisplayName("binds filters correctly from configuration properties")
+        @SuppressWarnings("unchecked")
         void bindsFiltersCorrectlyFromConfigurationProperties() {
             Map<String, String> properties = Map.of(
                     "jeap.processcontext.kafka.filters.filter1", "value1",

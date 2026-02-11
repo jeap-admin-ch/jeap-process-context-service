@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "jeap.processcontext.kafka.message-consumer-paused",
+      "type": "java.lang.Boolean",
+      "description": "When set to true, the Kafka listeners for incoming events will be paused, effectively drying out internal processing until all pending process updates haven been processed.",
+      "defaultValue": false
+    }
+  ]
+}

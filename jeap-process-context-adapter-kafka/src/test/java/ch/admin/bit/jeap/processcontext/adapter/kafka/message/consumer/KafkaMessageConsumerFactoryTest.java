@@ -1,8 +1,8 @@
 package ch.admin.bit.jeap.processcontext.adapter.kafka.message.consumer;
 
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
+import ch.admin.bit.jeap.processcontext.adapter.kafka.message.ProcessContextKafkaConfiguration;
 import ch.admin.bit.jeap.processcontext.adapter.kafka.message.filter.MessageFilterConfigurationException;
-import ch.admin.bit.jeap.processcontext.adapter.kafka.message.filter.MessageFiltersConfiguration;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageReceiver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ class KafkaMessageConsumerFactoryTest {
     private KafkaProperties kafkaProperties;
 
     @Mock
-    private MessageFiltersConfiguration messageFiltersConfiguration;
+    private ProcessContextKafkaConfiguration processContextKafkaConfiguration;
 
     @BeforeEach
     void setup(){
@@ -47,7 +47,7 @@ class KafkaMessageConsumerFactoryTest {
         when(mockedContainer.getContainerProperties()).thenReturn(mock(ContainerProperties.class));
         when(beanFactory.getBean("kafkaListenerContainerFactory")).thenReturn(mockedContainerFactory);
 
-        KafkaMessageConsumerFactory factory = new KafkaMessageConsumerFactory("appName", kafkaProperties, beanFactory, messageFiltersConfiguration);
+        KafkaMessageConsumerFactory factory = new KafkaMessageConsumerFactory("appName", kafkaProperties, beanFactory, processContextKafkaConfiguration);
 
         assertDoesNotThrow(() -> factory.startConsumer("topicName", "messageName", null, mock(MessageReceiver.class)));
     }
@@ -60,14 +60,14 @@ class KafkaMessageConsumerFactoryTest {
         when(mockedContainer.getContainerProperties()).thenReturn(mock(ContainerProperties.class));
         when(beanFactory.getBean("clusterAKafkaListenerContainerFactory")).thenReturn(mockedContainerFactory);
 
-        KafkaMessageConsumerFactory factory = new KafkaMessageConsumerFactory("appName", kafkaProperties, beanFactory, messageFiltersConfiguration);
+        KafkaMessageConsumerFactory factory = new KafkaMessageConsumerFactory("appName", kafkaProperties, beanFactory, processContextKafkaConfiguration);
 
         assertDoesNotThrow(() -> factory.startConsumer("topicName", "messageName", "clusterA", mock(MessageReceiver.class)));
     }
 
     @Test
     void startConsumer_withUndefinedCluster_throwsException() {
-        KafkaMessageConsumerFactory factory = new KafkaMessageConsumerFactory("appName", kafkaProperties, beanFactory, messageFiltersConfiguration);
+        KafkaMessageConsumerFactory factory = new KafkaMessageConsumerFactory("appName", kafkaProperties, beanFactory, processContextKafkaConfiguration);
         when(beanFactory.getBean(anyString())).thenThrow(new NoSuchBeanDefinitionException("name"));
 
         assertThrows(IllegalStateException.class, () -> factory.startConsumer("topicName", "messageName", "clusterNotDefined", mock(MessageReceiver.class)));
@@ -76,9 +76,9 @@ class KafkaMessageConsumerFactoryTest {
     @Test
     void startConsumer_withMessageFilterClassNotFound_throwsException() {
         Map<String, String> messageFilters = Map.of("messageName", "foo.bar");
-        when(messageFiltersConfiguration.getFilters()).thenReturn(messageFilters);
+        when(processContextKafkaConfiguration.getFilters()).thenReturn(messageFilters);
 
-        KafkaMessageConsumerFactory factory = new KafkaMessageConsumerFactory("appName", kafkaProperties, beanFactory, messageFiltersConfiguration);
+        KafkaMessageConsumerFactory factory = new KafkaMessageConsumerFactory("appName", kafkaProperties, beanFactory, processContextKafkaConfiguration);
 
         MessageFilterConfigurationException exception = assertThrows(MessageFilterConfigurationException.class, () -> factory.startConsumer("topicName", "messageName", null, mock(MessageReceiver.class)));
         assertThat(exception.getMessage()).isEqualTo("Error while creating MessageFilter instance of foo.bar");
@@ -93,9 +93,9 @@ class KafkaMessageConsumerFactoryTest {
         when(mockedContainer.getContainerProperties()).thenReturn(mock(ContainerProperties.class));
         when(beanFactory.getBean("kafkaListenerContainerFactory")).thenReturn(mockedContainerFactory);
         Map<String, String> messageFilters = Map.of("messageName", "ch.admin.bit.jeap.processcontext.adapter.kafka.message.filter.TestMessageFilter");
-        when(messageFiltersConfiguration.getFilters()).thenReturn(messageFilters);
+        when(processContextKafkaConfiguration.getFilters()).thenReturn(messageFilters);
 
-        KafkaMessageConsumerFactory factory = new KafkaMessageConsumerFactory("appName", kafkaProperties, beanFactory, messageFiltersConfiguration);
+        KafkaMessageConsumerFactory factory = new KafkaMessageConsumerFactory("appName", kafkaProperties, beanFactory, processContextKafkaConfiguration);
 
         assertDoesNotThrow(() -> factory.startConsumer("topicName", "messageName", null, mock(MessageReceiver.class)));
     }
@@ -103,9 +103,9 @@ class KafkaMessageConsumerFactoryTest {
     @Test
     void startConsumer_withMessageFilterDoesntImplementInterface_throwsException() {
         Map<String, String> messageFilters = Map.of("messageName", "ch.admin.bit.jeap.processcontext.adapter.kafka.message.filter.TestMessageFilterWithoutImplements");
-        when(messageFiltersConfiguration.getFilters()).thenReturn(messageFilters);
+        when(processContextKafkaConfiguration.getFilters()).thenReturn(messageFilters);
 
-        KafkaMessageConsumerFactory factory = new KafkaMessageConsumerFactory("appName", kafkaProperties, beanFactory, messageFiltersConfiguration);
+        KafkaMessageConsumerFactory factory = new KafkaMessageConsumerFactory("appName", kafkaProperties, beanFactory, processContextKafkaConfiguration);
 
         MessageFilterConfigurationException exception = assertThrows(MessageFilterConfigurationException.class, () -> factory.startConsumer("topicName", "messageName", null, mock(MessageReceiver.class)));
         assertThat(exception.getMessage()).isEqualTo("Error while creating MessageFilter instance of ch.admin.bit.jeap.processcontext.adapter.kafka.message.filter.TestMessageFilterWithoutImplements");
