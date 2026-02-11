@@ -69,9 +69,7 @@ class KafkaMessageConsumerFactoryPausedIT extends KafkaIntegrationTestBase {
     void whenEventReceivedConsumerIsNotAutoStarted_makeSureItIsPaused() {
         // Given: Start domain event consumers with paused flag
         AtomicBoolean messageReceived = new AtomicBoolean(false);
-        MessageReceiver recv = (message) -> {
-            messageReceived.set(true);
-        };
+        MessageReceiver recv = message -> messageReceived.set(true);
         kafkaMessageConsumerFactory.startConsumer(TEST_DOMAIN_EVENT_TOPIC, "message1", null, recv);
 
         // When: Produce a message on the topic where no consumer should be active
