@@ -13,6 +13,8 @@ import java.util.UUID;
 @Repository
 interface MessageReferenceJpaRepository extends JpaRepository<MessageReference, UUID> {
 
+    boolean existsByProcessInstanceIdAndMessageId(UUID processInstanceId, UUID messageId);
+
     /**
      * Finds all message references for a process instance with their associated messages.
      */

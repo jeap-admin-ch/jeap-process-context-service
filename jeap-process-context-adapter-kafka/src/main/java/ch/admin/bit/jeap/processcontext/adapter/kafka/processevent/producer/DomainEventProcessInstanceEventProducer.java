@@ -27,7 +27,7 @@ public class DomainEventProcessInstanceEventProducer implements ProcessInstanceE
     private final KafkaTemplate<AvroMessageKey, AvroMessage> kafkaTemplate;
 
     @Override
-    @Timed(value = "jeap_pcs_produce_process_snapshot_created_event", percentiles = {0.5, 0.8, 0.95, 0.99})
+    @Timed(value = "jeap_pcs_produce_process_snapshot_created_event", percentiles = {0.5, 0.8, 0.99})
     public void produceProcessSnapshotCreatedEventSynchronously(String originProcessId, int snapshotVersion) {
         ProcessSnapshotCreatedEvent snapshotCreatedEvent = ProcessSnapshotCreatedEventBuilder.create()
                 .idempotenceId(originProcessId + SNAPSHOT_CREATED_EVENT_IDEMPOTENCE_INFIX + snapshotVersion)

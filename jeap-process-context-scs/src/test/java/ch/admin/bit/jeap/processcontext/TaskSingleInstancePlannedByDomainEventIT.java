@@ -12,6 +12,7 @@ import ch.admin.bit.jeap.processcontext.testevent.Test3EventBuilder;
 import ch.admin.bit.jeap.processcontext.testevent.Test4EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
 
@@ -63,8 +64,14 @@ class TaskSingleInstancePlannedByDomainEventIT extends ProcessInstanceMockS3ITBa
         );
 
         // No second instance of 'PlannedByDomainEventSingleInstance' expected.
-        Message message = sendTest1Event("domainEventId");
-        awaitProcessUpdateHandled(originProcessId, message);
+        sendTest1Event("domainEventId");
+        Awaitility.await()
+                .pollInSameThread()
+                .until(() -> {
+                    var dto = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
+                    return dto.getMessages().size() == 3;
+                });
+
         assertTasks(
                 taskStateDynamic(processTemplateName, TaskState.PLANNED),
                 taskStateStatic(processTemplateName, TaskState.COMPLETED)

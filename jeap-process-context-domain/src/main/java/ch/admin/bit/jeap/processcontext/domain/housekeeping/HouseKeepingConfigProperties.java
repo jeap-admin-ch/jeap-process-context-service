@@ -48,11 +48,6 @@ public class HouseKeepingConfigProperties {
     private Duration eventsMaxAge = Duration.of(90, ChronoUnit.DAYS);
 
     /**
-     * Delete process updates without correlation to a process (handled=false, failed=false) older than this value [duration]. Default is 90 days
-     */
-    private Duration processUpdateMaxAge = Duration.of(90, ChronoUnit.DAYS);
-
-    /**
      * Size for the queries [pages]. Default is 500
      */
     private int pageSize = 500;

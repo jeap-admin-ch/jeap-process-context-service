@@ -89,7 +89,7 @@ class ProcessSnapshotWithS3IT extends ProcessInstanceITBase {
         assertThat(snapshotV1.getMetadata().getSnapshotVersion()).isEqualTo(1);
 
         // A snapshot created event should have been published for the snapshot version
-        assertSnapshotCreatedEvent(1);
+        assertSnapshotCreatedEvent();
 
         // Clear database
         String processId = this.originProcessId;

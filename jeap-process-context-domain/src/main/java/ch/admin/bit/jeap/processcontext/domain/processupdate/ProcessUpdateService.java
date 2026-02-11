@@ -6,8 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.argument.StructuredArguments;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
 
 
 /**
@@ -22,75 +20,23 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class ProcessUpdateService {
     private static final String MESSAGE_NAME = "messageName";
     private static final String ORIGIN_PROCESS_ID = "originProcessId";
-    private static final String TEMPLATE = "template";
-    private static final String IDEMPOTENCE_ID = "idempotenceId";
 
     private final InternalMessageProducer internalMessageProducer;
-    private final ProcessUpdateRepository processUpdateRepository;
-    private final PlatformTransactionManager transactionManager;
-
-    public void createProcessReceived(String originProcessId, String template, Message message) {
-        withinTransaction(() -> createAndSaveCreateProcessIfNeeded(originProcessId, message, template));
-
-        internalMessageProducer.produceProcessContextOutdatedEventSynchronously(originProcessId);
-        log.info("CreateProcess message {} for {} received, using template {}",
-                StructuredArguments.keyValue(MESSAGE_NAME, message.getMessageName()),
-                StructuredArguments.keyValue(ORIGIN_PROCESS_ID, originProcessId),
-                StructuredArguments.keyValue(TEMPLATE, template));
-    }
-
 
     public void messageReceived(String originProcessId, Message message) {
-        withinTransaction(() -> createAndSaveMessageIfNeeded(originProcessId, message));
-
-        internalMessageProducer.produceProcessContextOutdatedEventSynchronously(originProcessId);
+        internalMessageProducer.produceProcessContextOutdatedEventSynchronously(originProcessId,
+                message.getId(), message.getMessageName(), message.getIdempotenceId());
         log.info("Message {} for {} received",
                 StructuredArguments.keyValue(MESSAGE_NAME, message.getMessageName()),
                 StructuredArguments.keyValue(ORIGIN_PROCESS_ID, originProcessId));
     }
 
-
-    private void createAndSaveMessageIfNeeded(String originProcessId, Message message) {
-        String messageName = message.getMessageName();
-        String idempotenceId = message.getIdempotenceId();
-        if (processUpdateRepository.findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, messageName, idempotenceId).isPresent()) {
-            log.info("Message {} {} has already been received for process {}.",
-                    StructuredArguments.keyValue(MESSAGE_NAME, messageName),
-                    StructuredArguments.keyValue(IDEMPOTENCE_ID, idempotenceId),
-                    StructuredArguments.keyValue(ORIGIN_PROCESS_ID, originProcessId));
-        } else {
-            ProcessUpdate processUpdate = ProcessUpdate.messageReceived()
-                    .originProcessId(originProcessId)
-                    .messageReference(message.getId())
-                    .messageName(messageName)
-                    .idempotenceId(idempotenceId)
-                    .build();
-            processUpdateRepository.save(processUpdate);
-        }
-    }
-
-    private void createAndSaveCreateProcessIfNeeded(String originProcessId, Message message, String template) {
-        String messageName = message.getMessageName();
-        String idempotenceId = message.getIdempotenceId();
-        if (processUpdateRepository.findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, messageName, idempotenceId).isPresent()) {
-            log.info("CreateProcess message {} {} has already been received for process {}.",
-                    StructuredArguments.keyValue(MESSAGE_NAME, messageName),
-                    StructuredArguments.keyValue(IDEMPOTENCE_ID, idempotenceId),
-                    StructuredArguments.keyValue(ORIGIN_PROCESS_ID, originProcessId));
-        } else {
-            ProcessUpdate processUpdate = ProcessUpdate.createProcessReceived()
-                    .originProcessId(originProcessId)
-                    .template(template)
-                    .messageReference(message.getId())
-                    .messageName(messageName)
-                    .idempotenceId(idempotenceId)
-                    .build();
-            processUpdateRepository.save(processUpdate);
-        }
-    }
-
-    private void withinTransaction(Runnable callback) {
-        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
-        transactionTemplate.executeWithoutResult(status -> callback.run());
+    public void processCreatingMessageReceived(String originProcessId, Message message, String templateName) {
+        internalMessageProducer.produceProcessContextOutdatedCreateProcessEventSynchronously(originProcessId,
+                message.getId(), message.getMessageName(), message.getIdempotenceId(), templateName);
+        log.info("Message {} for {} received, marking for process creation using template {}",
+                StructuredArguments.keyValue(MESSAGE_NAME, message.getMessageName()),
+                StructuredArguments.keyValue(ORIGIN_PROCESS_ID, originProcessId),
+                templateName);
     }
 }

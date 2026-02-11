@@ -4,5 +4,4 @@ import java.util.UUID;
 
 public interface ProcessInstanceQueryResult {
     UUID getId();
-    String getOriginProcessId();
 }

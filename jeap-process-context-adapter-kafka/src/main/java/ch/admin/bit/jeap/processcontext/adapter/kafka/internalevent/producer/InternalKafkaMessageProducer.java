@@ -4,12 +4,12 @@ import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.processcontext.adapter.kafka.KafkaProducerException;
 import ch.admin.bit.jeap.processcontext.adapter.kafka.TopicConfiguration;
 import ch.admin.bit.jeap.processcontext.domain.port.InternalMessageProducer;
-import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessContextOutdatedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecord;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @Component
@@ -28,27 +28,29 @@ class InternalKafkaMessageProducer implements InternalMessageProducer {
     }
 
     @Override
-    public void produceProcessContextOutdatedEventSynchronously(String originProcessId) {
-        AvroMessage message = createMessage(originProcessId, false);
-        produceEvent(originProcessId, message);
+    public void produceProcessContextOutdatedCreateProcessEventSynchronously(String originProcessId, UUID messageId,
+                                                                             String messageName, String idempotenceId, String templateName) {
+        AvroMessage message = internalMessageFactory
+                .processContextOutdatedCreateProcessEvent(originProcessId, messageId, messageName, idempotenceId, templateName);
+        produceMessage(originProcessId, message);
     }
 
     @Override
-    public void produceProcessContextOutdatedMigrationTriggerEventSynchronously(String originProcessId) {
-        AvroMessage message = createMessage(originProcessId, true);
-        produceEvent(originProcessId, message);
+    public void produceProcessContextOutdatedEventSynchronously(String originProcessId, UUID messageId, String messageName, String idempotenceId) {
+        AvroMessage message = internalMessageFactory.processContextOutdatedEvent(originProcessId, messageId, messageName, idempotenceId);
+        produceMessage(originProcessId, message);
     }
 
-    private void produceEvent(String originProcessId, AvroMessage message) {
+    @Override
+    public void produceProcessContextOutdatedMigrationTriggerEventSynchronously(String originProcessId, String idempotenceId) {
+        AvroMessage message = internalMessageFactory.processContextOutdatedMigrationTriggerEvent(originProcessId, idempotenceId);
+        produceMessage(originProcessId, message);
+    }
+
+    private void produceMessage(String originProcessId, AvroMessage message) {
         log.debug("Producing process outdated message for process ID {}", originProcessId);
         String topicName = topicConfiguration.getProcessOutdatedInternal();
         sendSynchronously(topicName, originProcessId, message);
-    }
-
-    private ProcessContextOutdatedEvent createMessage(String originProcessId, boolean triggerMigration) {
-        return triggerMigration ?
-                internalMessageFactory.processContextOutdatedMigrationTriggerEvent(originProcessId) :
-                internalMessageFactory.processContextOutdatedEvent(originProcessId);
     }
 
     private void sendSynchronously(String topicName, String originProcessId, AvroMessage message) {

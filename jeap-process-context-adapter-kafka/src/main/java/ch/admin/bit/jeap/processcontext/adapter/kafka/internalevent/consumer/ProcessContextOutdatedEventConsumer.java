@@ -3,7 +3,9 @@ package ch.admin.bit.jeap.processcontext.adapter.kafka.internalevent.consumer;
 import ch.admin.bit.jeap.processcontext.adapter.kafka.TopicConfiguration;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceService;
 import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessContextOutdatedEvent;
-import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessContextOutdatedPayload;
+import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessUpdateType;
+import ch.admin.bit.jeap.processcontext.internal.event.outdated.ReceivedMessage;
+import ch.admin.bit.jeap.processcontext.internal.event.outdated.ReceivedProcessCreationMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -29,17 +31,24 @@ public class ProcessContextOutdatedEventConsumer {
     }
 
     private void handleEvent(ProcessContextOutdatedEvent event) {
-        String originProcessId = event.getProcessId();
-        if (isMigrationTriggerEvent(event)) {
-            triggerMigration(originProcessId);
-        } else {
-            updateProcessState(originProcessId);
+        switch (event.getPayload().getProcessUpdateType()) {
+            case MIGRATION_TRIGGERED -> triggerMigration(event.getProcessId());
+            case MESSAGE_RECEIVED -> updateProcessState(event.getProcessId(), event.getPayload().getReceivedMessage());
+            case PROCESS_CREATION_MESSAGE_RECEIVED ->
+                    updateProcessStateCreatingProcess(event.getProcessId(), event.getPayload().getReceivedProcessCreationMessage());
+            default ->
+                    log.warn("Received process context outdated event with unknown process update type: {}", event.getPayload().getProcessUpdateType());
         }
     }
 
-    private void updateProcessState(String originProcessId) {
+    private void updateProcessState(String originProcessId, ReceivedMessage receivedMessage) {
         log.debug("Received process update message for process ID {}", originProcessId);
-        processInstanceService.updateProcessState(originProcessId);
+        processInstanceService.handleMessage(originProcessId, receivedMessage.getMessageId());
+    }
+
+    private void updateProcessStateCreatingProcess(String originProcessId, ReceivedProcessCreationMessage receivedMessage) {
+        log.debug("Received process creating message for process ID {}", originProcessId);
+        processInstanceService.handleMessage(originProcessId, receivedMessage.getMessageId(), receivedMessage.getTemplateName());
     }
 
     private void triggerMigration(String originProcessId) {
@@ -48,8 +57,7 @@ public class ProcessContextOutdatedEventConsumer {
     }
 
     private boolean isMigrationTriggerEvent(ProcessContextOutdatedEvent event) {
-        return event.getOptionalPayload()
-                .map(ProcessContextOutdatedPayload::getTriggerMigration)
-                .orElse(false);
+        return event.getOptionalPayload().stream().anyMatch(payload ->
+                payload.getProcessUpdateType() == ProcessUpdateType.MIGRATION_TRIGGERED);
     }
 }

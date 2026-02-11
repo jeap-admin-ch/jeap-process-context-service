@@ -1,8 +1,13 @@
 package ch.admin.bit.jeap.processcontext.domain.port;
 
+import java.util.UUID;
+
 public interface InternalMessageProducer {
 
-    void produceProcessContextOutdatedEventSynchronously(String originProcessId);
+    void produceProcessContextOutdatedCreateProcessEventSynchronously(String originProcessId, UUID messageId,
+                                                                      String messageName, String idempotenceId, String templateName);
 
-    void produceProcessContextOutdatedMigrationTriggerEventSynchronously(String originProcessId);
+    void produceProcessContextOutdatedEventSynchronously(String originProcessId, UUID messageId, String messageName, String idempotenceId);
+
+    void produceProcessContextOutdatedMigrationTriggerEventSynchronously(String originProcessId, String idempotenceId);
 }

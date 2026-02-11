@@ -2,17 +2,12 @@ package ch.admin.bit.jeap.processcontext;
 
 import ch.admin.bit.jeap.processcontext.domain.housekeeping.HouseKeepingService;
 import ch.admin.bit.jeap.processcontext.domain.message.*;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReference;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessState;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskCardinality;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskLifecycle;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateRepository;
 import com.fasterxml.uuid.Generators;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaUpdate;
@@ -28,7 +23,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -52,36 +46,31 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
     private ProcessInstanceRepository processInstanceRepository;
 
     @Autowired
-    private ProcessUpdateRepository processUpdateRepository;
-
-    @Autowired
     private EntityManager entityManager;
 
     @Autowired
     private PlatformTransactionManager platformTransactionManager;
 
     @Autowired
+    private PendingMessageRepository pendingMessageRepository;
+
+    @Autowired
     private ProcessContextFactory processContextFactory;
 
     @Test
     void testDeleteProcessInstances_completedProcessInstances_processInstancesDeleted() {
-        List<String> expiredProcessIds = new ArrayList<>();
-        List<String> keptProcessIds = new ArrayList<>();
         inTransaction(() -> {
-            expiredProcessIds.add(createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(210, ChronoUnit.DAYS)).getOriginProcessId());
-            expiredProcessIds.add(createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(210, ChronoUnit.DAYS)).getOriginProcessId());
-            keptProcessIds.add(createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(179, ChronoUnit.DAYS)).getOriginProcessId());
-            keptProcessIds.add(createAndSaveProcessInstance(ProcessState.STARTED, Duration.of(181, ChronoUnit.DAYS)).getOriginProcessId());
+            createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(210, ChronoUnit.DAYS));
+            createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(210, ChronoUnit.DAYS));
+            createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(179, ChronoUnit.DAYS));
+            createAndSaveProcessInstance(ProcessState.STARTED, Duration.of(181, ChronoUnit.DAYS));
         });
 
         assertCountProcessInstances(4);
-        assertPresent(expiredProcessIds);
 
         houseKeepingService.cleanup();
 
         assertCountProcessInstances(2);
-        assertNotPresent(expiredProcessIds);
-        assertPresent(keptProcessIds);
     }
 
     private void inTransaction(Runnable runnable) {
@@ -91,65 +80,34 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
 
     @Test
     void testDeleteProcessInstances_veryOldStartedProcessInstances_processInstancesDeleted() {
-        List<String> expiredProcessIds = new ArrayList<>();
-        List<String> keptProcessIds = new ArrayList<>();
         inTransaction(() -> {
-            expiredProcessIds.add(createAndSaveProcessInstance(ProcessState.STARTED, Duration.of(366, ChronoUnit.DAYS)).getOriginProcessId());
-            expiredProcessIds.add(createAndSaveProcessInstance(ProcessState.STARTED, Duration.of(366, ChronoUnit.DAYS)).getOriginProcessId());
-            keptProcessIds.add(createAndSaveProcessInstance(ProcessState.STARTED, Duration.of(364, ChronoUnit.DAYS)).getOriginProcessId());
-            keptProcessIds.add(createAndSaveProcessInstance(ProcessState.STARTED, Duration.of(364, ChronoUnit.DAYS)).getOriginProcessId());
+            createAndSaveProcessInstance(ProcessState.STARTED, Duration.of(366, ChronoUnit.DAYS));
+            createAndSaveProcessInstance(ProcessState.STARTED, Duration.of(366, ChronoUnit.DAYS));
+            createAndSaveProcessInstance(ProcessState.STARTED, Duration.of(364, ChronoUnit.DAYS));
+            createAndSaveProcessInstance(ProcessState.STARTED, Duration.of(364, ChronoUnit.DAYS));
         });
 
         assertCountProcessInstances(4);
-        assertPresent(expiredProcessIds);
 
         houseKeepingService.cleanup();
 
         assertCountProcessInstances(2);
-        assertNotPresent(expiredProcessIds);
-        assertPresent(keptProcessIds);
     }
 
     @Test
     void testDeleteProcessInstances_completedProcessInstancesWithPaging_processInstancesDeleted() {
-        List<String> expiredProcessIds = new ArrayList<>();
         inTransaction(() -> {
-            expiredProcessIds.add(createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(210, ChronoUnit.DAYS)).getOriginProcessId());
-            expiredProcessIds.add(createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(210, ChronoUnit.DAYS)).getOriginProcessId());
-            expiredProcessIds.add(createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(210, ChronoUnit.DAYS)).getOriginProcessId());
-            expiredProcessIds.add(createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(210, ChronoUnit.DAYS)).getOriginProcessId());
+            createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(210, ChronoUnit.DAYS));
+            createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(210, ChronoUnit.DAYS));
+            createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(210, ChronoUnit.DAYS));
+            createAndSaveProcessInstance(ProcessState.COMPLETED, Duration.of(210, ChronoUnit.DAYS));
         });
 
         assertCountProcessInstances(4);
-        assertPresent(expiredProcessIds);
 
         houseKeepingService.cleanup();
 
         assertCountProcessInstances(0);
-        assertNotPresent(expiredProcessIds);
-    }
-
-    @Test
-    void testDeleteProcessUpdates_handledFalseAndFailedFalse_processUpdatesDeleted() {
-        List<String> expiredProcessIds = new ArrayList<>();
-        List<String> keptProcessIds = new ArrayList<>();
-        inTransaction(() -> {
-            keptProcessIds.add(createAndSaveProcessUpdate("jrn1", Duration.of(89, ChronoUnit.DAYS), false).getOriginProcessId());
-            expiredProcessIds.add(createAndSaveProcessUpdate("jrn2", Duration.of(91, ChronoUnit.DAYS), false).getOriginProcessId());
-            keptProcessIds.add(createAndSaveProcessUpdate("jrn3", Duration.of(89, ChronoUnit.DAYS), true).getOriginProcessId());
-            keptProcessIds.add(createAndSaveProcessUpdate("jrn4", Duration.of(91, ChronoUnit.DAYS), true).getOriginProcessId());
-        });
-
-
-        assertCountProcessUpdates(4);
-        assertProcessUpdatePresent(expiredProcessIds);
-        assertProcessUpdatePresent(keptProcessIds);
-
-        houseKeepingService.cleanup();
-
-        assertCountProcessUpdates(3);
-        assertNotPresent(expiredProcessIds);
-        assertProcessUpdatePresent(keptProcessIds);
     }
 
     @Test
@@ -203,25 +161,30 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
         assertCountEvents(0);
     }
 
-    private void assertPresent(List<String> originProcessIds) {
-        originProcessIds.forEach(originProcessId ->
-                assertThat(processUpdateRepository
-                        .findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, "test", "test"))
-                        .isPresent());
+    @Test
+    void testDeletePendingMessages_oldPendingMessage_deleted() {
+        inTransaction(() -> {
+            createAndSavePendingMessage(Duration.of(91, ChronoUnit.DAYS));
+            createAndSavePendingMessage(Duration.of(91, ChronoUnit.DAYS));
+            createAndSavePendingMessage(Duration.of(89, ChronoUnit.DAYS));
+        });
+
+        assertCountPendingMessages(3);
+
+        houseKeepingService.cleanup();
+
+        assertCountPendingMessages(1);
     }
 
-    private void assertProcessUpdatePresent(List<String> originProcessIds) {
-        originProcessIds.forEach(originProcessId ->
-                assertThat(processUpdateRepository
-                        .findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, "test", "test"))
-                        .isPresent());
-    }
+    @Test
+    void testDeletePendingMessages_recentPendingMessage_notDeleted() {
+        inTransaction(() -> createAndSavePendingMessage(Duration.of(89, ChronoUnit.DAYS)));
 
-    private void assertNotPresent(List<String> originProcessIds) {
-        originProcessIds.forEach(originProcessId ->
-                assertThat(processUpdateRepository
-                        .findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, "test", "test"))
-                        .isNotPresent());
+        assertCountPendingMessages(1);
+
+        houseKeepingService.cleanup();
+
+        assertCountPendingMessages(1);
     }
 
     private ProcessInstance createAndSaveProcessInstance(ProcessState processState, Duration age) {
@@ -246,7 +209,6 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
         criteriaUpdate.set("createdAt", ZonedDateTime.now().minus(age));
         criteriaUpdate.where(entityManager.getCriteriaBuilder().equal(root.get("id"), processInstance.getId()));
         entityManager.createQuery(criteriaUpdate).executeUpdate();
-        processUpdateRepository.save(ProcessUpdate.messageReceived().originProcessId(originProcessId).messageName("test").messageReference(Generators.timeBasedEpochGenerator().generate()).idempotenceId("test").build());
         return processInstance;
     }
 
@@ -280,9 +242,20 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
                 .hasSize(count);
     }
 
-    private void assertCountProcessUpdates(int count) {
-        assertThat(entityManager.createQuery("select p from ProcessUpdate p").getResultList())
+    private void assertCountPendingMessages(int count) {
+        assertThat(entityManager.createNativeQuery("SELECT id FROM pending_message").getResultList())
                 .hasSize(count);
+    }
+
+    private void createAndSavePendingMessage(Duration age) {
+        Message message = createAndSaveEvent(age);
+        String originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
+        pendingMessageRepository.saveIfNew(PendingMessage.from(message, originProcessId));
+        entityManager.flush();
+        entityManager.createNativeQuery("UPDATE pending_message SET created_at = :createdAt WHERE message_id = :messageId")
+                .setParameter("createdAt", ZonedDateTime.now().minus(age))
+                .setParameter("messageId", message.getId())
+                .executeUpdate();
     }
 
     private Message createAndSaveEvent(Duration age) {
@@ -304,38 +277,13 @@ class HouseKeepingServiceIT extends ProcessInstanceMockS3ITBase {
         return message;
     }
 
-    private ProcessUpdate createAndSaveProcessUpdate(String originProcessId, Duration age, boolean handled) {
-        final ProcessUpdate processUpdate = ProcessUpdate.messageReceived()
-                .originProcessId(originProcessId)
-                .messageName("test")
-                .messageReference(Generators.timeBasedEpochGenerator().generate())
-                .idempotenceId("test")
-                .build();
-        processUpdateRepository.save(processUpdate);
-
-        CriteriaUpdate<ProcessUpdate> criteriaUpdateCreatedAt = entityManager.getCriteriaBuilder().createCriteriaUpdate(ProcessUpdate.class);
-        Root<ProcessUpdate> criteriaUpdateCreatedAtRoot = criteriaUpdateCreatedAt.from(ProcessUpdate.class);
-        criteriaUpdateCreatedAt.set("createdAt", ZonedDateTime.now().minus(age));
-        criteriaUpdateCreatedAt.where(entityManager.getCriteriaBuilder().equal(criteriaUpdateCreatedAtRoot.get("originProcessId"), processUpdate.getOriginProcessId()));
-        entityManager.createQuery(criteriaUpdateCreatedAt).executeUpdate();
-
-        if (handled) {
-            CriteriaUpdate<ProcessUpdate> criteriaUpdateHandled = entityManager.getCriteriaBuilder().createCriteriaUpdate(ProcessUpdate.class);
-            Root<ProcessUpdate> criteriaUpdateHandledRoot = criteriaUpdateHandled.from(ProcessUpdate.class);
-            criteriaUpdateHandled.set("handled", Boolean.TRUE);
-            criteriaUpdateHandled.where(entityManager.getCriteriaBuilder().equal(criteriaUpdateHandledRoot.get("originProcessId"), processUpdate.getOriginProcessId()));
-            entityManager.createQuery(criteriaUpdateHandled).executeUpdate();
-        }
-        return processUpdate;
-    }
-
     @AfterEach
     void cleanup() {
         inTransaction(() -> {
+            entityManager.createNativeQuery("DELETE FROM pending_message").executeUpdate();
             entityManager.createNativeQuery("DELETE FROM events_origin_task_ids").executeUpdate();
             entityManager.createNativeQuery("DELETE FROM events_event_data").executeUpdate();
             entityManager.createNativeQuery("DELETE FROM events").executeUpdate();
-            entityManager.createNativeQuery("DELETE FROM process_update").executeUpdate();
             processInstanceRepository.deleteAllById(
                     processInstanceRepository.findAll(Pageable.ofSize(100)).stream()
                             .map(ProcessInstance::getId).collect(toSet()));

@@ -1,24 +1,16 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
-import ch.admin.bit.jeap.processcontext.domain.PcsConfigProperties;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateQueryRepository;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateRepository;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateType;
 import ch.admin.bit.jeap.processcontext.domain.tx.Transactions;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.TaskInstantiationCondition;
-import com.google.common.collect.Lists;
 import io.micrometer.core.annotation.Timed;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -37,7 +29,6 @@ import static net.logstash.logback.argument.StructuredArguments.keyValue;
 public class ProcessInstanceService {
     private static final String ORIGIN_PROCESS_ID = "originProcessId";
 
-    private final ProcessUpdateQueryRepository processUpdateQueryRepository;
     private final ProcessInstanceRepository processInstanceRepository;
     private final TaskInstanceRepository taskInstanceRepository;
     private final TaskService taskService;
@@ -46,68 +37,77 @@ public class ProcessInstanceService {
     private final ProcessTemplateRepository processTemplateRepository;
     private final MessageRepository messageRepository;
     private final MessageReferenceRepository messageReferenceRepository;
-    private final ProcessUpdateRepository processUpdateRepository;
     private final ProcessSnapshotService processSnapshotService;
     private final RelationService relationService;
     private final ProcessRelationRepository processRelationRepository;
-    private final ProcessContextFactory processContextFactory;
     private final Transactions transactions;
     private final MetricsListener metricsListener;
-    private final PcsConfigProperties pcsConfigProperties;
+    private final ProcessInstanceFactory processInstanceFactory;
+    private final PendingMessageRepository pendingMessageRepository;
 
-    private ProcessInstance createFromTemplate(String originProcessId, String processTemplateName) {
-        ProcessTemplate processTemplate = processTemplateRepository.findByName(processTemplateName)
-                .orElseThrow(NotFoundException.templateNotFound(processTemplateName, originProcessId));
-        ProcessInstance processInstance = ProcessInstance.createProcessInstance(originProcessId, processTemplate, processContextFactory);
-        ProcessInstance managedEntity = processInstanceRepository.save(processInstance);
-        managedEntity.onAfterLoadFromPersistentState(processTemplate, processContextFactory);
-        planInitialTasks(managedEntity);
-
-        log.info("Creating process {} with origin process ID {} from template {}", processInstance.getId(), originProcessId, processTemplateName);
-        metricsListener.processInstanceCreated(processTemplateName);
-
-        // Count completion in case the process instance is completed immediately after creation
-        countCompletionIfCompleted(processInstance, ProcessState.STARTED);
-
-        return managedEntity;
-    }
-
-    /**
-     * Start the process instance by planning initial tasks as defined in the process template. Creates task instances
-     * for all task types that are defined to be planned at process start. As this method invokes
-     * {@link ProcessInstance#updateState()} internally, the process instance must be persisted first in case task or
-     * process completion conditions require access to persisted data.
-     */
-    private void planInitialTasks(ProcessInstance processInstance) {
-        List<TaskInstance> taskInstances = processInstance.getProcessTemplate().getTaskTypes().stream()
-                .filter(TaskType::isPlannedAtProcessStart)
-                .map(type -> TaskInstance.createInitialTaskInstance(type, processInstance, ZonedDateTime.now()))
-                .toList();
-        taskInstanceRepository.saveAll(taskInstances);
-        processInstanceRepository.flush();
-        processInstance.updateState();
-    }
-
-    @Timed(value = "jeap_pcs_update_migrate", description = "Migrate process template", percentiles = {0.5, 0.8, 0.95, 0.99})
+    @Timed(value = "jeap_pcs_update_migrate", description = "Migrate process template", percentiles = {0.5, 0.8, 0.99})
     public void migrateProcessInstanceTemplate(String originProcessId) {
         migrateProcessInstanceTemplateIfNeeded(originProcessId);
     }
 
-    @Timed(value = "jeap_pcs_update_process_state", description = "Update process state", percentiles = {0.5, 0.8, 0.95, 0.99})
-    public void updateProcessState(String originProcessId) {
-        List<ProcessUpdate> processUpdates = metricsListener.timedWithReturnValue("jeap_pcs_find_process_updates",
-                () -> findUnhandledProcessUpdates(originProcessId));
-
-        Lists.partition(processUpdates, pcsConfigProperties.getProcessInstanceUpdateApplicationBatchSize()).forEach(
-                batch -> processUpdates(originProcessId, batch)
-        );
+    @Timed(value = "jeap_pcs_update_process_state", description = "Update process state", percentiles = {0.5, 0.8, 0.99})
+    public void handleMessage(String originProcessId, UUID messageId) {
+        transactions.withinNewTransaction(() -> updateProcessStateInTransaction(originProcessId, messageId, null));
     }
 
-    private List<ProcessUpdate> findUnhandledProcessUpdates(String originProcessId) {
-        return processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(originProcessId).stream()
-                // move process updates of type CREATE_PROCESS to the front of the list
-                .sorted(Comparator.comparingInt(pu -> pu.getProcessUpdateType().getPriority()))
-                .toList();
+    @Timed(value = "jeap_pcs_update_process_state", description = "Update process state", percentiles = {0.5, 0.8, 0.99})
+    public void handleMessage(String originProcessId, UUID messageId, String createProcessByTemplateName) {
+        transactions.withinNewTransaction(() -> updateProcessStateInTransaction(originProcessId, messageId, createProcessByTemplateName));
+    }
+
+    private void updateProcessStateInTransaction(String originProcessId, UUID messageId, String createProcessByTemplateName) {
+        try {
+            Message message = messageRepository.findById(messageId)
+                    .orElseThrow(NotFoundException.messageNotFound(messageId, originProcessId));
+
+            // First, try to find an existing process instance for the given originProcessId. If it exists,
+            // correlate the message to it and update the process instance state.
+            Optional<ProcessInstance> existingInstance = processInstanceRepository.findByOriginProcessId(originProcessId);
+            if (existingInstance.isPresent()) {
+                handleMessageForProcessInstance(existingInstance.get(), message);
+                return;
+            }
+
+            // If no process instance exists for the given originProcessId,  check if the message triggers the
+            // creation of a new process instance. If yes, create the new process instance and correlate the message to it.
+            Optional<ProcessInstance> createdInstance = processInstanceFactory.createProcessInstance(originProcessId, createProcessByTemplateName);
+            if (createdInstance.isPresent()) {
+                ProcessInstance processInstance = createdInstance.get();
+                handleMessageForProcessInstance(processInstance, message);
+                handlePendingMessagesForNewProcessInstance(originProcessId, messageId, processInstance);
+                return;
+            }
+
+            // Process instance does not exist yet, and message does not trigger creation of a new process instance.
+            // It is saved as pending message, so that it can be processed when the process instance is created by a
+            // later message.
+            pendingMessageRepository.saveIfNew(PendingMessage.from(message, originProcessId));
+        } catch (ProcessUpdateFailedException ex) {
+            log.error("Failed to apply process update to process {}", keyValue(ORIGIN_PROCESS_ID, originProcessId), ex);
+            metricsListener.processUpdateFailed();
+            throw ex;
+        }
+    }
+
+    private void handlePendingMessagesForNewProcessInstance(String originProcessId, UUID messageId, ProcessInstance processInstance) {
+        List<PendingMessage> pendingMessages = pendingMessageRepository.findByOriginProcessId(originProcessId);
+        for (PendingMessage pendingMessage : pendingMessages) {
+            Message messageToHandle = messageRepository.findById(pendingMessage.getMessageId())
+                    .orElseThrow(NotFoundException.messageNotFound(messageId, originProcessId));
+            handleMessageForProcessInstance(processInstance, messageToHandle);
+        }
+        pendingMessageRepository.deleteAll(pendingMessages);
+    }
+
+    private void handleMessageForProcessInstance(ProcessInstance processInstance, Message message) {
+        applyTemplateMigrationsIfRequired(processInstance);
+        processUpdate(processInstance, message);
+        metricsListener.processUpdateProcessed(processInstance.getProcessTemplate());
     }
 
     private void migrateProcessInstanceTemplateIfNeeded(String originProcessId) {
@@ -144,102 +144,20 @@ public class ProcessInstanceService {
         }
     }
 
-    private void processUpdates(String originProcessId, List<ProcessUpdate> processUpdates) {
-        if (processUpdates.isEmpty()) {
-            return;
+    private void processUpdate(ProcessInstance processInstance, Message message) {
+        try {
+            applyProcessUpdateAndReEvaluateProcessInstance(processInstance, message);
+        } catch (Exception e) {
+            throw ProcessUpdateFailedException.withCause(processInstance.getOriginProcessId(), e);
         }
-
-        metricsListener.timed("pcs_process_batch_update", Map.of("batchSize", getBatchSizeGroup(processUpdates)), () ->
-                handleProcessUpdateBatch(originProcessId, processUpdates));
-    }
-
-    private void handleProcessUpdateBatch(String originProcessId, List<ProcessUpdate> processUpdates) {
-        List<ProcessUpdate> remainingUpdates = transactions.withinNewTransactionWithTxStatusAndResult(txStatus -> {
-            try {
-                ProcessInstance processInstance = createOrLoadProcessInstance(originProcessId, processUpdates).orElse(null);
-                if (processInstance == null) {
-                    log.debug("Process instance for process " + keyValue(ORIGIN_PROCESS_ID, originProcessId) + " not found, won't handle the corresponding process updates (yet).");
-                    return List.of();
-                }
-
-                applyTemplateMigrationsIfRequired(processInstance);
-                processUpdates(processInstance, processUpdates);
-                markHandled(processUpdates);
-                metricsListener.processUpdateProcessed(processInstance.getProcessTemplate(), true, processUpdates.size());
-                return List.of();
-            } catch (ProcessUpdateFailedException pufe) {
-                log.error("Failed processing a batch of process updates for process " + keyValue(ORIGIN_PROCESS_ID, originProcessId) + ". Rolling back the transaction to only fail the problematic update.", pufe);
-                txStatus.setRollbackOnly();
-                ProcessTemplate processTemplate = createOrLoadProcessInstance(originProcessId, processUpdates)
-                        .map(ProcessInstance::getProcessTemplate)
-                        .orElse(null);
-                metricsListener.processUpdateProcessed(processTemplate, false, 1);
-                failUpdate(pufe.getFailedProcessUpdate(), pufe);
-                return processUpdates.stream()
-                        .filter(u -> u != pufe.getFailedProcessUpdate())
-                        .toList();
-            }
-        });
-
-        if (!remainingUpdates.isEmpty()) {
-            if (remainingUpdates.size() < processUpdates.size()) {
-                processUpdates(originProcessId, remainingUpdates);
-            } else {
-                String msg = String.format("This should not have happened. There must be less remaining updates (%s) than initial updates (%s).",
-                        remainingUpdates.size(), processUpdates.size());
-                throw new IllegalStateException(msg);
-            }
-        }
-    }
-
-
-    private Optional<ProcessInstance> createOrLoadProcessInstance(String originProcessId, List<ProcessUpdate> processUpdates) {
-        return processUpdates.stream()
-                .filter(update -> update.getProcessUpdateType() == ProcessUpdateType.CREATE_PROCESS)
-                .findFirst()
-                .map(createProcessUpdate -> {
-                    try {
-                        return Optional.of(createOrGetProcessInstance(createProcessUpdate));
-                    } catch (Exception e) {
-                        throw ProcessUpdateFailedException.createProcessUpdateFailed(createProcessUpdate, e);
-                    }
-                })
-                .orElse(processInstanceRepository.findByOriginProcessId(originProcessId));
-    }
-
-    private ProcessInstance createOrGetProcessInstance(ProcessUpdate processUpdate) {
-        String originProcessId = processUpdate.getOriginProcessId();
-        // Has this process instance already been created?
-        Optional<ProcessInstance> pio = processInstanceRepository.findByOriginProcessId(originProcessId);
-        // Don't create the process instance again, simply return the existing one
-        return pio.orElseGet(() ->
-                createFromTemplate(originProcessId, processUpdate.getParams()));
-    }
-
-    private void processUpdates(ProcessInstance processInstance, List<ProcessUpdate> processUpdates) {
-        for (ProcessUpdate processUpdate : processUpdates) {
-            try {
-                UUID messageId = processUpdate.getMessageReference();
-                Message message = messageRepository.findById(messageId)
-                        .orElseThrow(NotFoundException.messageNotFound(messageId, processInstance.getOriginProcessId()));
-                applyProcessUpdateAndReEvaluateProcessInstance(processInstance, message);
-            } catch (Exception e) {
-                throw ProcessUpdateFailedException.createProcessUpdateFailed(processUpdate, e);
-            }
-        }
-    }
-
-    private void failUpdate(ProcessUpdate processUpdate, Exception e) {
-        log.error("Failed to apply process update to process " + keyValue(ORIGIN_PROCESS_ID, processUpdate.getOriginProcessId()), e);
-        transactions.withinNewTransaction(() -> processUpdateRepository.markHandlingFailed(processUpdate.getId()));
-        metricsListener.processUpdateFailed(processUpdate, e);
-    }
-
-    private void markHandled(Collection<ProcessUpdate> processUpdates) {
-        processUpdates.forEach(update -> processUpdateRepository.markHandled(update.getId()));
     }
 
     private void applyProcessUpdateAndReEvaluateProcessInstance(ProcessInstance processInstance, Message message) {
+        // Idempotence check: If the message has already been correlated to the process instance, skip processing
+        if (messageReferenceRepository.existsByProcessInstanceIdAndMessageId(processInstance.getId(), message.getId())) {
+            return;
+        }
+
         ProcessState stateBeforeUpdate = processInstance.getState();
 
         var newProcessData = processDataService.copyMessageDataToProcessData(processInstance, message);
@@ -250,7 +168,7 @@ public class ProcessInstanceService {
                     () -> correlateMessagesByProcessDataIfRequired(processInstance, newProcessData));
         }
 
-        metricsListener.timed("pcs_process_single_update", Map.of(), () ->
+        metricsListener.timed("pcs_process_update", Map.of(), () ->
                 updateProcessInstance(processInstance, messageReferenceMessageDTO, message));
         countCompletionIfCompleted(processInstance, stateBeforeUpdate);
         createProcessSnapshotIfTriggered(processInstance);
@@ -466,42 +384,15 @@ public class ProcessInstanceService {
         }
     }
 
-    private String getBatchSizeGroup(List<ProcessUpdate> processUpdates) {
-        int num = processUpdates.size();
-        if (num <= 5) {
-            return Integer.toString(num);
-        }
-        if (num <= 10) {
-            return "5<n<11";
-        }
-        if (num <= 25) {
-            return "10<n<26";
-        }
-        if (num <= 50) {
-            return "25<n<51";
-        }
-        if (num <= 100) {
-            return "50<n<100";
-        }
-        return "100<n";
-    }
-
     private static class ProcessUpdateFailedException extends RuntimeException {
 
-        @Getter
-        private final transient ProcessUpdate failedProcessUpdate; // for sonar: this exception will never be serialized
-
-        private ProcessUpdateFailedException(ProcessUpdate processUpdate, String message, Throwable cause) {
+        private ProcessUpdateFailedException(String message, Throwable cause) {
             super(message, cause);
-            this.failedProcessUpdate = processUpdate;
         }
 
-        private static ProcessUpdateFailedException createProcessUpdateFailed(ProcessUpdate processUpdate, Throwable cause) {
-            String message = String.format("Failed creating process with originId %s for a create process update for the template %s and the message %s.",
-                    processUpdate.getOriginProcessId(), processUpdate.getParams(), processUpdate.getMessageName());
-            return new ProcessUpdateFailedException(processUpdate, message, cause);
+        private static ProcessUpdateFailedException withCause(String originProcessId, Throwable cause) {
+            String message = "Failed updating process with origin process ID %s" + originProcessId;
+            return new ProcessUpdateFailedException(message, cause);
         }
-
     }
-
 }

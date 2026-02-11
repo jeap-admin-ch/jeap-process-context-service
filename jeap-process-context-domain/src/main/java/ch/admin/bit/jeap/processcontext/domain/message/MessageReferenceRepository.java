@@ -13,6 +13,8 @@ public interface MessageReferenceRepository {
 
     MessageReference save(MessageReference messageReference);
 
+    boolean existsByProcessInstanceIdAndMessageId(UUID processInstanceId, UUID messageId);
+
     List<MessageReferenceMessageDTO> findByProcessInstanceId(UUID processInstanceId);
 
     /**

@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static net.logstash.logback.argument.StructuredArguments.keyValue;
 
@@ -35,19 +36,20 @@ public class ProcessInstanceMigrationTriggerService {
     }
 
     private void triggerMigrationForTemplateIfModified(ProcessTemplate template, ZonedDateTime createdAtAfter) {
+        String idempotenceId = createdAtAfter.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         Pageable pageable = Pageable.ofSize(10);
         while (pageable.isPaged()) {
             Slice<String> changedTemplateOriginProcessIds = processInstanceRepository
                     .findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(createdAtAfter, template, pageable);
 
-            changedTemplateOriginProcessIds.forEach(this::sendProcessOutdatedEvent);
+            changedTemplateOriginProcessIds.forEach(originProcessId -> sendProcessOutdatedEvent(originProcessId, idempotenceId));
 
             pageable = changedTemplateOriginProcessIds.nextPageable();
         }
     }
 
-    private void sendProcessOutdatedEvent(String originProcessId) {
+    private void sendProcessOutdatedEvent(String originProcessId, String idempotenceId) {
         log.info("Triggering process outdated event due to changed template for process {}", keyValue("originProcessId", originProcessId));
-        internalMessageProducer.produceProcessContextOutdatedMigrationTriggerEventSynchronously(originProcessId);
+        internalMessageProducer.produceProcessContextOutdatedMigrationTriggerEventSynchronously(originProcessId, idempotenceId);
     }
 }

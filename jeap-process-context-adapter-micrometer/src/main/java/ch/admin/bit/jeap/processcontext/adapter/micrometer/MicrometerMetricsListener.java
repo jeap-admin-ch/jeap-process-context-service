@@ -1,10 +1,8 @@
 package ch.admin.bit.jeap.processcontext.adapter.micrometer;
 
-import ch.admin.bit.jeap.messaging.avro.AvroMessageType;
 import ch.admin.bit.jeap.messaging.model.MessageType;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -19,7 +17,6 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class MicrometerMetricsListener implements MetricsListener {
 
-    static final String SUCCESSFUL = "successful";
     private static final String PCS_FAILED_PROCESS_UPDATES = "pcs_failed_process_updates";
     private static final String PCS_PROCESS_INSTANCE_CREATED = "pcs_process_instances_created";
     private static final String PCS_MESSAGES_RECEIVED = "pcs_messages_received";
@@ -44,7 +41,7 @@ public class MicrometerMetricsListener implements MetricsListener {
     }
 
     @Override
-    public void processUpdateFailed(ProcessUpdate update, Exception ex) {
+    public void processUpdateFailed() {
         failedProcessUpdates.increment();
     }
 
@@ -67,22 +64,12 @@ public class MicrometerMetricsListener implements MetricsListener {
     }
 
     @Override
-    public void commandReceived(AvroMessageType eventType) {
-        Counter.builder(PCS_COMMAND_RECEIVED)
-                .description("Received commands")
-                .tag(EVENT_TYPE_TAG, eventType.getName())
-                .register(meterRegistry)
-                .increment();
-    }
-
-    @Override
-    public void processUpdateProcessed(ProcessTemplate template, boolean successful, int count) {
+    public void processUpdateProcessed(ProcessTemplate template) {
         Counter.builder(PCS_PROCESS_UPDATE_PROCESSED)
                 .description("Processed process updates")
                 .tag(PROCESS_TEMPLATE_TAG, template.getName())
-                .tag(SUCCESSFUL, toString(successful))
                 .register(meterRegistry)
-                .increment(count);
+                .increment();
     }
 
     @Override
@@ -116,7 +103,7 @@ public class MicrometerMetricsListener implements MetricsListener {
     private Timer timer(String name, Map<String, String> tags) {
         Timer.Builder builder = Timer.builder(name);
         tags.forEach(builder::tag);
-        builder.publishPercentiles(0.5, 0.8, 0.95, 0.99);
+        builder.publishPercentiles(0.5, 0.8, 0.99);
         return builder.register(meterRegistry);
     }
 

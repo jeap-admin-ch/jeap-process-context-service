@@ -252,7 +252,6 @@ class ProcessInstanceJpaRepositoryTest {
         assertEquals(1, completedProcessInstances.getNumberOfElements());
         final ProcessInstanceQueryResult processInstanceQueryResult = completedProcessInstances.iterator().next();
         assertEquals(processInstance.getId(), processInstanceQueryResult.getId());
-        assertEquals(processInstance.getOriginProcessId(), processInstanceQueryResult.getOriginProcessId());
     }
 
     @Test

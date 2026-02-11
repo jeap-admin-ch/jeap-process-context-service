@@ -6,7 +6,6 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskCardinality;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskLifecycle;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -35,9 +34,6 @@ class MicrometerMetricsListenerTest {
     private MicrometerMetricsListener metricsListener;
 
     @Mock
-    private ProcessUpdate processUpdate;
-
-    @Mock
     private MessageType messageType;
 
     @Mock
@@ -52,7 +48,7 @@ class MicrometerMetricsListenerTest {
 
     @Test
     void processUpdateFailed_shouldIncrementCounter() {
-        metricsListener.processUpdateFailed(processUpdate, new RuntimeException("test"));
+        metricsListener.processUpdateFailed();
 
         Counter counter = meterRegistry.find("pcs_failed_process_updates").counter();
         assertThat(counter).isNotNull();
@@ -61,9 +57,9 @@ class MicrometerMetricsListenerTest {
 
     @Test
     void processUpdateFailed_calledMultipleTimes_shouldIncrementCounter() {
-        metricsListener.processUpdateFailed(processUpdate, new RuntimeException("test1"));
-        metricsListener.processUpdateFailed(processUpdate, new RuntimeException("test2"));
-        metricsListener.processUpdateFailed(processUpdate, new RuntimeException("test3"));
+        metricsListener.processUpdateFailed();
+        metricsListener.processUpdateFailed();
+        metricsListener.processUpdateFailed();
 
         Counter counter = meterRegistry.find("pcs_failed_process_updates").counter();
         assertThat(counter).isNotNull();
@@ -109,41 +105,14 @@ class MicrometerMetricsListenerTest {
     }
 
     @Test
-    void commandReceived_shouldIncrementCounterWithTag() {
-        when(avroMessageType.getName()).thenReturn(EVENT_TYPE_NAME);
-
-        metricsListener.commandReceived(avroMessageType);
-
-        Counter counter = meterRegistry.find("pcs_commands_received")
-                .tag("event_type", EVENT_TYPE_NAME)
-                .counter();
-        assertThat(counter).isNotNull();
-        assertThat(counter.count()).isEqualTo(1.0);
-    }
-
-    @Test
-    void processUpdateProcessed_successful_shouldIncrementCounterWithTags() {
+    void processUpdateProcessed_shouldIncrementCounterWithTags() {
         ProcessTemplate template = createProcessTemplate();
 
-        metricsListener.processUpdateProcessed(template, true, 5);
+        metricsListener.processUpdateProcessed(template);
+        metricsListener.processUpdateProcessed(template);
 
         Counter counter = meterRegistry.find("pcs_process_updates_processed")
                 .tag("process_template", PROCESS_TEMPLATE_NAME)
-                .tag("successful", "true")
-                .counter();
-        assertThat(counter).isNotNull();
-        assertThat(counter.count()).isEqualTo(5.0);
-    }
-
-    @Test
-    void processUpdateProcessed_failed_shouldIncrementCounterWithTags() {
-        ProcessTemplate template = createProcessTemplate();
-
-        metricsListener.processUpdateProcessed(template, false, 2);
-
-        Counter counter = meterRegistry.find("pcs_process_updates_processed")
-                .tag("process_template", PROCESS_TEMPLATE_NAME)
-                .tag("successful", "false")
                 .counter();
         assertThat(counter).isNotNull();
         assertThat(counter.count()).isEqualTo(2.0);

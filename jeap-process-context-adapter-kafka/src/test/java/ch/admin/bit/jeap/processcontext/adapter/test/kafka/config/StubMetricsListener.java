@@ -1,10 +1,8 @@
 package ch.admin.bit.jeap.processcontext.adapter.test.kafka.config;
 
-import ch.admin.bit.jeap.messaging.avro.AvroMessageType;
 import ch.admin.bit.jeap.messaging.model.MessageType;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
@@ -15,7 +13,7 @@ import java.util.function.Supplier;
 public class StubMetricsListener implements MetricsListener {
 
     @Override
-    public void processUpdateFailed(ProcessUpdate update, Exception ex) {
+    public void processUpdateFailed() {
         // stub method
     }
 
@@ -30,12 +28,7 @@ public class StubMetricsListener implements MetricsListener {
     }
 
     @Override
-    public void commandReceived(AvroMessageType eventType) {
-        // stub method
-    }
-
-    @Override
-    public void processUpdateProcessed(ProcessTemplate template, boolean successful, int count) {
+    public void processUpdateProcessed(ProcessTemplate template) {
         // stub method
     }
 

@@ -56,7 +56,7 @@ public class TimedS3Client {
         log.info("S3Client initialized successfully.");
     }
 
-    @Timed(value = "jeap_pcss_s3_client_put_object", description = "Put object to object store", percentiles = {0.5, 0.8, 0.95, 0.99})
+    @Timed(value = "jeap_pcss_s3_client_put_object", description = "Put object to object store", percentiles = {0.5, 0.8, 0.99})
     public PutObjectResponse putObject(PutObjectRequest request, RequestBody requestBody) {
         return s3Client.putObject(request, requestBody);
     }

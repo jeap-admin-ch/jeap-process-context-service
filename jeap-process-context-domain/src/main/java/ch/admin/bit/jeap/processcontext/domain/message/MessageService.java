@@ -25,7 +25,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -65,13 +64,13 @@ class MessageService implements MessageReceiver {
 
     @Override
     public void messageReceived(ch.admin.bit.jeap.messaging.model.Message message) {
-        log.info("Received message: {}", message.getType().getName());
+        log.debug("Received message: {}", message.getType().getName());
         metricsListener.timed("jeap_pcs_process_message", Map.of(), () -> processMessage(message));
-        log.info("Processed message: {}", message.getType().getName());
+        log.debug("Processed message: {}", message.getType().getName());
     }
 
     private void processMessage(ch.admin.bit.jeap.messaging.model.Message message) {
-        log.info("Processing message '{}'", message.getType().getName());
+        log.debug("Processing message '{}'", message.getType().getName());
         // Extract message data and origin task ids from the message
         Set<MessageData> templateMessageData = new HashSet<>();
         Set<OriginTaskId> templateOriginTaskIds = new HashSet<>();
@@ -86,54 +85,54 @@ class MessageService implements MessageReceiver {
         // Create a Message instance with the extracted data.
         Message messageEntity = withinTransaction(() -> createAndSaveMessageIfNeeded(message, templateMessageData, templateOriginTaskIds));
 
-        // Correlate message to process instances. In a separate transaction from writing the message to make sure
+        // Correlate message to origin process IDs. In a separate transaction from writing the message to make sure
         // correlation by process data always gets executed either here or as late correlation during a process update.
         Set<String> correlatedOriginProcessIds = new HashSet<>();
         metricsListener.timed("jeap_pcs_early_correlate_message", emptyMap(), () -> {
-            Set<String> originProcessIds = withinReadOnlyTransaction(() ->
-                    correlateMessage(message, templateMessageData)
-            );
+            Set<String> originProcessIds = withinReadOnlyTransaction(() -> correlateMessage(message, templateMessageData));
             correlatedOriginProcessIds.addAll(originProcessIds);
         });
 
-        // Initiate process updates for the process instances correlated with the message.
-        initiateProcessUpdatesForMessage(message, messageEntity, correlatedOriginProcessIds);
+        // Initiate process updates for the origin process IDs correlated with the message.
+        correlatedOriginProcessIds.forEach(originProcessId ->
+                produceProcessUpdateMessage(messageEntity, message, originProcessId));
     }
 
-    private void initiateProcessUpdatesForMessage(ch.admin.bit.jeap.messaging.model.Message message, Message messageEntity, Set<String> originProcessIds) {
-        originProcessIds.forEach(originProcessId -> {
-            boolean createProcessNeeded = initiateCreateProcessIfNeeded(message, messageEntity, originProcessId);
-            if (!createProcessNeeded) {
-                processUpdateService.messageReceived(originProcessId, messageEntity);
-            }
-        });
-    }
-
-    private boolean initiateCreateProcessIfNeeded(ch.admin.bit.jeap.messaging.model.Message message, Message messageEntity, String originProcessId) {
-        Set<String> processTemplateNamesForInstantiation = getProcessTemplateNamesNeedingInstantiation(message);
-        if (processTemplateNamesForInstantiation.isEmpty() || processInstanceQueryRepository.existsByOriginProcessId(originProcessId)) {
-            return false;
+    private void produceProcessUpdateMessage(Message messageEntity, ch.admin.bit.jeap.messaging.model.Message message, String originProcessId) {
+        Optional<String> templateName = getTemplateNameIfProcessInstantingMessage(message, messageEntity, originProcessId);
+        if (templateName.isPresent()) {
+            processUpdateService.processCreatingMessageReceived(originProcessId, messageEntity, templateName.get());
+        } else {
+            processUpdateService.messageReceived(originProcessId, messageEntity);
         }
+    }
+
+    private Optional<String> getTemplateNameIfProcessInstantingMessage(ch.admin.bit.jeap.messaging.model.Message message, Message messageEntity, String originProcessId) {
+        Set<String> processTemplateNamesForInstantiation = getProcessTemplateNamesInstantiatedByMessage(message);
+        // Not a message that triggers process creation
+        if (processTemplateNamesForInstantiation.isEmpty()) {
+            return Optional.empty();
+        }
+        // Message triggers more than one process type, this is a misconfiguration in the process templates as we cannot
+        // start more than one process for the same origin process id. Log an error and skip process creation in this case.
         if (processTemplateNamesForInstantiation.size() > 1) {
             log.error("Message '{}' is configured to start a process in more than one process template ({}). Cannot start more than one " +
                             "process for the same origin process id ({}). Skipping process creation. Make sure that the process instantiation " +
                             "conditions configured on the same message in different process templates compute mutual exclusive results.",
                     messageEntity.getMessageName(), String.join(",", processTemplateNamesForInstantiation), originProcessId);
-            return false;
-        } else {
-            processTemplateNamesForInstantiation.forEach(template ->
-                    processUpdateService.createProcessReceived(originProcessId, template, messageEntity));
-            return true;
+            return Optional.empty();
         }
+        // Single process template for instantiation found, return it
+        return processTemplateNamesForInstantiation.stream().findFirst();
     }
 
-    private Set<String> getProcessTemplateNamesNeedingInstantiation(ch.admin.bit.jeap.messaging.model.Message message) {
+    private Set<String> getProcessTemplateNamesInstantiatedByMessage(ch.admin.bit.jeap.messaging.model.Message message) {
         return processTemplateRepository.getMessageReferencesByTemplateNameForMessageName(message.getType().getName())
                 .entrySet().stream()
                 .filter(entry ->
                         entry.getValue().getProcessInstantiationCondition().triggersProcessInstantiation(message))
                 .map(Map.Entry::getKey)
-                .collect(Collectors.toUnmodifiableSet());
+                .collect(toSet());
     }
 
     private Message createAndSaveMessageIfNeeded(ch.admin.bit.jeap.messaging.model.Message message, Set<MessageData> messageData, Set<OriginTaskId> originTaskIds) {

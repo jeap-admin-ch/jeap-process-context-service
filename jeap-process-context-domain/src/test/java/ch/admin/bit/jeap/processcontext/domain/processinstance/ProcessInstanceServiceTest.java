@@ -1,15 +1,10 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
-import ch.admin.bit.jeap.processcontext.domain.PcsConfigProperties;
-import ch.admin.bit.jeap.processcontext.domain.StubMetricsListener;
 import ch.admin.bit.jeap.processcontext.domain.message.*;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateQueryRepository;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateRepository;
 import ch.admin.bit.jeap.processcontext.domain.tx.Transactions;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.EmptySetPayloadExtractor;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.EmptySetReferenceExtractor;
@@ -30,9 +25,11 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,6 +44,8 @@ class ProcessInstanceServiceTest {
     @Mock
     private TaskInstanceRepository taskInstanceRepository;
     @Mock
+    private PendingMessageRepository pendingMessageRepository;
+    @Mock
     private TaskService taskService;
     @Mock
     private ProcessInstanceMigrationService processInstanceMigrationService;
@@ -59,10 +58,6 @@ class ProcessInstanceServiceTest {
     @Mock
     private MessageReferenceRepository messageReferenceRepository;
     @Mock
-    private ProcessUpdateQueryRepository processUpdateQueryRepository;
-    @Mock
-    private ProcessUpdateRepository processUpdateRepository;
-    @Mock
     private ProcessSnapshotService processSnapshotService;
     @Mock
     private RelationService relationService;
@@ -70,17 +65,16 @@ class ProcessInstanceServiceTest {
     private ProcessRelationRepository processRelationRepository;
     @Mock
     private PlatformTransactionManager transactionManager;
+    @Mock
+    private MetricsListener metricsListener;
 
     private ProcessInstanceService target;
     private ProcessContextFactory processContextFactory;
-    private ProcessContextRepositoryFacadeStub processContextRepositoryFacadeStub;
 
     @BeforeEach
     void setUp() {
-        PcsConfigProperties pcsConfigProperties = new PcsConfigProperties();
         Transactions transactions = new Transactions(transactionManager);
-        MetricsListener metricsListener = new StubMetricsListener();
-        processContextRepositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
+        ProcessContextRepositoryFacadeStub processContextRepositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
         processContextFactory = new ProcessContextFactory(processContextRepositoryFacadeStub);
 
         // Setup transaction manager to execute callbacks synchronously
@@ -88,8 +82,23 @@ class ProcessInstanceServiceTest {
         lenient().doNothing().when(transactionManager).commit(any());
         lenient().doNothing().when(transactionManager).rollback(any());
 
+        // Setup metricsListener.timed to execute the callback
+        lenient().doAnswer(invocation -> {
+            ((Runnable) invocation.getArgument(2)).run();
+            return null;
+        }).when(metricsListener).timed(anyString(), anyMap(), any(Runnable.class));
+
+        // Common defaults for process update handling
+        lenient().when(processInstanceMigrationService.applyTemplateMigrationIfChanged(any()))
+                .thenReturn(Optional.empty());
+        lenient().when(processDataService.copyMessageDataToProcessData(any(), any()))
+                .thenReturn(List.of());
+        lenient().when(taskService.planDomainEventTask(any(), any(), any(), any(), any()))
+                .thenReturn(Optional.empty());
+        lenient().when(messageReferenceRepository.save(any(MessageReference.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
         target = new ProcessInstanceService(
-                processUpdateQueryRepository,
                 processInstanceRepository,
                 taskInstanceRepository,
                 taskService,
@@ -98,41 +107,54 @@ class ProcessInstanceServiceTest {
                 processTemplateRepository,
                 messageRepository,
                 messageReferenceRepository,
-                processUpdateRepository,
                 processSnapshotService,
                 relationService,
                 processRelationRepository,
-                processContextFactory,
                 transactions,
                 metricsListener,
-                pcsConfigProperties
-        );
+                new ProcessInstanceFactory(processInstanceRepository, processTemplateRepository, processContextFactory, metricsListener, taskInstanceRepository),
+                pendingMessageRepository);
     }
 
     @Test
-    void updateProcessState_noUpdatesToProcess_doesNothing() {
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of());
+    void handleMessage_messageNotFound_throwsNotFoundException() {
+        UUID unknownMessageId = UUID.randomUUID();
+        when(messageRepository.findById(unknownMessageId))
+                .thenReturn(Optional.empty());
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        assertThatThrownBy(() -> target.handleMessage(ORIGIN_PROCESS_ID, unknownMessageId))
+                .isInstanceOf(NotFoundException.class);
+    }
 
-        verify(processInstanceRepository, never()).save(any());
+    @Test
+    void handleMessage_noProcessInstanceAndNoTemplateName_savesPendingMessage() {
+        Message message = createMessage();
+
+        when(messageRepository.findById(message.getId()))
+                .thenReturn(Optional.of(message));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.empty());
+
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
+
+        ArgumentCaptor<PendingMessage> captor = ArgumentCaptor.forClass(PendingMessage.class);
+        verify(pendingMessageRepository).saveIfNew(captor.capture());
+        PendingMessage saved = captor.getValue();
+        assertThat(saved.getOriginProcessId()).isEqualTo(ORIGIN_PROCESS_ID);
+        assertThat(saved.getMessageId()).isEqualTo(message.getId());
     }
 
     @Test
     void updateProcessState_createProcess_createsNewProcessInstance() {
         ProcessTemplate processTemplate = createSimpleProcessTemplate();
         Message message = createMessage();
-        ProcessUpdate processUpdate = createProcessUpdate(message);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processTemplateRepository.findByName(TEMPLATE_NAME))
-                .thenReturn(Optional.of(processTemplate));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
         when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
                 .thenReturn(Optional.empty());
+        when(processTemplateRepository.findByName(TEMPLATE_NAME))
+                .thenReturn(Optional.of(processTemplate));
         when(processInstanceRepository.save(any(ProcessInstance.class)))
                 .thenAnswer(invocation -> {
                     ProcessInstance pi = invocation.getArgument(0);
@@ -140,10 +162,8 @@ class ProcessInstanceServiceTest {
                     clearTransientFields(pi);
                     return pi;
                 });
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId(), TEMPLATE_NAME);
 
         ArgumentCaptor<ProcessInstance> processInstanceCaptor = ArgumentCaptor.forClass(ProcessInstance.class);
         verify(processInstanceRepository, atLeastOnce()).save(processInstanceCaptor.capture());
@@ -156,26 +176,20 @@ class ProcessInstanceServiceTest {
     void updateProcessState_domainEvent_addsMessageReferenceToExistingProcess() {
         ProcessTemplate processTemplate = createSimpleProcessTemplate();
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         verify(messageReferenceRepository).save(any(MessageReference.class));
-        verify(processUpdateRepository).markHandled(processUpdate.getId());
     }
 
     @Test
-    void updateProcessState_domainEventPlansDynamicTask_plansSingleInstanceTask() {
+    void handleMessage_domainEventPlansDynamicTask_plansSingleInstanceTask() {
         TaskType dynamicTaskType = TaskType.builder()
                 .name("dynamicTask")
                 .cardinality(TaskCardinality.SINGLE_INSTANCE)
@@ -189,26 +203,21 @@ class ProcessInstanceServiceTest {
                 .processRelationPatterns(List.of())
                 .build();
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         // Verify a task was planned via the task service
         verify(taskService).planDomainEventTask(eq(processInstance), eq(dynamicTaskType), any(), any(), any());
     }
 
     @Test
-    void updateProcessState_domainEventPlansMultiInstanceTask_plansTasksForEachOriginTaskId() {
+    void handleMessage_domainEventPlansMultiInstanceTask_plansTasksForEachOriginTaskId() {
         TaskType multiInstanceTaskType = TaskType.builder()
                 .name("multiTask")
                 .cardinality(TaskCardinality.MULTI_INSTANCE)
@@ -223,19 +232,14 @@ class ProcessInstanceServiceTest {
                 .build();
         // Message with multiple origin task ids
         Message message = createMessageWithOriginTaskIds(Set.of("taskId1", "taskId2"));
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         // Two tasks should be planned (one for each origin task id)
         ArgumentCaptor<String> originTaskIdCaptor = ArgumentCaptor.forClass(String.class);
@@ -244,7 +248,7 @@ class ProcessInstanceServiceTest {
     }
 
     @Test
-    void updateProcessState_domainEventWithInstantiationConditionFalse_doesNotPlanTask() {
+    void handleMessage_domainEventWithInstantiationConditionFalse_doesNotPlanTask() {
         TaskType dynamicTaskType = TaskType.builder()
                 .name("conditionalTask")
                 .cardinality(TaskCardinality.SINGLE_INSTANCE)
@@ -259,26 +263,21 @@ class ProcessInstanceServiceTest {
                 .processRelationPatterns(List.of())
                 .build();
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         // No task should be planned due to condition returning false
         verify(taskService, never()).planDomainEventTask(any(), any(), any(), any(), any());
     }
 
     @Test
-    void updateProcessState_observedTask_createsCompletedObservationTask() {
+    void handleMessage_observedTask_createsCompletedObservationTask() {
         TaskType observedTaskType = TaskType.builder()
                 .name("observedTask")
                 .cardinality(TaskCardinality.SINGLE_INSTANCE)
@@ -292,26 +291,21 @@ class ProcessInstanceServiceTest {
                 .processRelationPatterns(List.of())
                 .build();
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         // Observed task should be created via task service
         verify(taskService).addObservationTask(processInstance, observedTaskType, message.getMessageId(), message.getMessageCreatedAt(), message.getId());
     }
 
     @Test
-    void updateProcessState_observedTaskWithConditionFalse_doesNotCreateTask() {
+    void handleMessage_observedTaskWithConditionFalse_doesNotCreateTask() {
         TaskType observedTaskType = TaskType.builder()
                 .name("conditionalObservedTask")
                 .cardinality(TaskCardinality.SINGLE_INSTANCE)
@@ -326,19 +320,14 @@ class ProcessInstanceServiceTest {
                 .processRelationPatterns(List.of())
                 .build();
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         // No task should be created due to condition returning false
         verify(taskService, never()).addObservationTask(any(), any(), any(), any(), any());
@@ -379,21 +368,16 @@ class ProcessInstanceServiceTest {
                 .build();
 
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
         ProcessData processData = new ProcessData("myProcessDataKey", "myValue");
         processData.setProcessInstance(processInstance);
 
         Message correlatedMessage = createMessageWithName("correlatedEvent");
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
         when(processDataService.copyMessageDataToProcessData(processInstance, message))
                 .thenReturn(List.of(processData));
         when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData())
@@ -405,44 +389,37 @@ class ProcessInstanceServiceTest {
         when(messageRepository.findMessagesToCorrelate("correlatedEvent", TEMPLATE_NAME, "myMessageDataKey", "myValue"))
                 .thenReturn(List.of(correlatedMessage));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         // Verify the correlated message was directly applied (message reference saved for both original and correlated message)
         verify(messageReferenceRepository, times(2)).save(any(MessageReference.class));
-        // Verify no ProcessUpdate was saved
-        verify(processUpdateRepository, never()).save(any(ProcessUpdate.class));
     }
 
     @Test
     void updateProcessState_noCorrelationByProcessDataInAnyTemplate_skipsCorrelation() {
         ProcessTemplate processTemplate = createSimpleProcessTemplate();
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
         ProcessData processData = new ProcessData("someKey", "someValue");
         processData.setProcessInstance(processInstance);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
         when(processDataService.copyMessageDataToProcessData(processInstance, message))
                 .thenReturn(List.of(processData));
         when(processTemplateRepository.isAnyTemplateHasEventsCorrelatedByProcessData())
                 .thenReturn(false);
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         // Verify that correlation queries were not made (early exit because no template has process data correlation)
         verify(messageReferenceRepository, never()).findByProcessInstanceId(any());
     }
 
     @Test
-    void updateProcessState_staticTaskCompletedByDomainEvent_completesTask() {
+    void handleMessage_staticTaskCompletedByDomainEvent_completesTask() {
         TaskType staticTask = TaskType.builder()
                 .name("staticTask")
                 .cardinality(TaskCardinality.SINGLE_INSTANCE)
@@ -456,7 +433,6 @@ class ProcessInstanceServiceTest {
                 .processRelationPatterns(List.of())
                 .build();
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
 
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
@@ -465,23 +441,19 @@ class ProcessInstanceServiceTest {
         when(taskInstanceRepository.getTaskInstancesInNonFinalStateOfTypes(processInstance.getProcessTemplate(), processInstance.getId(), Set.of("staticTask")))
                 .thenReturn(List.of(plannedTask));
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         // Task should be evaluated for completion
         verify(taskInstanceRepository).getTaskInstancesInNonFinalStateOfTypes(processInstance.getProcessTemplate(), processInstance.getId(), Set.of("staticTask"));
     }
 
     @Test
-    void updateProcessState_templateMigrationAddsNewTask_plansNewStaticTask() {
+    void handleMessage_templateMigrationAddsNewTask_plansNewStaticTask() {
         // Create process with old template
         TaskType existingTask = TaskType.builder()
                 .name("existingTask")
@@ -509,7 +481,6 @@ class ProcessInstanceServiceTest {
                 .build();
 
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
 
         // Create process instance with old template
         ProcessInstance processInstance = createProcessInstanceWithTemplate(oldTemplate);
@@ -518,16 +489,12 @@ class ProcessInstanceServiceTest {
         clearTransientFields(processInstance);
         processInstance.onAfterLoadFromPersistentState(newTemplate, processContextFactory);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         // Migration service should have been called
         verify(processInstanceMigrationService).applyTemplateMigrationIfChanged(processInstance);
@@ -553,19 +520,14 @@ class ProcessInstanceServiceTest {
                 .processRelationPatterns(List.of(pattern))
                 .build();
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<ProcessRelation>> captor = ArgumentCaptor.forClass(List.class);
@@ -597,21 +559,16 @@ class ProcessInstanceServiceTest {
                 .processRelationPatterns(List.of(pattern))
                 .build();
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
         when(processRelationRepository.exists(eq(processInstance.getId()), any(ProcessRelation.class)))
                 .thenReturn(true);
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         verify(processRelationRepository, never()).saveAll(any());
     }
@@ -620,19 +577,14 @@ class ProcessInstanceServiceTest {
     void updateProcessState_noProcessRelationPatterns_doesNotSaveRelations() {
         ProcessTemplate processTemplate = createSimpleProcessTemplate(); // has empty processRelationPatterns
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         verify(processRelationRepository, never()).saveAll(any());
     }
@@ -657,19 +609,14 @@ class ProcessInstanceServiceTest {
                 .processRelationPatterns(List.of(pattern))
                 .build();
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         verify(processRelationRepository, never()).saveAll(any());
     }
@@ -694,19 +641,14 @@ class ProcessInstanceServiceTest {
                 .processRelationPatterns(List.of(pattern))
                 .build();
         Message message = createMessage();
-        ProcessUpdate processUpdate = createDomainEventUpdate(message);
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
-        when(processUpdateQueryRepository.findByOriginProcessIdAndHandledFalse(ORIGIN_PROCESS_ID))
-                .thenReturn(List.of(processUpdate));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
         when(messageRepository.findById(message.getId()))
                 .thenReturn(Optional.of(message));
-        when(messageReferenceRepository.save(any(MessageReference.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.of(processInstance));
 
-        target.updateProcessState(ORIGIN_PROCESS_ID);
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
         verify(processRelationRepository, never()).saveAll(any());
     }
@@ -774,30 +716,8 @@ class ProcessInstanceServiceTest {
                 .build();
     }
 
-    private ProcessUpdate createProcessUpdate(Message message) {
-        return ProcessUpdate.createProcessReceived()
-                .originProcessId(ORIGIN_PROCESS_ID)
-                .template(TEMPLATE_NAME)
-                .messageReference(message.getId())
-                .messageName(message.getMessageName())
-                .idempotenceId(message.getIdempotenceId())
-                .build();
-    }
-
-    private ProcessUpdate createDomainEventUpdate(Message message) {
-        return ProcessUpdate.messageReceived()
-                .originProcessId(ORIGIN_PROCESS_ID)
-                .messageReference(message.getId())
-                .messageName(message.getMessageName())
-                .idempotenceId(message.getIdempotenceId())
-                .build();
-    }
-
-    /**
-     * Clears the transient fields to simulate JPA behavior after persistence.
-     */
+    // Clears the transient fields to simulate JPA behavior after persistence.
     private void clearTransientFields(ProcessInstance processInstance) {
         ReflectionTestUtils.setField(processInstance, "processTemplate", null);
     }
-
 }

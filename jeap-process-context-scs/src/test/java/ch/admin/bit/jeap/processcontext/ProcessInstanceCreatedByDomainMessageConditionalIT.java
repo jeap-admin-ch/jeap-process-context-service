@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.processcontext;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.PendingMessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateRepository;
 import ch.admin.bit.jeap.processcontext.event.test5.Test5CreatingProcessInstanceEvent;
 import ch.admin.bit.jeap.processcontext.processinstantiation.TestProcessInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.testevent.Test5CreatingProcessInstanceEventBuilder;
@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -31,9 +30,8 @@ class ProcessInstanceCreatedByDomainMessageConditionalIT extends ProcessInstance
 
     @Autowired
     private ProcessInstanceRepository processInstanceRepository;
-
     @Autowired
-    private ProcessUpdateRepository processUpdateRepository;
+    private PendingMessageRepository pendingMessageRepository;
 
     @Override
     public JeapAuthenticationToken viewAndCreateRoleToken() {
@@ -57,11 +55,9 @@ class ProcessInstanceCreatedByDomainMessageConditionalIT extends ProcessInstance
     void test_whenReceivedDomainDoesNotMeetCondition_thenEventProcessedButNoProcessInstanceCreated() {
         final String originProcessIdForConditionNotMet = Generators.timeBasedEpochGenerator().generate().toString();
         assertThat(processInstanceRepository.existsByOriginProcessId(originProcessIdForConditionNotMet)).isFalse();
-        assertThat(processUpdateRepository.countAllByOriginProcessIdIn(Set.of(originProcessIdForConditionNotMet))).isEqualTo(0);
 
         // Send event that does not meet the condition to trigger a process instantiation
         sendTest5CreatingProcessInstanceEvent(originProcessIdForConditionNotMet, TestProcessInstantiationCondition.NO_TRIGGER);
-
 
         waitForProcessUpdateToBeCreated(originProcessIdForConditionNotMet);
         assertThatThrownBy(() -> waitForProcessToBeCreated(originProcessIdForConditionNotMet, Duration.ofSeconds(5)))
@@ -79,7 +75,7 @@ class ProcessInstanceCreatedByDomainMessageConditionalIT extends ProcessInstance
     private void waitForProcessUpdateToBeCreated(String originProcessId) {
         Awaitility.await()
                 .pollInSameThread()
-                .until(() -> processUpdateRepository.countAllByOriginProcessIdIn(Set.of(originProcessId)) == 1);
+                .until(() -> pendingMessageRepository.findByOriginProcessId(originProcessId).size() == 1);
     }
 
     private void waitForProcessToBeCreated(String originProcessId, Duration duration) {
@@ -88,5 +84,4 @@ class ProcessInstanceCreatedByDomainMessageConditionalIT extends ProcessInstance
                 .atMost(duration)
                 .until(() -> processInstanceRepository.existsByOriginProcessId(originProcessId));
     }
-
 }

@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.listener.CommonErrorHandler;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.util.UUID;
+
 import static org.mockito.Mockito.*;
 
 class InternalEventsIT extends KafkaAdapterIntegrationTestBase {
@@ -18,14 +20,23 @@ class InternalEventsIT extends KafkaAdapterIntegrationTestBase {
 
     @Test
     void produceAndConsumeProcessContextOutdatedEvent() {
-        eventProducer.produceProcessContextOutdatedEventSynchronously("1234");
-        verify(processInstanceService, timeout(TEST_TIMEOUT)).updateProcessState("1234");
+        UUID messageId = UUID.randomUUID();
+        eventProducer.produceProcessContextOutdatedEventSynchronously("1234", messageId, "message", "456");
+        verify(processInstanceService, timeout(TEST_TIMEOUT)).handleMessage("1234", messageId);
+        verifyNoErrorHandlingInteractions(errorHandler);
+    }
+
+    @Test
+    void produceAndConsumeProcessContextOutdatedEvent_createProcess() {
+        UUID messageId = UUID.randomUUID();
+        eventProducer.produceProcessContextOutdatedCreateProcessEventSynchronously("1234", messageId, "message", "456", "template");
+        verify(processInstanceService, timeout(TEST_TIMEOUT)).handleMessage("1234", messageId, "template");
         verifyNoErrorHandlingInteractions(errorHandler);
     }
 
     @Test
     void produceAndConsumeProcessContextOutdatedEvent_triggerMigration() {
-        eventProducer.produceProcessContextOutdatedMigrationTriggerEventSynchronously("1234");
+        eventProducer.produceProcessContextOutdatedMigrationTriggerEventSynchronously("1234", "4567");
         verify(processInstanceService, timeout(TEST_TIMEOUT)).migrateProcessInstanceTemplate("1234");
         verifyNoErrorHandlingInteractions(errorHandler);
     }

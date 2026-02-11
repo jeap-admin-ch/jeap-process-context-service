@@ -25,6 +25,11 @@ public class MessageReferenceRepositoryImpl implements MessageReferenceRepositor
     }
 
     @Override
+    public boolean existsByProcessInstanceIdAndMessageId(UUID processInstanceId, UUID messageId) {
+        return messageReferenceJpaRepository.existsByProcessInstanceIdAndMessageId(processInstanceId, messageId);
+    }
+
+    @Override
     public List<MessageReferenceMessageDTO> findByProcessInstanceId(UUID processInstanceId) {
         return messageReferenceJpaRepository.findMessageReferencesWithMessagesByProcessInstanceId(processInstanceId)
                 .stream()

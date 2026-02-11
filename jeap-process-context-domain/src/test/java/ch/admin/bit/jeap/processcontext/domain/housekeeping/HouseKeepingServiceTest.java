@@ -1,10 +1,10 @@
 package ch.admin.bit.jeap.processcontext.domain.housekeeping;
 
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.PendingMessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceQueryResult;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessState;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateRepository;
 import com.fasterxml.uuid.Generators;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +38,10 @@ class HouseKeepingServiceTest {
     private ProcessInstanceRepository processInstanceRepository;
 
     @Mock
-    private ProcessUpdateRepository processUpdateRepository;
+    private MessageRepository messageRepository;
 
     @Mock
-    private MessageRepository messageRepository;
+    private PendingMessageRepository pendingMessageRepository;
 
     @Mock
     private HouseKeepingConfigProperties houseKeepingConfigProperties;
@@ -54,17 +54,14 @@ class HouseKeepingServiceTest {
     @Captor
     private ArgumentCaptor<Set<UUID>> uuidCaptor;
 
-    @Captor
-    private ArgumentCaptor<Set<String>> processUpdateDeletionCaptor;
-
     @BeforeEach
     void beforeEach() {
         houseKeepingConfigProperties = new HouseKeepingConfigProperties();
         houseKeepingConfigProperties.setPageSize(5);
         houseKeepingConfigProperties.setMaxPages(100);
 
-        houseKeepingService = new HouseKeepingService(processInstanceRepository, processUpdateRepository,
-                messageRepository, houseKeepingConfigProperties, transactionManager);
+        houseKeepingService = new HouseKeepingService(processInstanceRepository,
+                messageRepository, pendingMessageRepository, houseKeepingConfigProperties, transactionManager);
     }
 
     @Test
@@ -122,13 +119,13 @@ class HouseKeepingServiceTest {
         @SuppressWarnings("unchecked")
         Slice<ProcessInstanceQueryResult> firstPage = mock(Slice.class);
         when(firstPage.hasNext()).thenReturn(true);
-        Set<ProcessInstanceQueryResult> firstSet = Set.of(ProcessInstanceQueryResultImpl.builder().id(Generators.timeBasedEpochGenerator().generate()).originProcessId("1").build());
+        Set<ProcessInstanceQueryResult> firstSet = Set.of(ProcessInstanceQueryResultImpl.builder().id(Generators.timeBasedEpochGenerator().generate()).build());
         when(firstPage.toSet()).thenReturn(firstSet);
 
         @SuppressWarnings("unchecked")
         Slice<ProcessInstanceQueryResult> secondPage = mock(Slice.class);
         when(secondPage.hasNext()).thenReturn(false);
-        Set<ProcessInstanceQueryResult> secondSet = Set.of(ProcessInstanceQueryResultImpl.builder().id(Generators.timeBasedEpochGenerator().generate()).originProcessId("2").build());
+        Set<ProcessInstanceQueryResult> secondSet = Set.of(ProcessInstanceQueryResultImpl.builder().id(Generators.timeBasedEpochGenerator().generate()).build());
         when(secondPage.toSet()).thenReturn(secondSet);
 
         when(processInstanceRepository.findProcessInstances(any(ProcessState.class), any(ZonedDateTime.class), any(Pageable.class)))
@@ -138,31 +135,20 @@ class HouseKeepingServiceTest {
 
         verify(processInstanceRepository, times(2)).findProcessInstances(any(ProcessState.class), any(ZonedDateTime.class), any(Pageable.class));
         verify(processInstanceRepository, times(2)).deleteAllById(uuidCaptor.capture());
-        verify(processUpdateRepository, times(2)).deleteAllByOriginProcessIdIn(processUpdateDeletionCaptor.capture());
 
         final List<Set<UUID>> uuidCaptorAllValues = uuidCaptor.getAllValues();
         assertThat(uuidCaptorAllValues.getFirst()).isEqualTo(firstSet.stream().map(ProcessInstanceQueryResult::getId).collect(Collectors.toSet()));
         assertThat(uuidCaptorAllValues.get(1)).isEqualTo(secondSet.stream().map(ProcessInstanceQueryResult::getId).collect(Collectors.toSet()));
-
-        final List<Set<String>> processUpdateDeletionCaptorAllValues = processUpdateDeletionCaptor.getAllValues();
-        assertThat(processUpdateDeletionCaptorAllValues.getFirst()).isEqualTo(firstSet.stream().map(ProcessInstanceQueryResult::getOriginProcessId).collect(Collectors.toSet()));
-        assertThat(processUpdateDeletionCaptorAllValues.get(1)).isEqualTo(secondSet.stream().map(ProcessInstanceQueryResult::getOriginProcessId).collect(Collectors.toSet()));
     }
 
     @RequiredArgsConstructor
     @Builder
     private static class ProcessInstanceQueryResultImpl implements ProcessInstanceQueryResult {
         private final UUID id;
-        private final String originProcessId;
 
         @Override
         public UUID getId() {
             return id;
-        }
-
-        @Override
-        public String getOriginProcessId() {
-            return originProcessId;
         }
     }
 

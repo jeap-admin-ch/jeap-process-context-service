@@ -11,6 +11,7 @@ import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationVi
 import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
+import io.micrometer.core.annotation.Timed;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -46,6 +47,7 @@ public class ProcessSnapshotService {
         }
     }
 
+    @Timed(value = "jeap_pcs_create_snapshot", percentiles = {0.5, 0.8, 0.99})
     public void createAndStoreSnapshot(ProcessInstance processInstance) {
         ProcessSnapshotArchiveData processSnapshotArchiveData = createProcessSnapshotArchiveData(processInstance);
         processSnapshotRepository.orElseThrow().storeSnapshot(processSnapshotArchiveData);

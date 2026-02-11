@@ -10,7 +10,6 @@ import static ch.admin.bit.jeap.processcontext.domain.Language.DE;
 @Configuration
 @ConfigurationProperties(prefix = "jeap.processcontext")
 public class PcsConfigProperties {
-    private int processInstanceUpdateApplicationBatchSize = 10;
     private Language processSnapshotLanguage = DE;
     private int processSnapshotArchiveRetentionPeriodMonths = 60;
 }

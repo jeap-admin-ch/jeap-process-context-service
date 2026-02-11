@@ -1,14 +1,11 @@
 package ch.admin.bit.jeap.processcontext;
 
 import ch.admin.bit.jeap.messaging.kafka.test.KafkaIntegrationTestBase;
-import ch.admin.bit.jeap.messaging.model.Message;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.ProcessInstanceController;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceDTO;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessState;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdate;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateQueryRepository;
 import ch.admin.bit.jeap.processcontext.event.process.snapshot.created.ProcessSnapshotCreatedEvent;
 import ch.admin.bit.jeap.security.resource.semanticAuthentication.SemanticApplicationRole;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
@@ -23,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -61,14 +57,9 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
     @Autowired
     protected ProcessInstanceController processInstanceController;
     @Autowired
-    protected ProcessUpdateQueryRepository processUpdateQueryRepository;
-    @Autowired
     protected EventListenerStub<ProcessSnapshotCreatedEvent> processSnapshotCreatedEventListener;
     @Autowired
     protected ProcessTemplateRepository processTemplateRepository;
-    @Autowired
-    private KafkaListenerEndpointRegistry registry;
-
     @MockitoBean
     private TranslateService translateService;
 
@@ -102,8 +93,8 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
     void clearDatabase() {
         originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
         jdbcTemplate.update("DELETE FROM task_instance");
-        jdbcTemplate.update("DELETE FROM process_update");
         jdbcTemplate.update("DELETE FROM process_instance_process_data");
+        jdbcTemplate.update("DELETE FROM pending_message");
         jdbcTemplate.update("DELETE FROM events_event_data");
         jdbcTemplate.update("DELETE FROM event_reference");
         jdbcTemplate.update("DELETE FROM events_origin_task_ids");
@@ -127,18 +118,6 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
         return TaskInstanceAssertionDto.toTaskInstanceAssertions(processInstanceController.getProcessInstanceByOriginProcessId(originProcessId));
     }
 
-    protected void awaitProcessUpdateHandled(String originProcessId, Message message) {
-        String idempotenceId = message.getIdentity().getIdempotenceId();
-        String messageTypeName = message.getType().getName();
-
-        Awaitility.await()
-                .pollInSameThread()
-                .until(() -> processUpdateQueryRepository.findByOriginProcessIdAndMessageNameAndIdempotenceId(originProcessId, messageTypeName, idempotenceId)
-                        .map(ProcessUpdate::isHandled)
-                        .orElse(false)
-                );
-    }
-
     protected void assertProcessInstanceCompleted(String originProcessId) {
         Awaitility.await()
                 .pollInSameThread()
@@ -148,10 +127,10 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
                 });
     }
 
-    protected void assertSnapshotCreatedEvent(int snapshotVersion) {
+    protected void assertSnapshotCreatedEvent() {
             processSnapshotCreatedEventListener
                     .awaitEvent(e -> originProcessId.equals(e.getProcessId()) &&
-                            (e.getReferences().getReference().getSnapshotVersion() == snapshotVersion));
+                            (e.getReferences().getReference().getSnapshotVersion() == 1));
     }
 
     protected void assertProcessInstanceCreated(String originProcessId, String processName) {

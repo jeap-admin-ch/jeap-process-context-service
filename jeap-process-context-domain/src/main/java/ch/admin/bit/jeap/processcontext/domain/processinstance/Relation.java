@@ -48,7 +48,7 @@ public class Relation {
     @EqualsAndHashCode.Exclude
     private ZonedDateTime createdAt;
     /**
-     * Persistent relation idempotence ID. Technical identifier used mainly to check whether a relation has alread been
+     * Persistent relation idempotence ID. Technical identifier used mainly to check whether a relation has already been
      * notified externally.
      */
     @EqualsAndHashCode.Exclude

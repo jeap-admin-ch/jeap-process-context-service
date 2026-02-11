@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.nullable;
@@ -35,6 +36,7 @@ class ProcessInstanceMigrationTriggerServiceTest {
         ProcessInstanceMigrationTriggerService migrationService =
                 new ProcessInstanceMigrationTriggerService(processTemplateRepository, processInstanceRepository, internalMessageProducer);
         ZonedDateTime afterStub = ZonedDateTime.now();
+        String idempotenceId = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(afterStub);
         ProcessTemplate template = ProcessInstanceStubs.createSimpleProcessTemplate();
         when(processTemplateRepository.getAllTemplates()).thenReturn(List.of(template));
         when(processInstanceRepository.findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
@@ -43,7 +45,7 @@ class ProcessInstanceMigrationTriggerServiceTest {
 
         migrationService.triggerMigrationForModifiedTemplates(afterStub);
 
-        verify(internalMessageProducer).produceProcessContextOutdatedMigrationTriggerEventSynchronously(CHANGED_TEMPLATE_ORIGIN_PROCESS_ID);
+        verify(internalMessageProducer).produceProcessContextOutdatedMigrationTriggerEventSynchronously(CHANGED_TEMPLATE_ORIGIN_PROCESS_ID, idempotenceId);
         verifyNoMoreInteractions(internalMessageProducer);
     }
 }

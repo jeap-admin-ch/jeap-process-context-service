@@ -61,7 +61,7 @@ class ProcessSnapshotIT extends ProcessInstanceMockS3ITBase {
         assertThat(snapshot.getMetadata().getSnapshotVersion()).isEqualTo(1);
 
         // Snapshot created events should have been published for the snapshot
-        assertSnapshotCreatedEvent(1);
+        assertSnapshotCreatedEvent();
     }
 
     private void assertMessageCount(String originProcessId, String messageType, long count) {

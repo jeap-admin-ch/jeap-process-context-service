@@ -54,7 +54,7 @@ class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessId);
         assertProcessInstanceCompleted(originProcessId);
-        assertSnapshotCreatedEvent(1);
+        assertSnapshotCreatedEvent();
         Awaitility.await()
                 .pollInterval(Duration.ofSeconds(2))
                 .until(() -> relationListenerStub.getRelations(originProcessId).size() == 4);
@@ -73,8 +73,7 @@ class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
                 .body(containsString("jeap_pcs_process_message"))
                 .body(containsString("jeap_pcs_early_correlate_message"))
                 .body(containsString("jeap_pcs_update_process_state"))
-                .body(containsString("pcs_process_batch_update"))
-                .body(containsString("pcs_process_single_update"))
+                .body(containsString("pcs_process_update"))
                 .body(containsString("jeap_pcs_late_correlate_message"))
                 .body(containsString("jeap_pcs_produce_snapshot_events"))
                 .body(containsString("jeap_pcs_produce_process_snapshot_created_event"))

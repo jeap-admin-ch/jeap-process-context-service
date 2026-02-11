@@ -1,10 +1,10 @@
 package ch.admin.bit.jeap.processcontext.domain.housekeeping;
 
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.PendingMessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceQueryResult;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessState;
-import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateRepository;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Component
@@ -29,20 +28,20 @@ public class HouseKeepingService {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy - HH:mm:ss Z");
 
     private final ProcessInstanceRepository processInstanceRepository;
-    private final ProcessUpdateRepository processUpdateRepository;
     private final MessageRepository messageRepository;
+    private final PendingMessageRepository pendingMessageRepository;
     private final HouseKeepingConfigProperties configProperties;
     private final TransactionTemplate transactionTemplate;
     private final Pageable pageable;
 
     public HouseKeepingService(ProcessInstanceRepository processInstanceRepository,
-                               ProcessUpdateRepository processUpdateRepository,
                                MessageRepository messageRepository,
+                               PendingMessageRepository pendingMessageRepository,
                                HouseKeepingConfigProperties configProperties,
                                PlatformTransactionManager transactionManager) {
         this.processInstanceRepository = processInstanceRepository;
-        this.processUpdateRepository = processUpdateRepository;
         this.messageRepository = messageRepository;
+        this.pendingMessageRepository = pendingMessageRepository;
         this.configProperties = configProperties;
         this.pageable = Pageable.ofSize(configProperties.getPageSize());
 
@@ -50,12 +49,12 @@ public class HouseKeepingService {
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
-    @Timed(value = "jeap_pcs_housekeeping_cleanup", percentiles = {0.5, 0.8, 0.95, 0.99})
+    @Timed(value = "jeap_pcs_housekeeping_cleanup", percentiles = {0.5, 0.8, 0.99})
     public void cleanup() {
         deleteProcessInstances(ProcessState.COMPLETED, configProperties.getCompletedProcessInstancesMaxAge());
         deleteProcessInstances(ProcessState.STARTED, configProperties.getStartedProcessInstancesMaxAge());
+        deletePendingMessages(configProperties.getEventsMaxAge());
         deleteMessagesWithoutProcessCorrelation(configProperties.getEventsMaxAge());
-        deleteUnhandledProcessUpdates(configProperties.getProcessUpdateMaxAge());
     }
 
     protected void deleteProcessInstances(ProcessState processState, Duration maxAge) {
@@ -65,14 +64,12 @@ public class HouseKeepingService {
     }
 
     private boolean deleteProcessInstancePage(ProcessState processState, ZonedDateTime olderThan) {
-        final Slice<ProcessInstanceQueryResult> resultPage = processInstanceRepository.findProcessInstances(processState, olderThan, pageable);
+        Slice<ProcessInstanceQueryResult> resultPage = processInstanceRepository.findProcessInstances(processState, olderThan, pageable);
         log.info("Housekeeping: found {} processInstances", resultPage.getNumberOfElements());
 
-        final Set<ProcessInstanceQueryResult> processInstances = resultPage.toSet();
+        Set<ProcessInstanceQueryResult> processInstances = resultPage.toSet();
         deleteProcessInstances(processInstances.stream().map(ProcessInstanceQueryResult::getId).collect(Collectors.toSet()));
 
-        final Set<String> originProcessIds = processInstances.stream().map(ProcessInstanceQueryResult::getOriginProcessId).collect(Collectors.toSet());
-        deleteProcessUpdates(originProcessIds);
         return resultPage.hasNext();
     }
 
@@ -85,12 +82,20 @@ public class HouseKeepingService {
         }
     }
 
-    // Process Updates (process_update)
-    private void deleteProcessUpdates(Set<String> originProcessIds) {
-        log.info("Housekeeping: delete processUpdates...");
-        final long count = processUpdateRepository.countAllByOriginProcessIdIn(originProcessIds);
-        processUpdateRepository.deleteAllByOriginProcessIdIn(originProcessIds);
-        log.info("Housekeeping: deleted {} processUpdates", count);
+    // PendingMessages (message_id)
+    protected void deletePendingMessages(Duration maxAge) {
+        ZonedDateTime olderThan = ZonedDateTime.now().minus(maxAge);
+        log.info("Housekeeping: find pending mesages which are older than {} ({})", maxAge, olderThan.format(DATE_TIME_FORMATTER));
+        executeInTransactionPerPage(() -> deletePendingMessages(olderThan));
+    }
+
+    private boolean deletePendingMessages(ZonedDateTime olderThan) {
+        Slice<UUID> resultPage = pendingMessageRepository.findPendingMessagesCreatedBefore(olderThan, pageable);
+        log.info("Housekeeping: found {} pending messages to delete", resultPage.getNumberOfElements());
+        Set<UUID> pendingMessageIds = resultPage.toSet();
+        pendingMessageRepository.deleteAll(pendingMessageIds);
+        log.info("Housekeeping: deleted {} pending messages", pendingMessageIds.size());
+        return resultPage.hasNext();
     }
 
     // Messages (events, events_event_data, events_origin_task_ids)
@@ -101,29 +106,14 @@ public class HouseKeepingService {
     }
 
     private boolean deleteMessagesWithoutProcessCorrelationPage(ZonedDateTime olderThan) {
-        final Slice<UUID> resultPage = messageRepository.findMessagesWithoutProcessCorrelation(olderThan, pageable);
+        Slice<UUID> resultPage = messageRepository.findMessagesWithoutProcessCorrelation(olderThan, pageable);
         log.info("Housekeeping: found {} messages to delete", resultPage.getNumberOfElements());
-        final Set<UUID> messageIds = resultPage.toSet();
+        Set<UUID> messageIds = resultPage.toSet();
         messageRepository.deleteMessageDataByMessageIds(messageIds);
         messageRepository.deleteMessageUserDataByMessageIds(messageIds);
         messageRepository.deleteOriginTaskIdByMessageIds(messageIds);
         messageRepository.deleteMessageByIds(messageIds);
         log.info("Housekeeping: deleted {} messages", messageIds.size());
-        return resultPage.hasNext();
-    }
-
-    // Process Updates (process_update)
-    protected void deleteUnhandledProcessUpdates(Duration maxAge) {
-        ZonedDateTime olderThan = ZonedDateTime.now().minus(maxAge);
-        log.info("Housekeeping: find process updates which are older than {} ({}) where handled = false", maxAge, olderThan.format(DATE_TIME_FORMATTER));
-        executeInTransactionPerPage(() -> deleteUnhandledProcessUpdatesPage(olderThan));
-    }
-
-    private boolean deleteUnhandledProcessUpdatesPage(ZonedDateTime olderThan) {
-        final Slice<UUID> resultPage = processUpdateRepository.findProcessUpdateIdWithHandledFalse(olderThan, pageable);
-        final Set<UUID> processUpdateIds = resultPage.toSet();
-        processUpdateRepository.deleteAllById(processUpdateIds);
-        log.info("Housekeeping: deleted {} process updates", processUpdateIds.size());
         return resultPage.hasNext();
     }
 

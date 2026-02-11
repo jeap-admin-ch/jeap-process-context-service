@@ -61,7 +61,7 @@ class ProcessInstanceProcessDataMessageDataMigrationIT extends ProcessInstanceMo
                 .executeUpdate());
 
         // Trigger migration for process instances with changed template hash
-        processInstanceService.updateProcessState(originProcessId);
+        processInstanceService.migrateProcessInstanceTemplate(originProcessId);
 
         transactions.withinNewTransaction(() -> {
             ProcessInstance processInstance = processInstanceRepository.findByOriginProcessId(originProcessId).orElseThrow();

@@ -3,12 +3,11 @@ package ch.admin.bit.jeap.processcontext.adapter.kafka.internalevent.producer;
 
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventBuilder;
 import ch.admin.bit.jeap.processcontext.internal.event.key.ProcessContextProcessIdKey;
-import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessContextOutdatedEvent;
-import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessContextOutdatedPayload;
-import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessContextOutdatedReferences;
-import com.fasterxml.uuid.Generators;
+import ch.admin.bit.jeap.processcontext.internal.event.outdated.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 class InternalMessageFactory {
@@ -19,14 +18,21 @@ class InternalMessageFactory {
     @Value("${jeap.messaging.kafka.service-name}")
     private String serviceName;
 
-    ProcessContextOutdatedEvent processContextOutdatedEvent(String originProcessId) {
-        return new ProcessContextUpdatedEventBuilder(originProcessId)
+    ProcessContextOutdatedEvent processContextOutdatedCreateProcessEvent(String originProcessId, UUID messageId,
+                                                                         String messageName, String idempotenceId, String templateName) {
+        return new ProcessContextUpdatedEventBuilder(originProcessId, messageName, idempotenceId)
+                .messageCreatingProcessReceived(messageId, templateName)
                 .build();
     }
 
+    ProcessContextOutdatedEvent processContextOutdatedEvent(String originProcessId, UUID messageId, String messageName, String idempotenceId) {
+        return new ProcessContextUpdatedEventBuilder(originProcessId, messageName, idempotenceId)
+                .messageReceived(messageId)
+                .build();
+    }
 
-    ProcessContextOutdatedEvent processContextOutdatedMigrationTriggerEvent(String originProcessId) {
-        return new ProcessContextUpdatedEventBuilder(originProcessId)
+    ProcessContextOutdatedEvent processContextOutdatedMigrationTriggerEvent(String originProcessId, String idempotenceId) {
+        return new ProcessContextUpdatedEventBuilder(originProcessId, "migration", idempotenceId)
                 .triggerMigration()
                 .build();
     }
@@ -39,24 +45,45 @@ class InternalMessageFactory {
 
     private class ProcessContextUpdatedEventBuilder extends AvroDomainEventBuilder<ProcessContextUpdatedEventBuilder, ProcessContextOutdatedEvent> {
 
-        protected ProcessContextUpdatedEventBuilder(String originProcessId) {
+        /**
+         * @param originProcessId Origin Process ID, mapped to the processId attribute of the event
+         * @param idempotenceId   Idempotence ID
+         */
+        protected ProcessContextUpdatedEventBuilder(String originProcessId, String messageName, String idempotenceId) {
             super(ProcessContextOutdatedEvent::new);
             setProcessId(originProcessId);
             setReferences(ProcessContextOutdatedReferences.newBuilder().build());
-            // A UUID is sufficient here, processing these events is naturally idempotent (actions are only taken if necessary due to the current process context state)
-            idempotenceId = Generators.timeBasedEpochGenerator().generate().toString();
+            this.idempotenceId = createIdempotenceId(originProcessId, messageName, idempotenceId);
+        }
+
+        private static String createIdempotenceId(String originProcessId, String messageName, String idempotenceId) {
+            return originProcessId + "-" + messageName + "-" + idempotenceId;
         }
 
         ProcessContextUpdatedEventBuilder triggerMigration() {
             setPayload(ProcessContextOutdatedPayload.newBuilder()
-                    .setTriggerMigration(true)
+                    .setProcessUpdateType(ProcessUpdateType.MIGRATION_TRIGGERED)
                     .build());
             return this;
         }
 
-        @Override
-        protected String getSpecifiedMessageTypeVersion() {
-            return "1.0.0";
+        ProcessContextUpdatedEventBuilder messageReceived(UUID messageId) {
+            setPayload(ProcessContextOutdatedPayload.newBuilder()
+                    .setProcessUpdateType(ProcessUpdateType.MESSAGE_RECEIVED)
+                    .setReceivedMessageBuilder(ReceivedMessage.newBuilder()
+                            .setMessageId(messageId))
+                    .build());
+            return this;
+        }
+
+        public ProcessContextUpdatedEventBuilder messageCreatingProcessReceived(UUID messageId, String templateName) {
+            setPayload(ProcessContextOutdatedPayload.newBuilder()
+                    .setProcessUpdateType(ProcessUpdateType.PROCESS_CREATION_MESSAGE_RECEIVED)
+                    .setReceivedProcessCreationMessageBuilder(ReceivedProcessCreationMessage.newBuilder()
+                            .setMessageId(messageId)
+                            .setTemplateName(templateName))
+                    .build());
+            return this;
         }
 
         @Override
