@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.auth.signer.AwsS3V4Signer;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.http.urlconnection.ProxyConfiguration;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -35,7 +37,10 @@ public class TimedS3Client {
             log.info("Using the provided aws credentials provider.");
         }
 
-        ClientOverrideConfiguration.Builder overrideConfig = ClientOverrideConfiguration.builder();
+        @SuppressWarnings("deprecation")
+        ClientOverrideConfiguration clientOverrideConfiguration = ClientOverrideConfiguration.builder()
+                .putAdvancedOption(SdkAdvancedClientOption.SIGNER, AwsS3V4Signer.create())
+                .build();
         S3ClientBuilder s3ClientBuilder = S3Client.builder()
                 .region(connectionProperties.getRegion())
                 .forcePathStyle(true)
@@ -46,7 +51,7 @@ public class TimedS3Client {
                                 .useEnvironmentVariablesValues(false)
                                 .build())
                         .build())
-                .overrideConfiguration(overrideConfig.build());
+                .overrideConfiguration(clientOverrideConfiguration);
         if (hasText(connectionProperties.getAccessUrl())) {
             log.info("Overriding S3 API endpoint URL in S3 client with {}.", connectionProperties.getAccessUrl());
             s3ClientBuilder.endpointOverride(createEndpointURI(connectionProperties.getAccessUrl()));
