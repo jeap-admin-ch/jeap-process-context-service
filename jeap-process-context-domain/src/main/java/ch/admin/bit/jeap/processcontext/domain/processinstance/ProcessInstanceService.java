@@ -91,19 +91,23 @@ public class ProcessInstanceService {
     }
 
     private void handlePendingMessagesForNewProcessInstance(String originProcessId, UUID messageId, ProcessInstance processInstance) {
-        List<PendingMessage> pendingMessages = pendingMessageRepository.findByOriginProcessId(originProcessId);
-        for (PendingMessage pendingMessage : pendingMessages) {
-            Message messageToHandle = messageRepository.findById(pendingMessage.getMessageId())
-                    .orElseThrow(NotFoundException.messageNotFound(messageId, originProcessId));
-            handleMessageForProcessInstance(processInstance, messageToHandle);
-        }
-        pendingMessageRepository.deleteAll(pendingMessages);
+        metricsListener.timed("jeap_pcs_handle_pending_messages", Map.of(), () -> {
+            List<PendingMessage> pendingMessages = pendingMessageRepository.findByOriginProcessId(originProcessId);
+            for (PendingMessage pendingMessage : pendingMessages) {
+                Message messageToHandle = messageRepository.findById(pendingMessage.getMessageId())
+                        .orElseThrow(NotFoundException.messageNotFound(messageId, originProcessId));
+                handleMessageForProcessInstance(processInstance, messageToHandle);
+            }
+            pendingMessageRepository.deleteAll(pendingMessages);
+        });
     }
 
     private void handleMessageForProcessInstance(ProcessInstance processInstance, Message message) {
-        applyTemplateMigrationsIfRequired(processInstance);
-        processUpdate(processInstance, message);
-        metricsListener.processUpdateProcessed(processInstance.getProcessTemplate());
+        metricsListener.timed("jeap_pcs_handle_message_for_process_instance", Map.of(), () -> {
+            applyTemplateMigrationsIfRequired(processInstance);
+            processUpdate(processInstance, message);
+            metricsListener.processUpdateProcessed(processInstance.getProcessTemplate());
+        });
     }
 
     private void migrateProcessInstanceTemplateIfNeeded(String originProcessId) {
@@ -164,7 +168,7 @@ public class ProcessInstanceService {
                     () -> correlateMessagesByProcessDataIfRequired(processInstance, newProcessData));
         }
 
-        metricsListener.timed("pcs_process_update", Map.of(), () ->
+        metricsListener.timed("jeap_pcs_process_update", Map.of(), () ->
                 updateProcessInstance(processInstance, messageReferenceMessageDTO, message));
         countCompletionIfCompleted(processInstance, stateBeforeUpdate);
         createProcessSnapshotIfTriggered(processInstance);

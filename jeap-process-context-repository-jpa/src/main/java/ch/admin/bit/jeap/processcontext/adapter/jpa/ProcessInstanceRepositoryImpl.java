@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +20,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
+@Timed(value = "jeap.pcs.repository.processinstance", percentiles = .95)
 class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
 
     private final ProcessInstanceJpaRepository processInstanceJpaRepository;

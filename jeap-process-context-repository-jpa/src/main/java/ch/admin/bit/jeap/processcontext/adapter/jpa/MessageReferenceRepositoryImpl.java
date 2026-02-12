@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReference;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReferenceMessageDTO;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Timed(value = "jeap.pcs.repository.messagereference", percentiles = .95)
 public class MessageReferenceRepositoryImpl implements MessageReferenceRepository {
 
     private final MessageReferenceJpaRepository messageReferenceJpaRepository;

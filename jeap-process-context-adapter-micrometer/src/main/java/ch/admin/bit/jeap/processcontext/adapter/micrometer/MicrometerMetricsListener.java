@@ -17,18 +17,16 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class MicrometerMetricsListener implements MetricsListener {
 
-    private static final String PCS_FAILED_PROCESS_UPDATES = "pcs_failed_process_updates";
-    private static final String PCS_PROCESS_INSTANCE_CREATED = "pcs_process_instances_created";
-    private static final String PCS_MESSAGES_RECEIVED = "pcs_messages_received";
-    private static final String PCS_COMMAND_RECEIVED = "pcs_commands_received";
-    private static final String PCS_PROCESS_UPDATE_PROCESSED = "pcs_process_updates_processed";
-    private static final String PCS_PROCESS_COMPLETED = "pcs_processes_completed";
-    private static final String PCS_SNAPSHOT_CREATED = "pcs_snapshot_created";
+    private static final String PCS_FAILED_PROCESS_UPDATES = "jeap_pcs_failed_process_updates";
+    private static final String PCS_PROCESS_CREATED_INSTANCES = "jeap_pcs_process_created_instances";
+    private static final String PCS_MESSAGES_RECEIVED = "jeap_pcs_messages_received";
+    private static final String PCS_PROCESS_UPDATE_PROCESSED = "jeap_pcs_process_updates_processed";
+    private static final String PCS_PROCESS_COMPLETED = "jeap_pcs_processes_completed";
+    private static final String PCS_SNAPSHOT_CREATED = "jeap_pcs_snapshot_created";
 
     private static final String PROCESS_TEMPLATE_TAG = "process_template";
     private static final String MESSAGE_TYPE_TAG = "message_type";
     private static final String FIRST_PROCESSING_TAG = "first_processing";
-    private static final String EVENT_TYPE_TAG = "event_type";
 
     private final MeterRegistry meterRegistry;
     private Counter failedProcessUpdates;
@@ -47,7 +45,7 @@ public class MicrometerMetricsListener implements MetricsListener {
 
     @Override
     public void processInstanceCreated(String processTemplateName) {
-        Counter.builder(PCS_PROCESS_INSTANCE_CREATED)
+        Counter.builder(PCS_PROCESS_CREATED_INSTANCES)
                 .description("Created Process instances")
                 .tag(PROCESS_TEMPLATE_TAG, processTemplateName)
                 .register(meterRegistry);
@@ -105,9 +103,5 @@ public class MicrometerMetricsListener implements MetricsListener {
         tags.forEach(builder::tag);
         builder.publishPercentiles(0.5, 0.8, 0.99);
         return builder.register(meterRegistry);
-    }
-
-    private String toString(boolean successful) {
-        return successful ? "true" : "false";
     }
 }

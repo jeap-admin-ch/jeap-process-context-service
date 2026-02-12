@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessRelation;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessRelationRepository;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
+@Timed(value = "jeap.pcs.repository.processrelation", percentiles = .95)
 public class ProcessRelationRepositoryImpl implements ProcessRelationRepository {
     private final ProcessRelationJpaRepository processRelationJpaRepository;
 

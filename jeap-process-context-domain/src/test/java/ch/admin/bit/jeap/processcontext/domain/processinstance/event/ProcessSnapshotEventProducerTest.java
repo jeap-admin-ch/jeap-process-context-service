@@ -14,10 +14,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,7 +39,7 @@ class ProcessSnapshotEventProducerTest {
     }
 
     @Test
-    void onSnapshotCreated_shouldProduceSnapshotEventAndRecordMetrics() {
+    void onSnapshotCreated_shouldProduceSnapshotEvent() {
         String originProcessId = "test-origin-process-id";
         int snapshotVersion = 3;
 
@@ -62,47 +58,9 @@ class ProcessSnapshotEventProducerTest {
         when(processSnapshotArchiveData.getMetadata()).thenReturn(metadata);
         when(processSnapshotArchiveData.getProcessSnapshot()).thenReturn(processSnapshot);
 
-        doAnswer(invocation -> {
-            Runnable runnable = invocation.getArgument(2);
-            runnable.run();
-            return null;
-        }).when(metricsListener).timed(eq("jeap_pcs_produce_snapshot_events"), eq(Map.of()), any(Runnable.class));
-
         target.onSnapshotCreated(processSnapshotArchiveData, processTemplate);
 
-        verify(metricsListener).timed(eq("jeap_pcs_produce_snapshot_events"), eq(Map.of()), any(Runnable.class));
         verify(processInstanceEventProducer).produceProcessSnapshotCreatedEventSynchronously(originProcessId, snapshotVersion);
         verify(metricsListener).snapshotCreated(processTemplate);
-    }
-
-    @Test
-    void onSnapshotCreated_shouldUseCorrectMetricName() {
-        String originProcessId = "another-process-id";
-        int snapshotVersion = 1;
-
-        ProcessSnapshot processSnapshot = mock(ProcessSnapshot.class);
-        when(processSnapshot.getOriginProcessId()).thenReturn(originProcessId);
-
-        ProcessSnapshotMetadata metadata = ProcessSnapshotMetadata.builder()
-                .snapshotVersion(snapshotVersion)
-                .schemaName("ProcessSnapshot")
-                .schemaVersion(2)
-                .retentionPeriodMonths(6)
-                .systemName("JEAP")
-                .build();
-
-        ProcessSnapshotArchiveData processSnapshotArchiveData = mock(ProcessSnapshotArchiveData.class);
-        when(processSnapshotArchiveData.getMetadata()).thenReturn(metadata);
-        when(processSnapshotArchiveData.getProcessSnapshot()).thenReturn(processSnapshot);
-
-        doAnswer(invocation -> {
-            Runnable runnable = invocation.getArgument(2);
-            runnable.run();
-            return null;
-        }).when(metricsListener).timed(any(), any(), any(Runnable.class));
-
-        target.onSnapshotCreated(processSnapshotArchiveData, processTemplate);
-
-        verify(metricsListener).timed(eq("jeap_pcs_produce_snapshot_events"), eq(Map.of()), runnableCaptor.capture());
     }
 }

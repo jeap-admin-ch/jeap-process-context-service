@@ -8,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
 @Component
 @Slf4j
 @RequiredArgsConstructor
@@ -19,9 +17,7 @@ public class ProcessSnapshotEventProducer {
     private final ProcessInstanceEventProducer processInstanceEventProducer;
 
     public void onSnapshotCreated(ProcessSnapshotArchiveData processSnapshotArchiveData, ProcessTemplate processTemplate) {
-        metricsListener.timed("jeap_pcs_produce_snapshot_events", Map.of(), () ->
-                produceSnapshotNotifications(processSnapshotArchiveData, processTemplate));
-
+        produceSnapshotNotifications(processSnapshotArchiveData, processTemplate);
     }
 
     private void produceSnapshotNotifications(ProcessSnapshotArchiveData processSnapshotArchiveData, ProcessTemplate processTemplate) {

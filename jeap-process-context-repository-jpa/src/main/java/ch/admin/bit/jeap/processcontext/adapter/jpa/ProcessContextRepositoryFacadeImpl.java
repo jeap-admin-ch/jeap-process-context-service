@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextRepositoryFacade;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ import static java.util.stream.Collectors.toSet;
 
 @Component
 @RequiredArgsConstructor
+@Timed(value = "jeap.pcs.repository.processcontextfacade", percentiles = .95)
 public class ProcessContextRepositoryFacadeImpl implements ProcessContextRepositoryFacade {
 
     private final ProcessInstanceJpaRepository processInstanceJpaRepository;

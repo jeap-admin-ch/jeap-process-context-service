@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
 import ch.admin.bit.jeap.processcontext.domain.processinstance.PendingMessage;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.PendingMessageRepository;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
+@Timed(value = "jeap.pcs.repository.pendingmessage", percentiles = .95)
 public class PendingMessageRepositoryImpl implements PendingMessageRepository {
 
     private final PendingMessageJpaRepository pendingMessageJpaRepository;

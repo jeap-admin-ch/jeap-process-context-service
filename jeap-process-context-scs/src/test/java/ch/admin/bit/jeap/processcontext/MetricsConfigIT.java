@@ -53,7 +53,6 @@ class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
 
         // Check that process completes after all tasks have been completed
         assertProcessInstanceCompleted(originProcessId);
-        assertProcessInstanceCompleted(originProcessId);
         assertSnapshotCreatedEvent();
         Awaitility.await()
                 .pollInterval(Duration.ofSeconds(2))
@@ -64,20 +63,23 @@ class MetricsConfigIT extends ProcessInstanceMockS3ITBase {
                 .get("/process-context/actuator/prometheus")
                 .then().assertThat()
                 .statusCode(200)
-                .body(containsString("pcs_process_instances"))
-                .body(containsString("pcs_processes_completed_total"))
-                .body(containsString("pcs_snapshot_total"))
-                .body(containsString("pcs_messages_received_total"))
-                .body(containsString("pcs_process_updates_processed_total"))
-                .body(containsString("pcs_failed_process_updates_total"))
+                .body(containsString("jeap_pcs_process_created_instances_total"))
+                .body(containsString("jeap_pcs_processes_completed_total"))
+                .body(containsString("jeap_pcs_handle_message_for_process_instance"))
+                .body(containsString("jeap_pcs_snapshot_total"))
+                .body(containsString("jeap_pcs_messages_received_total"))
+                .body(containsString("jeap_pcs_process_updates_processed_total"))
+                .body(containsString("jeap_pcs_failed_process_updates_total"))
                 .body(containsString("jeap_pcs_process_message"))
                 .body(containsString("jeap_pcs_early_correlate_message"))
                 .body(containsString("jeap_pcs_update_process_state"))
-                .body(containsString("pcs_process_update"))
+                .body(containsString("jeap_pcs_process_update"))
                 .body(containsString("jeap_pcs_late_correlate_message"))
-                .body(containsString("jeap_pcs_produce_snapshot_events"))
                 .body(containsString("jeap_pcs_produce_process_snapshot_created_event"))
-                .body(containsString("pcs_process_instances_total"));
+                .body(containsString("jeap_pcs_repository_relation_seconds"))
+                .body(containsString("jeap_pcs_repository_taskinstance_seconds_max"))
+                .body(containsString("jeap_pcs_repository_processdata_seconds"))
+                .body(containsString("jeap_pcs_repository_processinstance_seconds"));
     }
 
     private RequestSpecification requestWithPrometheusRole() {

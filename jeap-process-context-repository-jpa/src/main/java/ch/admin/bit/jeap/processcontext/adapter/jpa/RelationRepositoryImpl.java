@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.Relation;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.RelationRepository;
+import io.micrometer.core.annotation.Timed;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
@@ -12,6 +13,7 @@ import java.util.*;
 
 @Component
 @RequiredArgsConstructor
+@Timed(value = "jeap.pcs.repository.relation", percentiles = .95)
 class RelationRepositoryImpl implements RelationRepository {
 
     static final int BATCH_SIZE = 100;

@@ -56,28 +56,28 @@ public class TimedS3Client {
         log.info("S3Client initialized successfully.");
     }
 
-    @Timed(value = "jeap_pcss_s3_client_put_object", description = "Put object to object store", percentiles = {0.5, 0.8, 0.99})
+    @Timed(value = "jeap_pcs_s3_client_put_object", description = "Put object to object store", percentiles = {0.5, 0.8, 0.99})
     public PutObjectResponse putObject(PutObjectRequest request, RequestBody requestBody) {
         return s3Client.putObject(request, requestBody);
     }
 
-    @Timed(value = "jeap_pcs_s3_client_get_object", description = "Get object from object store", percentiles = {0.5, 0.80, 0.95, 0.99})
+    @Timed(value = "jeap_pcs_s3_client_get_object", description = "Get object from object store", percentiles = {0.5, 0.80, 0.99})
     public ResponseBytes<GetObjectResponse> getObjectAsBytes(GetObjectRequest getObjectRequest) {
         return s3Client.getObjectAsBytes(getObjectRequest);
     }
 
-    @Timed(value = "jeap_pcs_s3_client_head_bucket", description = "Head bucket", percentiles = {0.5, 0.80, 0.95, 0.99})
+    @Timed(value = "jeap_pcs_s3_client_head_bucket", description = "Head bucket", percentiles = {0.5, 0.80, 0.99})
     public HeadBucketResponse headBucket(HeadBucketRequest headBucketRequest) {
         return s3Client.headBucket(headBucketRequest);
     }
 
 
-    @Timed(value = "jeap_pcs_s3_client_get_bucketlifecycleconfiguration", description = "Get  bucket lifecycle configuration", percentiles = {0.5, 0.80, 0.95, 0.99})
+    @Timed(value = "jeap_pcs_s3_client_get_bucketlifecycleconfiguration", description = "Get  bucket lifecycle configuration", percentiles = {0.5, 0.80, 0.99})
     public GetBucketLifecycleConfigurationResponse getBucketLifecycleConfiguration(GetBucketLifecycleConfigurationRequest getBucketLifecycleConfigurationRequest) {
         return s3Client.getBucketLifecycleConfiguration(getBucketLifecycleConfigurationRequest);
     }
 
-    @Timed(value = "jeap_pcs_s3_client_put_bucketlifecycleconfiguration", description = "Put  bucket lifecycle configuration", percentiles = {0.5, 0.80, 0.95, 0.99})
+    @Timed(value = "jeap_pcs_s3_client_put_bucketlifecycleconfiguration", description = "Put  bucket lifecycle configuration", percentiles = {0.5, 0.80, 0.99})
     public PutBucketLifecycleConfigurationResponse putBucketLifecycleConfiguration(PutBucketLifecycleConfigurationRequest putBucketLifecycleConfigurationRequest) {
         return s3Client.putBucketLifecycleConfiguration(putBucketLifecycleConfigurationRequest);
     }
@@ -102,7 +102,7 @@ public class TimedS3Client {
         }
     }
 
-    @Timed(value = "jeap_pcs_s3_client_list_objects", description = "List objects in prefix", percentiles = {0.5, 0.80, 0.95, 0.99})
+    @Timed(value = "jeap_pcs_s3_client_list_objects", description = "List objects in prefix", percentiles = {0.5, 0.80, 0.99})
     public ListObjectsV2Response listObjects(ListObjectsV2Request request) {
         return s3Client.listObjectsV2(request);
     }

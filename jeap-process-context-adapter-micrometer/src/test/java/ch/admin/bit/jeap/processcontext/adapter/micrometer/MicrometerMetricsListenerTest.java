@@ -50,7 +50,7 @@ class MicrometerMetricsListenerTest {
     void processUpdateFailed_shouldIncrementCounter() {
         metricsListener.processUpdateFailed();
 
-        Counter counter = meterRegistry.find("pcs_failed_process_updates").counter();
+        Counter counter = meterRegistry.find("jeap_pcs_failed_process_updates").counter();
         assertThat(counter).isNotNull();
         assertThat(counter.count()).isEqualTo(1.0);
     }
@@ -61,7 +61,7 @@ class MicrometerMetricsListenerTest {
         metricsListener.processUpdateFailed();
         metricsListener.processUpdateFailed();
 
-        Counter counter = meterRegistry.find("pcs_failed_process_updates").counter();
+        Counter counter = meterRegistry.find("jeap_pcs_failed_process_updates").counter();
         assertThat(counter).isNotNull();
         assertThat(counter.count()).isEqualTo(3.0);
     }
@@ -70,7 +70,7 @@ class MicrometerMetricsListenerTest {
     void processInstanceCreated_shouldRegisterCounterWithTag() {
         metricsListener.processInstanceCreated(PROCESS_TEMPLATE_NAME);
 
-        Counter counter = meterRegistry.find("pcs_process_instances_created")
+        Counter counter = meterRegistry.find("jeap_pcs_process_created_instances")
                 .tag("process_template", PROCESS_TEMPLATE_NAME)
                 .counter();
         assertThat(counter).isNotNull();
@@ -82,7 +82,7 @@ class MicrometerMetricsListenerTest {
 
         metricsListener.messageReceived(messageType, true);
 
-        Counter counter = meterRegistry.find("pcs_messages_received")
+        Counter counter = meterRegistry.find("jeap_pcs_messages_received")
                 .tag("message_type", MESSAGE_TYPE_NAME)
                 .tag("first_processing", "true")
                 .counter();
@@ -96,7 +96,7 @@ class MicrometerMetricsListenerTest {
 
         metricsListener.messageReceived(messageType, false);
 
-        Counter counter = meterRegistry.find("pcs_messages_received")
+        Counter counter = meterRegistry.find("jeap_pcs_messages_received")
                 .tag("message_type", MESSAGE_TYPE_NAME)
                 .tag("first_processing", "false")
                 .counter();
@@ -111,7 +111,7 @@ class MicrometerMetricsListenerTest {
         metricsListener.processUpdateProcessed(template);
         metricsListener.processUpdateProcessed(template);
 
-        Counter counter = meterRegistry.find("pcs_process_updates_processed")
+        Counter counter = meterRegistry.find("jeap_pcs_process_updates_processed")
                 .tag("process_template", PROCESS_TEMPLATE_NAME)
                 .counter();
         assertThat(counter).isNotNull();
@@ -124,7 +124,7 @@ class MicrometerMetricsListenerTest {
 
         metricsListener.processCompleted(template);
 
-        Counter counter = meterRegistry.find("pcs_processes_completed")
+        Counter counter = meterRegistry.find("jeap_pcs_processes_completed")
                 .tag("process_template", PROCESS_TEMPLATE_NAME)
                 .counter();
         assertThat(counter).isNotNull();
@@ -137,7 +137,7 @@ class MicrometerMetricsListenerTest {
 
         metricsListener.snapshotCreated(template);
 
-        Counter counter = meterRegistry.find("pcs_snapshot_created")
+        Counter counter = meterRegistry.find("jeap_pcs_snapshot_created")
                 .tag("process_template", PROCESS_TEMPLATE_NAME)
                 .counter();
         assertThat(counter).isNotNull();

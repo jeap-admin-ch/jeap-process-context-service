@@ -18,9 +18,6 @@ import java.util.Optional;
 @Slf4j
 class ProcessInstanceFactory {
 
-    record ProcessInstanceCreationResult(ProcessInstance processInstance, boolean isNewlyCreated) {
-    }
-
     private final ProcessInstanceRepository processInstanceRepository;
     private final ProcessTemplateRepository processTemplateRepository;
     private final ProcessContextFactory processContextFactory;

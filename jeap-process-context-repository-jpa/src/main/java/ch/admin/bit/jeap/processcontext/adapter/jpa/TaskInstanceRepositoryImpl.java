@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.TaskInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.TaskInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Timed(value = "jeap.pcs.repository.taskinstance", percentiles = .95)
 public class TaskInstanceRepositoryImpl implements TaskInstanceRepository {
 
     private final TaskInstanceJpaRepository taskInstanceJpaRepository;

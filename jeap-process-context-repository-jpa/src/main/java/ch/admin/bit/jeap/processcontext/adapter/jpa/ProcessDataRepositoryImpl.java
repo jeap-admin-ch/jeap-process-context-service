@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Timed(value = "jeap.pcs.repository.processdata", percentiles = .95)
 class ProcessDataRepositoryImpl implements ProcessDataRepository {
 
     private final ProcessDataJpaRepository processDataJpaRepository;
