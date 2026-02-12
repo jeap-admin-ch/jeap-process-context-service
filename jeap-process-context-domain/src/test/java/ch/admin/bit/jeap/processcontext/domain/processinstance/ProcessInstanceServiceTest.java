@@ -1,6 +1,9 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
-import ch.admin.bit.jeap.processcontext.domain.message.*;
+import ch.admin.bit.jeap.processcontext.domain.message.Message;
+import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
+import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
+import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationService;
@@ -93,14 +96,13 @@ class ProcessInstanceServiceTest {
                 .thenReturn(Optional.empty());
         lenient().when(processDataService.copyMessageDataToProcessData(any(), any()))
                 .thenReturn(List.of());
-        lenient().when(taskService.planDomainEventTask(any(), any(), any(), any(), any()))
-                .thenReturn(Optional.empty());
+        lenient().when(taskService.planDomainEventTasks(any(), any(), any()))
+                .thenReturn(List.of());
         lenient().when(messageReferenceRepository.save(any(MessageReference.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         target = new ProcessInstanceService(
                 processInstanceRepository,
-                taskInstanceRepository,
                 taskService,
                 processInstanceMigrationService,
                 processDataService,
@@ -189,19 +191,8 @@ class ProcessInstanceServiceTest {
     }
 
     @Test
-    void handleMessage_domainEventPlansDynamicTask_plansSingleInstanceTask() {
-        TaskType dynamicTaskType = TaskType.builder()
-                .name("dynamicTask")
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .lifecycle(TaskLifecycle.DYNAMIC)
-                .plannedByDomainEvent(DOMAIN_EVENT_NAME)
-                .build();
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name(TEMPLATE_NAME)
-                .templateHash("hash")
-                .taskTypes(List.of(dynamicTaskType))
-                .processRelationPatterns(List.of())
-                .build();
+    void handleMessage_domainEvent_delegatesTaskPlanningToTaskService() {
+        ProcessTemplate processTemplate = createSimpleProcessTemplate();
         Message message = createMessage();
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
@@ -212,125 +203,10 @@ class ProcessInstanceServiceTest {
 
         target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
-        // Verify a task was planned via the task service
-        verify(taskService).planDomainEventTask(eq(processInstance), eq(dynamicTaskType), any(), any(), any());
-    }
-
-    @Test
-    void handleMessage_domainEventPlansMultiInstanceTask_plansTasksForEachOriginTaskId() {
-        TaskType multiInstanceTaskType = TaskType.builder()
-                .name("multiTask")
-                .cardinality(TaskCardinality.MULTI_INSTANCE)
-                .lifecycle(TaskLifecycle.DYNAMIC)
-                .plannedByDomainEvent(DOMAIN_EVENT_NAME)
-                .build();
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name(TEMPLATE_NAME)
-                .templateHash("hash")
-                .taskTypes(List.of(multiInstanceTaskType))
-                .processRelationPatterns(List.of())
-                .build();
-        // Message with multiple origin task ids
-        Message message = createMessageWithOriginTaskIds(Set.of("taskId1", "taskId2"));
-        ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
-
-        when(messageRepository.findById(message.getId()))
-                .thenReturn(Optional.of(message));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
-
-        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
-
-        // Two tasks should be planned (one for each origin task id)
-        ArgumentCaptor<String> originTaskIdCaptor = ArgumentCaptor.forClass(String.class);
-        verify(taskService, times(2)).planDomainEventTask(eq(processInstance), eq(multiInstanceTaskType), originTaskIdCaptor.capture(), any(), any());
-        assertThat(originTaskIdCaptor.getAllValues()).containsExactlyInAnyOrder("taskId1", "taskId2");
-    }
-
-    @Test
-    void handleMessage_domainEventWithInstantiationConditionFalse_doesNotPlanTask() {
-        TaskType dynamicTaskType = TaskType.builder()
-                .name("conditionalTask")
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .lifecycle(TaskLifecycle.DYNAMIC)
-                .plannedByDomainEvent(DOMAIN_EVENT_NAME)
-                .instantiationCondition(msg -> false)
-                .build();
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name(TEMPLATE_NAME)
-                .templateHash("hash")
-                .taskTypes(List.of(dynamicTaskType))
-                .processRelationPatterns(List.of())
-                .build();
-        Message message = createMessage();
-        ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
-
-        when(messageRepository.findById(message.getId()))
-                .thenReturn(Optional.of(message));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
-
-        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
-
-        // No task should be planned due to condition returning false
-        verify(taskService, never()).planDomainEventTask(any(), any(), any(), any(), any());
-    }
-
-    @Test
-    void handleMessage_observedTask_createsCompletedObservationTask() {
-        TaskType observedTaskType = TaskType.builder()
-                .name("observedTask")
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .lifecycle(TaskLifecycle.OBSERVED)
-                .observesMessage(DOMAIN_EVENT_NAME)
-                .build();
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name(TEMPLATE_NAME)
-                .templateHash("hash")
-                .taskTypes(List.of(observedTaskType))
-                .processRelationPatterns(List.of())
-                .build();
-        Message message = createMessage();
-        ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
-
-        when(messageRepository.findById(message.getId()))
-                .thenReturn(Optional.of(message));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
-
-        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
-
-        // Observed task should be created via task service
-        verify(taskService).addObservationTask(processInstance, observedTaskType, message.getMessageId(), message.getMessageCreatedAt(), message.getId());
-    }
-
-    @Test
-    void handleMessage_observedTaskWithConditionFalse_doesNotCreateTask() {
-        TaskType observedTaskType = TaskType.builder()
-                .name("conditionalObservedTask")
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .lifecycle(TaskLifecycle.OBSERVED)
-                .observesMessage(DOMAIN_EVENT_NAME)
-                .instantiationCondition(msg -> false)
-                .build();
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name(TEMPLATE_NAME)
-                .templateHash("hash")
-                .taskTypes(List.of(observedTaskType))
-                .processRelationPatterns(List.of())
-                .build();
-        Message message = createMessage();
-        ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
-
-        when(messageRepository.findById(message.getId()))
-                .thenReturn(Optional.of(message));
-        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
-                .thenReturn(Optional.of(processInstance));
-
-        target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
-
-        // No task should be created due to condition returning false
-        verify(taskService, never()).addObservationTask(any(), any(), any(), any(), any());
+        // Verify task orchestration is delegated to TaskService
+        verify(taskService).planDomainEventTasks(eq(processInstance), any(MessageReferenceMessageDTO.class), eq(message));
+        verify(taskService).completeObservationTasks(eq(processInstance), any(MessageReferenceMessageDTO.class), eq(message));
+        verify(taskService).evaluateCompletedTasks(eq(processInstance), any(MessageReferenceMessageDTO.class));
     }
 
     @Test
@@ -419,26 +295,14 @@ class ProcessInstanceServiceTest {
     }
 
     @Test
-    void handleMessage_staticTaskCompletedByDomainEvent_completesTask() {
-        TaskType staticTask = TaskType.builder()
-                .name("staticTask")
-                .cardinality(TaskCardinality.SINGLE_INSTANCE)
-                .lifecycle(TaskLifecycle.STATIC)
-                .completedByDomainEvent(DOMAIN_EVENT_NAME)
-                .build();
-        ProcessTemplate processTemplate = ProcessTemplate.builder()
-                .name(TEMPLATE_NAME)
-                .templateHash("hash")
-                .taskTypes(List.of(staticTask))
-                .processRelationPatterns(List.of())
-                .build();
+    void handleMessage_delegatesEvaluatePlannedTasksCompletedByExistingMessages() {
+        ProcessTemplate processTemplate = createSimpleProcessTemplate();
         Message message = createMessage();
-
         ProcessInstance processInstance = createProcessInstanceWithTemplate(processTemplate);
 
-        // Create a planned task instance for the static task
-        TaskInstance plannedTask = TaskInstance.createInitialTaskInstance(staticTask, processInstance, ZonedDateTime.now());
-        when(taskInstanceRepository.getTaskInstancesInNonFinalStateOfTypes(processInstance.getProcessTemplate(), processInstance.getId(), Set.of("staticTask")))
+        TaskInstance plannedTask = TaskInstance.createInitialTaskInstance(
+                createStaticTaskType(), processInstance, ZonedDateTime.now());
+        when(taskService.planDomainEventTasks(any(), any(), any()))
                 .thenReturn(List.of(plannedTask));
 
         when(messageRepository.findById(message.getId()))
@@ -448,8 +312,8 @@ class ProcessInstanceServiceTest {
 
         target.handleMessage(ORIGIN_PROCESS_ID, message.getId());
 
-        // Task should be evaluated for completion
-        verify(taskInstanceRepository).getTaskInstancesInNonFinalStateOfTypes(processInstance.getProcessTemplate(), processInstance.getId(), Set.of("staticTask"));
+        // Planned tasks should be evaluated for completion by existing messages
+        verify(taskService).evaluatePlannedTasksCompletedByExistingMessages(List.of(plannedTask));
     }
 
     @Test
@@ -692,22 +556,6 @@ class ProcessInstanceServiceTest {
                 .messageName(messageName)
                 .messageCreatedAt(ZonedDateTime.now())
                 .createdAt(ZonedDateTime.now())
-                .messageData(Set.of(MessageData.builder()
-                        .key("dataKey")
-                        .value("dataValue")
-                        .templateName(TEMPLATE_NAME)
-                        .build()))
-                .build();
-    }
-
-    private Message createMessageWithOriginTaskIds(Set<String> originTaskIds) {
-        return Message.messageBuilder()
-                .messageId(Generators.timeBasedEpochGenerator().generate().toString())
-                .idempotenceId(Generators.timeBasedEpochGenerator().generate().toString())
-                .messageName(DOMAIN_EVENT_NAME)
-                .messageCreatedAt(ZonedDateTime.now())
-                .createdAt(ZonedDateTime.now())
-                .originTaskIds(OriginTaskId.from(TEMPLATE_NAME, originTaskIds))
                 .messageData(Set.of(MessageData.builder()
                         .key("dataKey")
                         .value("dataValue")
