@@ -1,6 +1,5 @@
 package ch.admin.bit.jeap.processcontext;
 
-import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceDTO;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.PendingMessageRepository;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
 import ch.admin.bit.jeap.processcontext.event.test2.Test2Event;
@@ -50,17 +49,17 @@ class ProcessInstancePendingMessagesIT extends ProcessInstanceMockS3ITBase {
         // create process
         sendTest4Event();
         assertProcessInstanceCreated(originProcessId, "pending_messages");
+        assertPendingMessageCount(0); // all pending messages should be deleted after being processed
+        Awaitility.await().pollInSameThread()
+                .untilAsserted(() -> assertThat(processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getTasks())
+                        .hasSize(taskCount) // taskCount times raceCarRefuel
+                        .extracting("originTaskId")
+                        .containsExactlyInAnyOrderElementsOf(allOriginTaskIds));
 
         // complete process
         sendTest3Event();
 
         assertProcessInstanceCompleted(originProcessId);
-        ProcessInstanceDTO dto = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
-        assertThat(dto.getTasks())
-                .hasSize(taskCount) // taskCount times raceCarRefuel
-                .extracting("originTaskId")
-                .containsExactlyInAnyOrderElementsOf(allOriginTaskIds);
-        assertPendingMessageCount(0); // all pending messages should be deleted after being processed
     }
 
     private void assertPendingMessageCount(int expected) {
@@ -88,6 +87,7 @@ class ProcessInstancePendingMessagesIT extends ProcessInstanceMockS3ITBase {
         // create process
         sendTest4Event();
         assertProcessInstanceCreated(originProcessId, "pending_messages");
+        assertPendingMessageCount(0); // all pending messages should be deleted after being processed
 
         // Create some tasks by messages sent after process creation
         for (int i = 5; i < taskCount / 2; i++) {
@@ -96,17 +96,15 @@ class ProcessInstancePendingMessagesIT extends ProcessInstanceMockS3ITBase {
             sendTest1Event(originTaskIds);
             allOriginTaskIds.addAll(originTaskIds);
         }
+        Awaitility.await().pollInSameThread()
+                .untilAsserted(() -> assertThat(processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getTasks())
+                        .hasSize(taskCount) // taskCount times raceCarRefuel
+                        .extracting("originTaskId")
+                        .containsExactlyInAnyOrderElementsOf(allOriginTaskIds));
 
         // complete process
         sendTest3Event();
-
         assertProcessInstanceCompleted(originProcessId);
-        ProcessInstanceDTO dto = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
-        assertThat(dto.getTasks())
-                .hasSize(taskCount) // taskCount times raceCarRefuel
-                .extracting("originTaskId")
-                .containsExactlyInAnyOrderElementsOf(allOriginTaskIds);
-        assertPendingMessageCount(0); // all pending messages should be deleted after being processed
     }
 
     private void sendTest1Event(Set<String> taskIds) {
