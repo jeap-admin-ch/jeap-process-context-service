@@ -112,18 +112,6 @@ public class ProcessInstanceStubs {
         return processInstance;
     }
 
-    public ProcessInstance createProcessWithTwoTaskInstancesPlannedAndCompleted() {
-        return createProcessWithTwoPlannedTaskInstances();
-    }
-
-    public ProcessInstance createProcessWithTwoCompletedTaskInstances() {
-        return createProcessWithTwoPlannedTaskInstances();
-    }
-
-    public ProcessInstance createProcessWithTwoTaskInstancesNotRequiredAndDeleted() {
-        return createProcessWithTwoPlannedTaskInstances();
-    }
-
     private static ProcessContextFactory createProcessContextFactory(ProcessContextRepositoryFacade repositoryFacade) {
         return new ProcessContextFactory(repositoryFacade);
     }

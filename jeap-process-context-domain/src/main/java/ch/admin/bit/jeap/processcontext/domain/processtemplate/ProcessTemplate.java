@@ -12,7 +12,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toMap;
 
 @ToString(onlyExplicitlyIncluded = true)
 public final class ProcessTemplate {
@@ -156,12 +157,5 @@ public final class ProcessTemplate {
 
     public boolean isAnyEventCorrelatedByProcessData() {
         return anyEventCorrelatedByProcessData;
-    }
-
-    public Set<String> getTaskTypeNamesPotentiallyCompletedBy(String messageType) {
-        return taskTypes.stream()
-                .filter(type -> messageType.equals(type.getCompletedByDomainEvent()))
-                .map(TaskType::getName)
-                .collect(toSet());
     }
 }

@@ -7,7 +7,6 @@ import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import java.util.Map;
-import java.util.function.Supplier;
 
 
 public class StubMetricsListener implements MetricsListener {
@@ -47,11 +46,5 @@ public class StubMetricsListener implements MetricsListener {
         Timer.builder(name)
                 .register(new SimpleMeterRegistry())
                 .record(runnable);
-    }
-
-    @Override
-    public <T> T timedWithReturnValue(String name, Supplier<T> supplier) {
-        return Timer.builder(name).register(new SimpleMeterRegistry())
-                .record(supplier);
     }
 }

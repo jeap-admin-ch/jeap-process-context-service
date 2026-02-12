@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Component
@@ -27,11 +25,4 @@ public class Transactions {
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return transactionTemplate.execute(status -> callback.get());
     }
-
-    public <R> R withinNewTransactionWithTxStatusAndResult(Function<TransactionStatus, R> callback) {
-        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
-        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        return transactionTemplate.execute(callback::apply);
-    }
-
 }

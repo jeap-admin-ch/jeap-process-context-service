@@ -3,7 +3,6 @@ package ch.admin.bit.jeap.processcontext.adapter.kafka.internalevent.consumer;
 import ch.admin.bit.jeap.processcontext.adapter.kafka.TopicConfiguration;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceService;
 import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessContextOutdatedEvent;
-import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessUpdateType;
 import ch.admin.bit.jeap.processcontext.internal.event.outdated.ReceivedMessage;
 import ch.admin.bit.jeap.processcontext.internal.event.outdated.ReceivedProcessCreationMessage;
 import lombok.RequiredArgsConstructor;
@@ -54,10 +53,5 @@ public class ProcessContextOutdatedEventConsumer {
     private void triggerMigration(String originProcessId) {
         log.debug("Triggering migration for process ID {}", originProcessId);
         processInstanceService.migrateProcessInstanceTemplate(originProcessId);
-    }
-
-    private boolean isMigrationTriggerEvent(ProcessContextOutdatedEvent event) {
-        return event.getOptionalPayload().stream().anyMatch(payload ->
-                payload.getProcessUpdateType() == ProcessUpdateType.MIGRATION_TRIGGERED);
     }
 }

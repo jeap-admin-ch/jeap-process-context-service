@@ -22,24 +22,12 @@ public class EventListenerStub<T extends Message> implements MessageListener<T> 
         }
     }
 
-    List<T> peekEvents() {
-        synchronized (events) {
-            return events;
-        }
-    }
-
-    T awaitEvent(Predicate<T> predicate) {
+    void awaitEvent(Predicate<T> predicate) {
         Awaitility.waitAtMost(TIMEOUT)
                 .until(() -> events.stream().anyMatch(predicate));
 
         synchronized (events) {
-            return events.stream().filter(predicate).findFirst().orElseThrow();
-        }
-    }
-
-    public boolean noneMatch(Predicate<T> predicate) {
-        synchronized (events) {
-            return events.stream().noneMatch(predicate);
+            events.stream().filter(predicate).findFirst().orElseThrow();
         }
     }
 }

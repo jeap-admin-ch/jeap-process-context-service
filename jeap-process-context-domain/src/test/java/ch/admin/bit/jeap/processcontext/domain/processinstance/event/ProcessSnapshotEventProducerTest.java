@@ -9,8 +9,6 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -27,9 +25,6 @@ class ProcessSnapshotEventProducerTest {
 
     @Mock
     private ProcessTemplate processTemplate;
-
-    @Captor
-    private ArgumentCaptor<Runnable> runnableCaptor;
 
     private ProcessSnapshotEventProducer target;
 

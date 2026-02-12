@@ -9,15 +9,9 @@ import java.util.UUID;
 
 public class ProcessContextRepositoryFacadeStub implements ProcessContextRepositoryFacade {
 
-    private boolean allTasksInFinalState = false;
-
     @Override
     public boolean areAllTasksInFinalState(UUID processInstanceId) {
-        return allTasksInFinalState;
-    }
-
-    public void setAllTasksInFinalState(boolean allTasksInFinalState) {
-        this.allTasksInFinalState = allTasksInFinalState;
+        return false;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package ch.admin.bit.jeap.processcontext.adapter.micrometer;
 
-import ch.admin.bit.jeap.messaging.avro.AvroMessageType;
 import ch.admin.bit.jeap.messaging.model.MessageType;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskCardinality;
@@ -28,16 +27,12 @@ class MicrometerMetricsListenerTest {
 
     private static final String PROCESS_TEMPLATE_NAME = "test-process-template";
     private static final String MESSAGE_TYPE_NAME = "TestMessageType";
-    private static final String EVENT_TYPE_NAME = "TestEventType";
 
     private MeterRegistry meterRegistry;
     private MicrometerMetricsListener metricsListener;
 
     @Mock
     private MessageType messageType;
-
-    @Mock
-    private AvroMessageType avroMessageType;
 
     @BeforeEach
     void setUp() {
@@ -154,17 +149,6 @@ class MicrometerMetricsListenerTest {
         Timer timer = meterRegistry.find("test_timer")
                 .tag("tag1", "value1")
                 .tag("tag2", "value2")
-                .timer();
-        assertThat(timer).isNotNull();
-        assertThat(timer.count()).isEqualTo(1);
-    }
-
-    @Test
-    void timedWithReturnValue_shouldRecordTimer() {
-        boolean executed = metricsListener.timedWithReturnValue("test_timer_retval", () -> true);
-
-        assertThat(executed).isTrue();
-        Timer timer = meterRegistry.find("test_timer_retval")
                 .timer();
         assertThat(timer).isNotNull();
         assertThat(timer.count()).isEqualTo(1);

@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
-import java.util.function.Supplier;
 
 @Component
 @RequiredArgsConstructor
@@ -91,11 +90,6 @@ public class MicrometerMetricsListener implements MetricsListener {
     @Override
     public void timed(String name, Map<String, String> tags, Runnable runnable) {
         timer(name, tags).record(runnable);
-    }
-
-    @Override
-    public <T> T timedWithReturnValue(String name, Supplier<T> supplier) {
-        return timer(name, Map.of()).record(supplier);
     }
 
     private Timer timer(String name, Map<String, String> tags) {
