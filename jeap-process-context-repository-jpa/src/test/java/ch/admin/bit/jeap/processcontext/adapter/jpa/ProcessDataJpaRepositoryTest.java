@@ -8,6 +8,8 @@ import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -123,6 +125,30 @@ class ProcessDataJpaRepositoryTest {
         List<ProcessData> result = processDataJpaRepository.findByProcessInstanceAndKeyAndRole(savedInstance, "key1", "roleB");
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void findByProcessInstanceId_paged_returnsPagedProcessData() {
+        ProcessData data1 = new ProcessData("key1", "value1");
+        ProcessData data2 = new ProcessData("key2", "value2");
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstanceSavingProcessData(
+                "template", List.of(data1, data2), processInstanceRepository, processDataRepository);
+        processInstanceJpaRepository.saveAndFlush(processInstance);
+        entityManager.clear();
+
+        Page<ProcessData> firstPage = processDataJpaRepository.findByProcessInstanceId(
+                processInstance.getId(), PageRequest.of(0, 1));
+
+        assertThat(firstPage.getTotalElements()).isEqualTo(2);
+        assertThat(firstPage.getTotalPages()).isEqualTo(2);
+        assertThat(firstPage.getContent()).hasSize(1);
+
+        Page<ProcessData> secondPage = processDataJpaRepository.findByProcessInstanceId(
+                processInstance.getId(), PageRequest.of(1, 1));
+
+        assertThat(secondPage.getContent()).hasSize(1);
+        assertThat(secondPage.getContent().getFirst().getKey())
+                .isNotEqualTo(firstPage.getContent().getFirst().getKey());
     }
 
     @Test

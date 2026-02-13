@@ -1,28 +1,24 @@
 import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {ProcessDTO, ProcessRelationDTO, TaskDTO} from '../../shared/processservice/process.model';
+import {ProcessDTO, TaskDTO} from '../../shared/processservice/process.model';
 import {ActivatedRoute} from '@angular/router';
 import {ProcessService} from '../../shared/processservice/process.service';
 import {Subscription, take} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {MatRadioChange} from '@angular/material/radio';
 import {ProcessRelationsListenerService} from '../../shared/process-relations-listener.service';
-import {LogDeepLinkService} from '../../shared/logdeeplink/logdeeplink.service';
-import {TaskTemplateViewComponent} from "./task-template-view/task-template-view.component";
+import {TaskTemplateViewComponent} from './task-template-view/task-template-view.component';
 
 @Component({
-    selector: 'app-exam-page',
-    templateUrl: './process-page.component.html',
-    styleUrls: ['./process-page.component.css'],
-    standalone: false
+	selector: 'app-exam-page',
+	templateUrl: './process-page.component.html',
+	styleUrls: ['./process-page.component.css'],
+	standalone: false
 })
 export class ProcessPageComponent implements OnInit, OnDestroy, AfterViewInit {
 	process: ProcessDTO | undefined;
 	snapshot: boolean | undefined;
-	processRelations: ProcessRelationDTO[];
 	processId!: string;
 	userTaskViewType: string;
-	logDeepLink: string;
-	logDeepLinkTemplate: string;
 	selectedTask: TaskDTO | null = null; // The selected task
 	@ViewChild(TaskTemplateViewComponent) taskTemplateViewComponent: TaskTemplateViewComponent;
 
@@ -33,7 +29,6 @@ export class ProcessPageComponent implements OnInit, OnDestroy, AfterViewInit {
 	constructor(
 		private readonly route: ActivatedRoute,
 		private readonly processService: ProcessService,
-		private readonly logDeepLinkService: LogDeepLinkService,
 		readonly translate: TranslateService,
 		readonly processRelationsClickListener: ProcessRelationsListenerService
 	) {
@@ -47,9 +42,6 @@ export class ProcessPageComponent implements OnInit, OnDestroy, AfterViewInit {
 		this.route.params.subscribe(params => {
 			this.processId = params['id'];
 			this.reload();
-		});
-		this.logDeepLinkService.getLogDeepLink().subscribe(template => {
-			this.logDeepLinkTemplate = template;
 		});
 		this.loadTaskViewPreferences();
 	}
@@ -70,8 +62,7 @@ export class ProcessPageComponent implements OnInit, OnDestroy, AfterViewInit {
 			.pipe(take(1))
 			.subscribe(value => {
 				this.process = value;
-				this.snapshot = value.snapshot
-				this.processRelations = value.processRelations;
+				this.snapshot = value.snapshot;
 				this.processRelationsClickListener.triggerTableRefresh();
 				this.selectedTask = this.process.tasks[0];
 				if (this.taskTemplateViewComponent) {
@@ -82,7 +73,7 @@ export class ProcessPageComponent implements OnInit, OnDestroy, AfterViewInit {
 
 	taskViewRadioButtonGroupChange(data: MatRadioChange) {
 		localStorage.setItem(this.localStorageKey, data.value);
-		this.selectedTask = null;
+		this.selectedTask = this.process?.tasks?.length ? this.process.tasks[0] : null;
 	}
 
 	private loadTaskViewPreferences(): void {
@@ -98,13 +89,8 @@ export class ProcessPageComponent implements OnInit, OnDestroy, AfterViewInit {
 		return taskViewType;
 	}
 
-	openDeepLink(traceId: string) {
-		this.logDeepLink = this.logDeepLinkService.replaceTraceId(this.logDeepLinkTemplate, traceId);
-	}
-
 	// Called when a task is selected from the list
 	onTaskSelected(task: TaskDTO): void {
 		this.selectedTask = task;
 	}
-
 }

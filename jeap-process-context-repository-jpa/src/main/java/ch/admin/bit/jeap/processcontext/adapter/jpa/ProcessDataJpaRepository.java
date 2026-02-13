@@ -2,6 +2,8 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,6 +22,8 @@ interface ProcessDataJpaRepository extends JpaRepository<ProcessData, UUID> {
     List<ProcessData> findByProcessInstanceAndKeyAndRole(ProcessInstance processInstance, String key, String role);
 
     List<ProcessData> findByProcessInstanceId(UUID processInstanceId);
+
+    Page<ProcessData> findByProcessInstanceId(UUID processInstanceId, Pageable pageable);
 
     @Modifying
     @Query(value = """

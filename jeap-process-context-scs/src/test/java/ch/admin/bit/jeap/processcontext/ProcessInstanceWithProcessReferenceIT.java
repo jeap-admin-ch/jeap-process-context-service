@@ -199,9 +199,9 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
     protected void assertProcessInstanceHasProcessReference(String originProcessId, ProcessRelationDTO expectedDto) {
         Awaitility.await()
                 .pollInSameThread()
-                .until(() -> !processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getProcessRelations().isEmpty());
+                .until(() -> !getProcessRelations(originProcessId).isEmpty());
 
-        List<ProcessRelationDTO> processRelationDTOList = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getProcessRelations();
+        List<ProcessRelationDTO> processRelationDTOList = getProcessRelations(originProcessId);
         ProcessRelationDTO dto = processRelationDTOList.getFirst();
         assertEquals(expectedDto.getProcessName().get("de"), dto.getProcessName().get("de"));
         assertEquals(expectedDto.getProcessState(), dto.getProcessState());
@@ -214,7 +214,7 @@ class ProcessInstanceWithProcessReferenceIT extends ProcessInstanceMockS3ITBase 
     }
 
     protected void assertProcessInstanceHasNumberOfProcessReference(String originProcessId, int numberOfProcessReferences) {
-        List<ProcessRelationDTO> processRelationDTOList = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getProcessRelations();
+        List<ProcessRelationDTO> processRelationDTOList = getProcessRelations(originProcessId);
         assertEquals(numberOfProcessReferences, processRelationDTOList.size());
     }
 

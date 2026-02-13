@@ -229,7 +229,7 @@ class TaskServiceTest {
                 .messageName(DOMAIN_EVENT_NAME)
                 .messageReceivedAt(ZonedDateTime.now())
                 .messageCreatedAt(ZonedDateTime.now())
-                .messageData(Set.of())
+                .messageData(List.of())
                 .relatedOriginTaskIds(Set.of())
                 .build();
 
@@ -257,7 +257,7 @@ class TaskServiceTest {
                 .messageName(DOMAIN_EVENT_NAME)
                 .messageReceivedAt(ZonedDateTime.now())
                 .messageCreatedAt(ZonedDateTime.now())
-                .messageData(Set.of())
+                .messageData(List.of())
                 .relatedOriginTaskIds(Set.of())
                 .build();
 

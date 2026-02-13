@@ -11,6 +11,9 @@ import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -122,7 +125,7 @@ class RelationJpaRepositoryTest {
     }
 
     @Test
-    void findByProcessInstance_returnsRelationsForProcessInstance() {
+    void findByProcessInstanceId_returnsPagedRelations() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         processInstanceJpaRepository.saveAndFlush(processInstance);
 
@@ -152,17 +155,23 @@ class RelationJpaRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
-        ProcessInstance savedInstance = processInstanceJpaRepository.findByOriginProcessId(processInstance.getOriginProcessId()).orElseThrow();
-        Set<Relation> result = relationJpaRepository.findByProcessInstance(savedInstance);
+        Page<Relation> firstPage = relationJpaRepository.findByProcessInstanceId(
+                processInstance.getId(), PageRequest.of(0, 1, Sort.by("createdAt")));
 
-        assertThat(result).hasSize(2);
-        assertThat(result)
-                .extracting(Relation::getSubjectId)
-                .containsExactlyInAnyOrder("subject-1", "subject-2");
+        assertThat(firstPage.getTotalElements()).isEqualTo(2);
+        assertThat(firstPage.getTotalPages()).isEqualTo(2);
+        assertThat(firstPage.getContent()).hasSize(1);
+
+        Page<Relation> secondPage = relationJpaRepository.findByProcessInstanceId(
+                processInstance.getId(), PageRequest.of(1, 1, Sort.by("createdAt")));
+
+        assertThat(secondPage.getContent()).hasSize(1);
+        assertThat(secondPage.getContent().getFirst().getSubjectId())
+                .isNotEqualTo(firstPage.getContent().getFirst().getSubjectId());
     }
 
     @Test
-    void findByProcessInstance_doesNotReturnRelationsFromOtherProcessInstances() {
+    void findByProcessInstanceId_doesNotReturnRelationsFromOtherProcessInstances() {
         ProcessInstance processInstance1 = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         processInstanceJpaRepository.saveAndFlush(processInstance1);
 
@@ -195,23 +204,11 @@ class RelationJpaRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
-        ProcessInstance savedInstance1 = processInstanceJpaRepository.findByOriginProcessId(processInstance1.getOriginProcessId()).orElseThrow();
-        Set<Relation> result = relationJpaRepository.findByProcessInstance(savedInstance1);
+        Page<Relation> result = relationJpaRepository.findByProcessInstanceId(
+                processInstance1.getId(), PageRequest.of(0, 10));
 
-        assertThat(result).hasSize(1);
-        assertThat(result.iterator().next().getSubjectId()).isEqualTo("subject-1");
-    }
-
-    @Test
-    void findByProcessInstance_noRelations_returnsEmptySet() {
-        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
-        processInstanceJpaRepository.saveAndFlush(processInstance);
-        entityManager.clear();
-
-        ProcessInstance savedInstance = processInstanceJpaRepository.findByOriginProcessId(processInstance.getOriginProcessId()).orElseThrow();
-        Set<Relation> result = relationJpaRepository.findByProcessInstance(savedInstance);
-
-        assertThat(result).isEmpty();
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().getFirst().getSubjectId()).isEqualTo("subject-1");
     }
 
     @Test

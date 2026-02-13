@@ -1,5 +1,8 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +17,8 @@ public interface ProcessDataRepository {
     List<ProcessData> findProcessData(ProcessInstance processInstance,  String processDataKey, String processDataRole);
 
     List<ProcessData> findByProcessInstanceId(UUID processInstanceId);
+
+    Page<ProcessData> findByProcessInstanceId(UUID processInstanceId, Pageable pageable);
 
     /**
      * Saves the given process data if it does not already exist (based on the unique constraint

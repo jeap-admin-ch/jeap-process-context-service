@@ -10,10 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -42,6 +39,50 @@ class MessageReferenceRepositoryImplTest {
 
         assertThat(result).isEqualTo(messageReference);
         verify(messageReferenceJpaRepository).save(messageReference);
+    }
+
+    @Test
+    void findByProcessInstanceIdAndMessageId_found_returnsDTO() {
+        UUID processInstanceId = UUID.randomUUID();
+        UUID messageId = UUID.randomUUID();
+        UUID messageReferenceId = UUID.randomUUID();
+        String processTemplateName = "testTemplate";
+
+        MessageReference mockMessageRef = mock(MessageReference.class);
+        when(mockMessageRef.getId()).thenReturn(messageReferenceId);
+
+        Message message = Message.messageBuilder()
+                .messageId("msg-123")
+                .idempotenceId("idemp-123")
+                .messageName("TestMessage")
+                .messageData(Set.of())
+                .originTaskIds(Set.of())
+                .createdAt(ZonedDateTime.now())
+                .messageCreatedAt(ZonedDateTime.now())
+                .build();
+
+        MessageReferenceWithMessage refWithMessage = new MessageReferenceWithMessage(mockMessageRef, message, processTemplateName);
+        when(messageReferenceJpaRepository.findMessageReferenceWithMessageByProcessInstanceIdAndMessageId(processInstanceId, messageId))
+                .thenReturn(Optional.of(refWithMessage));
+
+        MessageReferenceMessageDTO result = messageReferenceRepository.findByProcessInstanceIdAndMessageId(processInstanceId, messageId);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getMessageReferenceId()).isEqualTo(messageReferenceId);
+        assertThat(result.getMessageId()).isEqualTo(message.getId());
+        assertThat(result.getMessageName()).isEqualTo("TestMessage");
+    }
+
+    @Test
+    void findByProcessInstanceIdAndMessageId_notFound_returnsNull() {
+        UUID processInstanceId = UUID.randomUUID();
+        UUID messageId = UUID.randomUUID();
+        when(messageReferenceJpaRepository.findMessageReferenceWithMessageByProcessInstanceIdAndMessageId(processInstanceId, messageId))
+                .thenReturn(Optional.empty());
+
+        MessageReferenceMessageDTO result = messageReferenceRepository.findByProcessInstanceIdAndMessageId(processInstanceId, messageId);
+
+        assertThat(result).isNull();
     }
 
     @Test

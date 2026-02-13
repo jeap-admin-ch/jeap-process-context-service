@@ -21,10 +21,6 @@ public class ProcessInstanceDTO {
     ZonedDateTime createdAt;
     ZonedDateTime modifiedAt;
     List<TaskInstanceDTO> tasks;
-    List<MessageDTO> messages;
-    List<ProcessDataDTO> processData;
-    List<RelationDTO> relations;
-    List<ProcessRelationDTO> processRelations;
     ProcessCompletionDTO processCompletion;
     boolean snapshot;
     ZonedDateTime snapshotCreatedAt;

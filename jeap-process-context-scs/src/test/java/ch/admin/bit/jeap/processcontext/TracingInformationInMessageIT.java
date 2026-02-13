@@ -3,8 +3,6 @@ package ch.admin.bit.jeap.processcontext;
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
 import ch.admin.bit.jeap.messaging.kafka.test.KafkaTestConstants;
-import ch.admin.bit.jeap.processcontext.adapter.restapi.ProcessInstanceController;
-import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceDTO;
 import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.extension.WithAuthentication;
@@ -26,9 +24,6 @@ import static org.springframework.util.StringUtils.hasText;
 class TracingInformationInMessageIT extends ProcessInstanceMockS3ITBase {
 
     @Autowired
-    private ProcessInstanceController processInstanceController;
-
-    @Autowired
     private KafkaTemplate<AvroMessageKey, AvroMessage> kafkaTemplate;
 
     @Test
@@ -40,11 +35,10 @@ class TracingInformationInMessageIT extends ProcessInstanceMockS3ITBase {
 
         // Wait until a message has been correlated to the process instance
         await().pollInSameThread()
-                .until(() -> !processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getMessages().isEmpty());
+                .until(() -> !getMessages(originProcessId).isEmpty());
 
-        ProcessInstanceDTO processInstance = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
-        assertEquals(1, processInstance.getMessages().size());
-        assertTrue(hasText(processInstance.getMessages().getFirst().getTraceId()));
+        assertEquals(1, getMessages(originProcessId).size());
+        assertTrue(hasText(getMessages(originProcessId).getFirst().getTraceId()));
     }
 
     private void sendMessageUsingKafkaTemplateWithTracing() {

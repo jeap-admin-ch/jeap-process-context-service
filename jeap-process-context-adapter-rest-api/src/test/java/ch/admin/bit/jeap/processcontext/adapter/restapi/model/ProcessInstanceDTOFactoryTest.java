@@ -10,7 +10,6 @@ import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
-import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskData;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.TimeBasedEpochGenerator;
@@ -21,13 +20,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -40,7 +37,6 @@ class ProcessInstanceDTOFactoryTest {
     private MessageRepository messageRepository;
     private MessageReferenceRepository messageReferenceRepository;
     private TranslateService translateService;
-    private RelationRepository relationRepository;
     private ProcessDataRepository processDataRepository;
     private TaskInstanceRepository taskInstanceRepository;
 
@@ -49,7 +45,6 @@ class ProcessInstanceDTOFactoryTest {
         messageRepository = mock(MessageRepository.class);
         messageReferenceRepository = mock(MessageReferenceRepository.class);
         translateService = mock(TranslateService.class);
-        relationRepository = mock(RelationRepository.class);
         processDataRepository = mock(ProcessDataRepository.class);
         taskInstanceRepository = mock(TaskInstanceRepository.class);
         when(translateService.translateUserDataKey(anyString())).thenAnswer(invocation -> createLabels(invocation.getArgument(0)));
@@ -62,7 +57,7 @@ class ProcessInstanceDTOFactoryTest {
     }
 
     // java:S5961: number of assertions
-    @SuppressWarnings({"OptionalGetWithoutIsPresent",  "java:S5961"})
+    @SuppressWarnings({"OptionalGetWithoutIsPresent", "java:S5961"})
     @Test
     void createFromProcessInstance() {
         String templateName = "template";
@@ -74,9 +69,9 @@ class ProcessInstanceDTOFactoryTest {
         Set<TaskData> taskData = messages.stream().
                 map(message -> TaskData.builder().
                         sourceMessage(message.getMessageName()).
-                        messageDataKeys(message.getMessageData().stream().map(MessageData::getKey).collect(Collectors.toSet())).
+                        messageDataKeys(message.getMessageData().stream().map(MessageData::getKey).collect(toSet())).
                         build()).
-                collect(Collectors.toSet());
+                collect(toSet());
         ProcessInstanceRepository processInstanceRepository = mock(ProcessInstanceRepository.class);
         when(processInstanceRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstanceSavingProcessAndTaskData(templateName, taskData, processData, processInstanceRepository, processDataRepository);
@@ -84,47 +79,24 @@ class ProcessInstanceDTOFactoryTest {
         ReflectionTestUtils.setField(processInstance, "processCompletion", new ProcessCompletion(
                 ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessCompletionConclusion.SUCCEEDED, "all good", ZonedDateTime.now()));
         TaskInstance expectedTask = ProcessInstanceStubs.createPlannedTaskInstance(processInstance);
-        ReflectionTestUtils.setField(expectedTask, "plannedBy",  messages.getFirst().getId());
-        ReflectionTestUtils.setField(expectedTask, "completedBy",  messages.get(1).getId());
-
-        ProcessRelationsService processRelationsService = mock(ProcessRelationsService.class);
-        Relation relation = Relation.builder()
-                .processInstance(processInstance)
-                .systemId("test-system")
-                .subjectType("SubjectType")
-                .subjectId("subject-1")
-                .objectType("ObjectType")
-                .objectId("object-1")
-                .predicateType("relates-to")
-                .build();
-        relation.onPrePersist();
-        when(relationRepository.findByProcessInstance(processInstance)).thenReturn(Set.of(relation));
+        UUID plannedByMessageId = messages.getFirst().getId();
+        UUID completedByMessageId = messages.get(1).getId();
+        ReflectionTestUtils.setField(expectedTask, "plannedBy", plannedByMessageId);
+        ReflectionTestUtils.setField(expectedTask, "completedBy", completedByMessageId);
 
         TimeBasedEpochGenerator uuidGenerator = Generators.timeBasedEpochGenerator();
-        Message eventMessage = Message.messageBuilder()
-                .messageName(ProcessInstanceStubs.event)
-                .messageId("eventId")
-                .idempotenceId("idempotenceId")
-                .originTaskIds(ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId.from(templateName, Set.of("taskId1", "taskId2")))
-                .messageData(Set.of(new ch.admin.bit.jeap.processcontext.domain.message.MessageData(templateName, "myKey", "myValue")))
-                .createdAt(ZonedDateTime.now())
-                .messageCreatedAt(ZonedDateTime.now())
-                .build();
+        when(messageReferenceRepository.findByProcessInstanceIdAndMessageId(processInstance.getId(), plannedByMessageId))
+                .thenReturn(toMessageReferenceDTO(uuidGenerator, templateName, messages.getFirst()));
+        when(messageReferenceRepository.findByProcessInstanceIdAndMessageId(processInstance.getId(), completedByMessageId))
+                .thenReturn(toMessageReferenceDTO(uuidGenerator, templateName, messages.get(1)));
 
-        List<MessageReferenceMessageDTO> messageReferenceMessageDTOs = new ArrayList<>();
-        messageReferenceMessageDTOs.add(toMessageReferenceDTO(uuidGenerator, templateName, eventMessage));
-        for (Message message : messages) {
-            messageReferenceMessageDTOs.add(toMessageReferenceDTO(uuidGenerator, templateName, message));
-        }
-        when(messageReferenceRepository.findByProcessInstanceId(processInstance.getId())).thenReturn(messageReferenceMessageDTOs);
         when(taskInstanceRepository.findByProcessInstanceId(processInstance.getProcessTemplate(), processInstance.getId())).thenReturn(List.of(expectedTask));
 
-        ProcessInstanceDTO processInstanceDTO = ProcessInstanceDTOFactory
-                .createFromProcessInstance(processInstance, translateService, processRelationsService, messageRepository, messageReferenceRepository, relationRepository, processDataRepository, taskInstanceRepository);
+        ProcessInstanceDTOFactory processInstanceDTOFactory = createFactory();
+        ProcessInstanceDTO processInstanceDTO = processInstanceDTOFactory.createFromProcessInstance(processInstance);
 
         assertEquals(processInstance.getState().name(), processInstanceDTO.getState());
         assertEquals(processInstance.getOriginProcessId(), processInstanceDTO.getOriginProcessId());
-        assertThat(processInstanceDTO.getProcessData()).containsOnly(toProcessDataDTO(processData));
         assertEquals(processInstance.getCreatedAt(), processInstanceDTO.getCreatedAt());
         assertEquals(processInstance.getModifiedAt(), processInstanceDTO.getModifiedAt());
         assertEquals(1, processInstanceDTO.getTasks().size());
@@ -146,29 +118,17 @@ class ProcessInstanceDTOFactoryTest {
                         value(messageData.getValue()).
                         labels(createLabels(messageData.getKey())).
                         build()).
-                collect(Collectors.toSet());
+                collect(toSet());
         assertThat(taskDTO.getTaskData()).isEqualTo(expectedTaskDataDTOs);
-        assertEquals(3, processInstanceDTO.getMessages().size());
-        assertEquals(ProcessInstanceStubs.event, processInstanceDTO.getMessages().getFirst().getName());
         ProcessCompletionDTO processCompletion = processInstanceDTO.getProcessCompletion();
         assertNotNull(processCompletion);
         assertEquals(processInstance.getProcessCompletion().get().getConclusion().name(), processCompletion.getConclusion());
         assertEquals("all good", processCompletion.getReason().get("de"));
         assertEquals(processInstance.getProcessCompletion().get().getCompletedAt(), processCompletion.getCompletedAt());
-        assertThat(processInstanceDTO.getRelations()).hasSize(1);
-        RelationDTO relationDTO = processInstanceDTO.getRelations().getFirst();
-        assertThat(relationDTO.getSubjectType()).isEqualTo("SubjectType");
-        assertThat(relationDTO.getSubjectId()).isEqualTo("subject-1");
-        assertThat(relationDTO.getObjectType()).isEqualTo("ObjectType");
-        assertThat(relationDTO.getObjectId()).isEqualTo("object-1");
-        assertThat(relationDTO.getPredicateType()).isEqualTo("relates-to");
-        assertThat(relationDTO.getCreatedAt()).isNotNull();
     }
 
-    private ProcessDataDTO[] toProcessDataDTO(List<ProcessData> processData) {
-        return processData.stream()
-                .map(pd -> new ProcessDataDTO(pd.getKey(), pd.getValue(), pd.getRole()))
-                .toArray(ProcessDataDTO[]::new);
+    private ProcessInstanceDTOFactory createFactory() {
+        return new ProcessInstanceDTOFactory(translateService, messageRepository, messageReferenceRepository, taskInstanceRepository);
     }
 
     @Test
@@ -181,7 +141,7 @@ class ProcessInstanceDTOFactoryTest {
         ZonedDateTime newerMessageReceivedTimestamp = olderMessageReceivedTimestamp.minusMinutes(1);
         ZonedDateTime newerMessageCreatedTimestamp = newerMessageReceivedTimestamp.minusSeconds(10);
         List<MessageReferenceMessageDTO> eventReferences = List.of(
-                createEventReferenceEventDTO(newerMessageReceivedTimestamp, newerMessageCreatedTimestamp,"newerB"),
+                createEventReferenceEventDTO(newerMessageReceivedTimestamp, newerMessageCreatedTimestamp, "newerB"),
                 createEventReferenceEventDTO(newerMessageReceivedTimestamp, newerMessageCreatedTimestamp, "newerA"),
                 createEventReferenceEventDTO(olderMessageReceivedTimestamp, olderMessageCreatedTimestamp, "olderB"),
                 createEventReferenceEventDTO(olderMessageReceivedTimestamp, olderMessageCreatedTimestamp, "olderA")
@@ -233,7 +193,7 @@ class ProcessInstanceDTOFactoryTest {
                 .messageReceivedAt(receivedAt)
                 .messageCreatedAt(createdAt)
                 .messageName(eventName)
-                .messageData(emptySet())
+                .messageData(emptyList())
                 .relatedOriginTaskIds(emptySet())
                 .build();
     }
@@ -248,7 +208,7 @@ class ProcessInstanceDTOFactoryTest {
                 createTaskInstance("taskA", 0, "idA"),
                 createTaskInstance("taskB", 1, null)
         );
-        List<TaskInstanceDTO> taskDTOs = ProcessInstanceDTOFactory.createTasks(tasks, List.of(), "process", translateService, messageRepository);
+        List<TaskInstanceDTO> taskDTOs = createFactory().createTasks(tasks, "process", translateService, messageRepository);
 
         assertEquals("taskA", taskDTOs.getFirst().getName().get("de"));
         assertEquals("taskB", taskDTOs.get(1).getName().get("de"));
@@ -282,10 +242,10 @@ class ProcessInstanceDTOFactoryTest {
                         .setPlannedBy(User.newBuilder().
                                 setUserData(List.of(
                                         UserData.newBuilder().
-                                            setKey("planning-user-key").
-                                            setValue("planning-user-value").
-                                            setLabel("planning-user-key-translation").
-                                            build())).
+                                                setKey("planning-user-key").
+                                                setValue("planning-user-value").
+                                                setLabel("planning-user-key-translation").
+                                                build())).
                                 build())
                         .setCompletedBy(User.newBuilder().
                                 setUserData(List.of(
@@ -339,35 +299,33 @@ class ProcessInstanceDTOFactoryTest {
         assertThat(task.getName()).isEqualTo(Map.of(
                 "de", "taskType"));
         assertThat(task.getPlannedBy()).isEqualTo(Set.of(
-                                MessageUserDataDTO.builder().
-                                        key("planning-user-key").
-                                        value("planning-user-value").
-                                        label(Map.of(
-                                                "de", "planning-user-key-translation")).
-                                        build()));
+                MessageUserDataDTO.builder().
+                        key("planning-user-key").
+                        value("planning-user-value").
+                        label(Map.of(
+                                "de", "planning-user-key-translation")).
+                        build()));
         assertThat(task.getCompletedBy()).isEqualTo(Set.of(
-                        MessageUserDataDTO.builder().
-                                key("completing-user-key").
-                                value("completing-user-value").
-                                label(Map.of(
-                                        "de", "completing-user-key")).
-                                build()));
+                MessageUserDataDTO.builder().
+                        key("completing-user-key").
+                        value("completing-user-value").
+                        label(Map.of(
+                                "de", "completing-user-key")).
+                        build()));
         assertThat(task.getTaskData()).containsExactly(
                 TaskDataDTO.builder().
-                    key("task-data-key-1").
-                    value("task-data-value-1").
-                    labels(Map.of(
-                            "de", "task-data-translation-1")).
-                    build(),
+                        key("task-data-key-1").
+                        value("task-data-value-1").
+                        labels(Map.of(
+                                "de", "task-data-translation-1")).
+                        build(),
                 TaskDataDTO.builder().
                         key("task-data-key-2").
                         value("task-data-value-2").
                         labels(Map.of(
                                 "de", "task-data-key-2")).
                         build()
-                );
-        assertThat(dto.getProcessData())
-                .isNotEmpty();
+        );
     }
 
     private Map<String, String> createLabels(String value) {
@@ -387,10 +345,10 @@ class ProcessInstanceDTOFactoryTest {
                                 .messageDataValue(md.getValue())
                                 .messageDataRole(md.getRole())
                                 .build())
-                        .collect(Collectors.toSet()))
+                        .toList())
                 .relatedOriginTaskIds(message.getOriginTaskIds(templateName).stream()
                         .map(ch.admin.bit.jeap.processcontext.domain.message.OriginTaskId::getOriginTaskId)
-                        .collect(Collectors.toSet()))
+                        .collect(toSet()))
                 .build();
     }
 }

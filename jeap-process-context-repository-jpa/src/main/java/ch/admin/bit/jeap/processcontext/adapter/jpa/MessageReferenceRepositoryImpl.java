@@ -5,6 +5,8 @@ import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReference;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReferenceMessageDTO;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
@@ -32,11 +34,24 @@ public class MessageReferenceRepositoryImpl implements MessageReferenceRepositor
     }
 
     @Override
+    public MessageReferenceMessageDTO findByProcessInstanceIdAndMessageId(UUID processInstanceId, UUID messageId) {
+        return messageReferenceJpaRepository.findMessageReferenceWithMessageByProcessInstanceIdAndMessageId(processInstanceId, messageId)
+                .map(this::toDto)
+                .orElse(null);
+    }
+
+    @Override
     public List<MessageReferenceMessageDTO> findByProcessInstanceId(UUID processInstanceId) {
         return messageReferenceJpaRepository.findMessageReferencesWithMessagesByProcessInstanceId(processInstanceId)
                 .stream()
                 .map(this::toDto)
                 .toList();
+    }
+
+    @Override
+    public Page<MessageReferenceMessageDTO> findByProcessInstanceId(UUID processInstanceId, Pageable pageable) {
+        return messageReferenceJpaRepository.findMessageReferencesWithMessagesByProcessInstanceId(processInstanceId, pageable)
+                .map(this::toDto);
     }
 
     @Override

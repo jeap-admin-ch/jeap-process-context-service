@@ -9,7 +9,7 @@
         <tr>
           <td class="task-details-left-column">{{"i18n.process.task.data" | translate }}</td>
           <td>
-            @if (task?.taskData?.length) {
+			  @if (task.taskData.length) {
               <div>
                 <table class="ob-table ob-table-sm task-data-table">
                   <colgroup>
@@ -25,7 +25,7 @@
                   </table>
                 </div>
               }
-              @if (!task?.taskData?.length) {
+			  @if (!task.taskData.length) {
                 <div>
                   <app-task-details-nodata-row></app-task-details-nodata-row>
                 </div>
@@ -35,7 +35,7 @@
           <tr>
             <td class="task-details-left-column">{{"i18n.process.task.startedBy" | translate }}</td>
             <td>
-              @if (task?.plannedBy?.length) {
+				@if (task.plannedBy.length) {
                 <div>
                   <table class="ob-table ob-table-sm task-data-table">
                     <colgroup>
@@ -51,7 +51,7 @@
                     </table>
                   </div>
                 }
-                @if (!task?.plannedBy?.length) {
+				@if (!task.plannedBy.length) {
                   <div>
                     <app-task-details-nodata-row></app-task-details-nodata-row>
                   </div>
@@ -61,7 +61,7 @@
             <tr>
               <td class="task-details-left-column">{{"i18n.process.task.endedBy" | translate }}</td>
               <td>
-                @if (task?.completedBy?.length) {
+				  @if (task.completedBy?.length) {
                   <div>
                     <table class="ob-table ob-table-sm task-data-table">
                       <colgroup>
@@ -77,7 +77,7 @@
                       </table>
                     </div>
                   }
-                  @if (!task?.completedBy?.length) {
+				  @if (!task.completedBy?.length) {
                     <div>
                       <app-task-details-nodata-row></app-task-details-nodata-row>
                     </div>

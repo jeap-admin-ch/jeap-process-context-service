@@ -7,12 +7,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -45,14 +43,14 @@ public class Message extends ImmutableDomainEntity {
     @NotNull
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "events_event_data")
-    private Set<MessageData> messageData;
+    private List<MessageData> messageData;
 
     @NotNull
     @Getter
     // Only required in frontend: LAZY loading
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "events_user_data")
-    private Set<MessageUserData> userData;
+    private List<MessageUserData> userData;
 
     @NotNull
     @ElementCollection(fetch = FetchType.EAGER)
@@ -80,10 +78,10 @@ public class Message extends ImmutableDomainEntity {
         return new Message(messageId, idempotenceId, messageName, messageData, userData, originTaskIds, createdAt, messageCreatedAt, traceId);
     }
 
-    public Set<MessageData> getMessageData(String templateName) {
+    public List<MessageData> getMessageData(String templateName) {
         return getMessageData().stream()
                 .filter(templateMessageData -> templateMessageData.getTemplateName().equals(templateName))
-                .collect(Collectors.toSet());
+                .toList();
     }
 
     public Set<OriginTaskId> getOriginTaskIds(String templateName) {
@@ -92,8 +90,8 @@ public class Message extends ImmutableDomainEntity {
                 .collect(Collectors.toSet());
     }
 
-    public Set<MessageData> getMessageData() {
-        return Collections.unmodifiableSet(messageData);
+    public List<MessageData> getMessageData() {
+        return Collections.unmodifiableList(messageData);
     }
 
     public Set<OriginTaskId> getOriginTaskIds() {
@@ -110,8 +108,8 @@ public class Message extends ImmutableDomainEntity {
         this.messageId = messageId;
         this.idempotenceId = idempotenceId;
         this.messageName = messageName;
-        this.messageData = messageData != null ? new HashSet<>(messageData) : emptySet();
-        this.userData = userData != null ? new HashSet<>(userData) : emptySet();
+        this.messageData = messageData != null ? new ArrayList<>(messageData) : emptyList();
+        this.userData = userData != null ? new ArrayList<>(userData) : emptyList();
         this.originTaskIds = originTaskIds != null ? new HashSet<>(originTaskIds) : emptySet();
         this.createdAt = createdAt;
         this.messageCreatedAt = messageCreatedAt;

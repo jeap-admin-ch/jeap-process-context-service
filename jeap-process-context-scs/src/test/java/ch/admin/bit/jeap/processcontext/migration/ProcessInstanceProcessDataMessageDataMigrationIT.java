@@ -2,7 +2,6 @@ package ch.admin.bit.jeap.processcontext.migration;
 
 import ch.admin.bit.jeap.processcontext.ProcessInstanceMockS3ITBase;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.ProcessInstanceController;
-import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceDTO;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
@@ -51,8 +50,7 @@ class ProcessInstanceProcessDataMessageDataMigrationIT extends ProcessInstanceMo
 
         sendTest1Event();
         await().pollInSameThread().untilAsserted(() -> {
-            ProcessInstanceDTO processInstanceByOriginProcessId = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
-            assertThat(processInstanceByOriginProcessId.getMessages()).hasSize(2);
+            assertThat(getMessages(originProcessId)).hasSize(2);
         });
 
         // Update template name for the process instance
@@ -71,9 +69,8 @@ class ProcessInstanceProcessDataMessageDataMigrationIT extends ProcessInstanceMo
         });
 
         transactions.withinNewTransaction(() -> {
-            ProcessInstanceDTO processInstanceByOriginProcessId = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
-            assertThat(processInstanceByOriginProcessId.getProcessData()).hasSize(1);
-            assertThat(processInstanceByOriginProcessId.getMessages()).hasSize(2);
+            assertThat(getProcessData(originProcessId)).hasSize(1);
+            assertThat(getMessages(originProcessId)).hasSize(2);
         });
     }
 

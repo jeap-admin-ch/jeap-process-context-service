@@ -56,6 +56,8 @@ class ProcessSnapshotControllerTest {
     @MockitoBean
     private RelationRepository relationRepository;
     @MockitoBean
+    private ProcessRelationRepository processRelationRepository;
+    @MockitoBean
     private MessageRepository messageRepository;
     @MockitoBean
     private MessageReferenceRepository messageReferenceRepository;

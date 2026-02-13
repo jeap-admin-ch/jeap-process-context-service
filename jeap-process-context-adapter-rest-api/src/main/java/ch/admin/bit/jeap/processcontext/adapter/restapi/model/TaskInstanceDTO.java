@@ -124,24 +124,15 @@ public class TaskInstanceDTO {
                 build();
     }
 
-    static Set<TaskDataDTO> getTaskDataDTOs(TaskInstance taskInstance, List<MessageDTO> messages,
+    static Set<TaskDataDTO> getTaskDataDTOs(TaskInstance taskInstance, List<MessageDTO> planningOrCompletingMessages,
                                             String processTemplate, TranslateService translateService) {
         TaskType taskType = taskInstance.getTaskType().orElse(null);
         if (taskType == null) {
             return Set.of();
         }
-        List<MessageDTO> planningOrCompletingMessages = getPlanningOrCompletingMessages(taskInstance, messages);
         return taskType.getTaskData().stream().
                 flatMap(taskData -> getTaskDataDTOs(taskData, planningOrCompletingMessages, taskType, processTemplate, translateService)).
                 collect(Collectors.toSet());
-    }
-
-    private static List<MessageDTO> getPlanningOrCompletingMessages(TaskInstance taskInstance, List<MessageDTO> messages) {
-        return messages.stream().
-                filter(message ->
-                        message.getId().equals(taskInstance.getPlannedBy()) ||
-                        message.getId().equals(taskInstance.getCompletedBy())).
-                toList();
     }
 
     private static Stream<TaskDataDTO> getTaskDataDTOs(final TaskData taskData, List<MessageDTO> planningOrCompletingMessages,

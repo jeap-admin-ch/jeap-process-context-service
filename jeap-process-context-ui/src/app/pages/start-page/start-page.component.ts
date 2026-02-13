@@ -2,7 +2,7 @@ import {AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild} from '@a
 import {ActivatedRoute, Router} from '@angular/router';
 import {ProcessService} from '../../shared/processservice/process.service';
 import {MatSort} from '@angular/material/sort';
-import {ProcessInstanceLightDto, ProcessInstanceListDto} from '../../shared/processservice/process.model';
+import {PageResponse, ProcessInstanceLightDto} from '../../shared/processservice/process.model';
 import {Observable} from 'rxjs';
 import {startWith, switchMap} from 'rxjs/operators';
 import {FormBuilder, Validators} from '@angular/forms';
@@ -11,27 +11,23 @@ import {MatPaginator as MatPaginator} from '@angular/material/paginator';
 import {TranslateService} from '@ngx-translate/core';
 
 @Component({
-    selector: 'app-start-page',
-    templateUrl: './start-page.component.html',
-    standalone: false
+	selector: 'app-start-page',
+	templateUrl: './start-page.component.html',
+	standalone: false
 })
 export class StartPageComponent implements AfterViewInit, OnInit {
-
 	@ViewChild(MatSort) sort: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
 
 	isLoadingResults = true;
 
 	jumpToFormGroup = this.formBuilder.group({
-			processIdControl: ['', [Validators.required,
-				Validators.minLength(1)]]
-		}
-	);
+		processIdControl: ['', [Validators.required, Validators.minLength(1)]]
+	});
 
 	searchProcessDataFormGroup = this.formBuilder.group({
-			processDataControl: ['']
-		}
-	);
+		processDataControl: ['']
+	});
 
 	dataSource = new MatTableDataSource<ProcessInstanceLightDto>([]);
 	pageSizeOptions = [10, 20, 30];
@@ -45,17 +41,22 @@ export class StartPageComponent implements AfterViewInit, OnInit {
 	readonly COLUMN_NAME_STATE = 'state';
 	readonly COLUMN_NAME_LAST_MESSAGE_CREATED_AT = 'lastMessageCreatedAt';
 
-	displayedColumns: string[] = [this.COLUMN_NAME_ORIGIN_PROCESS_ID, this.COLUMN_NAME_PROCESS_TEMPLATE,
-		this.COLUMN_NAME_STATE, this.COLUMN_NAME_CREATED_AT, this.COLUMN_NAME_LAST_MESSAGE_CREATED_AT];
+	displayedColumns: string[] = [
+		this.COLUMN_NAME_ORIGIN_PROCESS_ID,
+		this.COLUMN_NAME_PROCESS_TEMPLATE,
+		this.COLUMN_NAME_STATE,
+		this.COLUMN_NAME_CREATED_AT,
+		this.COLUMN_NAME_LAST_MESSAGE_CREATED_AT
+	];
 
-
-	constructor(private readonly route: ActivatedRoute,
-				private readonly router: Router,
-				private readonly processService: ProcessService,
-				private readonly formBuilder: FormBuilder,
-				readonly translate: TranslateService,
-				private cd: ChangeDetectorRef
-	) {	}
+	constructor(
+		private readonly route: ActivatedRoute,
+		private readonly router: Router,
+		private readonly processService: ProcessService,
+		private readonly formBuilder: FormBuilder,
+		readonly translate: TranslateService,
+		private cd: ChangeDetectorRef
+	) {}
 
 	ngOnInit(): void {
 		this.dataSource.sort = this.sort;
@@ -67,12 +68,14 @@ export class StartPageComponent implements AfterViewInit, OnInit {
 	}
 
 	ngAfterViewInit(): void {
-		this.paginator.page.pipe(
-			startWith({}),
-			switchMap(() => {
-				return this.loadProcessInstances(this.paginator.pageIndex);
-			})
-		).subscribe(processList => this.processInstancesLoaded(processList));
+		this.paginator.page
+			.pipe(
+				startWith({}),
+				switchMap(() => {
+					return this.loadProcessInstances(this.paginator.pageIndex);
+				})
+			)
+			.subscribe(processList => this.processInstancesLoaded(processList));
 		// To avoid the ExpressionChangedAfterItHasBeenCheckedError: Find more at https://angular.io/errors/NG0100
 		this.cd.detectChanges();
 	}
@@ -81,34 +84,31 @@ export class StartPageComponent implements AfterViewInit, OnInit {
 		if (this.paginator.pageIndex > 0) {
 			this.paginator.firstPage();
 		} else {
-			this.loadProcessInstances(0).subscribe(
-				processList => this.processInstancesLoaded(processList));
+			this.loadProcessInstances(0).subscribe(processList => this.processInstancesLoaded(processList));
 		}
 	}
 
 	findProcessId(): void {
-		let processId = this.jumpToFormGroup.get('processIdControl')!.value
+		let processId = this.jumpToFormGroup.get('processIdControl')!.value;
 		this.processService.getProcess(processId).subscribe(
 			result => {
 				this.router.navigate(['/process/' + result.originProcessId]);
-
 			},
 			error => {
 				// @ts-ignore
-				this.jumpToFormGroup.get('processIdControl').setErrors({'processNotFound': true});
+				this.jumpToFormGroup.get('processIdControl').setErrors({processNotFound: true});
 				console.error('Could not get result', error);
 			}
 		);
-
 	}
 
-	private processInstancesLoaded(processInstancesList: ProcessInstanceListDto): void {
+	private processInstancesLoaded(processInstancesList: PageResponse<ProcessInstanceLightDto>): void {
 		this.isLoadingResults = false;
-		this.resultsLength = processInstancesList.totalCount;
-		this.data = processInstancesList.processInstanceLightDtoList;
+		this.resultsLength = processInstancesList.page.totalElements;
+		this.data = processInstancesList.content;
 	}
 
-	private loadProcessInstances(pageIndex: number): Observable<ProcessInstanceListDto> {
+	private loadProcessInstances(pageIndex: number): Observable<PageResponse<ProcessInstanceLightDto>> {
 		this.isLoadingResults = true;
 		const pageSize = this.paginator.pageSize;
 		// @ts-ignore

@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Data
 @Builder
-public class ProcessInstanceLightDto {
+public class ProcessInstanceLightDTO {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
@@ -22,14 +22,14 @@ public class ProcessInstanceLightDto {
     String lastMessageCreatedAt;
     Map<String, String> name;
 
-    public static ProcessInstanceLightDto create(ProcessInstance processInstance, TranslateService translateService,
+    public static ProcessInstanceLightDTO create(ProcessInstance processInstance, TranslateService translateService,
                                                  ZonedDateTime lastMessageCreatedAt) {
         Map<String, String> name = new HashMap<>();
         if (processInstance.getProcessTemplate() != null) {
             name = translateService.translateProcessTemplateName(processInstance.getProcessTemplate().getName());
         }
 
-        return ProcessInstanceLightDto.builder()
+        return ProcessInstanceLightDTO.builder()
                 .originProcessId(processInstance.getOriginProcessId())
                 .name(name)
                 .state(processInstance.getState().name())

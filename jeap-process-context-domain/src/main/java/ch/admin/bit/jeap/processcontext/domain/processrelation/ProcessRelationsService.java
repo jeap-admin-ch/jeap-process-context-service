@@ -6,6 +6,8 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationRo
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationRoleVisibility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -22,6 +24,21 @@ public class ProcessRelationsService {
     private final ProcessInstanceRepository processInstanceRepository;
     private final TranslateService translateService;
 
+    /**
+     * Creates a paged result of ProcessRelationViews by querying the database with pagination.
+     * Combines direct relations (owned by the process instance, excluding TARGET visibility)
+     * and external relations (from other processes pointing to this one, excluding ORIGIN visibility).
+     */
+    public Page<ProcessRelationView> createProcessRelationsPaged(ProcessInstance processInstance, Pageable pageable) {
+        Page<ProcessRelation> page = processRelationRepository.findAllVisibleForProcess(processInstance, pageable);
+        return page.map(relation -> {
+            if (relation.getProcessInstance().getId().equals(processInstance.getId())) {
+                return createProcessRelationView(relation);
+            } else {
+                return createExternalProcessRelationView(relation);
+            }
+        });
+    }
 
     /**
      * When creating the List of ProcessRelationViews, there are two things, which have to be done:
@@ -33,10 +50,10 @@ public class ProcessRelationsService {
         List<ProcessRelationView> processRelationViewList =
                 new ArrayList<>(processRelations.stream()
                         .filter(processRelation -> processRelation.getVisibilityType() != ProcessRelationRoleVisibility.TARGET)
-                        .map(this::evaluateDirectProcessRelation)
+                        .map(this::createProcessRelationView)
                         .toList());
 
-        List<ProcessRelationView> externalList = this.findExternalProcessRelations(processInstance.getOriginProcessId());
+        List<ProcessRelationView> externalList = findExternalProcessRelations(processInstance.getOriginProcessId());
         processRelationViewList.addAll(externalList);
         return processRelationViewList;
     }
@@ -47,7 +64,7 @@ public class ProcessRelationsService {
      */
     private List<ProcessRelationView> findExternalProcessRelations(String originProcessId) {
 
-        List<ProcessRelation> processRelationList = this.processRelationRepository.findAllByRelatedProcessId(originProcessId);
+        List<ProcessRelation> processRelationList = processRelationRepository.findAllByRelatedProcessId(originProcessId);
         return processRelationList.stream()
                 // Take only these processRelation, which have the visibility BOTH or TARGET
                 .filter(processRelation -> processRelation.getVisibilityType() != ProcessRelationRoleVisibility.ORIGIN)
@@ -56,13 +73,10 @@ public class ProcessRelationsService {
     }
 
     /**
-     * Try to get the Data from an existing process instance. If the process instance does not exist, fill the
-     * data which we know.
-     * Because it is a direct process reference, the reference text has this rules:
-     * - If ORIGIN --> reference text comes from targetRole
-     * - if TARGET --> reference text comes from originalRole
+     * Creates a ProcessRelationView from a direct (non-external) ProcessRelation.
+     * Enriches it with translated names and related process instance state.
      */
-    private ProcessRelationView evaluateDirectProcessRelation(ProcessRelation originProcessRelation) {
+    public ProcessRelationView createProcessRelationView(ProcessRelation originProcessRelation) {
         String processTemplateName = originProcessRelation.getProcessInstance().getProcessTemplateName();
 
         Optional<ProcessInstanceSummary> processInstanceSummaryOptional = processInstanceRepository.findProcessInstanceSummaryByOriginProcessId(originProcessRelation.getRelatedProcessId());
@@ -132,4 +146,4 @@ public class ProcessRelationsService {
                 .relation(relationTextI18N)
                 .build();
     }
-    }
+}

@@ -211,7 +211,7 @@ public class ProcessInstanceService {
             return;
         }
 
-        Set<MessageData> messageDataSet = message.getMessageData(processInstance.getProcessTemplateName());
+        List<MessageData> messageDataSet = message.getMessageData(processInstance.getProcessTemplateName());
         List<ProcessRelation> newRelations = new ArrayList<>();
         for (ProcessRelationPattern pattern : patterns) {
             String messageKey = pattern.getSource().getMessageDataKey();

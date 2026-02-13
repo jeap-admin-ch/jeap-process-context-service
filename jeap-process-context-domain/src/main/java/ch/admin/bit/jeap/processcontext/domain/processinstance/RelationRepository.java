@@ -1,7 +1,11 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.Collection;
 import java.util.Set;
+import java.util.UUID;
 
 public interface RelationRepository {
     /**
@@ -11,5 +15,5 @@ public interface RelationRepository {
      */
     Set<Relation> saveAllNewRelations(Collection<Relation> relations);
 
-    Set<Relation> findByProcessInstance(ProcessInstance processInstance);
+    Page<Relation> findByProcessInstanceId(UUID processInstanceId, Pageable pageable);
 }

@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class MessageReferenceMessageDTO {
     @NonNull
     ZonedDateTime messageCreatedAt;
     @NonNull
-    Set<MessageReferenceMessageDataDTO> messageData;
+    List<MessageReferenceMessageDataDTO> messageData;
     @NonNull
     Set<String> relatedOriginTaskIds;
     String traceId;
@@ -46,8 +47,8 @@ public class MessageReferenceMessageDTO {
                 .build();
     }
 
-    private static Set<MessageReferenceMessageDataDTO> toDto(Set<MessageData> messageData) {
-        return messageData.stream().map(MessageReferenceMessageDataDTO::from).collect(toSet());
+    private static List<MessageReferenceMessageDataDTO> toDto(List<MessageData> messageData) {
+        return messageData.stream().map(MessageReferenceMessageDataDTO::from).toList();
     }
 
     private static Set<String> toRelatedOriginTaskIds(Set<OriginTaskId> originTaskIds) {

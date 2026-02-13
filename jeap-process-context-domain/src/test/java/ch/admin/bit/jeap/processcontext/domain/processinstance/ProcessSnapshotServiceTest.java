@@ -172,7 +172,7 @@ class ProcessSnapshotServiceTest {
         MessageReferenceMessageDTO messagePlannedBy = mock(MessageReferenceMessageDTO.class);
         when(messagePlannedBy.getMessageId()).thenReturn(taskPlannedByMessageId);
         when(messagePlannedBy.getMessageName()).thenReturn("messageNamePlannedBy");
-        when(messagePlannedBy.getMessageData()).thenReturn(new LinkedHashSet<>(List.of(
+        when(messagePlannedBy.getMessageData()).thenReturn(List.of(
                 MessageReferenceMessageDataDTO.builder().
                         messageDataKey("taskDataPlanndedByKey1").
                         messageDataValue("taskDataPlanndedByValue1").
@@ -184,11 +184,11 @@ class ProcessSnapshotServiceTest {
                 MessageReferenceMessageDataDTO.builder().
                         messageDataKey("otherKey").
                         messageDataValue("otherValue").
-                        build())));
+                        build()));
         MessageReferenceMessageDTO messageCompletedBy = mock(MessageReferenceMessageDTO.class);
         when(messageCompletedBy.getMessageId()).thenReturn(taskCompletedByMessageId);
         when(messageCompletedBy.getMessageName()).thenReturn("messageNameCompletedBy");
-        when(messageCompletedBy.getMessageData()).thenReturn(Set.of(
+        when(messageCompletedBy.getMessageData()).thenReturn(List.of(
                 MessageReferenceMessageDataDTO.builder().
                         messageDataKey("taskDataCompletedByKey1").
                         messageDataValue("taskDataCompletedByValue1").

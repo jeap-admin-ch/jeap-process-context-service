@@ -83,14 +83,14 @@ class ProcessInstancesCompletedBySingleDomainMessageIT extends ProcessInstanceMo
     }
 
     private void assertProcessIdsEvent(String originProcessId) {
-        List<MessageDTO> processInstanceEvents = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getMessages();
+        List<MessageDTO> processInstanceEvents = getMessages(originProcessId);
         assertEquals(2, processInstanceEvents.size());
         assertThat(processInstanceEvents.stream().map(MessageDTO::getName).toList())
                 .containsExactlyInAnyOrder("Test1Event", "ProcessIdsEvent");
     }
 
     private void assertNoProcessIdsEvent(String originProcessId) {
-        List<MessageDTO> processInstance1Events = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId).getMessages();
+        List<MessageDTO> processInstance1Events = getMessages(originProcessId);
         assertThat(processInstance1Events.stream().map(MessageDTO::getName).toList())
                 .containsOnly("Test1Event");
     }

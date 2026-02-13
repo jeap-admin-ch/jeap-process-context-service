@@ -67,10 +67,7 @@ class TaskSingleInstancePlannedByDomainEventIT extends ProcessInstanceMockS3ITBa
         sendTest1Event("domainEventId");
         Awaitility.await()
                 .pollInSameThread()
-                .until(() -> {
-                    var dto = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
-                    return dto.getMessages().size() == 3;
-                });
+                .until(() -> getMessages(originProcessId).size() == 3);
 
         assertTasks(
                 taskStateDynamic(processTemplateName, TaskState.PLANNED),

@@ -117,8 +117,7 @@ class ProcessSnapshotWithS3IT extends ProcessInstanceITBase {
     }
 
     private long countProcessEventsOfType(String originProcessId, String type) {
-        ProcessInstanceDTO processInstanceDTO = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
-        return processInstanceDTO.getMessages().stream().
+        return getMessages(originProcessId).stream().
                 map(MessageDTO::getName).
                 filter(type::equals).
                 count();

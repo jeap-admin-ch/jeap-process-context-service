@@ -1,11 +1,12 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.Relation;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.RelationRepository;
 import io.micrometer.core.annotation.Timed;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -21,8 +22,8 @@ class RelationRepositoryImpl implements RelationRepository {
     private final RelationJpaRepository relationJpaRepository;
 
     @Override
-    public Set<Relation> findByProcessInstance(ProcessInstance processInstance) {
-        return relationJpaRepository.findByProcessInstance(processInstance);
+    public Page<Relation> findByProcessInstanceId(UUID processInstanceId, Pageable pageable) {
+        return relationJpaRepository.findByProcessInstanceId(processInstanceId, pageable);
     }
 
     @Override

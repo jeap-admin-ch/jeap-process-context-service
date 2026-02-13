@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.processcontext.plugin.api.context.Message;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
 import lombok.experimental.UtilityClass;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,7 +21,7 @@ public class MessageFactory {
                 .build();
     }
 
-    private static Set<MessageData> toMessageData(Set<MessageReferenceMessageDataDTO> messageReferenceMessageDataDTOS) {
+    private static Set<MessageData> toMessageData(List<MessageReferenceMessageDataDTO> messageReferenceMessageDataDTOS) {
         return messageReferenceMessageDataDTOS.stream()
                 .map(data -> new MessageData(data.getMessageDataKey(), data.getMessageDataValue(), data.getMessageDataRole()))
                 .collect(Collectors.toSet());

@@ -1,0 +1,23 @@
+@if (processData.length) {
+	<table [dataSource]="processData" class="ob-table ob-table-sm ob-table-cicd" mat-table>
+		<ng-container matColumnDef="key">
+			<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.processData.key' | translate }}</th>
+			<td *matCellDef="let row" mat-cell>{{ row.key }}</td>
+		</ng-container>
+		<ng-container matColumnDef="value">
+			<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.processData.value' | translate }}</th>
+			<td *matCellDef="let row" mat-cell>{{ row.value ? row.value : '-' }}</td>
+		</ng-container>
+		<ng-container matColumnDef="role">
+			<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.processData.role' | translate }}</th>
+			<td *matCellDef="let row" mat-cell>{{ row.role ? row.role : '-' }}</td>
+		</ng-container>
+		<tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
+		<tr *matRowDef="let row; columns: displayedColumns;" mat-row></tr>
+	</table>
+	<mat-paginator [length]="totalElements" [pageSizeOptions]="[10]"></mat-paginator>
+}
+
+@if (totalElements === 0) {
+	<p>{{ 'i18n.none' | translate }}</p>
+}

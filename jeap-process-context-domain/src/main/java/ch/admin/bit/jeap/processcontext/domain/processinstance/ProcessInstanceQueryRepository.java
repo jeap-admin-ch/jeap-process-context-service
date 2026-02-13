@@ -8,10 +8,11 @@ import org.springframework.data.domain.Slice;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 public interface ProcessInstanceQueryRepository {
 
-    boolean existsByOriginProcessId(String originProcessId);
+    UUID findIdByOriginProcessId(String originProcessId);
 
     /**
      * For the given origin process id, find and load the corresponding process instance

@@ -300,7 +300,7 @@ class DomainMessageServiceTest {
         List<Message> capturedMessages = eventCaptor.getAllValues();
 
         Message messageSaved = capturedMessages.getFirst();
-        Set<MessageUserData> userData = messageSaved.getUserData();
+        List<MessageUserData> userData = messageSaved.getUserData();
         assertThat(userData)
                 .hasSize(6)
                 .containsExactlyInAnyOrder(
@@ -339,7 +339,7 @@ class DomainMessageServiceTest {
         List<Message> capturedMessages = eventCaptor.getAllValues();
 
         Message messageSaved = capturedMessages.getFirst();
-        Set<MessageUserData> userData = messageSaved.getUserData();
+        List<MessageUserData> userData = messageSaved.getUserData();
         assertThat(userData)
                 .hasSize(3)
                 .containsExactlyInAnyOrder(

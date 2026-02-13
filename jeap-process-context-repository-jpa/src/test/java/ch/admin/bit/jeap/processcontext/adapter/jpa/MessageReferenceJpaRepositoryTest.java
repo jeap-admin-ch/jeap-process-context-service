@@ -14,12 +14,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -132,6 +135,83 @@ class MessageReferenceJpaRepositoryTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().message().getMessageName()).isEqualTo("Message1");
+    }
+
+    @Test
+    void findMessageReferencesWithMessagesByProcessInstanceId_paged_returnsPagedResults() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        String templateName = savedProcessInstance.getProcessTemplateName();
+        Message message1 = createAndSaveMessage("Message1", templateName);
+        Message message2 = createAndSaveMessage("Message2", templateName);
+        jpaRepositoryTestSupport.createAndPersist(message1, savedProcessInstance);
+        jpaRepositoryTestSupport.createAndPersist(message2, savedProcessInstance);
+        messageReferenceJpaRepository.flush();
+
+        Page<MessageReferenceWithMessage> firstPage = messageReferenceJpaRepository
+                .findMessageReferencesWithMessagesByProcessInstanceId(savedProcessInstance.getId(), PageRequest.of(0, 1));
+
+        assertThat(firstPage.getTotalElements()).isEqualTo(2);
+        assertThat(firstPage.getTotalPages()).isEqualTo(2);
+        assertThat(firstPage.getContent()).hasSize(1);
+
+        Page<MessageReferenceWithMessage> secondPage = messageReferenceJpaRepository
+                .findMessageReferencesWithMessagesByProcessInstanceId(savedProcessInstance.getId(), PageRequest.of(1, 1));
+
+        assertThat(secondPage.getContent()).hasSize(1);
+        assertThat(secondPage.getContent().getFirst().message().getMessageName())
+                .isNotEqualTo(firstPage.getContent().getFirst().message().getMessageName());
+    }
+
+    @Test
+    void findMessageReferenceWithMessageByProcessInstanceIdAndMessageId_found_returnsResult() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        String templateName = savedProcessInstance.getProcessTemplateName();
+        Message message = createAndSaveMessage("TestMessage", templateName);
+        MessageReference savedReference = jpaRepositoryTestSupport.createAndPersist(message, savedProcessInstance);
+        messageReferenceJpaRepository.flush();
+
+        Optional<MessageReferenceWithMessage> result = messageReferenceJpaRepository
+                .findMessageReferenceWithMessageByProcessInstanceIdAndMessageId(savedProcessInstance.getId(), message.getId());
+
+        assertThat(result).isPresent();
+        assertThat(result.get().messageReference().getId()).isEqualTo(savedReference.getId());
+        assertThat(result.get().message().getId()).isEqualTo(message.getId());
+        assertThat(result.get().message().getMessageName()).isEqualTo("TestMessage");
+        assertThat(result.get().processTemplateName()).isEqualTo(templateName);
+    }
+
+    @Test
+    void findMessageReferenceWithMessageByProcessInstanceIdAndMessageId_notFound_returnsEmpty() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        ProcessInstance savedProcessInstance = processInstanceJpaRepository.saveAndFlush(processInstance);
+
+        Optional<MessageReferenceWithMessage> result = messageReferenceJpaRepository
+                .findMessageReferenceWithMessageByProcessInstanceIdAndMessageId(savedProcessInstance.getId(), UUID.randomUUID());
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void findMessageReferenceWithMessageByProcessInstanceIdAndMessageId_wrongProcessInstance_returnsEmpty() {
+        ProcessInstance processInstance1 = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        ProcessInstance savedProcessInstance1 = processInstanceJpaRepository.saveAndFlush(processInstance1);
+
+        ProcessInstance processInstance2 = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        ProcessInstance savedProcessInstance2 = processInstanceJpaRepository.saveAndFlush(processInstance2);
+
+        String templateName1 = savedProcessInstance1.getProcessTemplateName();
+        Message message = createAndSaveMessage("TestMessage", templateName1);
+        jpaRepositoryTestSupport.createAndPersist(message, savedProcessInstance1);
+        messageReferenceJpaRepository.flush();
+
+        Optional<MessageReferenceWithMessage> result = messageReferenceJpaRepository
+                .findMessageReferenceWithMessageByProcessInstanceIdAndMessageId(savedProcessInstance2.getId(), message.getId());
+
+        assertThat(result).isEmpty();
     }
 
     @Test

@@ -74,42 +74,42 @@ class TaskInstanceDTOTest {
         // "other" message does not plan or complete the test task
         // "planning" message plans the test task and contains message data that is referenced as task data
         // "completing" message completes the test task and contains message data that is referenced as task data
-        final UUID otherMessageId = UUID.randomUUID();
-        final UUID plannedByMessageId = UUID.randomUUID();
-        final UUID completedByMessageId = UUID.randomUUID();
-        final String otherMessageName = "other";
-        final String planningMessageName = "planning";
-        final String completingMessageName = "completing";
-        final String otherKey = "other-key";
-        final String planningKey = "planning-key";
-        final String completingKey = "completing-key";
-        final String planningValue = "planning-value";
-        final String completingValue = "completing-value";
-        final MessageReferenceMessageDataDTO otherMessageData = MessageReferenceMessageDataDTO.builder().
+        UUID otherMessageId = UUID.randomUUID();
+        UUID plannedByMessageId = UUID.randomUUID();
+        UUID completedByMessageId = UUID.randomUUID();
+        String otherMessageName = "other";
+        String planningMessageName = "planning";
+        String completingMessageName = "completing";
+        String otherKey = "other-key";
+        String planningKey = "planning-key";
+        String completingKey = "completing-key";
+        String planningValue = "planning-value";
+        String completingValue = "completing-value";
+        MessageReferenceMessageDataDTO otherMessageData = MessageReferenceMessageDataDTO.builder().
                 messageDataKey(otherKey).
                 messageDataValue("other-value").
                 build();
-        final MessageReferenceMessageDataDTO planningMessageData = MessageReferenceMessageDataDTO.builder().
+        MessageReferenceMessageDataDTO planningMessageData = MessageReferenceMessageDataDTO.builder().
                 messageDataKey(planningKey).
                 messageDataValue(planningValue).
                 build();
-        final MessageReferenceMessageDataDTO completingMessageData = MessageReferenceMessageDataDTO.builder().
+        MessageReferenceMessageDataDTO completingMessageData = MessageReferenceMessageDataDTO.builder().
                 messageDataKey(completingKey).
                 messageDataValue(completingValue).
                 build();
-        final MessageDTO otherMessageDTO = createMessageDto(otherMessageId, otherMessageName, Set.of(otherMessageData, completingMessageData, planningMessageData));
-        final MessageDTO planningMessageDTO = createMessageDto(plannedByMessageId, planningMessageName, Set.of(planningMessageData));
-        final MessageDTO completingMessageDTO = createMessageDto(completedByMessageId, completingMessageName, Set.of(completingMessageData));
-        final TaskData planningTaskData = TaskData.builder().
+        MessageDTO otherMessageDTO = createMessageDto(otherMessageId, otherMessageName, List.of(otherMessageData, completingMessageData, planningMessageData));
+        MessageDTO planningMessageDTO = createMessageDto(plannedByMessageId, planningMessageName, List.of(planningMessageData));
+        MessageDTO completingMessageDTO = createMessageDto(completedByMessageId, completingMessageName, List.of(completingMessageData));
+        TaskData planningTaskData = TaskData.builder().
                 sourceMessage(planningMessageName).
                 messageDataKeys(Set.of(planningKey)).
                 build();
-        final TaskData completingTaskData = TaskData.builder().
+        TaskData completingTaskData = TaskData.builder().
                 sourceMessage(completingMessageName).
                 messageDataKeys(Set.of(completingKey)).
                 build();
-        final String taskTypeName = "test-task-type";
-        final TaskType taskType = TaskType.builder().
+        String taskTypeName = "test-task-type";
+        TaskType taskType = TaskType.builder().
                 name(taskTypeName).
                 lifecycle(TaskLifecycle.DYNAMIC).
                 cardinality(TaskCardinality.SINGLE_INSTANCE).
@@ -117,14 +117,14 @@ class TaskInstanceDTOTest {
                 completedByDomainEvent(completingMessageName).
                 taskData(Set.of(planningTaskData, completingTaskData)).
                 build();
-        final TaskInstance taskInstance = mock(TaskInstance.class);
+        TaskInstance taskInstance = mock(TaskInstance.class);
         when(taskInstance.getPlannedBy()).thenReturn(plannedByMessageId);
         when(taskInstance.getCompletedBy()).thenReturn(completedByMessageId);
         when(taskInstance.getTaskType()).thenReturn(Optional.of(taskType));
-        final String processTemplateName = "test-process-template";
-        final TranslateService translateService = mock(TranslateService.class);
-        final Map<String, String> planningLabels = Map.of("de", "planning");
-        final Map<String, String> completingLabels = Map.of("de", "completing");
+        String processTemplateName = "test-process-template";
+        TranslateService translateService = mock(TranslateService.class);
+        Map<String, String> planningLabels = Map.of("de", "planning");
+        Map<String, String> completingLabels = Map.of("de", "completing");
         when(translateService.translateTaskDataKey(processTemplateName, taskTypeName, planningKey)).
                 thenReturn(planningLabels);
         when(translateService.translateTaskDataKey(processTemplateName, taskTypeName, completingKey)).
@@ -143,7 +143,7 @@ class TaskInstanceDTOTest {
         // only other and planning messages received yet -> only planning task data present
         Set<TaskDataDTO> taskDataDTOOtherAndPlanningMessages = TaskInstanceDTO.getTaskDataDTOs(
                 taskInstance, List.of(otherMessageDTO, planningMessageDTO), processTemplateName, translateService);
-        final TaskDataDTO expectedPlanningTaskDataDTO = TaskDataDTO.builder().
+        TaskDataDTO expectedPlanningTaskDataDTO = TaskDataDTO.builder().
                 key(planningKey).
                 value(planningValue).
                 labels(planningLabels).
@@ -153,7 +153,7 @@ class TaskInstanceDTOTest {
         // only other and completing messages received yet -> only completing task data present
         Set<TaskDataDTO> taskDataDTOOtherAndCompletingMessages = TaskInstanceDTO.getTaskDataDTOs(
                 taskInstance, List.of(otherMessageDTO, completingMessageDTO), processTemplateName, translateService);
-        final TaskDataDTO expectedCompletingTaskDataDTO = TaskDataDTO.builder().
+        TaskDataDTO expectedCompletingTaskDataDTO = TaskDataDTO.builder().
                 key(completingKey).
                 value(completingValue).
                 labels(completingLabels).
@@ -173,7 +173,7 @@ class TaskInstanceDTOTest {
         assertThat(taskDataDTONoTaskType).isEmpty();
     }
 
-    private MessageDTO createMessageDto(UUID messageId, String messageName, Set<MessageReferenceMessageDataDTO> messageData) {
+    private MessageDTO createMessageDto(UUID messageId, String messageName, List<MessageReferenceMessageDataDTO> messageData) {
         MessageReferenceMessageDTO messageReferenceMessageDTO = MessageReferenceMessageDTO.builder().
                 messageReferenceId(UUID.randomUUID()).
                 messageId(messageId).

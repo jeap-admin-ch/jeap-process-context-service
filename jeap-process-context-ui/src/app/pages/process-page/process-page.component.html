@@ -89,7 +89,7 @@
           <div class="process-div">
             <mat-card>
               <mat-card-content>
-                <app-process-relations [processRelations]="processRelations"></app-process-relations>
+				  <app-process-relations [originProcessId]="process.originProcessId"></app-process-relations>
               </mat-card-content>
             </mat-card>
           </div>
@@ -132,27 +132,7 @@
           <mat-panel-title><h4>{{ 'i18n.process.processData.title' | translate }}</h4></mat-panel-title>
         </mat-expansion-panel-header>
         <mat-panel-description>
-          @if (process.processData.length) {
-            <table [dataSource]="process.processData" class="ob-table ob-table-sm ob-table-cicd" mat-table>
-              <ng-container matColumnDef="key">
-                <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.processData.key' | translate }}</th>
-                <td *matCellDef="let row" mat-cell>{{ row.key }}</td>
-              </ng-container>
-              <ng-container matColumnDef="value">
-                <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.processData.value' | translate }}</th>
-                <td *matCellDef="let row" mat-cell>{{ row.value ? row.value : '-' }}</td>
-              </ng-container>
-              <ng-container matColumnDef="role">
-                <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.processData.role' | translate }}</th>
-                <td *matCellDef="let row" mat-cell>{{ row.role ? row.role : '-' }}</td>
-              </ng-container>
-              <tr *matHeaderRowDef="['key','value', 'role']" mat-header-row></tr>
-              <tr *matRowDef="let row; columns: ['key','value', 'role'];" mat-row></tr>
-            </table>
-          }
-          @if (process.processData.length == 0) {
-            <p>{{ 'i18n.none' | translate }}</p>
-          }
+			<app-process-data [originProcessId]="process.originProcessId"></app-process-data>
         </mat-panel-description>
       </mat-expansion-panel>
       <!-- Messages -->
@@ -162,73 +142,7 @@
             <mat-panel-title><h4>{{ 'i18n.process.message.title' | translate }}</h4></mat-panel-title>
           </mat-expansion-panel-header>
           <mat-panel-description>
-            @if (process.messages.length) {
-              <table [dataSource]="process.messages" class="ob-table ob-table-sm ob-table-cicd" mat-table>
-                <ng-container matColumnDef="name">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.task.name' | translate }}</th>
-                  <td *matCellDef="let row" mat-cell>{{ row.name }}</td>
-                </ng-container>
-                <ng-container matColumnDef="createdAt">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.createdAt' | translate }}</th>
-                  <td *matCellDef="let row" mat-cell>{{ row.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-                </ng-container>
-                <ng-container matColumnDef="receivedAt">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.receivedAt' | translate }}</th>
-                  <td *matCellDef="let row" mat-cell>{{ row.receivedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-                </ng-container>
-                <ng-container matColumnDef="traceId">
-                  <th *matHeaderCellDef mat-header-cell>Trace Id</th>
-                  <td *matCellDef="let row" mat-cell>
-                    {{ row.traceId }}
-                    @if (row.traceId) {
-                      <a (click)="openDeepLink(row.traceId)" [href]="logDeepLink"
-                        [matTooltip]="'i18n.process.message.show-log' | translate"
-                        id="log-deep-link-btn" mat-icon-button obButton="secondary"
-                        target="_blank">
-                        <mat-icon style="font-size: 10px;" svgIcon="link_external"></mat-icon>
-                      </a>
-                    }
-                  </td>
-                </ng-container>
-                <ng-container matColumnDef="relatedOriginTaskIds">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.relatedOriginTaskIds' | translate }}</th>
-                  <td *matCellDef="let row" mat-cell>{{ row.relatedOriginTaskIds.length ? row.relatedOriginTaskIds : '-' }}</td>
-                </ng-container>
-                <ng-container matColumnDef="messageData">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.message.messageData' | translate }}</th>
-                  <td *matCellDef="let innerRow" mat-cell>
-                    <!-- Inner Table for messageData-->
-                    @if (innerRow.messageData.length) {
-                      <table [dataSource]="innerRow.messageData" class="ob-table ob-table-sm" mat-table>
-                        <ng-container matColumnDef="key">
-                          <th *matHeaderCellDef mat-header-cell style="background-color: white">{{ 'i18n.process.processData.key' | translate }}</th>
-                          <td *matCellDef="let element" mat-cell>{{ element.key }}</td>
-                        </ng-container>
-                        <ng-container matColumnDef="value">
-                          <th *matHeaderCellDef mat-header-cell style="background-color: white">{{ 'i18n.process.processData.value' | translate }}
-                          </th>
-                          <td *matCellDef="let element" mat-cell>{{ element.value }}</td>
-                        </ng-container>
-                        <ng-container matColumnDef="role">
-                          <th *matHeaderCellDef mat-header-cell style="background-color: white">{{ 'i18n.process.processData.role' | translate }}</th>
-                          <td *matCellDef="let element" mat-cell>{{ element.role }}</td>
-                        </ng-container>
-                        <tr *matHeaderRowDef="['key', 'value', 'role']" mat-header-row></tr>
-                        <tr *matRowDef="let innerRow; columns: ['key', 'value', 'role'];" mat-row></tr>
-                      </table>
-                    }
-                    @if (innerRow.messageData.length == 0) {
-                      <div>-</div>
-                    }
-                  </td>
-                </ng-container>
-                <tr *matHeaderRowDef="['name','createdAt','receivedAt','traceId','relatedOriginTaskIds','messageData']" mat-header-row></tr>
-                <tr *matRowDef="let row; columns: ['name','createdAt','receivedAt','traceId','relatedOriginTaskIds','messageData'];" mat-row></tr>
-              </table>
-            }
-            @if (process.messages.length == 0) {
-              <p>{{ 'i18n.none' | translate }}</p>
-            }
+			  <app-messages [originProcessId]="process.originProcessId"></app-messages>
           </mat-panel-description>
         </mat-expansion-panel>
       }
@@ -239,39 +153,7 @@
             <mat-panel-title><h4>{{ 'i18n.process.relations.title' | translate }}</h4></mat-panel-title>
           </mat-expansion-panel-header>
           <mat-panel-description>
-            @if (process.relations.length) {
-              <table [dataSource]="process.relations" class="ob-table ob-table-sm ob-table-cicd" mat-table>
-                <ng-container matColumnDef="predicateType">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.predicateType' | translate }}</th>
-                  <td *matCellDef="let row" mat-cell>{{ row.predicateType }}</td>
-                </ng-container>
-                <ng-container matColumnDef="createdAt">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.createdAt' | translate }}</th>
-                  <td *matCellDef="let row" mat-cell>{{ row.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-                </ng-container>
-                <ng-container matColumnDef="subjectType">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.subjectType' | translate }}</th>
-                  <td *matCellDef="let row" mat-cell>{{ row.subjectType }}</td>
-                </ng-container>
-                <ng-container matColumnDef="subjectId">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.subjectId' | translate }}</th>
-                  <td *matCellDef="let row" mat-cell>{{ row.subjectId }}</td>
-                </ng-container>
-                <ng-container matColumnDef="objectType">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.objectType' | translate }}</th>
-                  <td *matCellDef="let row" mat-cell>{{ row.objectType }}</td>
-                </ng-container>
-                <ng-container matColumnDef="objectId">
-                  <th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.objectId' | translate }}</th>
-                  <td *matCellDef="let row" mat-cell>{{ row.objectId }}</td>
-                </ng-container>
-                <tr *matHeaderRowDef="[ 'createdAt', 'predicateType', 'subjectType', 'subjectId', 'objectType', 'objectId']" mat-header-row></tr>
-                <tr *matRowDef="let row; columns: ['createdAt', 'predicateType',  'subjectType', 'subjectId', 'objectType', 'objectId'];" mat-row></tr>
-              </table>
-            }
-            @if (process.processData.length == 0) {
-              <p>{{ 'i18n.none' | translate }}</p>
-            }
+			  <app-relations [originProcessId]="process.originProcessId"></app-relations>
           </mat-panel-description>
         </mat-expansion-panel>
       }

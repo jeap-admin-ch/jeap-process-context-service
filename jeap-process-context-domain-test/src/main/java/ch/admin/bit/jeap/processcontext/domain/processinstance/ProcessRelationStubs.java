@@ -9,15 +9,18 @@ import lombok.NoArgsConstructor;
 public final class ProcessRelationStubs {
 
     public static ProcessRelation createProcessRelation(ProcessInstance processInstance, String name, String relatedProcessId) {
-        ProcessRelation processRelation = ProcessRelation.builder()
+        return createProcessRelation(processInstance, name, relatedProcessId, ProcessRelationRoleVisibility.BOTH);
+    }
+
+    public static ProcessRelation createProcessRelation(ProcessInstance processInstance, String name, String relatedProcessId, ProcessRelationRoleVisibility visibility) {
+        return ProcessRelation.builder()
                 .processInstance(processInstance)
                 .name(name)
                 .roleType(ProcessRelationRoleType.ORIGIN)
                 .originRole("originRole")
                 .targetRole("targetRole")
-                .visibilityTyp(ProcessRelationRoleVisibility.BOTH)
+                .visibilityTyp(visibility)
                 .relatedProcessId(relatedProcessId)
                 .build();
-        return processRelation;
     }
 }

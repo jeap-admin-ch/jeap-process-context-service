@@ -1,7 +1,6 @@
 package ch.admin.bit.jeap.processcontext;
 
 import ch.admin.bit.jeap.processcontext.adapter.restapi.model.MessageDTO;
-import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceDTO;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessSnapshotArchiveData;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessSnapshotRepository;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
@@ -71,8 +70,7 @@ class ProcessSnapshotIT extends ProcessInstanceMockS3ITBase {
     }
 
     private long countProcessEventsOfType(String originProcessId, String type) {
-        ProcessInstanceDTO processInstanceDTO = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
-        return processInstanceDTO.getMessages().stream().
+        return getMessages(originProcessId).stream().
                 map(MessageDTO::getName).
                 filter(type::equals).
                 count();
@@ -82,7 +80,7 @@ class ProcessSnapshotIT extends ProcessInstanceMockS3ITBase {
         Test1Event event1 = Test1EventBuilder.createForProcessId(originProcessId)
                 .taskIds(s)
                 .build();
-       sendSync("topic.test1", event1);
+        sendSync("topic.test1", event1);
     }
 
     private void sendTest2Event(String s) {

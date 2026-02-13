@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,10 +46,11 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
         processInstanceJpaRepository.deleteByProcessInstanceIds(ids);
     }
 
+    @Cacheable(value = JpaAdapterConfig.PROCESS_INSTANCE_ID_BY_ORIGIN_PROCESS_ID_CACHE, unless = "#result == null")
     @Transactional(readOnly = true)
     @Override
-    public boolean existsByOriginProcessId(String originProcessId) {
-        return processInstanceJpaRepository.existsByOriginProcessId(originProcessId);
+    public UUID findIdByOriginProcessId(String originProcessId) {
+        return processInstanceJpaRepository.findIdByOriginProcessId(originProcessId);
     }
 
     @Transactional(readOnly = true)

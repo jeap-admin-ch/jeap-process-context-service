@@ -42,7 +42,8 @@ h2 {
 }
 
 .task-list {
-	/* Styles for the task list (left side) */
+	max-height: 600px;
+	overflow-y: auto;
 }
 
 .task-detail {

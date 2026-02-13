@@ -2,7 +2,10 @@ package ch.admin.bit.jeap.processcontext;
 
 import ch.admin.bit.jeap.messaging.kafka.test.KafkaIntegrationTestBase;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.ProcessInstanceController;
+import ch.admin.bit.jeap.processcontext.adapter.restapi.model.MessageDTO;
+import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessDataDTO;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessInstanceDTO;
+import ch.admin.bit.jeap.processcontext.adapter.restapi.model.ProcessRelationDTO;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessState;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
@@ -19,12 +22,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -128,9 +133,9 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
     }
 
     protected void assertSnapshotCreatedEvent() {
-            processSnapshotCreatedEventListener
-                    .awaitEvent(e -> originProcessId.equals(e.getProcessId()) &&
-                            (e.getReferences().getReference().getSnapshotVersion() == 1));
+        processSnapshotCreatedEventListener
+                .awaitEvent(e -> originProcessId.equals(e.getProcessId()) &&
+                        (e.getReferences().getReference().getSnapshotVersion() == 1));
     }
 
     protected void assertProcessInstanceCreated(String originProcessId, String processName) {
@@ -149,6 +154,18 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
         } catch (Exception e) {
             return Optional.empty();
         }
+    }
+
+    protected List<MessageDTO> getMessages(String originProcessId) {
+        return processInstanceController.getMessagesByOriginProcessId(originProcessId, Pageable.unpaged()).getContent();
+    }
+
+    protected List<ProcessDataDTO> getProcessData(String originProcessId) {
+        return processInstanceController.getProcessDataByOriginProcessId(originProcessId, Pageable.unpaged()).getContent();
+    }
+
+    protected List<ProcessRelationDTO> getProcessRelations(String originProcessId) {
+        return processInstanceController.getProcessRelationsByOriginProcessId(originProcessId, Pageable.unpaged()).getContent();
     }
 
     public JeapAuthenticationToken viewAndCreateRoleToken() {

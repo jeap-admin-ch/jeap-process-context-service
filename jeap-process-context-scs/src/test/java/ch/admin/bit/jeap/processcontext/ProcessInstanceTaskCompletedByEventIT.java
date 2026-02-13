@@ -45,8 +45,7 @@ class ProcessInstanceTaskCompletedByEventIT extends ProcessInstanceMockS3ITBase 
     private void awaitEvent(String eventName) {
         Awaitility.await().pollInSameThread()
                 .untilAsserted(() -> {
-                    ProcessInstanceDTO dto = processInstanceController.getProcessInstanceByOriginProcessId(originProcessId);
-                    assertThat(dto.getMessages())
+                    assertThat(getMessages(originProcessId))
                             .extracting("name")
                             .contains(eventName);
                 });

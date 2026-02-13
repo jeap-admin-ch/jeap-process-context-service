@@ -6,6 +6,8 @@ import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -30,6 +32,11 @@ class ProcessDataRepositoryImpl implements ProcessDataRepository {
     @Override
     public List<ProcessData> findByProcessInstanceId(UUID processInstanceId) {
         return processDataJpaRepository.findByProcessInstanceId(processInstanceId);
+    }
+
+    @Override
+    public Page<ProcessData> findByProcessInstanceId(UUID processInstanceId, Pageable pageable) {
+        return processDataJpaRepository.findByProcessInstanceId(processInstanceId, pageable);
     }
 
     @Override

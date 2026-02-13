@@ -135,27 +135,6 @@ class RelationRepositoryImplTest {
         verify(relationJpaRepository, times(2)).findAll(any(Specification.class));
     }
 
-    @Test
-    void findByProcessInstance_delegatesToJpaRepository() {
-        Relation relation = createRelation("subject-1", "object-1");
-        when(relationJpaRepository.findByProcessInstance(processInstance)).thenReturn(Set.of(relation));
-
-        Set<Relation> result = relationRepository.findByProcessInstance(processInstance);
-
-        assertThat(result).containsExactly(relation);
-        verify(relationJpaRepository).findByProcessInstance(processInstance);
-    }
-
-    @Test
-    void findByProcessInstance_emptyResult_returnsEmptySet() {
-        when(relationJpaRepository.findByProcessInstance(processInstance)).thenReturn(Set.of());
-
-        Set<Relation> result = relationRepository.findByProcessInstance(processInstance);
-
-        assertThat(result).isEmpty();
-        verify(relationJpaRepository).findByProcessInstance(processInstance);
-    }
-
     private Relation createRelation(String subjectId, String objectId) {
         return Relation.builder()
                 .processInstance(processInstance)

@@ -5,22 +5,23 @@ import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.Task;
 import ch.admin.bit.jeap.processcontext.domain.TranslateService;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageReferenceRepository;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
-import ch.admin.bit.jeap.processcontext.domain.processrelation.ProcessRelationsService;
-import lombok.experimental.UtilityClass;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReferenceMessageDTO;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.TaskInstance;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.TaskInstanceRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
 
-@UtilityClass
+@Component
+@RequiredArgsConstructor
 public class ProcessInstanceDTOFactory {
 
     /**
@@ -37,28 +38,14 @@ public class ProcessInstanceDTOFactory {
             .comparing(MessageReferenceMessageDTO::getMessageCreatedAt).reversed()
             .thenComparing(MessageReferenceMessageDTO::getMessageName);
 
-    private static final Comparator<Relation> RELATIONS_COMPARATOR = Comparator
-            .comparing(Relation::getCreatedAt);
+    private final TranslateService translateService;
+    private final MessageRepository messageRepository;
+    private final MessageReferenceRepository messageReferenceRepository;
+    private final TaskInstanceRepository taskInstanceRepository;
 
-    private static final Comparator<ProcessDataDTO> PROCESS_DATA_COMPARATOR = Comparator
-            .comparing(ProcessDataDTO::getKey)
-            .thenComparing(ProcessDataDTO::getValue);
-
-    public static ProcessInstanceDTO createFromProcessInstance(ProcessInstance processInstance,
-                                                               TranslateService translateService,
-                                                               ProcessRelationsService processRelationsService,
-                                                               MessageRepository messageRepository,
-                                                               MessageReferenceRepository messageReferenceRepository,
-                                                               RelationRepository relationRepository,
-                                                               ProcessDataRepository processDataRepository,
-                                                               TaskInstanceRepository taskInstanceRepository) {
-        List<MessageReferenceMessageDTO> messageReferences = messageReferenceRepository.findByProcessInstanceId(processInstance.getId());
-        List<MessageDTO> messages = createMessages(messageReferences);
+    public ProcessInstanceDTO createFromProcessInstance(ProcessInstance processInstance) {
         List<TaskInstance> taskInstances = taskInstanceRepository.findByProcessInstanceId(processInstance.getProcessTemplate(), processInstance.getId());
-        List<TaskInstanceDTO> tasks = createTasks(taskInstances, messages, processInstance.getProcessTemplate().getName(), translateService, messageRepository);
-        List<RelationDTO> relations = createRelations(relationRepository.findByProcessInstance(processInstance));
-        List<ProcessRelationDTO> processRelations = createProcessRelations(processInstance, processRelationsService);
-        List<ProcessDataDTO> processDataDTOList = createProcessDataFromDomainObjects(processDataRepository.findByProcessInstanceId(processInstance.getId()));
+        List<TaskInstanceDTO> tasks = createTasks(taskInstances, processInstance.getProcessTemplate().getName(), translateService, messageRepository);
         ProcessCompletionDTO processCompletion = ProcessCompletionDTO.create(processInstance.getProcessCompletion(), processInstance.getProcessTemplate().getName(), translateService);
 
         return ProcessInstanceDTO.builder()
@@ -67,10 +54,6 @@ public class ProcessInstanceDTOFactory {
                 .name(translateService.translateProcessTemplateName(processInstance.getProcessTemplate().getName()))
                 .state(processInstance.getState().name())
                 .tasks(tasks)
-                .messages(messages)
-                .processData(processDataDTOList)
-                .relations(relations)
-                .processRelations(processRelations)
                 .processCompletion(processCompletion)
                 .createdAt(processInstance.getCreatedAt())
                 .modifiedAt(processInstance.getModifiedAt())
@@ -78,7 +61,6 @@ public class ProcessInstanceDTOFactory {
     }
 
     public static ProcessInstanceDTO createFromSnapshot(ProcessSnapshot snap, TranslateService translateService) {
-
         ProcessCompletionDTO processCompletion = null;
         if (snap.getDateTimeCompleted() != null) {
             processCompletion = ProcessCompletionDTO.create(snap, translateService);
@@ -90,70 +72,41 @@ public class ProcessInstanceDTOFactory {
                 .name(translateService.translateProcessTemplateName(snap.getTemplateName()))
                 .state(snap.getState())
                 .tasks(createTasksFromSnapshot(snap.getTasks(), snap.getTemplateName(), translateService))
-                .processData(createProcessData(snap.getProcessData()))
-                .processRelations(createProcessRelations(snap.getProcessRelations(), translateService))
                 .createdAt(toZonedDateTime(snap.getOptionalDateTimeCreated()))
                 .modifiedAt(toZonedDateTime(snap.getOptionalDateTimeModified()))
                 .processCompletion(processCompletion)
-                .messages(List.of())
-                .relations(List.of())
                 .snapshot(true)
                 .snapshotCreatedAt(snap.getDateTimeCreated().atZone(ZoneId.systemDefault()))
                 .build();
     }
 
-    private static List<ProcessRelationDTO> createProcessRelations(
-            List<ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessRelation> processRelations,
-            TranslateService translateService) {
-        return processRelations.stream()
-                .map((ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessRelation relation) -> ProcessRelationDTO
-                        .fromSnapshot(relation, translateService))
+    List<TaskInstanceDTO> createTasks(List<TaskInstance> tasks, String processTemplateName, TranslateService translateService, MessageRepository messageRepository) {
+        return tasks.stream()
+                .sorted(TASK_INSTANCE_COMPARATOR)
+                .map(t -> createTaskInstanceDTO(processTemplateName, translateService, messageRepository, t))
                 .toList();
     }
 
-    static List<TaskInstanceDTO> createTasks(List<TaskInstance> tasks,  List<MessageDTO> messages, String processTemplateName, TranslateService translateService, MessageRepository messageRepository) {
-        return tasks.stream()
-                .sorted(TASK_INSTANCE_COMPARATOR)
-                .map(t -> TaskInstanceDTO.create(t, messages, processTemplateName, translateService, messageRepository))
-                .toList();
+    private TaskInstanceDTO createTaskInstanceDTO(String processTemplateName, TranslateService translateService, MessageRepository messageRepository, TaskInstance taskInstance) {
+        List<MessageDTO> messages = new ArrayList<>();
+        addMessageDTO(taskInstance.getPlannedBy(), taskInstance, messages);
+        addMessageDTO(taskInstance.getCompletedBy(), taskInstance, messages);
+        return TaskInstanceDTO.create(taskInstance, messages, processTemplateName, translateService, messageRepository);
+    }
+
+    private void addMessageDTO(UUID messageId, TaskInstance taskInstance, List<MessageDTO> messages) {
+        if (messageId != null) {
+            MessageReferenceMessageDTO dto = messageReferenceRepository.findByProcessInstanceIdAndMessageId(taskInstance.getProcessInstance().getId(), messageId);
+            if (dto != null) {
+                messages.add(MessageDTO.createWithFullMessageData(dto));
+            }
+        }
     }
 
     static List<MessageDTO> createMessages(List<MessageReferenceMessageDTO> messageReferences) {
         return messageReferences.stream()
                 .sorted(MESSAGE_COMPARATOR)
                 .map(MessageDTO::create)
-                .toList();
-    }
-
-    static List<RelationDTO> createRelations(Set<Relation> relations) {
-        return relations.stream()
-                .sorted(RELATIONS_COMPARATOR)
-                .map(RelationDTO::create)
-                .toList();
-    }
-
-    static List<ProcessRelationDTO> createProcessRelations(ProcessInstance processInstance,
-                                                           ProcessRelationsService processRelationsService) {
-        return processRelationsService.createProcessRelations(processInstance).stream()
-                .map(ProcessRelationDTO::fromView)
-                .toList();
-    }
-
-    static List<ProcessDataDTO> createProcessDataFromDomainObjects(List<ProcessData> processDataSet) {
-        return processDataSet.stream()
-                .map(ProcessDataDTO::create)
-                .sorted(PROCESS_DATA_COMPARATOR)
-                .toList();
-    }
-
-    private static List<ProcessDataDTO> createProcessData(List<ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessData> processData) {
-        if (processData == null) {
-            return List.of();
-        }
-
-        return processData.stream()
-                .map(ProcessDataDTO::create)
-                .sorted(PROCESS_DATA_COMPARATOR)
                 .toList();
     }
 

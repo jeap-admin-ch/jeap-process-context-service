@@ -27,7 +27,8 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
                     AND d.key = :processDataKey AND d.value = :processDataValue\
                     """;
 
-    boolean existsByOriginProcessId(String originProcessId);
+    @Query("SELECT p.id FROM ProcessInstance p WHERE p.originProcessId = :originProcessId")
+    UUID findIdByOriginProcessId(String originProcessId);
 
     Optional<ProcessInstance> findByOriginProcessId(String originProcessId);
 

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -20,7 +19,7 @@ class ProcessDataService {
 
     List<ProcessData> copyMessageDataToProcessData(ProcessInstance processInstance, Message message) {
         String messageName = message.getMessageName();
-        Set<MessageData> messageData = message.getMessageData(processInstance.getProcessTemplateName());
+        List<MessageData> messageData = message.getMessageData(processInstance.getProcessTemplateName());
         List<ProcessDataTemplate> processDataTemplates = processInstance.getProcessTemplate()
                 .getProcessDataTemplatesBySourceMessageName(messageName);
         List<ProcessData> addedProcessData = new ArrayList<>();
@@ -30,7 +29,7 @@ class ProcessDataService {
     }
 
     private void applyProcessDataTemplate(ProcessInstance processInstance, List<ProcessData> addedProcessData,
-                                          Set<MessageData> messageDataSet, ProcessDataTemplate processDataTemplate) {
+                                          List<MessageData> messageDataSet, ProcessDataTemplate processDataTemplate) {
         String sourceKey = processDataTemplate.getSourceMessageDataKey();
         String targetKey = processDataTemplate.getKey();
         for (MessageData messageData : messageDataSet) {

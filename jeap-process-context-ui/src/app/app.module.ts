@@ -44,6 +44,9 @@ import {TaskTemplateViewComponent} from './pages/process-page/task-template-view
 import {TaskActivityViewComponent} from './pages/process-page/task-activity-view/task-activity-view.component';
 import {MatRadioModule} from '@angular/material/radio';
 import {ProcessRelationsComponent} from './pages/process-page/process-relations/process-relations.component';
+import {RelationsComponent} from './pages/process-page/relations/relations.component';
+import {ProcessDataComponent} from './pages/process-page/process-data/process-data.component';
+import {MessagesComponent} from './pages/process-page/messages/messages.component';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {ForbiddenPageComponent} from './pages/error-pages/forbidden-page/forbidden-page.component';
 import {TaskDetailViewComponent} from './pages/process-page/task-detail-view/task-detail-view.component';
@@ -64,6 +67,9 @@ registerLocaleData(localeITCH);
 		TaskTemplateViewComponent,
 		TaskActivityViewComponent,
 		ProcessRelationsComponent,
+		RelationsComponent,
+		ProcessDataComponent,
+		MessagesComponent,
 		ForbiddenPageComponent,
 		TaskDetailViewComponent,
 		TaskDetailsNodataRowComponent
@@ -120,11 +126,9 @@ registerLocaleData(localeITCH);
 			accessibilityStatement: {
 				createdOn: new Date('2025-10-23'),
 				conformity: 'none',
-				applicationName: "Process Context Service",
+				applicationName: 'Process Context Service',
 				applicationOperator: '-',
-				contact: [
-					{email: 'nobody@bit.admin.ch'}
-				]
+				contact: [{email: 'nobody@bit.admin.ch'}]
 			}
 		})
 	]
@@ -135,7 +139,7 @@ export class AppModule {
 
 	constructor(
 		masterLayoutConfig: ObMasterLayoutConfig,
-		readonly qdConfigService: QdConfigService,
+		readonly qdConfigService: QdConfigService
 	) {
 		this.masterLayoutConfig = masterLayoutConfig;
 		this.configureServiceNavigation();

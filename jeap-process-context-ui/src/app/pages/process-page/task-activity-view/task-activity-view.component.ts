@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
 import {TaskDTO, TaskState} from '../../../shared/processservice/process.model';
 import {TranslateService} from '@ngx-translate/core';
 import {MatSort} from '@angular/material/sort';
@@ -7,23 +7,28 @@ import {Subscription} from 'rxjs';
 import {ProcessRelationsListenerService} from '../../../shared/process-relations-listener.service';
 
 @Component({
-    selector: 'app-task-activity-view',
-    templateUrl: './task-activity-view.component.html',
-    styleUrls: [],
-    standalone: false
+	selector: 'app-task-activity-view',
+	templateUrl: './task-activity-view.component.html',
+	styles: ['.selected { background-color: #dfe4e9 !important; border-left: 3px solid #e53940; }'],
+	standalone: false,
+	host: {tabindex: '0', style: 'outline: none;'}
 })
 export class TaskActivityViewComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
 	@Input() tasks: TaskDTO[] = [];
 	@Output() taskSelected = new EventEmitter<TaskDTO>();
 
 	sortedTasks: TaskDTO[] = [];
+	selectedTaskIndex: number = -1;
 	dataSource: MatTableDataSource<any>;
 
 	@ViewChild(MatSort) sort: MatSort;
 
 	private readonly refreshSubscription: Subscription;
 
-	constructor(readonly translate: TranslateService, readonly processRelationsClickListener: ProcessRelationsListenerService) {
+	constructor(
+		readonly translate: TranslateService,
+		readonly processRelationsClickListener: ProcessRelationsListenerService
+	) {
 		this.refreshSubscription = this.processRelationsClickListener.refreshTable$.subscribe(() => {
 			// Call method to refresh the table
 			this.refreshTable();
@@ -32,6 +37,10 @@ export class TaskActivityViewComponent implements OnInit, AfterViewInit, OnDestr
 
 	ngOnInit(): void {
 		this.refreshTable();
+		if (this.sortedTasks.length > 0) {
+			this.selectedTaskIndex = 0;
+			this.taskSelected.emit(this.sortedTasks[0]);
+		}
 	}
 
 	ngOnDestroy(): void {
@@ -85,6 +94,23 @@ export class TaskActivityViewComponent implements OnInit, AfterViewInit, OnDestr
 	}
 
 	selectTask(task: TaskDTO) {
+		this.selectedTaskIndex = this.sortedTasks.indexOf(task);
 		this.taskSelected.emit(task);
+	}
+
+	@HostListener('keydown', ['$event'])
+	onKeyDown(event: KeyboardEvent) {
+		if (!this.sortedTasks.length) return;
+		if (event.key === 'ArrowDown') {
+			event.preventDefault();
+			const nextIndex = Math.min(this.selectedTaskIndex + 1, this.sortedTasks.length - 1);
+			this.selectedTaskIndex = nextIndex;
+			this.taskSelected.emit(this.sortedTasks[nextIndex]);
+		} else if (event.key === 'ArrowUp' && this.selectedTaskIndex > 0) {
+			event.preventDefault();
+			const prevIndex = this.selectedTaskIndex - 1;
+			this.selectedTaskIndex = prevIndex;
+			this.taskSelected.emit(this.sortedTasks[prevIndex]);
+		}
 	}
 }

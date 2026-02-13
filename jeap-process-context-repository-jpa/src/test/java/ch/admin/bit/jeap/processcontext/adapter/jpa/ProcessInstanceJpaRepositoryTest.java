@@ -310,12 +310,12 @@ class ProcessInstanceJpaRepositoryTest {
     }
 
     @Test
-    void existsByOriginProcessId() {
+    void findIdByOriginProcessId() {
         ProcessInstance processInstance = ProcessInstanceStubs.createCompletedProcessInstance();
         repository.saveAndFlush(processInstance);
 
-        assertTrue(repository.existsByOriginProcessId(processInstance.getOriginProcessId()));
-        assertFalse(repository.existsByOriginProcessId("notexists"));
+        assertNotNull(repository.findIdByOriginProcessId(processInstance.getOriginProcessId()));
+        assertNull(repository.findIdByOriginProcessId("notexists"));
     }
 
     @Test
@@ -338,8 +338,8 @@ class ProcessInstanceJpaRepositoryTest {
         repository
                 .deleteProcessInstanceProcessRelationsByRelatedOriginProcessIds(Set.of(processInstance.getOriginProcessId()));
 
-        assertTrue(
-                repository.existsByOriginProcessId(processInstance.getOriginProcessId())
+        assertNotNull(
+                repository.findIdByOriginProcessId(processInstance.getOriginProcessId())
         );
     }
 

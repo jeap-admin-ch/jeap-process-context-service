@@ -7,10 +7,6 @@ export interface ProcessDTO {
 	createdAt: string;
 	modifiedAt: string;
 	tasks: TaskDTO[];
-	messages: MessageDTO[];
-	relations: RelationDTO[];
-	processRelations: ProcessRelationDTO[];
-	processData: ProcessDataDTO[];
 	snapshot: boolean;
 	snapshotCreatedAt: string;
 }
@@ -92,6 +88,7 @@ export interface MessageDTO {
 	receivedAt: string;
 	relatedOriginTaskIds: Set<string>[];
 	messageData: MessageDataDTO[];
+	messageDataTruncated: boolean;
 	traceId: string;
 }
 
@@ -109,7 +106,12 @@ export interface ProcessInstanceLightDto {
 	lastMessageCreatedAt: string;
 }
 
-export interface ProcessInstanceListDto {
-	totalCount: number;
-	processInstanceLightDtoList: ProcessInstanceLightDto[];
+export interface PageResponse<T> {
+	content: T[];
+	page: {
+		totalElements: number;
+		totalPages: number;
+		number: number;
+		size: number;
+	};
 }

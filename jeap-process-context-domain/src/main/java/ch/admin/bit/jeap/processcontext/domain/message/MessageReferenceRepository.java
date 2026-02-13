@@ -2,6 +2,8 @@ package ch.admin.bit.jeap.processcontext.domain.message;
 
 import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReference;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReferenceMessageDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -15,7 +17,11 @@ public interface MessageReferenceRepository {
 
     boolean existsByProcessInstanceIdAndMessageId(UUID processInstanceId, UUID messageId);
 
+    MessageReferenceMessageDTO findByProcessInstanceIdAndMessageId(UUID processInstanceId, UUID messageId);
+
     List<MessageReferenceMessageDTO> findByProcessInstanceId(UUID processInstanceId);
+
+    Page<MessageReferenceMessageDTO> findByProcessInstanceId(UUID processInstanceId, Pageable pageable);
 
     /**
      * Finds the last message creation timestamp for each process instance in the given collection.

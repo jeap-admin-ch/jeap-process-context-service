@@ -4,12 +4,12 @@ import {MatIconModule} from '@angular/material/icon';
 import {TranslateModule} from '@ngx-translate/core';
 import {TaskActivityViewComponent} from './task-activity-view.component';
 import {TaskDTO, TaskState} from 'src/app/shared/processservice/process.model';
-import {provideObliqueTestingConfiguration} from "@oblique/oblique";
+import {provideObliqueTestingConfiguration} from '@oblique/oblique';
 
 const tasks: TaskDTO[] = [
 	{
 		originTaskId: '1',
-		name: { en: 'Task 1', de: 'Aufgabe 1', fr: 'Tâche 1', it: 'Compito 1' },
+		name: {en: 'Task 1', de: 'Aufgabe 1', fr: 'Tâche 1', it: 'Compito 1'},
 		state: TaskState.PLANNED,
 		createdAt: '2024-06-01T10:00:00Z',
 		plannedAt: '2024-06-01T09:00:00Z',
@@ -22,7 +22,7 @@ const tasks: TaskDTO[] = [
 	},
 	{
 		originTaskId: '2',
-		name: { en: 'Task 2', de: 'Aufgabe 2', fr: 'Tâche 2', it: 'Compito 2' },
+		name: {en: 'Task 2', de: 'Aufgabe 2', fr: 'Tâche 2', it: 'Compito 2'},
 		state: TaskState.COMPLETED,
 		createdAt: '2024-06-02T10:00:00Z',
 		plannedAt: '2024-06-02T09:00:00Z',
@@ -39,8 +39,8 @@ describe('TaskActivityViewComponent', () => {
 	it('renders tasks', () => {
 		cy.mount(TaskActivityViewComponent, {
 			imports: [MatTableModule, MatSortModule, MatIconModule, TranslateModule.forRoot()],
-			providers: [ provideObliqueTestingConfiguration()],
-			componentProperties: { tasks }
+			providers: [provideObliqueTestingConfiguration()],
+			componentProperties: {tasks}
 		});
 
 		cy.get('table').should('exist');
@@ -59,5 +59,42 @@ describe('TaskActivityViewComponent', () => {
 			}
 		});
 		cy.contains('none.tasks');
+	});
+
+	it('navigates tasks with arrow keys', () => {
+		cy.mount(TaskActivityViewComponent, {
+			imports: [MatTableModule, MatSortModule, MatIconModule, TranslateModule.forRoot()],
+			providers: [provideObliqueTestingConfiguration()],
+			componentProperties: {tasks}
+		}).then(wrapper => {
+			const component = wrapper.component;
+			const emitted: any[] = [];
+			component.taskSelected.subscribe((task: any) => emitted.push(task));
+
+			// Click selects first task (index 0)
+			component.selectTask(component.sortedTasks[0]);
+			expect(component.selectedTaskIndex).to.equal(0);
+
+			// ArrowDown: 0 -> 1
+			component.onKeyDown(new KeyboardEvent('keydown', {key: 'ArrowDown'}));
+			expect(component.selectedTaskIndex).to.equal(1);
+
+			// ArrowUp: 1 -> 0
+			component.onKeyDown(new KeyboardEvent('keydown', {key: 'ArrowUp'}));
+			expect(component.selectedTaskIndex).to.equal(0);
+
+			// ArrowUp at 0 stays at 0
+			component.onKeyDown(new KeyboardEvent('keydown', {key: 'ArrowUp'}));
+			expect(component.selectedTaskIndex).to.equal(0);
+
+			// ArrowDown past end stays at last
+			component.onKeyDown(new KeyboardEvent('keydown', {key: 'ArrowDown'}));
+			component.onKeyDown(new KeyboardEvent('keydown', {key: 'ArrowDown'}));
+			component.onKeyDown(new KeyboardEvent('keydown', {key: 'ArrowDown'}));
+			expect(component.selectedTaskIndex).to.equal(component.sortedTasks.length - 1);
+
+			// Verify events were emitted
+			expect(emitted.length).to.be.greaterThan(0);
+		});
 	});
 });

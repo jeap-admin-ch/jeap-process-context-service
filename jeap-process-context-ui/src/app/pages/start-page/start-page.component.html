@@ -45,12 +45,14 @@
 
 	<ng-container [matColumnDef]="COLUMN_NAME_CREATED_AT">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header [disabled]="true">{{ 'i18n.process.createdAt' | translate }}</th>
-		<td mat-cell *matCellDef="let element" title="{{ 'i18n.process.createdAt' | translate }}"> {{element.createdAt}} </td>
+		<td mat-cell *matCellDef="let element" title="{{ 'i18n.process.createdAt' | translate }}"> {{ element.createdAt }}</td>
 	</ng-container>
 
 	<ng-container [matColumnDef]="COLUMN_NAME_LAST_MESSAGE_CREATED_AT">
 		<th mat-header-cell *matHeaderCellDef>{{ 'i18n.process.lastMessageCreatedAt' | translate }}</th>
-		<td mat-cell *matCellDef="let element" title="{{ 'i18n.process.lastMessageCreatedAt' | translate }}"> {{element.lastMessageCreatedAt}} </td>
+		<td mat-cell *matCellDef="let element"
+			title="{{ 'i18n.process.lastMessageCreatedAt' | translate }}"> {{ element.lastMessageCreatedAt }}
+		</td>
 	</ng-container>
 
 	<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

@@ -42,7 +42,7 @@ class ProcessInstanceCreatedByDomainMessageConditionalIT extends ProcessInstance
     @WithAuthentication("viewAndCreateRoleToken")
     void test_whenReceivedDomainMeetsCondition_thenProcessInstanceCreated() {
         final String originProcessIdForConditionMet = Generators.timeBasedEpochGenerator().generate().toString();
-        assertThat(processInstanceRepository.existsByOriginProcessId(originProcessIdForConditionMet)).isFalse();
+        assertThat(processInstanceRepository.findIdByOriginProcessId(originProcessIdForConditionMet)).isNull();
 
         // Send event that meets the condition to trigger a process instantiation
         sendTest5CreatingProcessInstanceEvent(originProcessIdForConditionMet, TestProcessInstantiationCondition.TRIGGER);
@@ -54,7 +54,7 @@ class ProcessInstanceCreatedByDomainMessageConditionalIT extends ProcessInstance
     @WithAuthentication("viewAndCreateRoleToken")
     void test_whenReceivedDomainDoesNotMeetCondition_thenEventProcessedButNoProcessInstanceCreated() {
         final String originProcessIdForConditionNotMet = Generators.timeBasedEpochGenerator().generate().toString();
-        assertThat(processInstanceRepository.existsByOriginProcessId(originProcessIdForConditionNotMet)).isFalse();
+        assertThat(processInstanceRepository.findIdByOriginProcessId(originProcessIdForConditionNotMet)).isNull();
 
         // Send event that does not meet the condition to trigger a process instantiation
         sendTest5CreatingProcessInstanceEvent(originProcessIdForConditionNotMet, TestProcessInstantiationCondition.NO_TRIGGER);
@@ -82,6 +82,6 @@ class ProcessInstanceCreatedByDomainMessageConditionalIT extends ProcessInstance
         Awaitility.await()
                 .pollInSameThread()
                 .atMost(duration)
-                .until(() -> processInstanceRepository.existsByOriginProcessId(originProcessId));
+                .until(() -> processInstanceRepository.findIdByOriginProcessId(originProcessId) != null);
     }
 }

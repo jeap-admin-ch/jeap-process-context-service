@@ -1,20 +1,22 @@
-import {AfterViewInit, Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
+import {Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild} from '@angular/core';
 import {ProcessRelationDTO} from '../../../shared/processservice/process.model';
 import {TranslateService} from '@ngx-translate/core';
 import {MatPaginator} from '@angular/material/paginator';
-import {MatTableDataSource} from '@angular/material/table';
 import {ProcessRelationsListenerService} from '../../../shared/process-relations-listener.service';
+import {ProcessService} from '../../../shared/processservice/process.service';
+import {Subscription} from 'rxjs';
 
 @Component({
-    selector: 'app-process-relations',
-    templateUrl: './process-relations.component.html',
-    styleUrls: [],
-    standalone: false
+	selector: 'app-process-relations',
+	templateUrl: './process-relations.component.html',
+	styleUrls: [],
+	standalone: false
 })
-export class ProcessRelationsComponent implements OnInit, AfterViewInit, OnChanges {
-	@Input() processRelations: ProcessRelationDTO[];
+export class ProcessRelationsComponent implements OnInit, OnChanges, OnDestroy {
+	@Input() originProcessId: string;
 
-	dataSource: MatTableDataSource<ProcessRelationDTO>;
+	processRelations: ProcessRelationDTO[] = [];
+	totalElements = 0;
 
 	readonly COLUMN_NAME_RELATION = 'relation';
 	readonly COLUMN_NAME_TYPE = 'type';
@@ -23,23 +25,55 @@ export class ProcessRelationsComponent implements OnInit, AfterViewInit, OnChang
 
 	displayedColumns: string[] = [this.COLUMN_NAME_RELATION, this.COLUMN_NAME_TYPE, this.COLUMN_NAME_ID, this.COLUMN_NAME_STATE];
 
-	@ViewChild(MatPaginator) paginator: MatPaginator;
+	private _paginator: MatPaginator;
+	private paginatorSubscription: Subscription;
 
-	constructor(readonly translate: TranslateService, private readonly processRelationsClickListener: ProcessRelationsListenerService) {}
-
-	ngOnInit(): void {
-		this.dataSource = new MatTableDataSource(this.processRelations);
+	@ViewChild(MatPaginator)
+	set paginator(paginator: MatPaginator) {
+		if (paginator && paginator !== this._paginator) {
+			this._paginator = paginator;
+			this.paginatorSubscription?.unsubscribe();
+			this.paginatorSubscription = paginator.page.subscribe(() => {
+				this.loadProcessRelations(paginator.pageIndex);
+			});
+		}
 	}
 
-	ngAfterViewInit() {
-		this.dataSource.paginator = this.paginator;
+	private refreshSubscription: Subscription;
+
+	constructor(
+		readonly translate: TranslateService,
+		private readonly processRelationsClickListener: ProcessRelationsListenerService,
+		private readonly processService: ProcessService
+	) {}
+
+	ngOnInit(): void {
+		this.loadProcessRelations(0);
+		this.refreshSubscription = this.processRelationsClickListener.refreshTable$.subscribe(() => {
+			this.loadProcessRelations(this._paginator?.pageIndex ?? 0);
+		});
 	}
 
 	ngOnChanges(changes: SimpleChanges): void {
-		this.dataSource = new MatTableDataSource(this.processRelations);
+		if (changes['originProcessId'] && !changes['originProcessId'].firstChange) {
+			this.loadProcessRelations(0);
+		}
+	}
+
+	ngOnDestroy(): void {
+		this.refreshSubscription?.unsubscribe();
+		this.paginatorSubscription?.unsubscribe();
 	}
 
 	emitClick(processId: string): void {
 		this.processRelationsClickListener.emitClickEvent(processId);
+	}
+
+	private loadProcessRelations(pageIndex: number): void {
+		const pageSize = 5;
+		this.processService.getProcessRelations(this.originProcessId, pageIndex, pageSize).subscribe(response => {
+			this.processRelations = response.content;
+			this.totalElements = response.page.totalElements;
+		});
 	}
 }

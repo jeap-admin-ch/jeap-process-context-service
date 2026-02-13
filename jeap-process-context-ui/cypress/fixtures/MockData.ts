@@ -1,8 +1,12 @@
 import {
+	MessageDTO,
+	PageResponse,
 	ProcessCompletionDTO,
+	ProcessDataDTO,
 	ProcessDTO,
 	ProcessInstanceLightDto,
-	ProcessInstanceListDto,
+	ProcessRelationDTO,
+	RelationDTO,
 	TaskDTO,
 	TaskState
 } from '../../src/app/shared/processservice/process.model';
@@ -76,54 +80,68 @@ const mockProcess_1: ProcessDTO = {
 			taskData: []
 		} as TaskDTO
 	],
-	messages: [],
-	relations: [],
-	processRelations: [],
-	processData: [
-		{
-			key: 'race-car-number',
-			value: 'string',
-			role: 'some-role'
-		},
-		{
-			key: 'race-id',
-			value: 'New Race Across Switzerland',
-			role: 'some-role'
-		}
-	],
 	snapshot: false,
 	snapshotCreatedAt: ''
 };
 
-const mockProcessList: ProcessInstanceListDto = {
-	totalCount: 2,
-	processInstanceLightDtoList: [
+const mockProcessList: PageResponse<ProcessInstanceLightDto> = {
+	content: [
 		{
-			createdAt: "122",
-			lastMessageCreatedAt: "111",
-			state: "status1",
-			originProcessId: "o1",
+			createdAt: '122',
+			lastMessageCreatedAt: '111',
+			state: 'status1',
+			originProcessId: 'o1',
 			name: {
-				de: "Template Process 1",
-				it: "[IT] Race Across Switzerland",
-				fr: "[FR] Race Across Switzerland"
-			},
+				de: 'Template Process 1',
+				it: '[IT] Race Across Switzerland',
+				fr: '[FR] Race Across Switzerland'
+			}
 		} as ProcessInstanceLightDto,
 		{
-			createdAt: "122",
-			lastMessageCreatedAt: "111",
-			state: "status2",
-			originProcessId: "o2",
+			createdAt: '122',
+			lastMessageCreatedAt: '111',
+			state: 'status2',
+			originProcessId: 'o2',
 			name: {
-				de: "Template Process 2",
-				it: "[IT] Template Process 2",
-				fr: "[FR] Template Process 2"
-			},
+				de: 'Template Process 2',
+				it: '[IT] Template Process 2',
+				fr: '[FR] Template Process 2'
+			}
 		} as ProcessInstanceLightDto
-	]
+	],
+	page: {totalElements: 2, totalPages: 1, number: 0, size: 10}
+};
 
-}
+const mockProcessRelationsPage: PageResponse<ProcessRelationDTO> = {
+	content: [],
+	totalElements: 0,
+	totalPages: 0,
+	number: 0,
+	size: 5
+};
 
-export {mockProcess_1, mockProcessList};
+const mockRelationsPage: PageResponse<RelationDTO> = {
+	content: [],
+	totalElements: 0,
+	totalPages: 0,
+	number: 0,
+	size: 10
+};
 
+const mockProcessDataPage: PageResponse<ProcessDataDTO> = {
+	content: [],
+	totalElements: 0,
+	totalPages: 0,
+	number: 0,
+	size: 10
+};
 
+const mockMessagesPage: PageResponse<MessageDTO> = {
+	content: [],
+	totalElements: 0,
+	totalPages: 0,
+	number: 0,
+	size: 10
+};
+
+export {mockProcess_1, mockProcessList, mockProcessRelationsPage, mockRelationsPage, mockProcessDataPage, mockMessagesPage};
