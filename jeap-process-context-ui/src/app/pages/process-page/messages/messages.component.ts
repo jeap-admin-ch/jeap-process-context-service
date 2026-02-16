@@ -2,7 +2,6 @@ import {Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild
 import {MessageDTO} from '../../../shared/processservice/process.model';
 import {MatPaginator} from '@angular/material/paginator';
 import {ProcessService} from '../../../shared/processservice/process.service';
-import {ProcessRelationsListenerService} from '../../../shared/process-relations-listener.service';
 import {LogDeepLinkService} from '../../../shared/logdeeplink/logdeeplink.service';
 import {Subscription} from 'rxjs';
 
@@ -14,6 +13,7 @@ import {Subscription} from 'rxjs';
 })
 export class MessagesComponent implements OnInit, OnChanges, OnDestroy {
 	@Input() originProcessId: string;
+	@Input() reloadTrigger: number;
 
 	messages: MessageDTO[] = [];
 	totalElements = 0;
@@ -36,11 +36,8 @@ export class MessagesComponent implements OnInit, OnChanges, OnDestroy {
 		}
 	}
 
-	private refreshSubscription: Subscription;
-
 	constructor(
 		private readonly processService: ProcessService,
-		private readonly processRelationsClickListener: ProcessRelationsListenerService,
 		private readonly logDeepLinkService: LogDeepLinkService
 	) {}
 
@@ -49,19 +46,17 @@ export class MessagesComponent implements OnInit, OnChanges, OnDestroy {
 		this.logDeepLinkService.getLogDeepLink().subscribe(template => {
 			this.logDeepLinkTemplate = template;
 		});
-		this.refreshSubscription = this.processRelationsClickListener.refreshTable$.subscribe(() => {
-			this.loadMessages(this._paginator?.pageIndex ?? 0);
-		});
 	}
 
 	ngOnChanges(changes: SimpleChanges): void {
 		if (changes['originProcessId'] && !changes['originProcessId'].firstChange) {
 			this.loadMessages(0);
+		} else if (changes['reloadTrigger'] && !changes['reloadTrigger'].firstChange) {
+			this.loadMessages(this._paginator?.pageIndex ?? 0);
 		}
 	}
 
 	ngOnDestroy(): void {
-		this.refreshSubscription?.unsubscribe();
 		this.paginatorSubscription?.unsubscribe();
 	}
 

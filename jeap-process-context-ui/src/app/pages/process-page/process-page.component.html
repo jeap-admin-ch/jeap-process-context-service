@@ -89,7 +89,7 @@
           <div class="process-div">
             <mat-card>
               <mat-card-content>
-				  <app-process-relations [originProcessId]="process.originProcessId"></app-process-relations>
+				  <app-process-relations [originProcessId]="process.originProcessId" [reloadTrigger]="reloadTrigger"></app-process-relations>
               </mat-card-content>
             </mat-card>
           </div>
@@ -132,7 +132,7 @@
           <mat-panel-title><h4>{{ 'i18n.process.processData.title' | translate }}</h4></mat-panel-title>
         </mat-expansion-panel-header>
         <mat-panel-description>
-			<app-process-data [originProcessId]="process.originProcessId"></app-process-data>
+			<app-process-data [originProcessId]="process.originProcessId" [reloadTrigger]="reloadTrigger"></app-process-data>
         </mat-panel-description>
       </mat-expansion-panel>
       <!-- Messages -->
@@ -142,7 +142,7 @@
             <mat-panel-title><h4>{{ 'i18n.process.message.title' | translate }}</h4></mat-panel-title>
           </mat-expansion-panel-header>
           <mat-panel-description>
-			  <app-messages [originProcessId]="process.originProcessId"></app-messages>
+			  <app-messages [originProcessId]="process.originProcessId" [reloadTrigger]="reloadTrigger"></app-messages>
           </mat-panel-description>
         </mat-expansion-panel>
       }
@@ -153,7 +153,7 @@
             <mat-panel-title><h4>{{ 'i18n.process.relations.title' | translate }}</h4></mat-panel-title>
           </mat-expansion-panel-header>
           <mat-panel-description>
-			  <app-relations [originProcessId]="process.originProcessId"></app-relations>
+			  <app-relations [originProcessId]="process.originProcessId" [reloadTrigger]="reloadTrigger"></app-relations>
           </mat-panel-description>
         </mat-expansion-panel>
       }

@@ -2,7 +2,6 @@ import {Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild
 import {ProcessRelationDTO} from '../../../shared/processservice/process.model';
 import {TranslateService} from '@ngx-translate/core';
 import {MatPaginator} from '@angular/material/paginator';
-import {ProcessRelationsListenerService} from '../../../shared/process-relations-listener.service';
 import {ProcessService} from '../../../shared/processservice/process.service';
 import {Subscription} from 'rxjs';
 
@@ -14,6 +13,7 @@ import {Subscription} from 'rxjs';
 })
 export class ProcessRelationsComponent implements OnInit, OnChanges, OnDestroy {
 	@Input() originProcessId: string;
+	@Input() reloadTrigger: number;
 
 	processRelations: ProcessRelationDTO[] = [];
 	totalElements = 0;
@@ -39,34 +39,25 @@ export class ProcessRelationsComponent implements OnInit, OnChanges, OnDestroy {
 		}
 	}
 
-	private refreshSubscription: Subscription;
-
 	constructor(
 		readonly translate: TranslateService,
-		private readonly processRelationsClickListener: ProcessRelationsListenerService,
 		private readonly processService: ProcessService
 	) {}
 
 	ngOnInit(): void {
 		this.loadProcessRelations(0);
-		this.refreshSubscription = this.processRelationsClickListener.refreshTable$.subscribe(() => {
-			this.loadProcessRelations(this._paginator?.pageIndex ?? 0);
-		});
 	}
 
 	ngOnChanges(changes: SimpleChanges): void {
 		if (changes['originProcessId'] && !changes['originProcessId'].firstChange) {
 			this.loadProcessRelations(0);
+		} else if (changes['reloadTrigger'] && !changes['reloadTrigger'].firstChange) {
+			this.loadProcessRelations(this._paginator?.pageIndex ?? 0);
 		}
 	}
 
 	ngOnDestroy(): void {
-		this.refreshSubscription?.unsubscribe();
 		this.paginatorSubscription?.unsubscribe();
-	}
-
-	emitClick(processId: string): void {
-		this.processRelationsClickListener.emitClickEvent(processId);
 	}
 
 	private loadProcessRelations(pageIndex: number): void {

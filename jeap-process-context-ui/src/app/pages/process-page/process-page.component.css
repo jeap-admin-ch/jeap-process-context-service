@@ -26,8 +26,13 @@ h2 {
 
 .process-div {
 	width: 50%;
-	height: 290px;
 	min-width: 200px;
+	align-self: start;
+}
+
+.process-div mat-card {
+	max-height: 435px;
+	overflow-y: auto;
 }
 
 .radio-button {

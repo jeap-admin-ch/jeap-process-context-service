@@ -3,7 +3,6 @@ import {RelationDTO} from '../../../shared/processservice/process.model';
 import {TranslateService} from '@ngx-translate/core';
 import {MatPaginator} from '@angular/material/paginator';
 import {ProcessService} from '../../../shared/processservice/process.service';
-import {ProcessRelationsListenerService} from '../../../shared/process-relations-listener.service';
 import {Subscription} from 'rxjs';
 
 @Component({
@@ -14,6 +13,7 @@ import {Subscription} from 'rxjs';
 })
 export class RelationsComponent implements OnInit, OnChanges, OnDestroy {
 	@Input() originProcessId: string;
+	@Input() reloadTrigger: number;
 
 	relations: RelationDTO[] = [];
 	totalElements = 0;
@@ -34,29 +34,24 @@ export class RelationsComponent implements OnInit, OnChanges, OnDestroy {
 		}
 	}
 
-	private refreshSubscription: Subscription;
-
 	constructor(
 		readonly translate: TranslateService,
-		private readonly processService: ProcessService,
-		private readonly processRelationsClickListener: ProcessRelationsListenerService
+		private readonly processService: ProcessService
 	) {}
 
 	ngOnInit(): void {
 		this.loadRelations(0);
-		this.refreshSubscription = this.processRelationsClickListener.refreshTable$.subscribe(() => {
-			this.loadRelations(this._paginator?.pageIndex ?? 0);
-		});
 	}
 
 	ngOnChanges(changes: SimpleChanges): void {
 		if (changes['originProcessId'] && !changes['originProcessId'].firstChange) {
 			this.loadRelations(0);
+		} else if (changes['reloadTrigger'] && !changes['reloadTrigger'].firstChange) {
+			this.loadRelations(this._paginator?.pageIndex ?? 0);
 		}
 	}
 
 	ngOnDestroy(): void {
-		this.refreshSubscription?.unsubscribe();
 		this.paginatorSubscription?.unsubscribe();
 	}
 

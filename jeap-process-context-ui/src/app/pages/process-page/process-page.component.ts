@@ -1,11 +1,10 @@
-import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
 import {ProcessDTO, TaskDTO} from '../../shared/processservice/process.model';
 import {ActivatedRoute} from '@angular/router';
 import {ProcessService} from '../../shared/processservice/process.service';
-import {Subscription, take} from 'rxjs';
+import {take} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {MatRadioChange} from '@angular/material/radio';
-import {ProcessRelationsListenerService} from '../../shared/process-relations-listener.service';
 import {TaskTemplateViewComponent} from './task-template-view/task-template-view.component';
 
 @Component({
@@ -14,29 +13,23 @@ import {TaskTemplateViewComponent} from './task-template-view/task-template-view
 	styleUrls: ['./process-page.component.css'],
 	standalone: false
 })
-export class ProcessPageComponent implements OnInit, OnDestroy, AfterViewInit {
+export class ProcessPageComponent implements OnInit, AfterViewInit {
 	process: ProcessDTO | undefined;
 	snapshot: boolean | undefined;
 	processId!: string;
 	userTaskViewType: string;
 	selectedTask: TaskDTO | null = null; // The selected task
+	reloadTrigger = 0;
 	@ViewChild(TaskTemplateViewComponent) taskTemplateViewComponent: TaskTemplateViewComponent;
 
-	private readonly clickSubscription: Subscription;
 	private readonly localStorageKey = 'task-view-preference';
 	private readonly defaultTaskViewType = '1';
 
 	constructor(
 		private readonly route: ActivatedRoute,
 		private readonly processService: ProcessService,
-		readonly translate: TranslateService,
-		readonly processRelationsClickListener: ProcessRelationsListenerService
-	) {
-		this.clickSubscription = this.processRelationsClickListener.clickEvent$.subscribe((processId: string) => {
-			this.processId = processId;
-			this.reload();
-		});
-	}
+		readonly translate: TranslateService
+	) {}
 
 	ngOnInit() {
 		this.route.params.subscribe(params => {
@@ -53,9 +46,6 @@ export class ProcessPageComponent implements OnInit, OnDestroy, AfterViewInit {
 		}
 	}
 
-	ngOnDestroy(): void {
-		this.clickSubscription.unsubscribe();
-	}
 	reload() {
 		this.processService
 			.getProcess(this.processId)
@@ -63,7 +53,7 @@ export class ProcessPageComponent implements OnInit, OnDestroy, AfterViewInit {
 			.subscribe(value => {
 				this.process = value;
 				this.snapshot = value.snapshot;
-				this.processRelationsClickListener.triggerTableRefresh();
+				this.reloadTrigger++;
 				this.selectedTask = this.process.tasks[0];
 				if (this.taskTemplateViewComponent) {
 					this.taskTemplateViewComponent.resetTaskIndex();

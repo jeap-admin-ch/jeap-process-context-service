@@ -114,34 +114,22 @@ const mockProcessList: PageResponse<ProcessInstanceLightDto> = {
 
 const mockProcessRelationsPage: PageResponse<ProcessRelationDTO> = {
 	content: [],
-	totalElements: 0,
-	totalPages: 0,
-	number: 0,
-	size: 5
+	page: {totalElements: 0, totalPages: 0, number: 0, size: 5}
 };
 
 const mockRelationsPage: PageResponse<RelationDTO> = {
 	content: [],
-	totalElements: 0,
-	totalPages: 0,
-	number: 0,
-	size: 10
+	page: {totalElements: 0, totalPages: 0, number: 0, size: 10}
 };
 
 const mockProcessDataPage: PageResponse<ProcessDataDTO> = {
 	content: [],
-	totalElements: 0,
-	totalPages: 0,
-	number: 0,
-	size: 10
+	page: {totalElements: 0, totalPages: 0, number: 0, size: 10}
 };
 
 const mockMessagesPage: PageResponse<MessageDTO> = {
 	content: [],
-	totalElements: 0,
-	totalPages: 0,
-	number: 0,
-	size: 10
+	page: {totalElements: 0, totalPages: 0, number: 0, size: 10}
 };
 
 export {mockProcess_1, mockProcessList, mockProcessRelationsPage, mockRelationsPage, mockProcessDataPage, mockMessagesPage};

@@ -1,10 +1,8 @@
-import {AfterViewInit, Component, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
 import {TaskDTO, TaskState} from '../../../shared/processservice/process.model';
 import {TranslateService} from '@ngx-translate/core';
 import {MatSort} from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material/table';
-import {Subscription} from 'rxjs';
-import {ProcessRelationsListenerService} from '../../../shared/process-relations-listener.service';
 
 @Component({
 	selector: 'app-task-activity-view',
@@ -13,7 +11,7 @@ import {ProcessRelationsListenerService} from '../../../shared/process-relations
 	standalone: false,
 	host: {tabindex: '0', style: 'outline: none;'}
 })
-export class TaskActivityViewComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
+export class TaskActivityViewComponent implements OnInit, AfterViewInit, OnChanges {
 	@Input() tasks: TaskDTO[] = [];
 	@Output() taskSelected = new EventEmitter<TaskDTO>();
 
@@ -23,17 +21,7 @@ export class TaskActivityViewComponent implements OnInit, AfterViewInit, OnDestr
 
 	@ViewChild(MatSort) sort: MatSort;
 
-	private readonly refreshSubscription: Subscription;
-
-	constructor(
-		readonly translate: TranslateService,
-		readonly processRelationsClickListener: ProcessRelationsListenerService
-	) {
-		this.refreshSubscription = this.processRelationsClickListener.refreshTable$.subscribe(() => {
-			// Call method to refresh the table
-			this.refreshTable();
-		});
-	}
+	constructor(readonly translate: TranslateService) {}
 
 	ngOnInit(): void {
 		this.refreshTable();
@@ -41,10 +29,6 @@ export class TaskActivityViewComponent implements OnInit, AfterViewInit, OnDestr
 			this.selectedTaskIndex = 0;
 			this.taskSelected.emit(this.sortedTasks[0]);
 		}
-	}
-
-	ngOnDestroy(): void {
-		this.refreshSubscription.unsubscribe();
 	}
 
 	ngAfterViewInit(): void {

@@ -13,7 +13,7 @@
 		  <ng-container matColumnDef="id">
 			  <th *matHeaderCellDef mat-header-cell>{{ "i18n.process.relation.id" | translate }}</th>
 			  <td *matCellDef="let row" mat-cell>
-				  <a routerLink="/process/{{ row.processId }}" (click)="emitClick(row.processId)">{{ row.processId }}</a>
+				  <a routerLink="/process/{{ row.processId }}">{{ row.processId }}</a>
 			  </td>
 		  </ng-container>
 		  <ng-container matColumnDef="state">
