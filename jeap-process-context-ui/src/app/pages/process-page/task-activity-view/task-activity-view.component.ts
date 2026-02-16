@@ -7,7 +7,7 @@ import {MatTableDataSource} from '@angular/material/table';
 @Component({
 	selector: 'app-task-activity-view',
 	templateUrl: './task-activity-view.component.html',
-	styles: ['.selected { background-color: #dfe4e9 !important; border-left: 3px solid #e53940; }'],
+	styleUrls: ['./task-activity-view.component.css'],
 	standalone: false,
 	host: {tabindex: '0', style: 'outline: none;'}
 })

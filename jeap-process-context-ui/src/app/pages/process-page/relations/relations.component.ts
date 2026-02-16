@@ -8,7 +8,7 @@ import {Subscription} from 'rxjs';
 @Component({
 	selector: 'app-relations',
 	templateUrl: './relations.component.html',
-	styles: [':host { display: block; width: 100%; }', 'table { width: 100%; }'],
+	styleUrls: ['./relations.component.css'],
 	standalone: false
 })
 export class RelationsComponent implements OnInit, OnChanges, OnDestroy {

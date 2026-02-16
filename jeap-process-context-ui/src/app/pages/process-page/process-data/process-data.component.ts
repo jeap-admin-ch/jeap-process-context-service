@@ -7,7 +7,7 @@ import {Subscription} from 'rxjs';
 @Component({
 	selector: 'app-process-data',
 	templateUrl: './process-data.component.html',
-	styles: [':host { display: block; width: 100%; }', 'table { width: 100%; }'],
+	styleUrls: ['./process-data.component.css'],
 	standalone: false
 })
 export class ProcessDataComponent implements OnInit, OnChanges, OnDestroy {

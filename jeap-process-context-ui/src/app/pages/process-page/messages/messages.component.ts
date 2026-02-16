@@ -8,7 +8,7 @@ import {Subscription} from 'rxjs';
 @Component({
 	selector: 'app-messages',
 	templateUrl: './messages.component.html',
-	styles: [':host { display: block; width: 100%; }', 'table { width: 100%; }'],
+	styleUrls: ['./messages.component.css'],
 	standalone: false
 })
 export class MessagesComponent implements OnInit, OnChanges, OnDestroy {
