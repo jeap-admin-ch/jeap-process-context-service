@@ -17,7 +17,7 @@ organisation:
 description:
   en:
     localisedName: jeap-process-context-service
-    shortDescription: Service template library for observing distributed business processes in event-driven architectures without central orchestration.
+    shortDescription: Service template to store and retrieve process context information for audit or business requirements.
     longDescription: >
       The jEAP Process Context Service enables microservices to share and maintain a distributed view
       of long-running business processes. Instead of using a central process engine, it applies a
@@ -28,7 +28,9 @@ description:
       conditional task instantiation, process data correlation, relation tracking between business objects,
       and snapshot creation for auditability. Integrated with jEAP Messaging, it provides
       both runtime monitoring via a UI and REST APIs, and generates process events for downstream consumers,
-      enabling transparency, traceability, and analytics across distributed systems.
+      enabling transparency, traceability, and analytics across distributed systems. 
+      A service instance can be created by depending on this template, then adding specific configuration and extending 
+      it with plugin implementations.
     features:
       - JSON-based process templates with tasks, data, relations and correlation rules
       - Event-driven state tracking and process completion handling
