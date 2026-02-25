@@ -48,7 +48,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {ForbiddenPageComponent} from './pages/error-pages/forbidden-page/forbidden-page.component';
 import {TaskDetailViewComponent} from './pages/process-page/task-detail-view/task-detail-view.component';
 import {TaskDetailsNodataRowComponent} from './pages/process-page/task-detail-view/task-details-nodata-row/task-details-nodata-row.component';
-import {QdAuthModule, QdConfigService} from "@quadrel-services/qd-auth";
+import {QdAuthModule, QdConfigService} from "@quadrel-enterprise-ui/auth";
 
 export type QdShellHeaderWidgetEnvironment = 'DEV' | 'TEST' | 'REF' | 'ABN' | 'PROD';
 

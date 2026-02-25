@@ -15,8 +15,35 @@
     "@ngx-translate/core@15.0.0": {
       "reason": "MIT; see: https://github.com/ngx-translate/core"
     },
-    "@quadrel-services/qd-auth@19.0.12": {
-      "reason": "UNKNOWN; BIT internal package"
+    "@quadrel-enterprise-ui/auth@19.0.13": {
+      "reason": "BIT license"
+    },
+    "glob@13.0.6": {
+      "reason": "BlueOak-1.0.0; see: https://github.com/isaacs/node-glob"
+    },
+    "isexe@4.0.0": {
+      "reason": "BlueOak-1.0.0; see: https://github.com/isaacs/isexe"
+    },
+    "lru-cache@11.2.6": {
+      "reason": "BlueOak-1.0.0; see: https://github.com/isaacs/node-lru-cache"
+    },
+    "minimatch@10.2.2": {
+      "reason": "BlueOak-1.0.0; see: https://github.com/isaacs/minimatch"
+    },
+    "minipass@7.1.3": {
+      "reason": "BlueOak-1.0.0; see: https://github.com/isaacs/minipass"
+    },
+    "path-scurry@2.0.2": {
+      "reason": "BlueOak-1.0.0; see: https://github.com/isaacs/path-scurry"
+    },
+    "sax@1.4.4": {
+      "reason": "BlueOak-1.0.0; see: https://github.com/isaacs/sax-js"
+    },
+    "tar@7.5.9": {
+      "reason": "BlueOak-1.0.0; see: https://github.com/isaacs/node-tar"
+    },
+    "node-forge@1.3.3": {
+      "reason": "(BSD-3-Clause OR GPL-2.0); BSD-3-Clause is Apache-2.0 compatible, but dual licensing documented; see: https://github.com/digitalbazaar/forge"
     },
     "argparse@2.0.1": {
       "reason": "Python-2.0; Dev dependency, see: https://github.com/nodeca/argparse"

@@ -2,7 +2,7 @@ import {NgModule} from '@angular/core';
 import {ExtraOptions, RouterModule, Routes} from '@angular/router';
 import {ObUnknownRouteModule} from '@oblique/oblique';
 import {StartPageComponent} from './pages/start-page/start-page.component';
-import {QdApplicationRoleFilter, QdAuthorizationGuard, QdRoleFilterMatcher} from '@quadrel-services/qd-auth';
+import {QdApplicationRoleFilter, QdAuthorizationGuard, QdRoleFilterMatcher} from "@quadrel-enterprise-ui/auth";
 import {ProcessInstanceByIdGuard} from './shared/guards/process-instance-by-id.guard';
 import {ProcessPageComponent} from './pages/process-page/process-page.component';
 import {ForbiddenPageComponent} from "./pages/error-pages/forbidden-page/forbidden-page.component";

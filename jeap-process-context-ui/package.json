@@ -30,7 +30,7 @@
     "@ngx-translate/core": "^17.0.0",
     "@oblique/oblique": "^14.0.1",
     "@popperjs/core": "^2.0.0",
-    "@quadrel-services/qd-auth": "^19.0.12",
+    "@quadrel-enterprise-ui/auth": "^19.0.13",
     "angular-oauth2-oidc": "^20.0.2",
     "cypress": "^15.5.0",
     "jwt-decode": "^4.0.0",

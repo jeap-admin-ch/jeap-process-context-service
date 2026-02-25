@@ -1,4 +1,4 @@
-import {QdAuthConfigServerSide, QdLogLevel} from "@quadrel-services/qd-auth";
+import {QdAuthConfigServerSide, QdLogLevel} from "@quadrel-enterprise-ui/auth";
 
 export const environment = {
 	banner: { text: 'LOCAL'},
