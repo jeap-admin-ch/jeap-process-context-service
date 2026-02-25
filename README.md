@@ -11,8 +11,9 @@ Change log is available at [CHANGELOG.md](./CHANGELOG.md)
 Before you begin, ensure you have the following installed:
 
 - Java 25 or higher
-- Maven (the Maven Wrapper is included)
 - npm (Node Package Manager) 22 or higher
+
+**Note:** Use the provided Maven Wrapper (`mvnw` / `mvnw.cmd`) to build and run the project - no separate Maven installation required.
 
 ## Getting started
 
