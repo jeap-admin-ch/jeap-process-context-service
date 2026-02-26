@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
+import io.micrometer.core.annotation.Timed;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,6 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Repository
+@Timed(value = "jeap.pcs.repository.message", percentiles = .95)
 interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepository {
 
     @Query("from events e join e.messageData d where e.messageName = :messageName and d.templateName = :messageDataTemplateName and d.key = :messageDataKey and d.value = :messageDataValue and d.role = :messageDataRole and e.id not in (:alreadyCorrelatedMessageIds)")
