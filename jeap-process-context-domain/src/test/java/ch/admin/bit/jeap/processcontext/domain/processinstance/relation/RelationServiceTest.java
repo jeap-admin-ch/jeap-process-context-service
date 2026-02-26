@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance.relation;
 
+import ch.admin.bit.jeap.processcontext.domain.StubMetricsListener;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.Relation;
@@ -53,7 +54,7 @@ class RelationServiceTest {
 
     @BeforeEach
     void setUp() {
-        relationService = new RelationService(relationRepository, relationFactory, relationListener, featureManager);
+        relationService = new RelationService(relationRepository, relationFactory, relationListener, featureManager, new StubMetricsListener());
         lenient().when(processInstance.getOriginProcessId()).thenReturn(ORIGIN_PROCESS_ID);
     }
 
