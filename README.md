@@ -17,8 +17,8 @@ Before you begin, ensure you have the following installed:
 
 ## Getting started
 
-Normally you will not use this project directly, but instead set up your own process context service depending on this
-common library. If you want to test this lib locally, you can use the example project [jme-process-context-example](https://github.com/jme-admin-ch/jme-process-context-example), which is available in a separate repository.
+Normally you will not use this project directly, but instead set up your own process context service depending on this common library. 
+If you want to test this library locally, you can use the example project [jme-process-context-example](https://github.com/jme-admin-ch/jme-process-context-example), which is available in a separate repository.
 Check the documentation for details.
 
 ### Build the library
@@ -35,12 +35,11 @@ To build the library, run the following command in the root of the repository:
 mvnw.cmd clean install
 ```
 
-The UI will also be build as part of this command, so there is no need to build it separately if you just want to use the library. However, if you want to start the UI separately with hot reload, you can build it separately as described in the next section.
-This will install the library in your local maven repository, so it can be used as a dependency in other projects. 
+The UI will also be built as part of this command, so there is no need to build it separately if you just want to use the library.
 
 ### Build the UI 
 
-The UI can be build independently of the Spring Boot application, so it can be started separately. This is especially useful for development, as it allows to start the UI with hot reload and without the need to restart the Spring Boot application after every change.
+The UI can be built independently of the Spring Boot application, so it can be started separately. This is especially useful for development, as it allows to start the UI with hot reload and without the need to restart the Spring Boot application after every change.
 To build the UI, run the following command in the root of the repository:
 
 ```bash
@@ -67,9 +66,9 @@ cd jme-process-context-ui
 npx ng serve --open
 ```
 
-This will start the UI on http://localhost:4200/. The UI will automatically reload after every change, so you can see the changes immediately in the browser. 
+These will start the UI on http://localhost:4200/. The UI will automatically reload after every change, so you can see the changes immediately in the browser. 
 To run an example backend locally, you can use the example project [jme-process-context-example](https://github.com/jme-admin-ch/jme-process-context-example) or an own implementation of the process context service.
-The UI will also automatically connect to the process context service running on http://localhost:8080/, so make sure to start these services locally as well.
+The UI will also automatically connect to the process context service running on http://localhost:8080/.
 
 ## Local Cypress Component Tests
 
