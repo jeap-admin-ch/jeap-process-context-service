@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.0.0] - 2026-03-05
+
+### Changed
+
+- **Major version with improved performance for high-volume processes.**
+- Make sure to follow the upgrade guide for v17 when upgrading to this version!
+- Removed unused features (process lifecycle events, milestones, REST-based process creation, snapshot conditions).
+- Removed the use of the following topics:
+  - _app_-process-createprocessinstance
+  - _app_-process-instance-completed
+  - _app_-process-instance-created
+  - _app_-process-state-changed
+- Removed the _process_event_ and _process_update_ tables.
+- Updated the _PCS Condition API_ to use query-based message access instead of in-memory collections.
+- Cleaned up deprecated API types and renamed packages from `event` to `message`.
+- Added paging to all collections in the UI.
+
 ## [16.4.0] - 2026-03-02
 
 ### Changed

@@ -19,7 +19,7 @@ public class PcsReleaseProperties {
         }
     }
 
-    public static class MinReleaseNotSetException extends RuntimeException {
+    static class MinReleaseNotSetException extends RuntimeException {
         public MinReleaseNotSetException() {
             super("""
                     IMPORTANT: PCS v17 is a major release with breaking changes. To avoid data loss, you MUST follow the
