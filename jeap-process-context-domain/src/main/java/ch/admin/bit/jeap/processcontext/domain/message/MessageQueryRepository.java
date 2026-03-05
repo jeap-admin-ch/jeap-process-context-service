@@ -23,6 +23,8 @@ public interface MessageQueryRepository {
 
     List<Message> findMessagesToCorrelate(String messageName, String messageDataTemplateName, String messageDataKey, String messageDataValue);
 
+    List<Message> findMessagesWithPendingByOriginProcessId(String originProcessId);
+
     Slice<UUID> findMessagesWithoutProcessCorrelation(ZonedDateTime createdBefore, Pageable pageable);
 
 }

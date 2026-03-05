@@ -100,6 +100,8 @@ class ProcessInstanceServiceTest {
                 .thenReturn(List.of());
         lenient().when(messageReferenceRepository.save(any(MessageReference.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        lenient().when(messageRepository.findMessagesWithPendingByOriginProcessId(anyString()))
+                .thenReturn(List.of());
 
         target = new ProcessInstanceService(
                 processInstanceRepository,
@@ -172,6 +174,38 @@ class ProcessInstanceServiceTest {
         ProcessInstance savedInstance = processInstanceCaptor.getValue();
         assertThat(savedInstance.getOriginProcessId()).isEqualTo(ORIGIN_PROCESS_ID);
         assertThat(savedInstance.getProcessTemplateName()).isEqualTo(TEMPLATE_NAME);
+    }
+
+    @Test
+    void handleMessage_createProcess_handlesPendingMessagesInSingleQuery() {
+        ProcessTemplate processTemplate = createSimpleProcessTemplate();
+        Message message = createMessage();
+        Message pendingMsg1 = createMessageWithName("pendingEvent1");
+        Message pendingMsg2 = createMessageWithName("pendingEvent2");
+
+        when(messageRepository.findById(message.getId()))
+                .thenReturn(Optional.of(message));
+        when(processInstanceRepository.findByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(Optional.empty());
+        when(processTemplateRepository.findByName(TEMPLATE_NAME))
+                .thenReturn(Optional.of(processTemplate));
+        when(processInstanceRepository.save(any(ProcessInstance.class)))
+                .thenAnswer(invocation -> {
+                    ProcessInstance pi = invocation.getArgument(0);
+                    clearTransientFields(pi);
+                    return pi;
+                });
+        when(messageRepository.findMessagesWithPendingByOriginProcessId(ORIGIN_PROCESS_ID))
+                .thenReturn(List.of(pendingMsg1, pendingMsg2));
+
+        target.handleMessage(ORIGIN_PROCESS_ID, message.getId(), TEMPLATE_NAME);
+
+        // Verify single-shot query was used instead of individual findById calls
+        verify(messageRepository).findMessagesWithPendingByOriginProcessId(ORIGIN_PROCESS_ID);
+        // Verify pending messages were deleted by originProcessId
+        verify(pendingMessageRepository).deleteByOriginProcessId(ORIGIN_PROCESS_ID);
+        // Verify message references were saved for the trigger message + 2 pending messages
+        verify(messageReferenceRepository, times(3)).save(any(MessageReference.class));
     }
 
     @Test

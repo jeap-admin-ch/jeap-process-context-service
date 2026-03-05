@@ -92,14 +92,11 @@ public class ProcessInstanceService {
 
     private void handlePendingMessagesForNewProcessInstance(String originProcessId, UUID messageId, ProcessInstance processInstance) {
         metricsListener.timed("jeap_pcs_handle_pending_messages", Map.of(), () -> {
-            List<PendingMessage> pendingMessages = pendingMessageRepository.findByOriginProcessId(originProcessId);
-            for (PendingMessage pendingMessage : pendingMessages) {
-                // TODO: Single query to fetch all pending messages
-                Message messageToHandle = messageRepository.findById(pendingMessage.getMessageId())
-                        .orElseThrow(NotFoundException.messageNotFound(messageId, originProcessId));
+            List<Message> pendingMessagesToHandle = messageRepository.findMessagesWithPendingByOriginProcessId(originProcessId);
+            for (Message messageToHandle : pendingMessagesToHandle) {
                 handleMessageForProcessInstance(processInstance, messageToHandle);
             }
-            pendingMessageRepository.deleteAll(pendingMessages);
+            pendingMessageRepository.deleteByOriginProcessId(originProcessId);
         });
     }
 

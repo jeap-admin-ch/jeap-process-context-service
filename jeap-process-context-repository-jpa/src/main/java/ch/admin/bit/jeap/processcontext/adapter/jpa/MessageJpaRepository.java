@@ -35,10 +35,13 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
     @Query(nativeQuery = true, value = "SELECT e.key_, e.value_ FROM events_user_data e WHERE e.events_id = :id")
     List<String[]> findMessageUserDataByMessageId(@Param("id") UUID messageId);
 
+    @Query("select e from events e join PendingMessage pm on pm.messageId = e.id where pm.originProcessId = :originProcessId")
+    List<Message> findMessagesWithPendingByOriginProcessId(@Param("originProcessId") String originProcessId);
+
     @Query("""
-            select e.id from events e 
-            left join MessageReference er on e.id = er.messageId 
-            left join PendingMessage pm on e.id = pm.messageId 
+            select e.id from events e
+            left join MessageReference er on e.id = er.messageId
+            left join PendingMessage pm on e.id = pm.messageId
             where e.createdAt < :createdBefore and er.id is null and pm.id is null""")
     Slice<UUID> findMessagesWithoutProcessCorrelation(@Param("createdBefore") ZonedDateTime createdBefore, Pageable pageable);
 

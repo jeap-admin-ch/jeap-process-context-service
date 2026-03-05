@@ -31,6 +31,11 @@ public class PendingMessageRepositoryImpl implements PendingMessageRepository {
     }
 
     @Override
+    public void deleteByOriginProcessId(String originProcessId) {
+        pendingMessageJpaRepository.deleteByOriginProcessId(originProcessId);
+    }
+
+    @Override
     public void deleteAll(List<PendingMessage> pendingMessages) {
         pendingMessageJpaRepository.deleteAll(pendingMessages);
     }

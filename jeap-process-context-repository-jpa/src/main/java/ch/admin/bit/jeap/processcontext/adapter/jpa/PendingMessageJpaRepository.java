@@ -31,6 +31,10 @@ public interface PendingMessageJpaRepository extends JpaRepository<PendingMessag
     Slice<UUID> findPendingMessagesCreatedBefore(@Param("createdBefore") ZonedDateTime createdBefore, Pageable pageable);
 
     @Modifying
+    @Query("delete from PendingMessage pm where pm.originProcessId = :originProcessId")
+    void deleteByOriginProcessId(@Param("originProcessId") String originProcessId);
+
+    @Modifying
     @Query(nativeQuery = true, value = "DELETE FROM pending_message WHERE id IN :ids")
     void deleteAllByIds(@Param("ids") Set<UUID> ids);
 }

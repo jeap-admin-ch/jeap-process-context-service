@@ -171,6 +171,25 @@ class PendingMessageJpaRepositoryTest {
         assertThat(result.getContent()).isEmpty();
     }
 
+    @Test
+    void deleteByOriginProcessId_removesMatchingEntries() {
+        Message message1 = createAndSaveMessage("event1");
+        Message message2 = createAndSaveMessage("event2");
+        Message message3 = createAndSaveMessage("event3");
+        pendingMessageJpaRepository.saveIfNew("process1", message1.getId());
+        pendingMessageJpaRepository.saveIfNew("process1", message2.getId());
+        pendingMessageJpaRepository.saveIfNew("process2", message3.getId());
+        entityManager.flush();
+        entityManager.clear();
+
+        pendingMessageJpaRepository.deleteByOriginProcessId("process1");
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(pendingMessageJpaRepository.findByOriginProcessId("process1")).isEmpty();
+        assertThat(pendingMessageJpaRepository.findByOriginProcessId("process2")).hasSize(1);
+    }
+
     private Message createAndSaveMessage(String eventId) {
         Message message = Message.messageBuilder()
                 .messageId(eventId)

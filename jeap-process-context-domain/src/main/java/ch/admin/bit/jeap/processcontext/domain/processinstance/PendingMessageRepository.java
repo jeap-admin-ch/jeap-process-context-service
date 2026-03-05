@@ -14,6 +14,8 @@ public interface PendingMessageRepository {
 
     List<PendingMessage> findByOriginProcessId(String originProcessId);
 
+    void deleteByOriginProcessId(String originProcessId);
+
     void deleteAll(List<PendingMessage> pendingMessages);
 
     void deleteAll(Set<UUID> pendingMessageIds);

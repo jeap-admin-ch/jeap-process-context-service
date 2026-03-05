@@ -71,6 +71,9 @@ class MessageJpaRepositoryTest {
     @Autowired
     private MessageReferenceJpaRepository messageReferenceJpaRepository;
 
+    @Autowired
+    private PendingMessageJpaRepository pendingMessageJpaRepository;
+
     @PersistenceContext
     EntityManager entityManager;
 
@@ -466,6 +469,35 @@ class MessageJpaRepositoryTest {
                 savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isFalse();
+    }
+
+    @Test
+    void findMessagesWithPendingByOriginProcessId_returnsMatchingMessages() {
+        UUID msg1Id = saveEvent("eventName", createEventData("key", "value", null));
+        UUID msg2Id = saveEvent("eventName", createEventData("key", "value", null));
+        UUID msg3Id = saveEvent("eventName", createEventData("key", "value", null));
+
+        pendingMessageJpaRepository.saveIfNew("process1", msg1Id);
+        pendingMessageJpaRepository.saveIfNew("process1", msg2Id);
+        pendingMessageJpaRepository.saveIfNew("process2", msg3Id);
+        entityManager.flush();
+        entityManager.clear();
+
+        List<Message> result = messageJpaRepository.findMessagesWithPendingByOriginProcessId("process1");
+
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(Message::getId).containsExactlyInAnyOrder(msg1Id, msg2Id);
+    }
+
+    @Test
+    void findMessagesWithPendingByOriginProcessId_noPendingMessages_returnsEmpty() {
+        saveEvent("eventName", createEventData("key", "value", null));
+        entityManager.flush();
+        entityManager.clear();
+
+        List<Message> result = messageJpaRepository.findMessagesWithPendingByOriginProcessId("nonExistent");
+
+        assertThat(result).isEmpty();
     }
 
     private MessageData createEventData(String eventDataKey, String eventDataValue, String eventDataRole) {
