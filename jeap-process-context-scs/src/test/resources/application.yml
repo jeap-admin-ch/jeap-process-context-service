@@ -49,7 +49,8 @@ jeap:
       enabled: false
     frontend:
       application-url: "http://localhost:8080"
-
+    release:
+      min-version: 17
 
 logging:
   level:
