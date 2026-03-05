@@ -41,8 +41,7 @@ public class ProcessInstanceStubs {
                 .build();
         ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
         ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
-        ProcessInstance processInstance = ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
-        return processInstance;
+        return ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
     }
 
     public ProcessInstance createProcessWithSingleTaskInstanceSavingProcessData(String processTemplateName, List<ProcessData> processData,
@@ -108,8 +107,7 @@ public class ProcessInstanceStubs {
                 .build();
         ProcessContextRepositoryFacadeStub repositoryFacadeStub = new ProcessContextRepositoryFacadeStub();
         ProcessContextFactory processContextFactory = createProcessContextFactory(repositoryFacadeStub);
-        ProcessInstance processInstance = ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
-        return processInstance;
+        return ProcessInstance.createProcessInstance(Generators.timeBasedEpochGenerator().generate().toString(), processTemplate, processContextFactory);
     }
 
     private static ProcessContextFactory createProcessContextFactory(ProcessContextRepositoryFacade repositoryFacade) {
