@@ -15,7 +15,7 @@ public class ProcessContextFactory {
         return ProcessContextImpl.builder()
                 .processInstanceId(processInstance.getId())
                 .originProcessId(processInstance.getOriginProcessId())
-                .processName(processInstance.getProcessTemplateName())
+                .processTemplate(processInstance.getProcessTemplateName())
                 .repositoryFacade(repositoryFacade)
                 .build();
     }

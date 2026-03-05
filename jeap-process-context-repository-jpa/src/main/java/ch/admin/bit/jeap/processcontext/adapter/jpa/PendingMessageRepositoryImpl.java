@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@Timed(value = "jeap.pcs.repository.pendingmessage", percentiles = .95)
+@Timed(value = "jeap.pcs.repository.pendingmessage")
 public class PendingMessageRepositoryImpl implements PendingMessageRepository {
 
     private final PendingMessageJpaRepository pendingMessageJpaRepository;

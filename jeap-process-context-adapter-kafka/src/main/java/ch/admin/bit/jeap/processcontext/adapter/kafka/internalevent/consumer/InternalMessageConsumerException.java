@@ -25,10 +25,9 @@ public class InternalMessageConsumerException extends RuntimeException implement
 
     static InternalMessageConsumerException from(Exception e) {
         if (e instanceof NotFoundException nfe) {
-            Temporality temporality = nfe.isRetryable() ? Temporality.TEMPORARY : Temporality.PERMANENT;
-            return new InternalMessageConsumerException("PROCESS_OR_TASK_NOT_FOUND",
-                    "The given process or task could not be found, maybe it has not yet been created",
-                    temporality,
+            return new InternalMessageConsumerException("TEMPLATE_OR_MESSAGE_NOT_FOUND",
+                    "A template or a message could not be found, it might have been deleted",
+                    Temporality.PERMANENT,
                     e
             );
         }

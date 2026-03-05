@@ -299,7 +299,7 @@ class MessageJpaRepositoryTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         List<MessageDataProjection> result =
-                messageJpaRepository.findMessageDataForMessageType(savedProcessInstance.getId(), "sourceEventName");
+                messageJpaRepository.findMessageDataForMessageType(savedProcessInstance.getId(), "sourceEventName", savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).hasSize(2);
         Set<String> keys = result.stream().map(MessageDataProjection::getKey).collect(Collectors.toSet());
@@ -311,7 +311,7 @@ class MessageJpaRepositoryTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         List<MessageDataProjection> result =
-                messageJpaRepository.findMessageDataForMessageType(savedProcessInstance.getId(), "nonExistentType");
+                messageJpaRepository.findMessageDataForMessageType(savedProcessInstance.getId(), "nonExistentType", savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isEmpty();
     }
@@ -339,7 +339,7 @@ class MessageJpaRepositoryTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         long result = messageJpaRepository.countMessagesByTypeWithMessageData(savedProcessInstance.getId(),
-                "sourceEventName", "sourceEventDataKey", "someValue");
+                "sourceEventName", "sourceEventDataKey", "someValue", savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isEqualTo(1);
     }
@@ -349,7 +349,7 @@ class MessageJpaRepositoryTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         long result = messageJpaRepository.countMessagesByTypeWithMessageData(savedProcessInstance.getId(),
-                "sourceEventName", "sourceEventDataKey", "nonExistentValue");
+                "sourceEventName", "sourceEventDataKey", "nonExistentValue", savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isZero();
     }
@@ -359,7 +359,7 @@ class MessageJpaRepositoryTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageJpaRepository.containsMessageByTypeWithAnyMessageDataValue(savedProcessInstance.getId(),
-                "sourceEventName", "sourceEventDataKey", Set.of("someValue", "otherValue"));
+                "sourceEventName", "sourceEventDataKey", Set.of("someValue", "otherValue"), savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isTrue();
     }
@@ -369,7 +369,7 @@ class MessageJpaRepositoryTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = messageJpaRepository.containsMessageByTypeWithAnyMessageDataValue(savedProcessInstance.getId(),
-                "sourceEventName", "sourceEventDataKey", Set.of("nonExistent1", "nonExistent2"));
+                "sourceEventName", "sourceEventDataKey", Set.of("nonExistent1", "nonExistent2"), savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isFalse();
     }
@@ -381,7 +381,8 @@ class MessageJpaRepositoryTest {
         boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
                 savedProcessInstance.getId(),
                 "sourceEventName",
-                Map.of("sourceEventDataKey", Set.of("someValue")));
+                Map.of("sourceEventDataKey", Set.of("someValue")),
+                savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isTrue();
     }
@@ -393,7 +394,8 @@ class MessageJpaRepositoryTest {
         boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
                 savedProcessInstance.getId(),
                 "sourceEventName",
-                Map.of("sourceEventDataKey", Set.of("someValue", "nonExistentValue")));
+                Map.of("sourceEventDataKey", Set.of("someValue", "nonExistentValue")),
+                savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isTrue();
     }
@@ -408,7 +410,8 @@ class MessageJpaRepositoryTest {
                 Map.of(
                         "nonExistentKey", Set.of("someValue"),
                         "sourceEventDataKey", Set.of("someValue")
-                ));
+                ),
+                savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isTrue();
     }
@@ -420,7 +423,8 @@ class MessageJpaRepositoryTest {
         boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
                 savedProcessInstance.getId(),
                 "sourceEventName",
-                Map.of("nonExistentKey", Set.of("someValue")));
+                Map.of("nonExistentKey", Set.of("someValue")),
+                savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isFalse();
     }
@@ -432,7 +436,8 @@ class MessageJpaRepositoryTest {
         boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
                 savedProcessInstance.getId(),
                 "sourceEventName",
-                Map.of("sourceEventDataKey", Set.of("nonExistent1", "nonExistent2")));
+                Map.of("sourceEventDataKey", Set.of("nonExistent1", "nonExistent2")),
+                savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isFalse();
     }
@@ -444,7 +449,8 @@ class MessageJpaRepositoryTest {
         boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
                 savedProcessInstance.getId(),
                 "nonExistentMessageType",
-                Map.of("sourceEventDataKey", Set.of("someValue")));
+                Map.of("sourceEventDataKey", Set.of("someValue")),
+                savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isFalse();
     }
@@ -456,7 +462,8 @@ class MessageJpaRepositoryTest {
         boolean result = messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(
                 savedProcessInstance.getId(),
                 "sourceEventName",
-                Map.of());
+                Map.of(),
+                savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isFalse();
     }

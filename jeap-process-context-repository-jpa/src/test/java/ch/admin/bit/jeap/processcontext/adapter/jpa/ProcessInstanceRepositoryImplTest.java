@@ -109,8 +109,9 @@ class ProcessInstanceRepositoryImplTest {
     void findLatestMessageReferenceByMessageTypeAndOriginTaskId_whenFound_returnsFirst() {
         UUID processInstanceId = UUID.randomUUID();
         doReturn(processInstanceId).when(processInstance).getId();
+        doReturn("templateName").when(processInstance).getProcessTemplateName();
         doReturn(List.of(messageReference)).when(processInstanceJpaRepository)
-                .findMessageReferencesByMessageTypeAndOriginTaskId(processInstanceId, "TestType", "task-1", PageRequest.of(0, 1));
+                .findMessageReferencesByMessageTypeAndOriginTaskId(processInstanceId, "TestType", "task-1", "templateName", PageRequest.of(0, 1));
 
         Optional<MessageReference> result = processInstanceRepository.findLatestMessageReferenceByMessageTypeAndOriginTaskId(processInstance, "TestType", "task-1");
 
@@ -122,8 +123,9 @@ class ProcessInstanceRepositoryImplTest {
     void findLatestMessageReferenceByMessageTypeAndOriginTaskId_whenNotFound_returnsEmpty() {
         UUID processInstanceId = UUID.randomUUID();
         doReturn(processInstanceId).when(processInstance).getId();
+        doReturn("templateName").when(processInstance).getProcessTemplateName();
         doReturn(List.of()).when(processInstanceJpaRepository)
-                .findMessageReferencesByMessageTypeAndOriginTaskId(processInstanceId, "TestType", "task-1", PageRequest.of(0, 1));
+                .findMessageReferencesByMessageTypeAndOriginTaskId(processInstanceId, "TestType", "task-1", "templateName", PageRequest.of(0, 1));
 
         Optional<MessageReference> result = processInstanceRepository.findLatestMessageReferenceByMessageTypeAndOriginTaskId(processInstance, "TestType", "task-1");
 

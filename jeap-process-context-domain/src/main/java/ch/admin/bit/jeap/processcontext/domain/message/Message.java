@@ -41,7 +41,7 @@ public class Message extends ImmutableDomainEntity {
     private String messageName;
 
     @NotNull
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "events_event_data")
     private List<MessageData> messageData;
 
@@ -53,7 +53,7 @@ public class Message extends ImmutableDomainEntity {
     private List<MessageUserData> userData;
 
     @NotNull
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     private Set<OriginTaskId> originTaskIds;
 
     @Getter

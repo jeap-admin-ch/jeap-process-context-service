@@ -93,7 +93,7 @@ class ProcessContextRepositoryFacadeImplTest {
     void getMessageDataForMessageType_messageExists_expectMessageData() {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
-        Set<MessageData> result = facade.getMessageDataForMessageType(savedProcessInstance.getId(), "sourceEventName");
+        Set<MessageData> result = facade.getMessageDataForMessageType(savedProcessInstance.getId(), "sourceEventName", savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).hasSize(2);
         Set<String> keys = result.stream().map(MessageData::getKey).collect(java.util.stream.Collectors.toSet());
@@ -104,7 +104,7 @@ class ProcessContextRepositoryFacadeImplTest {
     void getMessageDataForMessageType_messageNotExists_expectEmpty() {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
-        Set<MessageData> result = facade.getMessageDataForMessageType(savedProcessInstance.getId(), "nonExistentType");
+        Set<MessageData> result = facade.getMessageDataForMessageType(savedProcessInstance.getId(), "nonExistentType", savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isEmpty();
     }
@@ -136,7 +136,7 @@ class ProcessContextRepositoryFacadeImplTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         long result = facade.countMessagesByTypeWithMessageData(savedProcessInstance.getId(),
-                "sourceEventName", "sourceEventDataKey", "someValue");
+                "sourceEventName", "sourceEventDataKey", "someValue", savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isEqualTo(1);
     }
@@ -146,7 +146,7 @@ class ProcessContextRepositoryFacadeImplTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         long result = facade.countMessagesByTypeWithMessageData(savedProcessInstance.getId(),
-                "sourceEventName", "sourceEventDataKey", "nonExistentValue");
+                "sourceEventName", "sourceEventDataKey", "nonExistentValue", savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isZero();
     }
@@ -156,7 +156,7 @@ class ProcessContextRepositoryFacadeImplTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         long result = facade.countMessagesByTypeWithAnyMessageData(savedProcessInstance.getId(),
-                "sourceEventName", Map.of("sourceEventDataKey", "someValue"));
+                "sourceEventName", Map.of("sourceEventDataKey", "someValue"), savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isEqualTo(1);
     }
@@ -166,7 +166,7 @@ class ProcessContextRepositoryFacadeImplTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         long result = facade.countMessagesByTypeWithAnyMessageData(savedProcessInstance.getId(),
-                "sourceEventName", Map.of("sourceEventDataKey", "nonExistentValue"));
+                "sourceEventName", Map.of("sourceEventDataKey", "nonExistentValue"), savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isZero();
     }
@@ -176,7 +176,7 @@ class ProcessContextRepositoryFacadeImplTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         long result = facade.countMessagesByTypeWithAnyMessageData(savedProcessInstance.getId(),
-                "sourceEventName", Map.of());
+                "sourceEventName", Map.of(), savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isZero();
     }
@@ -186,7 +186,7 @@ class ProcessContextRepositoryFacadeImplTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = facade.containsMessageByTypeWithMessageData(savedProcessInstance.getId(),
-                "sourceEventName", "sourceEventDataKey", "someValue");
+                "sourceEventName", "sourceEventDataKey", "someValue", savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isTrue();
     }
@@ -196,7 +196,7 @@ class ProcessContextRepositoryFacadeImplTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = facade.containsMessageByTypeWithMessageData(savedProcessInstance.getId(),
-                "sourceEventName", "sourceEventDataKey", "nonExistent");
+                "sourceEventName", "sourceEventDataKey", "nonExistent", savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isFalse();
     }
@@ -206,7 +206,7 @@ class ProcessContextRepositoryFacadeImplTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = facade.containsMessageByTypeWithAnyMessageDataValue(savedProcessInstance.getId(),
-                "sourceEventName", "sourceEventDataKey", Set.of("someValue", "otherValue"));
+                "sourceEventName", "sourceEventDataKey", Set.of("someValue", "otherValue"), savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isTrue();
     }
@@ -216,7 +216,7 @@ class ProcessContextRepositoryFacadeImplTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = facade.containsMessageByTypeWithAnyMessageDataValue(savedProcessInstance.getId(),
-                "sourceEventName", "sourceEventDataKey", Set.of("nonExistent1", "nonExistent2"));
+                "sourceEventName", "sourceEventDataKey", Set.of("nonExistent1", "nonExistent2"), savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isFalse();
     }
@@ -226,7 +226,7 @@ class ProcessContextRepositoryFacadeImplTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = facade.containsMessageByTypeWithAnyMessageDataValue(savedProcessInstance.getId(),
-                "sourceEventName", "sourceEventDataKey", Set.of());
+                "sourceEventName", "sourceEventDataKey", Set.of(), savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isFalse();
     }
@@ -236,7 +236,7 @@ class ProcessContextRepositoryFacadeImplTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = facade.containsMessageByTypeWithAnyMessageDataKeyValue(savedProcessInstance.getId(),
-                "sourceEventName", Map.of("sourceEventDataKey", Set.of("someValue", "otherValue")));
+                "sourceEventName", Map.of("sourceEventDataKey", Set.of("someValue", "otherValue")), savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isTrue();
     }
@@ -246,7 +246,7 @@ class ProcessContextRepositoryFacadeImplTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = facade.containsMessageByTypeWithAnyMessageDataKeyValue(savedProcessInstance.getId(),
-                "sourceEventName", Map.of("sourceEventDataKey", Set.of("nonExistent1", "nonExistent2")));
+                "sourceEventName", Map.of("sourceEventDataKey", Set.of("nonExistent1", "nonExistent2")), savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isFalse();
     }
@@ -256,7 +256,7 @@ class ProcessContextRepositoryFacadeImplTest {
         ProcessInstance savedProcessInstance = createProcessInstanceWithPersistedMessageReferences();
 
         boolean result = facade.containsMessageByTypeWithAnyMessageDataKeyValue(savedProcessInstance.getId(),
-                "sourceEventName", Map.of());
+                "sourceEventName", Map.of(), savedProcessInstance.getProcessTemplateName());
 
         assertThat(result).isFalse();
     }

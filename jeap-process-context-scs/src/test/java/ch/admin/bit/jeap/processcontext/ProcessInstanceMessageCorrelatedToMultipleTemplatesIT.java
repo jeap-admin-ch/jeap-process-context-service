@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.processcontext;
 
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
+import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageQueryRepository;
 import ch.admin.bit.jeap.processcontext.event.test1.SubjectReference;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
@@ -12,6 +13,10 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,6 +26,9 @@ class ProcessInstanceMessageCorrelatedToMultipleTemplatesIT extends ProcessInsta
 
     @Autowired
     private MessageQueryRepository messageQueryRepository;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
@@ -38,15 +46,21 @@ class ProcessInstanceMessageCorrelatedToMultipleTemplatesIT extends ProcessInsta
 
         // Assert that the first event (not correlated to a specific process instance) has been persisted, along with
         // event data from at least two templates
-        Message persistedEvent = messageQueryRepository.findByMessageNameAndIdempotenceId(
-                sentFirstEvent.getType().getName(), sentFirstEvent.getIdentity().getIdempotenceId()).orElseThrow();
-
-        assertThat(persistedEvent.getMessageData("domainEventsWithPayloadExtractor"))
+        assertThat(getMessageData(sentFirstEvent, "domainEventsWithPayloadExtractor"))
                 .hasSize(1)
                 .allMatch(eventData -> eventData.getKey().equals("key1"));
-        assertThat(persistedEvent.getMessageData("domainEventsWithDifferentPayloadExtractor"))
+        assertThat(getMessageData(sentFirstEvent, "domainEventsWithDifferentPayloadExtractor"))
                 .hasSize(1)
                 .allMatch(eventData -> eventData.getKey().equals("differentKey1"));
+    }
+
+    private List<MessageData> getMessageData(Test1Event sentFirstEvent, String templateName) {
+        return new TransactionTemplate(transactionManager).execute(ignored -> {
+            Message persistedEvent = messageQueryRepository.findByMessageNameAndIdempotenceId(
+                    sentFirstEvent.getType().getName(), sentFirstEvent.getIdentity().getIdempotenceId()).orElseThrow();
+            return persistedEvent.getMessageData(templateName);
+
+        });
     }
 
     private Test1Event sendTest1Event() {

@@ -130,9 +130,8 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
 
     @Query("""
             SELECT r FROM MessageReference r
-            JOIN r.processInstance p
             JOIN events e ON e.id = r.messageId
-            WHERE p.id = :processInstanceId AND e.messageName = :messageType
+            WHERE r.processInstance.id = :processInstanceId AND e.messageName = :messageType
             ORDER BY e.createdAt DESC
             """)
     List<MessageReference> findMessageReferencesByMessageType(
@@ -142,18 +141,18 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
 
     @Query("""
             SELECT r FROM MessageReference r
-            JOIN r.processInstance p
             JOIN events e ON e.id = r.messageId
             JOIN e.originTaskIds oti
-            WHERE p.id = :processInstanceId
+            WHERE r.processInstance.id = :processInstanceId
               AND e.messageName = :messageType
               AND oti.originTaskId = :originTaskId
-              AND oti.templateName = p.processTemplateName
+              AND oti.templateName = :processTemplateName
             ORDER BY e.createdAt DESC
             """)
     List<MessageReference> findMessageReferencesByMessageTypeAndOriginTaskId(
             @Param("processInstanceId") UUID processInstanceId,
             @Param("messageType") String messageType,
             @Param("originTaskId") String originTaskId,
+            @Param("processTemplateName") String processTemplateName,
             Pageable pageable);
 }

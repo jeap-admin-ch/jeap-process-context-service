@@ -542,7 +542,7 @@ class ProcessInstanceJpaRepositoryTest {
         messageReferenceJpaRepository.flush();
 
         List<MessageReference> result = repository.findMessageReferencesByMessageTypeAndOriginTaskId(
-                savedProcessInstance.getId(), "TestMessageType", "task-1", PageRequest.of(0, 1));
+                savedProcessInstance.getId(), "TestMessageType", "task-1", savedProcessInstance.getProcessTemplateName(), PageRequest.of(0, 1));
 
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().getMessageId()).isEqualTo(newMessage.getId());
@@ -562,7 +562,7 @@ class ProcessInstanceJpaRepositoryTest {
         messageReferenceJpaRepository.flush();
 
         List<MessageReference> result = repository.findMessageReferencesByMessageTypeAndOriginTaskId(
-                savedProcessInstance.getId(), "TestMessageType", "non-existent-task", PageRequest.of(0, 1));
+                savedProcessInstance.getId(), "TestMessageType", "non-existent-task", savedProcessInstance.getProcessTemplateName(), PageRequest.of(0, 1));
 
         assertThat(result).isEmpty();
     }
@@ -580,7 +580,7 @@ class ProcessInstanceJpaRepositoryTest {
         messageReferenceJpaRepository.flush();
 
         List<MessageReference> result = repository.findMessageReferencesByMessageTypeAndOriginTaskId(
-                savedProcessInstance.getId(), "TestMessageType", "task-1", PageRequest.of(0, 1));
+                savedProcessInstance.getId(), "TestMessageType", "task-1", savedProcessInstance.getProcessTemplateName(), PageRequest.of(0, 1));
 
         assertThat(result).isEmpty();
     }

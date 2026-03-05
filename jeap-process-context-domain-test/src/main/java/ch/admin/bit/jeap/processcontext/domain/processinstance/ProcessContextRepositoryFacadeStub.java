@@ -31,7 +31,12 @@ public class ProcessContextRepositoryFacadeStub implements ProcessContextReposit
     }
 
     @Override
-    public Set<MessageData> getMessageDataForMessageType(UUID processInstanceId, String messageType) {
+    public Set<MessageData> getMessageDataForMessageType(UUID processInstanceId, String messageType, String processTemplateName) {
+        throw unsupported();
+    }
+
+    @Override
+    public long countMessagesByType(UUID processInstanceId, String messageType) {
         throw unsupported();
     }
 
@@ -41,27 +46,27 @@ public class ProcessContextRepositoryFacadeStub implements ProcessContextReposit
     }
 
     @Override
-    public long countMessagesByTypeWithMessageData(UUID processInstanceId, String messageType, String messageDataKey, String messageDataValue) {
+    public long countMessagesByTypeWithMessageData(UUID processInstanceId, String messageType, String messageDataKey, String messageDataValue, String processTemplateName) {
         throw unsupported();
     }
 
     @Override
-    public long countMessagesByTypeWithAnyMessageData(UUID processInstanceId, String messageType, Map<String, String> messageDataFilter) {
+    public long countMessagesByTypeWithAnyMessageData(UUID processInstanceId, String messageType, Map<String, String> messageDataFilter, String processTemplateName) {
         throw unsupported();
     }
 
     @Override
-    public boolean containsMessageByTypeWithAnyMessageDataValue(UUID processInstanceId, String messageType, String messageDataKey, Set<String> messageDataValues) {
+    public boolean containsMessageByTypeWithAnyMessageDataValue(UUID processInstanceId, String messageType, String messageDataKey, Set<String> messageDataValues, String processTemplateName) {
         throw unsupported();
     }
 
     @Override
-    public boolean containsMessageByTypeWithMessageData(UUID processInstanceId, String messageType, String messageDataKey, String messageDataValue) {
+    public boolean containsMessageByTypeWithMessageData(UUID processInstanceId, String messageType, String messageDataKey, String messageDataValue, String processTemplateName) {
         throw unsupported();
     }
 
     @Override
-    public boolean containsMessageByTypeWithAnyMessageDataKeyValue(UUID processInstanceId, String messageType, Map<String, Set<String>> messageDataFilter) {
+    public boolean containsMessageByTypeWithAnyMessageDataKeyValue(UUID processInstanceId, String messageType, Map<String, Set<String>> messageDataFilter, String processTemplateName) {
         throw unsupported();
     }
 

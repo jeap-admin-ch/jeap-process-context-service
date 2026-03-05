@@ -15,7 +15,7 @@ import static java.util.stream.Collectors.toSet;
 
 @Component
 @RequiredArgsConstructor
-@Timed(value = "jeap.pcs.repository.processcontextfacade", percentiles = .95)
+@Timed(value = "jeap.pcs.repository.processcontextfacade")
 public class ProcessContextRepositoryFacadeImpl implements ProcessContextRepositoryFacade {
 
     private final ProcessInstanceJpaRepository processInstanceJpaRepository;
@@ -38,10 +38,15 @@ public class ProcessContextRepositoryFacadeImpl implements ProcessContextReposit
     }
 
     @Override
-    public Set<MessageData> getMessageDataForMessageType(UUID processInstanceId, String messageType) {
-        return messageJpaRepository.findMessageDataForMessageType(processInstanceId, messageType).stream()
+    public Set<MessageData> getMessageDataForMessageType(UUID processInstanceId, String messageType, String processTemplateName) {
+        return messageJpaRepository.findMessageDataForMessageType(processInstanceId, messageType, processTemplateName).stream()
                 .map(MessageDataProjection::toMessageData)
                 .collect(toSet());
+    }
+
+    @Override
+    public long countMessagesByType(UUID processInstanceId, String messageType) {
+        return messageJpaRepository.countMessagesByType(processInstanceId, messageType);
     }
 
     @Override
@@ -57,27 +62,27 @@ public class ProcessContextRepositoryFacadeImpl implements ProcessContextReposit
     }
 
     @Override
-    public long countMessagesByTypeWithMessageData(UUID processInstanceId, String messageType, String messageDataKey, String messageDataValue) {
-        return messageJpaRepository.countMessagesByTypeWithMessageData(processInstanceId, messageType, messageDataKey, messageDataValue);
+    public long countMessagesByTypeWithMessageData(UUID processInstanceId, String messageType, String messageDataKey, String messageDataValue, String processTemplateName) {
+        return messageJpaRepository.countMessagesByTypeWithMessageData(processInstanceId, messageType, messageDataKey, messageDataValue, processTemplateName);
     }
 
     @Override
-    public boolean containsMessageByTypeWithMessageData(UUID processInstanceId, String messageType, String messageDataKey, String messageDataValue) {
-        return messageJpaRepository.containsMessageByTypeWithMessageData(processInstanceId, messageType, messageDataKey, messageDataValue);
+    public boolean containsMessageByTypeWithMessageData(UUID processInstanceId, String messageType, String messageDataKey, String messageDataValue, String processTemplateName) {
+        return messageJpaRepository.containsMessageByTypeWithMessageData(processInstanceId, messageType, messageDataKey, messageDataValue, processTemplateName);
     }
 
     @Override
-    public long countMessagesByTypeWithAnyMessageData(UUID processInstanceId, String messageType, Map<String, String> messageDataFilter) {
-        return messageSearchJpaRepository.countMessagesByTypeWithAnyMessageData(processInstanceId, messageType, messageDataFilter);
+    public long countMessagesByTypeWithAnyMessageData(UUID processInstanceId, String messageType, Map<String, String> messageDataFilter, String processTemplateName) {
+        return messageSearchJpaRepository.countMessagesByTypeWithAnyMessageData(processInstanceId, messageType, messageDataFilter, processTemplateName);
     }
 
     @Override
-    public boolean containsMessageByTypeWithAnyMessageDataValue(UUID processInstanceId, String messageType, String messageDataKey, Set<String> messageDataValues) {
-        return messageJpaRepository.containsMessageByTypeWithAnyMessageDataValue(processInstanceId, messageType, messageDataKey, messageDataValues);
+    public boolean containsMessageByTypeWithAnyMessageDataValue(UUID processInstanceId, String messageType, String messageDataKey, Set<String> messageDataValues, String processTemplateName) {
+        return messageJpaRepository.containsMessageByTypeWithAnyMessageDataValue(processInstanceId, messageType, messageDataKey, messageDataValues, processTemplateName);
     }
 
     @Override
-    public boolean containsMessageByTypeWithAnyMessageDataKeyValue(UUID processInstanceId, String messageType, Map<String, Set<String>> messageDataFilter) {
-        return messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(processInstanceId, messageType, messageDataFilter);
+    public boolean containsMessageByTypeWithAnyMessageDataKeyValue(UUID processInstanceId, String messageType, Map<String, Set<String>> messageDataFilter, String processTemplateName) {
+        return messageSearchJpaRepository.containsMessageByTypeWithAnyMessageDataKeyValue(processInstanceId, messageType, messageDataFilter, processTemplateName);
     }
 }

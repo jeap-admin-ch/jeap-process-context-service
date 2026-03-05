@@ -18,20 +18,24 @@ public final class ProcessContextImpl implements ProcessContext {
     @Getter
     private final String originProcessId;
 
-    @Getter
-    private final String processName;
+    private final String processTemplate;
 
     private final ProcessContextRepositoryFacade repositoryFacade;
 
     @Builder
     private ProcessContextImpl(@NonNull UUID processInstanceId,
                                @NonNull String originProcessId,
-                               @NonNull String processName,
+                               @NonNull String processTemplate,
                                @NonNull ProcessContextRepositoryFacade repositoryFacade) {
         this.processInstanceId = processInstanceId;
         this.originProcessId = originProcessId;
-        this.processName = processName;
+        this.processTemplate = processTemplate;
         this.repositoryFacade = repositoryFacade;
+    }
+
+    @Override
+    public String getProcessName() {
+        return processTemplate;
     }
 
     @Override
@@ -51,12 +55,12 @@ public final class ProcessContextImpl implements ProcessContext {
 
     @Override
     public Set<MessageData> getMessageDataForMessageType(String messageType) {
-        return repositoryFacade.getMessageDataForMessageType(processInstanceId, messageType);
+        return repositoryFacade.getMessageDataForMessageType(processInstanceId, messageType, processTemplate);
     }
 
     @Override
     public long countMessagesByType(String messageType) {
-        return countMessagesByTypes(Set.of(messageType)).get(messageType);
+        return repositoryFacade.countMessagesByType(processInstanceId, messageType);
     }
 
     @Override
@@ -66,26 +70,26 @@ public final class ProcessContextImpl implements ProcessContext {
 
     @Override
     public long countMessagesByTypeWithMessageData(String messageType, String messageDataKey, String messageDataValue) {
-        return repositoryFacade.countMessagesByTypeWithMessageData(processInstanceId, messageType, messageDataKey, messageDataValue);
+        return repositoryFacade.countMessagesByTypeWithMessageData(processInstanceId, messageType, messageDataKey, messageDataValue, processTemplate);
     }
 
     @Override
     public long countMessagesByTypeWithAnyMessageData(String messageType, Map<String, String> messageDataFilter) {
-        return repositoryFacade.countMessagesByTypeWithAnyMessageData(processInstanceId, messageType, messageDataFilter);
+        return repositoryFacade.countMessagesByTypeWithAnyMessageData(processInstanceId, messageType, messageDataFilter, processTemplate);
     }
 
     @Override
     public boolean containsMessageByTypeWithMessageData(String messageType, String messageDataKey, String messageDataValue) {
-        return repositoryFacade.containsMessageByTypeWithMessageData(processInstanceId, messageType, messageDataKey, messageDataValue);
+        return repositoryFacade.containsMessageByTypeWithMessageData(processInstanceId, messageType, messageDataKey, messageDataValue, processTemplate);
     }
 
     @Override
     public boolean containsMessageByTypeWithAnyMessageDataValue(String messageType, String messageDataKey, Set<String> messageDataValues) {
-        return repositoryFacade.containsMessageByTypeWithAnyMessageDataValue(processInstanceId, messageType, messageDataKey, messageDataValues);
+        return repositoryFacade.containsMessageByTypeWithAnyMessageDataValue(processInstanceId, messageType, messageDataKey, messageDataValues, processTemplate);
     }
 
     @Override
     public boolean containsMessageByTypeWithAnyMessageDataKeyValue(String messageType, Map<String, Set<String>> messageDataFilter) {
-        return repositoryFacade.containsMessageByTypeWithAnyMessageDataKeyValue(processInstanceId, messageType, messageDataFilter);
+        return repositoryFacade.containsMessageByTypeWithAnyMessageDataKeyValue(processInstanceId, messageType, messageDataFilter, processTemplate);
     }
 }

@@ -32,7 +32,7 @@ class ProcessContextImplTest {
         processContext = ProcessContextImpl.builder()
                 .processInstanceId(PROCESS_INSTANCE_ID)
                 .originProcessId(ORIGIN_PROCESS_ID)
-                .processName(PROCESS_NAME)
+                .processTemplate(PROCESS_NAME)
                 .repositoryFacade(repositoryFacade)
                 .build();
     }
@@ -87,22 +87,23 @@ class ProcessContextImplTest {
     void getMessageDataForMessageType_delegatesToFacade() {
         String messageType = "TestMessage";
         Set<MessageData> expectedData = Set.of(new MessageData("key", "value"));
-        when(repositoryFacade.getMessageDataForMessageType(PROCESS_INSTANCE_ID, messageType)).thenReturn(expectedData);
+        when(repositoryFacade.getMessageDataForMessageType(PROCESS_INSTANCE_ID, messageType, PROCESS_NAME)).thenReturn(expectedData);
 
         Set<MessageData> result = processContext.getMessageDataForMessageType(messageType);
 
         assertEquals(expectedData, result);
-        verify(repositoryFacade).getMessageDataForMessageType(PROCESS_INSTANCE_ID, messageType);
+        verify(repositoryFacade).getMessageDataForMessageType(PROCESS_INSTANCE_ID, messageType, PROCESS_NAME);
     }
 
     @Test
     void countMessagesByType_delegatesToFacade() {
-        when(repositoryFacade.countMessagesByTypes(PROCESS_INSTANCE_ID, Set.of("messageType")))
-                .thenReturn(Map.of("messageType", 1L));
+        when(repositoryFacade.countMessagesByType(PROCESS_INSTANCE_ID, "messageType"))
+                .thenReturn(1L);
 
         long result = processContext.countMessagesByType("messageType");
 
         assertEquals(1L, result);
+        verify(repositoryFacade).countMessagesByType(PROCESS_INSTANCE_ID, "messageType");
     }
 
     @Test
@@ -122,24 +123,24 @@ class ProcessContextImplTest {
         String messageType = "TestMessage";
         String key = "status";
         String value = "completed";
-        when(repositoryFacade.countMessagesByTypeWithMessageData(PROCESS_INSTANCE_ID, messageType, key, value)).thenReturn(7L);
+        when(repositoryFacade.countMessagesByTypeWithMessageData(PROCESS_INSTANCE_ID, messageType, key, value, PROCESS_NAME)).thenReturn(7L);
 
         long result = processContext.countMessagesByTypeWithMessageData(messageType, key, value);
 
         assertEquals(7L, result);
-        verify(repositoryFacade).countMessagesByTypeWithMessageData(PROCESS_INSTANCE_ID, messageType, key, value);
+        verify(repositoryFacade).countMessagesByTypeWithMessageData(PROCESS_INSTANCE_ID, messageType, key, value, PROCESS_NAME);
     }
 
     @Test
     void countMessagesByTypeWithAnyMessageData_delegatesToFacade() {
         String messageType = "TestMessage";
         Map<String, String> messageDataFilter = Map.of("key1", "value1", "key2", "value2");
-        when(repositoryFacade.countMessagesByTypeWithAnyMessageData(PROCESS_INSTANCE_ID, messageType, messageDataFilter)).thenReturn(4L);
+        when(repositoryFacade.countMessagesByTypeWithAnyMessageData(PROCESS_INSTANCE_ID, messageType, messageDataFilter, PROCESS_NAME)).thenReturn(4L);
 
         long result = processContext.countMessagesByTypeWithAnyMessageData(messageType, messageDataFilter);
 
         assertEquals(4L, result);
-        verify(repositoryFacade).countMessagesByTypeWithAnyMessageData(PROCESS_INSTANCE_ID, messageType, messageDataFilter);
+        verify(repositoryFacade).countMessagesByTypeWithAnyMessageData(PROCESS_INSTANCE_ID, messageType, messageDataFilter, PROCESS_NAME);
     }
 
     @Test
@@ -147,11 +148,11 @@ class ProcessContextImplTest {
         String messageType = "TestMessage";
         String key = "status";
         String value = "completed";
-        when(repositoryFacade.containsMessageByTypeWithMessageData(PROCESS_INSTANCE_ID, messageType, key, value)).thenReturn(true);
+        when(repositoryFacade.containsMessageByTypeWithMessageData(PROCESS_INSTANCE_ID, messageType, key, value, PROCESS_NAME)).thenReturn(true);
 
         assertTrue(processContext.containsMessageByTypeWithMessageData(messageType, key, value));
 
-        verify(repositoryFacade).containsMessageByTypeWithMessageData(PROCESS_INSTANCE_ID, messageType, key, value);
+        verify(repositoryFacade).containsMessageByTypeWithMessageData(PROCESS_INSTANCE_ID, messageType, key, value, PROCESS_NAME);
     }
 
     @Test
@@ -159,21 +160,21 @@ class ProcessContextImplTest {
         String messageType = "TestMessage";
         String key = "status";
         Set<String> values = Set.of("completed", "failed");
-        when(repositoryFacade.containsMessageByTypeWithAnyMessageDataValue(PROCESS_INSTANCE_ID, messageType, key, values)).thenReturn(true);
+        when(repositoryFacade.containsMessageByTypeWithAnyMessageDataValue(PROCESS_INSTANCE_ID, messageType, key, values, PROCESS_NAME)).thenReturn(true);
 
         assertTrue(processContext.containsMessageByTypeWithAnyMessageDataValue(messageType, key, values));
 
-        verify(repositoryFacade).containsMessageByTypeWithAnyMessageDataValue(PROCESS_INSTANCE_ID, messageType, key, values);
+        verify(repositoryFacade).containsMessageByTypeWithAnyMessageDataValue(PROCESS_INSTANCE_ID, messageType, key, values, PROCESS_NAME);
     }
 
     @Test
     void containsMessageByTypeWithAnyMessageDataKeyValue_delegatesToFacade() {
         String messageType = "TestMessage";
         Map<String, Set<String>> messageDataFilter = Map.of("key1", Set.of("value1", "value2"), "key2", Set.of("value3"));
-        when(repositoryFacade.containsMessageByTypeWithAnyMessageDataKeyValue(PROCESS_INSTANCE_ID, messageType, messageDataFilter)).thenReturn(true);
+        when(repositoryFacade.containsMessageByTypeWithAnyMessageDataKeyValue(PROCESS_INSTANCE_ID, messageType, messageDataFilter, PROCESS_NAME)).thenReturn(true);
 
         assertTrue(processContext.containsMessageByTypeWithAnyMessageDataKeyValue(messageType, messageDataFilter));
 
-        verify(repositoryFacade).containsMessageByTypeWithAnyMessageDataKeyValue(PROCESS_INSTANCE_ID, messageType, messageDataFilter);
+        verify(repositoryFacade).containsMessageByTypeWithAnyMessageDataKeyValue(PROCESS_INSTANCE_ID, messageType, messageDataFilter, PROCESS_NAME);
     }
 }

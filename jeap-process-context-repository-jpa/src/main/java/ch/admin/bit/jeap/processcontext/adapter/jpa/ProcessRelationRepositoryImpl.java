@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@Timed(value = "jeap.pcs.repository.processrelation", percentiles = .95)
+@Timed(value = "jeap.pcs.repository.processrelation")
 public class ProcessRelationRepositoryImpl implements ProcessRelationRepository {
     private final ProcessRelationJpaRepository processRelationJpaRepository;
 

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-@Timed(value = "jeap.pcs.repository.messagereference", percentiles = .95)
+@Timed(value = "jeap.pcs.repository.messagereference")
 public class MessageReferenceRepositoryImpl implements MessageReferenceRepository {
 
     private final MessageReferenceJpaRepository messageReferenceJpaRepository;

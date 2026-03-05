@@ -16,7 +16,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@Timed(value = "jeap.pcs.repository.processdata", percentiles = .95)
+@Timed(value = "jeap.pcs.repository.processdata")
 class ProcessDataRepositoryImpl implements ProcessDataRepository {
 
     private final ProcessDataJpaRepository processDataJpaRepository;

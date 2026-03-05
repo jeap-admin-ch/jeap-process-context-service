@@ -3,7 +3,6 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 import ch.admin.bit.jeap.processcontext.domain.message.Message;
 import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.MessageReference;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +22,11 @@ class MessageSearchJpaRepository {
      * <pre>
      * SELECT CASE WHEN EXISTS (
      *       SELECT 1 FROM event_reference r
-     *       JOIN process_instance p ON p.id = r.process_instance_id
      *       JOIN events e ON e.id = r.events_id
      *       JOIN events_event_data d ON d.events_id = e.id
-     *       WHERE p.id = :processInstanceId
+     *       WHERE r.process_instance_id = :processInstanceId
      *         AND e.event_name = :messageType
-     *         AND d.template_name = p.template_name
+     *         AND d.template_name = :processTemplateName
      *         AND (
      *             (d.key_ = :key1 AND d.value_ IN (:values1))
      *             OR (d.key_ = :key2 AND d.value_ IN (:values2))
@@ -37,22 +35,20 @@ class MessageSearchJpaRepository {
      *   ) THEN TRUE ELSE FALSE END
      * </pre>
      *
-     * @param processInstanceId ID of the {@link ProcessInstance} to check messages for
-     * @param messageType       jEAP message type name to check messages for
-     * @param messageDataFilter a map of message data key to a set of acceptable values. The method will return <code>true</code>
-     *                          if at least one message of the given type exists for the process instance and has at least
-     *                          one message data entry matching any of the key/values specified in the filter.
+     * @param processInstanceId  ID of the process instance to check messages for
+     * @param messageType        jEAP message type name to check messages for
+     * @param messageDataFilter  a map of message data key to a set of acceptable values
+     * @param processTemplateName Name of the process template
      * @return <code>true</code> if at least one message of the given type exists for the process instance and has at least
      * one message data entry matching any of the key/values specified in the filter, <code>false</code> otherwise.
      */
-    boolean containsMessageByTypeWithAnyMessageDataKeyValue(UUID processInstanceId, String messageType, Map<String, Set<String>> messageDataFilter) {
+    boolean containsMessageByTypeWithAnyMessageDataKeyValue(UUID processInstanceId, String messageType, Map<String, Set<String>> messageDataFilter, String processTemplateName) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Boolean> query = cb.createQuery(Boolean.class);
 
         // Build EXISTS subquery
         Subquery<Integer> subquery = query.subquery(Integer.class);
         Root<MessageReference> messageReferenceRoot = subquery.from(MessageReference.class);
-        Join<MessageReference, ProcessInstance> processInstanceJoin = messageReferenceRoot.join("processInstance");
 
         // Since MessageReference.messageId is a UUID (not a @ManyToOne), we need a separate root for Message
         Root<Message> messageRoot = subquery.from(Message.class);
@@ -62,10 +58,10 @@ class MessageSearchJpaRepository {
         List<Predicate> orPredicates = buildKeyValueMatchPredicates(messageDataFilter, cb, messageDataJoin);
 
         // Combine all conditions
-        Predicate processInstanceMatches = cb.equal(processInstanceJoin.get("id"), processInstanceId);
+        Predicate processInstanceMatches = cb.equal(messageReferenceRoot.get("processInstance").get("id"), processInstanceId);
         Predicate messageIdJoin = cb.equal(messageRoot.get("id"), messageReferenceRoot.get("messageId"));
         Predicate messageTypeMatches = cb.equal(messageRoot.get("messageName"), messageType);
-        Predicate templateNameMatches = cb.equal(messageDataJoin.get("templateName"), processInstanceJoin.get("processTemplateName"));
+        Predicate templateNameMatches = cb.equal(messageDataJoin.get("templateName"), processTemplateName);
         Predicate anyKeyValueMatches = cb.or(orPredicates.toArray(new Predicate[0]));
 
         subquery.select(cb.literal(1));
@@ -106,12 +102,11 @@ class MessageSearchJpaRepository {
      * <pre>
      * SELECT COUNT(DISTINCT e.id)
      * FROM event_reference r
-     * JOIN process_instance p ON p.id = r.process_instance_id
      * JOIN events e ON e.id = r.events_id
      * JOIN events_event_data d ON d.events_id = e.id
-     * WHERE p.id = :processInstanceId
+     * WHERE r.process_instance_id = :processInstanceId
      *   AND e.message_name = :messageType
-     *   AND d.template_name = p.template_name
+     *   AND d.template_name = :processTemplateName
      *   AND (
      *       (d.key_ = :key1 AND d.value_ = :value1)
      *       OR (d.key_ = :key2 AND d.value_ = :value2)
@@ -119,12 +114,13 @@ class MessageSearchJpaRepository {
      *   )
      * </pre>
      *
-     * @param processInstanceId the process instance ID
-     * @param messageType       message types
-     * @param messageDataFilter message data key / value pairs, message is only counted if any of the key/value pairs match
+     * @param processInstanceId  the process instance ID
+     * @param messageType        message types
+     * @param messageDataFilter  message data key / value pairs, message is only counted if any of the key/value pairs match
+     * @param processTemplateName Name of the process template
      * @return count of matching messages
      */
-    long countMessagesByTypeWithAnyMessageData(UUID processInstanceId, String messageType, Map<String, String> messageDataFilter) {
+    long countMessagesByTypeWithAnyMessageData(UUID processInstanceId, String messageType, Map<String, String> messageDataFilter, String processTemplateName) {
         if (messageDataFilter.isEmpty()) {
             return 0;
         }
@@ -133,7 +129,6 @@ class MessageSearchJpaRepository {
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
 
         Root<MessageReference> messageReferenceRoot = query.from(MessageReference.class);
-        Join<MessageReference, ProcessInstance> processInstanceJoin = messageReferenceRoot.join("processInstance");
 
         // Since MessageReference.messageId is a UUID (not a @ManyToOne), we need a separate root for Message
         Root<Message> messageRoot = query.from(Message.class);
@@ -143,10 +138,10 @@ class MessageSearchJpaRepository {
         List<Predicate> orPredicates = buildKeyValueMatchPredicatesForSingleValues(messageDataFilter, cb, messageDataJoin);
 
         // Combine all conditions
-        Predicate processInstanceMatches = cb.equal(processInstanceJoin.get("id"), processInstanceId);
+        Predicate processInstanceMatches = cb.equal(messageReferenceRoot.get("processInstance").get("id"), processInstanceId);
         Predicate messageIdJoin = cb.equal(messageRoot.get("id"), messageReferenceRoot.get("messageId"));
         Predicate messageTypeMatches = cb.equal(messageRoot.get("messageName"), messageType);
-        Predicate templateNameMatches = cb.equal(messageDataJoin.get("templateName"), processInstanceJoin.get("processTemplateName"));
+        Predicate templateNameMatches = cb.equal(messageDataJoin.get("templateName"), processTemplateName);
         Predicate anyKeyValueMatches = cb.or(orPredicates.toArray(new Predicate[0]));
 
         query.select(cb.countDistinct(messageRoot));

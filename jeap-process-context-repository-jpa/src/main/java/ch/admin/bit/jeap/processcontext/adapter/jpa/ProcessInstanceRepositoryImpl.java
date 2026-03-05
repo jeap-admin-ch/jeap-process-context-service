@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@Timed(value = "jeap.pcs.repository.processinstance", percentiles = .95)
+@Timed(value = "jeap.pcs.repository.processinstance")
 class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
 
     private final ProcessInstanceJpaRepository processInstanceJpaRepository;
@@ -114,7 +114,7 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
     @Override
     public Optional<MessageReference> findLatestMessageReferenceByMessageTypeAndOriginTaskId(ProcessInstance processInstance, String messageType, String originTaskId) {
         return processInstanceJpaRepository.findMessageReferencesByMessageTypeAndOriginTaskId(
-                        processInstance.getId(), messageType, originTaskId, PageRequest.of(0, 1))
+                        processInstance.getId(), messageType, originTaskId, processInstance.getProcessTemplateName(), PageRequest.of(0, 1))
                 .stream()
                 .findFirst();
     }
