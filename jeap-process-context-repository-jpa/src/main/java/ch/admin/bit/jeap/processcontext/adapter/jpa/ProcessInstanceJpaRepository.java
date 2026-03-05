@@ -59,7 +59,7 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
             p.state <> 'COMPLETED' AND p.createdAt > :createdAtAfter AND \
             p.processTemplateName = :templateName AND p.processTemplateHash <> :templateHash\
             """)
-    Slice<String> findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
+    List<String> findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
             @Param("templateName") String templatename,
             @Param("templateHash") String templateHash,
             @Param("createdAtAfter") ZonedDateTime createdAtAfter,

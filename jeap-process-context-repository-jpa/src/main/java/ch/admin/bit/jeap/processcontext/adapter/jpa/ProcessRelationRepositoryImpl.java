@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@Timed(value = "jeap.pcs.repository.processrelation")
+@Timed(value = "jeap_pcs_repository_processrelation")
 public class ProcessRelationRepositoryImpl implements ProcessRelationRepository {
     private final ProcessRelationJpaRepository processRelationJpaRepository;
 

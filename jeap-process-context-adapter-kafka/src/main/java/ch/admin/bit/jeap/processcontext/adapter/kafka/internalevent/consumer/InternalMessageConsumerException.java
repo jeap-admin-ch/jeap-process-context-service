@@ -24,7 +24,7 @@ public class InternalMessageConsumerException extends RuntimeException implement
     }
 
     static InternalMessageConsumerException from(Exception e) {
-        if (e instanceof NotFoundException nfe) {
+        if (e instanceof NotFoundException) {
             return new InternalMessageConsumerException("TEMPLATE_OR_MESSAGE_NOT_FOUND",
                     "A template or a message could not be found, it might have been deleted",
                     Temporality.PERMANENT,

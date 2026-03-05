@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.listener.CommonErrorHandler;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -36,7 +37,7 @@ class InternalEventsIT extends KafkaAdapterIntegrationTestBase {
 
     @Test
     void produceAndConsumeProcessContextOutdatedEvent_triggerMigration() {
-        eventProducer.produceProcessContextOutdatedMigrationTriggerEventSynchronously("1234", "4567");
+        eventProducer.produceProcessContextOutdatedMigrationTriggerEvents(List.of("1234"), "4567");
         verify(processInstanceService, timeout(TEST_TIMEOUT)).migrateProcessInstanceTemplate("1234");
         verifyNoErrorHandlingInteractions(errorHandler);
     }

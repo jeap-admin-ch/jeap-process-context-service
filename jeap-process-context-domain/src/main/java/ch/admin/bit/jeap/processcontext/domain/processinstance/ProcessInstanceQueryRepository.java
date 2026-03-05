@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -49,8 +50,8 @@ public interface ProcessInstanceQueryRepository {
 
     Slice<ProcessInstanceQueryResult> findProcessInstances(ProcessState state, ZonedDateTime olderThan, Pageable pageable);
 
-    Slice<String> findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
-            ZonedDateTime createdAtAfter, ProcessTemplate template, Pageable ofSize);
+    List<String> findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
+            ZonedDateTime createdAtAfter, ProcessTemplate template, int maxResults);
 
     /**
      * Get information about the process template associated with the process instance having the given origin process id.

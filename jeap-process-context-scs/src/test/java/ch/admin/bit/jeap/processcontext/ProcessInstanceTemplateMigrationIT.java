@@ -20,6 +20,8 @@ import static org.awaitility.Awaitility.await;
         "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/migration_test.json")
 class ProcessInstanceTemplateMigrationIT extends ProcessInstanceMockS3ITBase {
 
+    private static final int BATCH_SIZE = 10;
+
     @Autowired
     private ProcessInstanceMigrationTriggerService processInstanceMigrationTriggerService;
     @Autowired
@@ -44,7 +46,7 @@ class ProcessInstanceTemplateMigrationIT extends ProcessInstanceMockS3ITBase {
                 .executeUpdate());
 
         // Trigger migration for process instances with changed template hash
-        processInstanceMigrationTriggerService.triggerMigrationForModifiedTemplates(ZonedDateTime.now().minusYears(1));
+        processInstanceMigrationTriggerService.triggerMigrationForModifiedTemplates(ZonedDateTime.now().minusYears(1), BATCH_SIZE);
 
         // Wait until migration has been applied (detected by hash updated after migrations have been applied)
         String expectedHash = processTemplateRepository.findByName(processTemplateName).orElseThrow().getTemplateHash();

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-@Timed(value = "jeap.pcs.repository.messagereference")
+@Timed(value = "jeap_pcs_repository_messagereference")
 public class MessageReferenceRepositoryImpl implements MessageReferenceRepository {
 
     private final MessageReferenceJpaRepository messageReferenceJpaRepository;

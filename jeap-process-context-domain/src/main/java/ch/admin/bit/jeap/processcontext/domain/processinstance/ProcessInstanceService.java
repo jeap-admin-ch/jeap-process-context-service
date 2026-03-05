@@ -75,7 +75,7 @@ public class ProcessInstanceService {
             if (createdInstance.isPresent()) {
                 ProcessInstance processInstance = createdInstance.get();
                 handleMessageForProcessInstance(processInstance, message);
-                handlePendingMessagesForNewProcessInstance(originProcessId, messageId, processInstance);
+                handlePendingMessagesForNewProcessInstance(originProcessId, processInstance);
                 return;
             }
 
@@ -90,7 +90,7 @@ public class ProcessInstanceService {
         }
     }
 
-    private void handlePendingMessagesForNewProcessInstance(String originProcessId, UUID messageId, ProcessInstance processInstance) {
+    private void handlePendingMessagesForNewProcessInstance(String originProcessId, ProcessInstance processInstance) {
         metricsListener.timed("jeap_pcs_handle_pending_messages", Map.of(), () -> {
             List<Message> pendingMessagesToHandle = messageRepository.findMessagesWithPendingByOriginProcessId(originProcessId);
             for (Message messageToHandle : pendingMessagesToHandle) {

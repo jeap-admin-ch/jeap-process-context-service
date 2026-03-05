@@ -15,13 +15,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@Timed(value = "jeap.pcs.repository.processinstance")
+@Timed(value = "jeap_pcs_repository_processinstance")
 class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
 
     private final ProcessInstanceJpaRepository processInstanceJpaRepository;
@@ -100,10 +101,10 @@ class ProcessInstanceRepositoryImpl implements ProcessInstanceRepository {
     }
 
     @Override
-    public Slice<String> findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
-            ZonedDateTime createdAtAfter, ProcessTemplate template, Pageable pageable) {
+    public List<String> findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
+            ZonedDateTime createdAtAfter, ProcessTemplate template, int maxResults) {
         return processInstanceJpaRepository.findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
-                template.getName(), template.getTemplateHash(), createdAtAfter, pageable);
+                template.getName(), template.getTemplateHash(), createdAtAfter, Pageable.ofSize(maxResults));
     }
 
     @Override

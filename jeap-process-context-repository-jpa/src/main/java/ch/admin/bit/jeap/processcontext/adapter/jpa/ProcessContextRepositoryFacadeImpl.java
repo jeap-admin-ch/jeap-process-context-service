@@ -15,7 +15,7 @@ import static java.util.stream.Collectors.toSet;
 
 @Component
 @RequiredArgsConstructor
-@Timed(value = "jeap.pcs.repository.processcontextfacade")
+@Timed(value = "jeap_pcs_repository_processcontextfacade")
 public class ProcessContextRepositoryFacadeImpl implements ProcessContextRepositoryFacade {
 
     private final ProcessInstanceJpaRepository processInstanceJpaRepository;

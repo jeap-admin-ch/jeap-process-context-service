@@ -14,7 +14,7 @@ import java.util.*;
 
 @Component
 @RequiredArgsConstructor
-@Timed(value = "jeap.pcs.repository.relation")
+@Timed(value = "jeap_pcs_repository_relation")
 class RelationRepositoryImpl implements RelationRepository {
 
     static final int BATCH_SIZE = 100;

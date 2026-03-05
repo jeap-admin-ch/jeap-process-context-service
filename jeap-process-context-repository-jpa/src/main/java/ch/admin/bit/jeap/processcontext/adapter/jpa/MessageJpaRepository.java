@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Repository
-@Timed(value = "jeap.pcs.repository.message")
+@Timed(value = "jeap_pcs_repository_message")
 interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepository {
 
     @Query("from events e join e.messageData d where e.messageName = :messageName and d.templateName = :messageDataTemplateName and d.key = :messageDataKey and d.value = :messageDataValue and d.role = :messageDataRole and e.id not in (:alreadyCorrelatedMessageIds)")

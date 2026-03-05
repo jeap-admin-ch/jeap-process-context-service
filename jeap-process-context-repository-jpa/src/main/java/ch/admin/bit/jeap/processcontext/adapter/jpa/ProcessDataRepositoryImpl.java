@@ -16,7 +16,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@Timed(value = "jeap.pcs.repository.processdata")
+@Timed(value = "jeap_pcs_repository_processdata")
 class ProcessDataRepositoryImpl implements ProcessDataRepository {
 
     private final ProcessDataJpaRepository processDataJpaRepository;

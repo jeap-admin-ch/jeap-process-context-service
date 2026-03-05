@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@Timed(value = "jeap.pcs.repository.pendingmessage")
+@Timed(value = "jeap_pcs_repository_pendingmessage")
 public class PendingMessageRepositoryImpl implements PendingMessageRepository {
 
     private final PendingMessageJpaRepository pendingMessageJpaRepository;

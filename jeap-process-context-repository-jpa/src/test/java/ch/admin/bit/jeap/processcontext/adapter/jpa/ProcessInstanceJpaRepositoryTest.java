@@ -283,17 +283,17 @@ class ProcessInstanceJpaRepositoryTest {
 
         // When retrieving all non-complete instances that are at most 1 day old
         ZonedDateTime createdAtAfter = processInstanceSaved.getCreatedAt().minusDays(1);
-        Slice<String> results =
+        List<String> results =
                 repository.findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
                         template.getName(), "different-hash", createdAtAfter, Pageable.ofSize(5));
 
         // Then expect only the now created non-completed instance to be returned
-        assertEquals(1, results.getNumberOfElements());
-        assertEquals(processInstance.getOriginProcessId(), results.getContent().getFirst(),
+        assertEquals(1, results.size());
+        assertEquals(processInstance.getOriginProcessId(), results.getFirst(),
                 "Only new non-completed process instance is found");
 
-        // When retrieving all non-complete instances that are at most 1 day old with an up-to-date-has
-        Slice<String> sameHashResults =
+        // When retrieving all non-complete instances that are at most 1 day old with an up-to-date-hash
+        List<String> sameHashResults =
                 repository.findUncompletedProcessInstanceOriginIdsByTemplateHashChanged(
                         template.getName(), template.getTemplateHash(), createdAtAfter, Pageable.ofSize(5));
         assertTrue(sameHashResults.isEmpty());

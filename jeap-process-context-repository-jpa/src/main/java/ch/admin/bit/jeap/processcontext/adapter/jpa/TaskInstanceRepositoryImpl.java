@@ -16,7 +16,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@Timed(value = "jeap.pcs.repository.taskinstance")
+@Timed(value = "jeap_pcs_repository_taskinstance")
 public class TaskInstanceRepositoryImpl implements TaskInstanceRepository {
 
     private final TaskInstanceJpaRepository taskInstanceJpaRepository;
