@@ -79,8 +79,7 @@ public final class ProcessInstanceStubs {
                 .templateHash("hash")
                 .taskTypes(List.of(mandatoryTaskType, dynamicTaskType))
                 .build();
-        ProcessInstance processInstance = startProcessInstance(processTemplate);
-        return processInstance;
+        return startProcessInstance(processTemplate);
     }
 
     /**
