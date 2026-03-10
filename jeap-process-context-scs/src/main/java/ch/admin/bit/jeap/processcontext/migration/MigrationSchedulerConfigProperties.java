@@ -13,9 +13,9 @@ import java.time.temporal.ChronoUnit;
 public class MigrationSchedulerConfigProperties {
 
     /**
-     * How often to run the migration scheduler. Must be a cron expression. Default: At :10 and :40 past every hour.
+     * How often to run the migration scheduler. Must be a cron expression. Default: At :10 past every hour.
      */
-    private String cronExpression = "0 10,40 * * * *";
+    private String cronExpression = "0 10 * * * *";
 
     /**
      * Minimal time to keep a lock at this job.
@@ -30,7 +30,7 @@ public class MigrationSchedulerConfigProperties {
     /**
      * Max number of process instances to migrate per scheduled run.
      */
-    private int batchSize = 2000;
+    private int batchSize = 500;
 
     /**
      * Only migrate uncompleted process instances created within this number of days. Default is 180 days.
