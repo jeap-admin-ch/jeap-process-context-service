@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -38,6 +39,7 @@ public class TopicConfiguration {
 
     @Configuration
     @Profile("!local")
+    @ConditionalOnProperty(value = "jeap.processcontext.kafka.topic-check", havingValue = "true", matchIfMissing = true)
     @RequiredArgsConstructor
     @Slf4j
     @SuppressWarnings({"unused", "java:S3985"}) // Class is used as spring configuration even if not public
