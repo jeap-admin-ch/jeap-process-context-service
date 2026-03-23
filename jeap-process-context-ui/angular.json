@@ -18,9 +18,7 @@
               "browser": ""
             },
             "index": "src/index.html",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {
@@ -41,14 +39,8 @@
               "node_modules/@oblique/oblique/styles/css/oblique-icons.css",
               "src/styles.css"
             ],
-            "scripts": [
-              "node_modules/@oblique/oblique/ob-features.js"
-            ],
-            "allowedCommonJsDependencies": [
-              "lodash",
-              "ajv",
-              "ajv-formats"
-            ],
+            "scripts": ["node_modules/@oblique/oblique/ob-features.js"],
+            "allowedCommonJsDependencies": ["lodash", "ajv", "ajv-formats"],
             "browser": "src/main.ts"
           },
           "configurations": {
@@ -103,10 +95,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         }
       }
@@ -142,9 +131,7 @@
     }
   },
   "cli": {
-    "schematicCollections": [
-      "@angular-eslint/schematics"
-    ],
+    "schematicCollections": ["@angular-eslint/schematics"],
     "analytics": false
   }
 }

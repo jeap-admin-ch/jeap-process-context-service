@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [18.0.0] - 2026-03-23
+
+### Changed
+
+- Update to Angular 21, Angular Material 21, Angular ESLint 21 and Oblique 15
+- Update @quadrel-enterprise-ui/auth to v20.1.0
+- Update @types/jest to v30.0.0
+- Update @typescript-eslint/* to v8.46.2
+- Update cypress to v15.12.0
+- Update eslint to v9.39.4
+- Update husky to v8.0.3
+- Update jest to v30.3.0
+- Update ng-mocks to v14.15.2
+- Update prettier to v3.8.1
+- Update typescript to 5.9.3
+- Update zone.js to ^0.15.1
+- Update @popperjs/core to v2.11.8
+
 ## [17.2.0] - 2026-03-23
 
 ### Changed

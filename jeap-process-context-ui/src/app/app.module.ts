@@ -1,4 +1,4 @@
-import {CUSTOM_ELEMENTS_SCHEMA, NgModule} from '@angular/core';
+import {CUSTOM_ELEMENTS_SCHEMA, Injector, NgModule} from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
 
 import {AppRoutingModule} from './app-routing.module';
@@ -14,7 +14,6 @@ import {
 	ObMasterLayoutModule,
 	provideObliqueConfiguration
 } from '@oblique/oblique';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {CommonModule, DatePipe, JsonPipe, NgForOf, NgIf, registerLocaleData} from '@angular/common';
 import localeDECH from '@angular/common/locales/de-CH';
 import localeFRCH from '@angular/common/locales/fr-CH';
@@ -51,7 +50,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {ForbiddenPageComponent} from './pages/error-pages/forbidden-page/forbidden-page.component';
 import {TaskDetailViewComponent} from './pages/process-page/task-detail-view/task-detail-view.component';
 import {TaskDetailsNodataRowComponent} from './pages/process-page/task-detail-view/task-details-nodata-row/task-details-nodata-row.component';
-import {QdAuthModule, QdConfigService} from "@quadrel-enterprise-ui/auth";
+import {QdAuthModule, QdConfigService} from '@quadrel-enterprise-ui/auth';
 
 export type QdShellHeaderWidgetEnvironment = 'DEV' | 'TEST' | 'REF' | 'ABN' | 'PROD';
 
@@ -89,7 +88,7 @@ registerLocaleData(localeITCH);
 		BrowserModule,
 		AppRoutingModule,
 		ObMasterLayoutModule,
-		BrowserAnimationsModule,
+
 		ObButtonModule,
 		MatTooltipModule,
 		QdAuthModule.forRoot(appSetup, authConfig),
@@ -139,7 +138,7 @@ export class AppModule {
 
 	constructor(
 		masterLayoutConfig: ObMasterLayoutConfig,
-		readonly qdConfigService: QdConfigService
+		private readonly injector: Injector
 	) {
 		this.masterLayoutConfig = masterLayoutConfig;
 		this.configureServiceNavigation();
@@ -167,12 +166,15 @@ export class AppModule {
 		this.masterLayoutConfig.header.serviceNavigation.displayAuthentication = true;
 		this.masterLayoutConfig.header.serviceNavigation.handleLogout = true;
 
-		this.qdConfigService.config$.subscribe(qdConfig => {
-			if (qdConfig) {
-				authConfig.clientId = qdConfig.clientId;
-				authConfig.systemName = qdConfig.systemName;
-				this.obEPamsEnvironment = this.mapEnvironmentEnum(qdConfig.pamsEnvironment);
-			}
+		Promise.resolve().then(() => {
+			const qdConfigService = this.injector.get(QdConfigService);
+			qdConfigService.config$.subscribe(qdConfig => {
+				if (qdConfig) {
+					authConfig.clientId = qdConfig.clientId;
+					authConfig.systemName = qdConfig.systemName;
+					this.obEPamsEnvironment = this.mapEnvironmentEnum(qdConfig.pamsEnvironment);
+				}
+			});
 		});
 	}
 

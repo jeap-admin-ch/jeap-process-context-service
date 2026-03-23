@@ -2,16 +2,12 @@ import {NgModule} from '@angular/core';
 import {ExtraOptions, RouterModule, Routes} from '@angular/router';
 import {ObUnknownRouteModule} from '@oblique/oblique';
 import {StartPageComponent} from './pages/start-page/start-page.component';
-import {QdApplicationRoleFilter, QdAuthorizationGuard, QdRoleFilterMatcher} from "@quadrel-enterprise-ui/auth";
+import {QdApplicationRoleFilter, QdAuthorizationGuard, QdRoleFilterMatcher} from '@quadrel-enterprise-ui/auth';
 import {ProcessInstanceByIdGuard} from './shared/guards/process-instance-by-id.guard';
 import {ProcessPageComponent} from './pages/process-page/process-page.component';
-import {ForbiddenPageComponent} from "./pages/error-pages/forbidden-page/forbidden-page.component";
+import {ForbiddenPageComponent} from './pages/error-pages/forbidden-page/forbidden-page.component';
 
-const ROLE_FILTER_VIEW = QdApplicationRoleFilter.hasRole(
-	QdRoleFilterMatcher.ANY,
-	'processinstance',
-	'view'
-);
+const ROLE_FILTER_VIEW = QdApplicationRoleFilter.hasRole(QdRoleFilterMatcher.ANY, 'processinstance', 'view');
 
 const routes: Routes = [
 	{path: '', redirectTo: 'startpage', pathMatch: 'full'},
@@ -20,7 +16,8 @@ const routes: Routes = [
 		component: ForbiddenPageComponent
 	},
 	{
-		path: 'startpage', component: StartPageComponent,
+		path: 'startpage',
+		component: StartPageComponent,
 		canLoad: [QdAuthorizationGuard],
 		canActivate: [QdAuthorizationGuard],
 		data: {
@@ -28,7 +25,8 @@ const routes: Routes = [
 		}
 	},
 	{
-		path: 'process/:id', component: ProcessPageComponent,
+		path: 'process/:id',
+		component: ProcessPageComponent,
 		canLoad: [QdAuthorizationGuard],
 		canActivate: [QdAuthorizationGuard],
 		data: {
@@ -48,8 +46,7 @@ const routes: Routes = [
 		]
 	},
 
-	{path: '**', redirectTo: 'unknown-route'},
-
+	{path: '**', redirectTo: 'unknown-route'}
 ];
 
 export const routingConfiguration: ExtraOptions = {
@@ -60,5 +57,4 @@ export const routingConfiguration: ExtraOptions = {
 	imports: [RouterModule.forRoot(routes, routingConfiguration), ObUnknownRouteModule],
 	exports: [RouterModule]
 })
-export class AppRoutingModule {
-}
+export class AppRoutingModule {}

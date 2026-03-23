@@ -1,35 +1,35 @@
 @if (relations.length) {
 	<table [dataSource]="relations" class="ob-table ob-table-sm ob-table-cicd" mat-table>
 		<ng-container matColumnDef="createdAt">
-			<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.createdAt' | translate }}</th>
-			<td *matCellDef="let row" mat-cell>{{ row.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+			<th *matHeaderCellDef mat-header-cell>{{ "i18n.process.relation.createdAt" | translate }}</th>
+			<td *matCellDef="let row" mat-cell>{{ row.createdAt | date: "dd.MM.yyyy HH:mm:ss" }}</td>
 		</ng-container>
 		<ng-container matColumnDef="predicateType">
-			<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.predicateType' | translate }}</th>
+			<th *matHeaderCellDef mat-header-cell>{{ "i18n.process.relation.predicateType" | translate }}</th>
 			<td *matCellDef="let row" mat-cell>{{ row.predicateType }}</td>
 		</ng-container>
 		<ng-container matColumnDef="subjectType">
-			<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.subjectType' | translate }}</th>
+			<th *matHeaderCellDef mat-header-cell>{{ "i18n.process.relation.subjectType" | translate }}</th>
 			<td *matCellDef="let row" mat-cell>{{ row.subjectType }}</td>
 		</ng-container>
 		<ng-container matColumnDef="subjectId">
-			<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.subjectId' | translate }}</th>
+			<th *matHeaderCellDef mat-header-cell>{{ "i18n.process.relation.subjectId" | translate }}</th>
 			<td *matCellDef="let row" mat-cell>{{ row.subjectId }}</td>
 		</ng-container>
 		<ng-container matColumnDef="objectType">
-			<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.objectType' | translate }}</th>
+			<th *matHeaderCellDef mat-header-cell>{{ "i18n.process.relation.objectType" | translate }}</th>
 			<td *matCellDef="let row" mat-cell>{{ row.objectType }}</td>
 		</ng-container>
 		<ng-container matColumnDef="objectId">
-			<th *matHeaderCellDef mat-header-cell>{{ 'i18n.process.relation.objectId' | translate }}</th>
+			<th *matHeaderCellDef mat-header-cell>{{ "i18n.process.relation.objectId" | translate }}</th>
 			<td *matCellDef="let row" mat-cell>{{ row.objectId }}</td>
 		</ng-container>
 		<tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
-		<tr *matRowDef="let row; columns: displayedColumns;" mat-row></tr>
+		<tr *matRowDef="let row; columns: displayedColumns" mat-row></tr>
 	</table>
 	<mat-paginator [length]="totalElements" [pageSizeOptions]="[10]"></mat-paginator>
 }
 
 @if (totalElements === 0) {
-	<p>{{ 'i18n.none' | translate }}</p>
+	<p>{{ "i18n.none" | translate }}</p>
 }

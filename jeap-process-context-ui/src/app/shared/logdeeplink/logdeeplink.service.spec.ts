@@ -1,8 +1,8 @@
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
-import { environment } from '../../../environments/environment';
-import { LogDeepLinkService } from './logdeeplink.service';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
+import {TestBed} from '@angular/core/testing';
+import {environment} from '../../../environments/environment';
+import {LogDeepLinkService} from './logdeeplink.service';
+import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 
 describe('LogDeepLinkService', () => {
 	let service: LogDeepLinkService;
@@ -10,9 +10,9 @@ describe('LogDeepLinkService', () => {
 
 	beforeEach(() => {
 		TestBed.configureTestingModule({
-    imports: [],
-    providers: [LogDeepLinkService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
-});
+			imports: [],
+			providers: [LogDeepLinkService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+		});
 		service = TestBed.inject(LogDeepLinkService);
 		httpTestingController = TestBed.inject(HttpTestingController);
 	});

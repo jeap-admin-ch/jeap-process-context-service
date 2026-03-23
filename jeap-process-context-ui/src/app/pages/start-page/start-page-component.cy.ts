@@ -10,7 +10,7 @@ import {CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 
 import {ReactiveFormsModule} from '@angular/forms';
 import {MatTableModule as MatTableModule} from '@angular/material/table';
-import {RouterModule} from "@angular/router";
+import {RouterModule} from '@angular/router';
 
 describe('process-page-component.cy.ts', () => {
 	it('mounts', () => {
@@ -19,7 +19,7 @@ describe('process-page-component.cy.ts', () => {
 		cy.mount(StartPageComponent, {
 			imports: [RouterModule.forRoot([]), TranslateModule.forRoot(), MatTableModule, ReactiveFormsModule],
 			declarations: [mockMatPaginator],
-			providers: [MockProvider(ProcessService, { findProcesses: () => of(mockProcessList)})],
+			providers: [MockProvider(ProcessService, {findProcesses: () => of(mockProcessList)})],
 			schemas: [CUSTOM_ELEMENTS_SCHEMA]
 		}).then(wrapper => {
 			cy.stub((wrapper.component as any).processService, 'findProcesses')
@@ -30,7 +30,9 @@ describe('process-page-component.cy.ts', () => {
 		cy.get('form').should('exist');
 		cy.get('table').find('tr').should('have.length', 3); // 1 header + 2 data rows
 
-		cy.get('.reload-button').contains(/reload|search/i).as('reloadButton');
+		cy.get('.reload-button')
+			.contains(/reload|search/i)
+			.as('reloadButton');
 		cy.get('@reloadButton').first().click();
 		cy.get('@processService').should('be.called');
 	});

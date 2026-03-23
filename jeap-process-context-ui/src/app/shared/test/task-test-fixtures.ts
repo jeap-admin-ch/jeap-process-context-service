@@ -1,4 +1,4 @@
-import { TaskDTO, TaskState } from '../processservice/process.model';
+import {TaskDTO, TaskState} from '../processservice/process.model';
 
 export class TaskTestFixtures {
 	private static readonly taskPlannedStatic: TaskDTO = {
@@ -14,7 +14,7 @@ export class TaskTestFixtures {
 		createdAt: '2023-10-23T10:00:00.0+02:00',
 		plannedAt: '2023-10-23T10:00:00.0+02:00',
 		completedAt: null,
-		plannedBy: [{ key: 'user1', value: 'User One', label: { de: 'Benutzer Eins' } }],
+		plannedBy: [{key: 'user1', value: 'User One', label: {de: 'Benutzer Eins'}}],
 		completedBy: [],
 		taskData: []
 	};
@@ -32,7 +32,7 @@ export class TaskTestFixtures {
 		createdAt: '2023-10-24T09:00:00.0+02:00',
 		plannedAt: '2023-10-24T09:00:00.0+02:00',
 		completedAt: null,
-		plannedBy: [{ key: 'user2', value: 'User Two', label: { de: 'Benutzer Zwei' } }],
+		plannedBy: [{key: 'user2', value: 'User Two', label: {de: 'Benutzer Zwei'}}],
 		completedBy: [],
 		taskData: []
 	};
@@ -50,7 +50,7 @@ export class TaskTestFixtures {
 		createdAt: '2023-10-25T09:00:00.0+02:00',
 		plannedAt: '2023-10-25T09:00:00.0+02:00',
 		completedAt: null,
-		plannedBy: [{ key: 'user3', value: 'User Three', label: { de: 'Benutzer Drei' } }],
+		plannedBy: [{key: 'user3', value: 'User Three', label: {de: 'Benutzer Drei'}}],
 		completedBy: [],
 		taskData: []
 	};
@@ -68,8 +68,8 @@ export class TaskTestFixtures {
 		createdAt: '2023-06-27T10:19:09.763437+02:00',
 		plannedAt: '2023-06-27T10:19:09.763437+02:00',
 		completedAt: '2023-10-24T11:00:00.0+02:00',
-		plannedBy: [{ key: 'user4', value: 'User Four', label: { de: 'Benutzer Vier' } }],
-		completedBy: [{ key: 'user4', value: 'User Four', label: { de: 'Benutzer Vier' } }],
+		plannedBy: [{key: 'user4', value: 'User Four', label: {de: 'Benutzer Vier'}}],
+		completedBy: [{key: 'user4', value: 'User Four', label: {de: 'Benutzer Vier'}}],
 		taskData: []
 	};
 
@@ -86,8 +86,8 @@ export class TaskTestFixtures {
 		createdAt: '2023-05-27T10:19:09.763437+02:00',
 		plannedAt: '2023-05-27T10:19:09.763437+02:00',
 		completedAt: '2023-10-24T12:00:00.0+02:00',
-		plannedBy: [{ key: 'user5', value: 'User Five', label: { de: 'Benutzer Fünf' } }],
-		completedBy: [{ key: 'user5', value: 'User Five', label: { de: 'Benutzer Fünf' } }],
+		plannedBy: [{key: 'user5', value: 'User Five', label: {de: 'Benutzer Fünf'}}],
+		completedBy: [{key: 'user5', value: 'User Five', label: {de: 'Benutzer Fünf'}}],
 		taskData: []
 	};
 
@@ -104,8 +104,8 @@ export class TaskTestFixtures {
 		createdAt: '2023-06-27T10:19:09.763437+02:00',
 		plannedAt: '2023-06-27T10:19:09.763437+02:00',
 		completedAt: '2023-06-27T10:19:09.763437+02:00',
-		plannedBy: [{ key: 'user6', value: 'User Six', label: { de: 'Benutzer Sechs' } }],
-		completedBy: [{ key: 'user6', value: 'User Six', label: { de: 'Benutzer Sechs' } }],
+		plannedBy: [{key: 'user6', value: 'User Six', label: {de: 'Benutzer Sechs'}}],
+		completedBy: [{key: 'user6', value: 'User Six', label: {de: 'Benutzer Sechs'}}],
 		taskData: []
 	};
 

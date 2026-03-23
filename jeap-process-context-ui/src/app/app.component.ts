@@ -1,16 +1,15 @@
 import {Component, inject} from '@angular/core';
 import {VersionDetectorService} from './shared/versiondetectorservice/version-detector.service';
 import {ObMasterLayoutService} from '@oblique/oblique';
-import {QdAuthenticationService} from "@quadrel-enterprise-ui/auth";
+import {QdAuthenticationService} from '@quadrel-enterprise-ui/auth';
 
 @Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.css'],
-    standalone: false
+	selector: 'app-root',
+	templateUrl: './app.component.html',
+	styleUrls: ['./app.component.css'],
+	standalone: false
 })
 export class AppComponent {
-
 	private readonly masterLayoutService = inject(ObMasterLayoutService);
 
 	constructor(

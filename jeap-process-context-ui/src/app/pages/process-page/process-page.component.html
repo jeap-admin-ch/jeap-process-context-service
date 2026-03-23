@@ -1,165 +1,171 @@
 @if (process) {
-  <div class="default-layout">
-    <mat-accordion multi="true">
-      <!-- Process Instance-->
-      <mat-expansion-panel expanded="true" togglePosition="before">
-        <mat-expansion-panel-header [collapsedHeight]="'auto'" [expandedHeight]="'auto'">
-          <mat-panel-title><h4>{{ process.name[this.translate.currentLang] }}</h4></mat-panel-title>
-        </mat-expansion-panel-header>
-        <mat-panel-description>
-          <div class="process-div" style="padding-right: 10px">
-            <mat-card>
-              <mat-card-content>
-                <h5>{{ 'i18n.process.informations' | translate }}</h5>
-                <table class="ob-table ob-table-sm process-table">
-                  @if (snapshot) {
-                    <tr>
-                      <td class="headerColumn">{{ 'i18n.process.snapshot' | translate }}</td>
-                      <td>
-                        <div>
-                          {{ 'i18n.process.snapshotDescription' | translate }}
-                          <mat-icon class="custom-icon-style" style="color: #ec8932" svgIcon="archive"></mat-icon>
-                        </div>
-                      </td>
-                    </tr>
-                  }
-                  @if (snapshot) {
-                    <tr>
-                      <td class="headerColumn">{{ 'i18n.process.snapshotCreatedAt' | translate }}</td>
-                      <td>{{ process.snapshotCreatedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-                    </tr>
-                  }
-                  <tr>
-                    <td class="headerColumn">{{ 'i18n.process.state' | translate }}</td>
-                    <td>
-                      @if (process.state == 'COMPLETED' && process.processCompletion.conclusion == 'SUCCEEDED') {
-                        <div>
-                          {{ 'i18n.process.state.' + process.state | translate }}
-                          <mat-icon class="custom-icon-style" style="color: #008800" svgIcon="checkmark_circle"></mat-icon>
-                        </div>
-                      }
-                      @if (process.state == 'COMPLETED' && process.processCompletion.conclusion != 'SUCCEEDED') {
-                        <div>
-                          {{ 'i18n.process.state.' + process.state | translate }}
-                          <mat-icon class="custom-icon-style" style="color: red" svgIcon="stop"></mat-icon>
-                        </div>
-                      }
-                      @if (process.state != 'COMPLETED') {
-                        <div>
-                          {{ 'i18n.process.state.' + process.state | translate }}
-                          <mat-icon class="custom-icon-style" style="color: #008800" svgIcon="play"></mat-icon>
-                        </div>
-                      }
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="headerColumn">{{ 'i18n.process.id' | translate }}</td>
-                    <td> {{ process.originProcessId }}</td>
-                  </tr>
-                  @if (process.processCompletion) {
-                    <tr>
-                      <td class="headerColumn">{{ 'i18n.process.completion.conclusion' | translate }}</td>
-                      <td>{{ 'i18n.process.completion.conclusion.' + process.processCompletion.conclusion | translate }}</td>
-                    </tr>
-                  }
-                  @if (process.processCompletion) {
-                    <tr>
-                      <td class="headerColumn">{{ 'i18n.process.completion.reason' | translate }}</td>
-                      <td>{{ process.processCompletion.reason[this.translate.currentLang] }}</td>
-                    </tr>
-                  }
-                  <tr>
-                    <td class="headerColumn">{{ 'i18n.process.createdAt' | translate }}</td>
-                    <td>{{ process.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-                  </tr>
-                  @if (process.processCompletion) {
-                    <tr>
-                      <td class="headerColumn">{{ 'i18n.process.completion.completedAt' | translate }}</td>
-                      <td>{{ process.processCompletion.completedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-                    </tr>
-                  }
-                  <tr>
-                    <td class="headerColumn">{{ 'i18n.process.modifiedAt' | translate }}</td>
-                    <td>{{ process.modifiedAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-                  </tr>
-                </table>
-              </mat-card-content>
-            </mat-card>
-          </div>
-          <div class="process-div">
-            <mat-card>
-              <mat-card-content>
-				  <app-process-relations [originProcessId]="process.originProcessId" [reloadTrigger]="reloadTrigger"></app-process-relations>
-              </mat-card-content>
-            </mat-card>
-          </div>
-        </mat-panel-description>
-      </mat-expansion-panel>
-      <!-- Tasks-->
-      <mat-expansion-panel expanded="true" togglePosition="before">
-        <mat-expansion-panel-header>
-          <mat-panel-title>
-            <h4>{{ 'i18n.process.task.title' | translate }}</h4>
-          </mat-panel-title>
-          <h2></h2>
-        </mat-expansion-panel-header>
-        <mat-radio-group (change)="taskViewRadioButtonGroupChange($event)" [(ngModel)]="userTaskViewType">
-          <mat-radio-button class="radio-button" value='1'>{{ 'i18n.process.task.template.view' | translate }}</mat-radio-button>
-          <mat-radio-button value='2'>{{ 'i18n.process.task.activity.view' | translate }}</mat-radio-button>
-        </mat-radio-group>
-        <h2></h2>
-        <div class="task-layout">
-          <div class="task-list">
-            @if (userTaskViewType == '1') {
-              <app-task-template-view [tasks]="process.tasks" (taskSelected)="onTaskSelected($event)"></app-task-template-view>
-            }
-            @if (userTaskViewType == '2') {
-              <app-task-activity-view [tasks]="process.tasks" (taskSelected)="onTaskSelected($event)"></app-task-activity-view>
-            }
-          </div>
-          <div class="task-detail">
-            <mat-card>
-              <mat-card-content>
-                <app-task-detail-view [task]="selectedTask"></app-task-detail-view>
-              </mat-card-content>
-            </mat-card>
-          </div>
-        </div>
-      </mat-expansion-panel>
-      <!-- Process Data-->
-      <mat-expansion-panel togglePosition="before">
-        <mat-expansion-panel-header>
-          <mat-panel-title><h4>{{ 'i18n.process.processData.title' | translate }}</h4></mat-panel-title>
-        </mat-expansion-panel-header>
-        <mat-panel-description>
-			<app-process-data [originProcessId]="process.originProcessId" [reloadTrigger]="reloadTrigger"></app-process-data>
-        </mat-panel-description>
-      </mat-expansion-panel>
-      <!-- Messages -->
-      @if (!snapshot) {
-        <mat-expansion-panel togglePosition="before">
-          <mat-expansion-panel-header>
-            <mat-panel-title><h4>{{ 'i18n.process.message.title' | translate }}</h4></mat-panel-title>
-          </mat-expansion-panel-header>
-          <mat-panel-description>
-			  <app-messages [originProcessId]="process.originProcessId" [reloadTrigger]="reloadTrigger"></app-messages>
-          </mat-panel-description>
-        </mat-expansion-panel>
-      }
-      <!-- Relations -->
-      @if (!snapshot) {
-        <mat-expansion-panel togglePosition="before">
-          <mat-expansion-panel-header>
-            <mat-panel-title><h4>{{ 'i18n.process.relations.title' | translate }}</h4></mat-panel-title>
-          </mat-expansion-panel-header>
-          <mat-panel-description>
-			  <app-relations [originProcessId]="process.originProcessId" [reloadTrigger]="reloadTrigger"></app-relations>
-          </mat-panel-description>
-        </mat-expansion-panel>
-      }
-    </mat-accordion>
-    <button (click)="reload()" class="reload-button" color="primary"
-      mat-flat-button>{{ 'i18n.process.reload' | translate }}
-    </button>
-  </div>
+	<div class="default-layout">
+		<mat-accordion multi="true">
+			<!-- Process Instance-->
+			<mat-expansion-panel expanded="true" togglePosition="before">
+				<mat-expansion-panel-header [collapsedHeight]="'auto'" [expandedHeight]="'auto'">
+					<mat-panel-title
+						><h4>{{ process.name[this.translate.currentLang] }}</h4></mat-panel-title
+					>
+				</mat-expansion-panel-header>
+				<mat-panel-description>
+					<div class="process-div" style="padding-right: 10px">
+						<mat-card>
+							<mat-card-content>
+								<h5>{{ "i18n.process.informations" | translate }}</h5>
+								<table class="ob-table ob-table-sm process-table">
+									@if (snapshot) {
+										<tr>
+											<td class="headerColumn">{{ "i18n.process.snapshot" | translate }}</td>
+											<td>
+												<div>
+													{{ "i18n.process.snapshotDescription" | translate }}
+													<mat-icon class="custom-icon-style" style="color: #ec8932" svgIcon="archive"></mat-icon>
+												</div>
+											</td>
+										</tr>
+									}
+									@if (snapshot) {
+										<tr>
+											<td class="headerColumn">{{ "i18n.process.snapshotCreatedAt" | translate }}</td>
+											<td>{{ process.snapshotCreatedAt | date: "dd.MM.yyyy HH:mm:ss" }}</td>
+										</tr>
+									}
+									<tr>
+										<td class="headerColumn">{{ "i18n.process.state" | translate }}</td>
+										<td>
+											@if (process.state == "COMPLETED" && process.processCompletion.conclusion == "SUCCEEDED") {
+												<div>
+													{{ "i18n.process.state." + process.state | translate }}
+													<mat-icon class="custom-icon-style" style="color: #008800" svgIcon="checkmark_circle"></mat-icon>
+												</div>
+											}
+											@if (process.state == "COMPLETED" && process.processCompletion.conclusion != "SUCCEEDED") {
+												<div>
+													{{ "i18n.process.state." + process.state | translate }}
+													<mat-icon class="custom-icon-style" style="color: red" svgIcon="stop"></mat-icon>
+												</div>
+											}
+											@if (process.state != "COMPLETED") {
+												<div>
+													{{ "i18n.process.state." + process.state | translate }}
+													<mat-icon class="custom-icon-style" style="color: #008800" svgIcon="play"></mat-icon>
+												</div>
+											}
+										</td>
+									</tr>
+									<tr>
+										<td class="headerColumn">{{ "i18n.process.id" | translate }}</td>
+										<td>{{ process.originProcessId }}</td>
+									</tr>
+									@if (process.processCompletion) {
+										<tr>
+											<td class="headerColumn">{{ "i18n.process.completion.conclusion" | translate }}</td>
+											<td>{{ "i18n.process.completion.conclusion." + process.processCompletion.conclusion | translate }}</td>
+										</tr>
+									}
+									@if (process.processCompletion) {
+										<tr>
+											<td class="headerColumn">{{ "i18n.process.completion.reason" | translate }}</td>
+											<td>{{ process.processCompletion.reason[this.translate.currentLang] }}</td>
+										</tr>
+									}
+									<tr>
+										<td class="headerColumn">{{ "i18n.process.createdAt" | translate }}</td>
+										<td>{{ process.createdAt | date: "dd.MM.yyyy HH:mm:ss" }}</td>
+									</tr>
+									@if (process.processCompletion) {
+										<tr>
+											<td class="headerColumn">{{ "i18n.process.completion.completedAt" | translate }}</td>
+											<td>{{ process.processCompletion.completedAt | date: "dd.MM.yyyy HH:mm:ss" }}</td>
+										</tr>
+									}
+									<tr>
+										<td class="headerColumn">{{ "i18n.process.modifiedAt" | translate }}</td>
+										<td>{{ process.modifiedAt | date: "dd.MM.yyyy HH:mm:ss" }}</td>
+									</tr>
+								</table>
+							</mat-card-content>
+						</mat-card>
+					</div>
+					<div class="process-div">
+						<mat-card>
+							<mat-card-content>
+								<app-process-relations [originProcessId]="process.originProcessId" [reloadTrigger]="reloadTrigger"></app-process-relations>
+							</mat-card-content>
+						</mat-card>
+					</div>
+				</mat-panel-description>
+			</mat-expansion-panel>
+			<!-- Tasks-->
+			<mat-expansion-panel expanded="true" togglePosition="before">
+				<mat-expansion-panel-header>
+					<mat-panel-title>
+						<h4>{{ "i18n.process.task.title" | translate }}</h4>
+					</mat-panel-title>
+					<h2></h2>
+				</mat-expansion-panel-header>
+				<mat-radio-group (change)="taskViewRadioButtonGroupChange($event)" [(ngModel)]="userTaskViewType">
+					<mat-radio-button class="radio-button" value="1">{{ "i18n.process.task.template.view" | translate }}</mat-radio-button>
+					<mat-radio-button value="2">{{ "i18n.process.task.activity.view" | translate }}</mat-radio-button>
+				</mat-radio-group>
+				<h2></h2>
+				<div class="task-layout">
+					<div class="task-list">
+						@if (userTaskViewType == "1") {
+							<app-task-template-view [tasks]="process.tasks" (taskSelected)="onTaskSelected($event)"></app-task-template-view>
+						}
+						@if (userTaskViewType == "2") {
+							<app-task-activity-view [tasks]="process.tasks" (taskSelected)="onTaskSelected($event)"></app-task-activity-view>
+						}
+					</div>
+					<div class="task-detail">
+						<mat-card>
+							<mat-card-content>
+								<app-task-detail-view [task]="selectedTask"></app-task-detail-view>
+							</mat-card-content>
+						</mat-card>
+					</div>
+				</div>
+			</mat-expansion-panel>
+			<!-- Process Data-->
+			<mat-expansion-panel togglePosition="before">
+				<mat-expansion-panel-header>
+					<mat-panel-title
+						><h4>{{ "i18n.process.processData.title" | translate }}</h4></mat-panel-title
+					>
+				</mat-expansion-panel-header>
+				<mat-panel-description>
+					<app-process-data [originProcessId]="process.originProcessId" [reloadTrigger]="reloadTrigger"></app-process-data>
+				</mat-panel-description>
+			</mat-expansion-panel>
+			<!-- Messages -->
+			@if (!snapshot) {
+				<mat-expansion-panel togglePosition="before">
+					<mat-expansion-panel-header>
+						<mat-panel-title
+							><h4>{{ "i18n.process.message.title" | translate }}</h4></mat-panel-title
+						>
+					</mat-expansion-panel-header>
+					<mat-panel-description>
+						<app-messages [originProcessId]="process.originProcessId" [reloadTrigger]="reloadTrigger"></app-messages>
+					</mat-panel-description>
+				</mat-expansion-panel>
+			}
+			<!-- Relations -->
+			@if (!snapshot) {
+				<mat-expansion-panel togglePosition="before">
+					<mat-expansion-panel-header>
+						<mat-panel-title
+							><h4>{{ "i18n.process.relations.title" | translate }}</h4></mat-panel-title
+						>
+					</mat-expansion-panel-header>
+					<mat-panel-description>
+						<app-relations [originProcessId]="process.originProcessId" [reloadTrigger]="reloadTrigger"></app-relations>
+					</mat-panel-description>
+				</mat-expansion-panel>
+			}
+		</mat-accordion>
+		<button (click)="reload()" class="reload-button" color="primary" mat-flat-button>{{ "i18n.process.reload" | translate }}</button>
+	</div>
 }

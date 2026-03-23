@@ -1,7 +1,7 @@
-import {QdAuthConfigServerSide, QdLogLevel} from "@quadrel-enterprise-ui/auth";
+import {QdAuthConfigServerSide, QdLogLevel} from '@quadrel-enterprise-ui/auth';
 
 export const environment = {
-	banner: { text: 'LOCAL'},
+	banner: {text: 'LOCAL'},
 	BACKEND_SERVICE_API: 'http://localhost:8080/process-context/api'
 };
 

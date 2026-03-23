@@ -19,7 +19,7 @@ export interface ProcessRelationDTO {
 }
 
 export interface ProcessCompletionDTO {
-	conclusion: string
+	conclusion: string;
 	reason: any;
 	completedAt: string;
 }
@@ -56,29 +56,29 @@ export interface TaskDTO {
 export interface UserData {
 	key: string;
 	value: string;
-	label: { [key: string]: string };
+	label: {[key: string]: string};
 }
 
 export interface TaskDataDto {
 	key: string;
 	value: string;
-	labels: { [key: string]: string };
+	labels: {[key: string]: string};
 }
 
 export interface I18n {
-	[key: string]: string;  // Index signature allowing string keys (for languages)
+	[key: string]: string; // Index signature allowing string keys (for languages)
 	de: string;
 	fr: string;
 	it: string;
 }
 
 export enum TaskState {
-	NOT_PLANNED = "NOT_PLANNED",
-	PLANNED = "PLANNED",
-	COMPLETED = "COMPLETED",
-	NOT_REQUIRED = "NOT_REQUIRED",
-	DELETED = "DELETED",
-	UNKNOWN = "UNKNOWN"
+	NOT_PLANNED = 'NOT_PLANNED',
+	PLANNED = 'PLANNED',
+	COMPLETED = 'COMPLETED',
+	NOT_REQUIRED = 'NOT_REQUIRED',
+	DELETED = 'DELETED',
+	UNKNOWN = 'UNKNOWN'
 }
 
 export interface MessageDTO {
