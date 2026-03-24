@@ -88,7 +88,6 @@ registerLocaleData(localeITCH);
 		BrowserModule,
 		AppRoutingModule,
 		ObMasterLayoutModule,
-
 		ObButtonModule,
 		MatTooltipModule,
 		QdAuthModule.forRoot(appSetup, authConfig),
