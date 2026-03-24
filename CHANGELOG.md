@@ -22,6 +22,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Update typescript to 5.9.3
 - Update zone.js to ^0.15.1
 - Update @popperjs/core to v2.11.8
+- Migrate Cypress component test dev server from webpack (`@angular-devkit/build-angular`) to Vite (`@analogjs/vite-plugin-angular`)
 
 ## [17.2.0] - 2026-03-23
 

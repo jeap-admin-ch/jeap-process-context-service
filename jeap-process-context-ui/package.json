@@ -39,6 +39,7 @@
     "zone.js": "^0.15.1"
   },
   "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.3.1",
     "@angular-builders/jest": "^21.0.3",
     "@angular-eslint/builder": "21.3.1",
     "@angular-eslint/eslint-plugin": "21.3.1",
@@ -49,6 +50,7 @@
     "@angular/cli": "~21.2.3",
     "@angular/compiler-cli": "^21.2.5",
     "@bbc/apache2-license-checker": "^1.1.4",
+    "@cypress/vite-dev-server": "^7.2.1",
     "@schematics/angular": "^21.2.3",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "8.46.2",
@@ -65,7 +67,8 @@
     "ng-mocks": "^14.15.2",
     "patch-package": "^8.0.1",
     "prettier": "^3.8.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vite-tsconfig-paths": "^6.1.1"
   },
   "jestSonar": {
     "reportPath": "./coverage/sonarQube",
