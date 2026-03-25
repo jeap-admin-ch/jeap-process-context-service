@@ -9,17 +9,38 @@ import {mockProcessList} from '../../../../cypress/fixtures/MockData';
 import {CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 
 import {ReactiveFormsModule} from '@angular/forms';
-import {MatTableModule as MatTableModule} from '@angular/material/table';
-import {RouterModule} from '@angular/router';
+import {MatTableModule} from '@angular/material/table';
+import {MatSortModule} from '@angular/material/sort';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatButtonModule} from '@angular/material/button';
+import {ActivatedRoute, RouterModule} from '@angular/router';
 
 describe('process-page-component.cy.ts', () => {
 	it('mounts', () => {
 		const mockMatPaginator = MockComponent(MatPaginator);
 
 		cy.mount(StartPageComponent, {
-			imports: [RouterModule.forRoot([]), TranslateModule.forRoot(), MatTableModule, ReactiveFormsModule],
+			imports: [
+				RouterModule.forRoot([]),
+				TranslateModule.forRoot({defaultLanguage: 'de'}),
+				MatTableModule,
+				MatSortModule,
+				MatPaginatorModule,
+				MatFormFieldModule,
+				MatInputModule,
+				MatButtonModule,
+				ReactiveFormsModule
+			],
 			declarations: [mockMatPaginator],
-			providers: [MockProvider(ProcessService, {findProcesses: () => of(mockProcessList)})],
+			providers: [
+				MockProvider(ProcessService, {findProcesses: () => of(mockProcessList)}),
+				{
+					provide: ActivatedRoute,
+					useValue: {snapshot: {queryParams: {}}}
+				}
+			],
 			schemas: [CUSTOM_ELEMENTS_SCHEMA]
 		}).then(wrapper => {
 			cy.stub((wrapper.component as any).processService, 'findProcesses')
