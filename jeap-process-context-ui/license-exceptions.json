@@ -15,7 +15,7 @@
     "@ngx-translate/core@15.0.0": {
       "reason": "MIT; see: https://github.com/ngx-translate/core"
     },
-    "@quadrel-enterprise-ui/auth@20.1.0": {
+    "@quadrel-enterprise-ui/auth@20.1.1": {
       "reason": "BIT license"
     },
     "glob@13.0.6": {
@@ -39,7 +39,7 @@
     "sax@1.4.4": {
       "reason": "BlueOak-1.0.0; see: https://github.com/isaacs/sax-js"
     },
-    "tar@7.5.9": {
+    "tar@7.5.13": {
       "reason": "BlueOak-1.0.0; see: https://github.com/isaacs/node-tar"
     },
     "node-forge@1.3.3": {
