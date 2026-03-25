@@ -7,6 +7,7 @@ import {LogDeepLinkService} from '../../shared/logdeeplink/logdeeplink.service';
 import {MockProvider} from 'ng-mocks';
 
 import {mockMessagesPage, mockProcess_1, mockProcessDataPage, mockProcessRelationsPage, mockRelationsPage} from '../../../../cypress/fixtures/MockData';
+import {ActivatedRoute} from '@angular/router';
 import {RouterModule} from '@angular/router';
 import {TaskTemplateViewComponent} from './task-template-view/task-template-view.component';
 import {ProcessRelationsComponent} from './process-relations/process-relations.component';
@@ -18,7 +19,7 @@ import {provideObliqueTestingConfiguration} from '@oblique/oblique';
 describe('process-page-component.cy.ts', () => {
 	it('mounts', () => {
 		cy.mount(ProcessPageComponent, {
-			imports: [RouterModule.forRoot([]), TranslateModule.forRoot()],
+			imports: [RouterModule.forRoot([]), TranslateModule.forRoot({defaultLanguage: 'de'})],
 			declarations: [TaskTemplateViewComponent, ProcessRelationsComponent, RelationsComponent, ProcessDataComponent, MessagesComponent],
 			providers: [
 				provideObliqueTestingConfiguration(),
@@ -29,10 +30,12 @@ describe('process-page-component.cy.ts', () => {
 					getProcessData: () => of(mockProcessDataPage),
 					getMessages: () => of(mockMessagesPage)
 				}),
-				MockProvider(LogDeepLinkService, {getLogDeepLink: () => of('')})
+				MockProvider(LogDeepLinkService, {getLogDeepLink: () => of('')}),
+				{
+					provide: ActivatedRoute,
+					useValue: {params: of({id: mockProcess_1.originProcessId})}
+				}
 			]
-		}).then(wrapper => {
-			cy.stub((wrapper.component as any).processService, 'getProcess').returns(of(mockProcess_1));
 		});
 
 		cy.contains('Race Across Switzerland');
