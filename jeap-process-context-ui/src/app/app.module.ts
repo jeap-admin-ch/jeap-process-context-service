@@ -137,7 +137,7 @@ export class AppModule {
 
 	constructor(
 		masterLayoutConfig: ObMasterLayoutConfig,
-		private readonly injector: Injector
+		readonly configService: QdConfigService
 	) {
 		this.masterLayoutConfig = masterLayoutConfig;
 		this.configureServiceNavigation();
@@ -165,15 +165,12 @@ export class AppModule {
 		this.masterLayoutConfig.header.serviceNavigation.displayAuthentication = true;
 		this.masterLayoutConfig.header.serviceNavigation.handleLogout = true;
 
-		Promise.resolve().then(() => {
-			const qdConfigService = this.injector.get(QdConfigService);
-			qdConfigService.config$.subscribe(qdConfig => {
-				if (qdConfig) {
-					authConfig.clientId = qdConfig.clientId;
-					authConfig.systemName = qdConfig.systemName;
-					this.obEPamsEnvironment = this.mapEnvironmentEnum(qdConfig.pamsEnvironment);
-				}
-			});
+		this.configService.config$.subscribe(qdConfig => {
+			if (qdConfig) {
+				authConfig.clientId = qdConfig.clientId;
+				authConfig.systemName = qdConfig.systemName;
+				this.obEPamsEnvironment = this.mapEnvironmentEnum(qdConfig.pamsEnvironment);
+			}
 		});
 	}
 
