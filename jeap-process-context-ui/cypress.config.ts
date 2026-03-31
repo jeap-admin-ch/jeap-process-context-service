@@ -1,6 +1,7 @@
 import {defineConfig} from 'cypress';
 import {devServer} from '@cypress/vite-dev-server';
 import angular from '@analogjs/vite-plugin-angular';
+import { resolve } from 'path';
 
 export default defineConfig({
 	hosts: {
