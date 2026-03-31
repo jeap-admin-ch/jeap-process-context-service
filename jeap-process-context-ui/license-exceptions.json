@@ -15,7 +15,7 @@
     "@ngx-translate/core@15.0.0": {
       "reason": "MIT; see: https://github.com/ngx-translate/core"
     },
-    "@quadrel-enterprise-ui/auth@20.1.1": {
+    "@quadrel-enterprise-ui/auth@20.1.2": {
       "reason": "BIT license"
     },
     "glob@13.0.6": {
