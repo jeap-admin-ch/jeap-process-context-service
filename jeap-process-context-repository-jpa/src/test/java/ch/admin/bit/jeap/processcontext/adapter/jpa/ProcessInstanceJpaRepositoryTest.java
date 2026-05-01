@@ -17,7 +17,7 @@ import jakarta.persistence.criteria.Root;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -402,83 +402,88 @@ class ProcessInstanceJpaRepositoryTest {
     }
 
     @Test
-    void areAllTasksInFinalState_singleCompletedTask_expectTrue() {
+    void getAllTasksStates_singleCompletedTask_expectOneElement() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
         saveTask(ProcessInstanceStubs.task, "origin-1", TaskState.COMPLETED, processInstanceSaved);
         entityManager.flush();
 
-        boolean result = repository.areAllTasksInFinalState(processInstanceSaved.getId());
+        List<TaskState> allTasksStates = repository.getAllTasksStates(processInstanceSaved.getId());
 
-        assertThat(result)
-                .isTrue();
+        assertThat(allTasksStates)
+                .isNotEmpty()
+                .containsExactly(TaskState.COMPLETED);
     }
 
     @Test
-    void areAllTasksInFinalState_twoPlannedTasks_expectFalse() {
+    void getAllTasksStates_twoPlannedTasks_expectOneElement() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoPlannedTaskInstances();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
         saveTask(ProcessInstanceStubs.task, "origin-1", TaskState.PLANNED, processInstanceSaved);
         saveTask(ProcessInstanceStubs.task2, "origin-2", TaskState.PLANNED, processInstanceSaved);
         entityManager.flush();
 
-        boolean result = repository.areAllTasksInFinalState(processInstanceSaved.getId());
+        List<TaskState> allTasksStates = repository.getAllTasksStates(processInstanceSaved.getId());
 
-        assertThat(result)
-                .isFalse();
+        assertThat(allTasksStates)
+                .isNotEmpty()
+                .containsExactly(TaskState.PLANNED);
     }
 
     @Test
-    void areAllTasksInFinalState_twoTasksPlannedAndCompleted_expectFalse() {
+    void getAllTasksStates_twoTasksPlannedAndCompleted_expectTwoElements() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoPlannedTaskInstances();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
         saveTask(ProcessInstanceStubs.task, "origin-1", TaskState.PLANNED, processInstanceSaved);
         saveTask(ProcessInstanceStubs.task2, "origin-2", TaskState.COMPLETED, processInstanceSaved);
         entityManager.flush();
 
-        boolean result = repository.areAllTasksInFinalState(processInstanceSaved.getId());
+        List<TaskState> allTasksStates = repository.getAllTasksStates(processInstanceSaved.getId());
 
-        assertThat(result)
-                .isFalse();
+        assertThat(allTasksStates)
+                .isNotEmpty()
+                .containsExactlyInAnyOrder(TaskState.PLANNED, TaskState.COMPLETED);
     }
 
     @Test
-    void areAllTasksInFinalState_twoCompletedTasks_expectTrue() {
+    void getAllTasksStates_twoCompletedTasks_expectOneElement() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoPlannedTaskInstances();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
         saveTask(ProcessInstanceStubs.task, "origin-1", TaskState.COMPLETED, processInstanceSaved);
         saveTask(ProcessInstanceStubs.task2, "origin-2", TaskState.COMPLETED, processInstanceSaved);
         entityManager.flush();
 
-        boolean result = repository.areAllTasksInFinalState(processInstanceSaved.getId());
+        List<TaskState> allTasksStates = repository.getAllTasksStates(processInstanceSaved.getId());
 
-        assertThat(result)
-                .isTrue();
+        assertThat(allTasksStates)
+                .isNotEmpty()
+                .containsExactlyInAnyOrder(TaskState.COMPLETED);
     }
 
     @Test
-    void areAllTasksInFinalState_twoFinalStateTasks_expectTrue() {
+    void getAllTasksStates_twoFinalStateTasks_expectTwoElements() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithTwoPlannedTaskInstances();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(processInstance);
         saveTask(ProcessInstanceStubs.task, "origin-1", TaskState.NOT_REQUIRED, processInstanceSaved);
         saveTask(ProcessInstanceStubs.task2, "origin-2", TaskState.DELETED, processInstanceSaved);
         entityManager.flush();
 
-        boolean result = repository.areAllTasksInFinalState(processInstanceSaved.getId());
+        List<TaskState> allTasksStates = repository.getAllTasksStates(processInstanceSaved.getId());
 
-        assertThat(result)
-                .isTrue();
+        assertThat(allTasksStates)
+                .isNotEmpty()
+                .containsExactlyInAnyOrder(TaskState.NOT_REQUIRED, TaskState.DELETED);
     }
 
     @Test
-    void areAllTasksInFinalState_noTasksExpectFalse() {
+    void getAllTasksStates_noTasksExpectEmpty() {
         ProcessInstance completedProcessInstance = ProcessInstanceStubs.createProcessWithoutTaskInstance();
         ProcessInstance processInstanceSaved = repository.saveAndFlush(completedProcessInstance);
 
-        boolean result = repository.areAllTasksInFinalState(processInstanceSaved.getId());
+        List<TaskState> allTasksStates = repository.getAllTasksStates(processInstanceSaved.getId());
 
-        assertThat(result)
-                .isFalse();
+        assertThat(allTasksStates)
+                .isEmpty();
     }
 
     @Test

@@ -1,11 +1,13 @@
 package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
+import ch.admin.bit.jeap.processcontext.domain.processinstance.TaskState;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextRepositoryFacade;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -24,7 +26,9 @@ public class ProcessContextRepositoryFacadeImpl implements ProcessContextReposit
 
     @Override
     public boolean areAllTasksInFinalState(UUID processInstanceId) {
-        return Boolean.TRUE.equals(processInstanceJpaRepository.areAllTasksInFinalState(processInstanceId));
+        return processInstanceJpaRepository.getAllTasksStates(processInstanceId)
+                .stream().map(TaskState::isFinalState).reduce(Boolean::logicalAnd)
+                .orElse(false);
     }
 
     @Override

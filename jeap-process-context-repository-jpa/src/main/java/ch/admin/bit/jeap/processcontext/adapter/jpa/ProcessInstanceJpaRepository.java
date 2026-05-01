@@ -99,34 +99,12 @@ interface ProcessInstanceJpaRepository extends JpaRepository<ProcessInstance, UU
     @Query(nativeQuery = true, value = "SELECT p.origin_process_id FROM process_instance p WHERE p.id in (:processInstanceIds) ")
     Set<String> getOriginProcessIdsByInstanceIds(@Param("processInstanceIds") Set<UUID> processInstanceIds);
 
-    /**
-     * Checks whether all tasks in the process instance are in a final state. For this to be true,
-     * the following conditions must be met:
-     * <ul>
-     *   <li>the process instance contains at least one task</li>
-     *   <li>all existing tasks are in a final state (COMPLETED, NOT_REQUIRED or DELETED)</li>
-     * </ul>
-     *
-     * @return true if all tasks are in a final state and at least one task exists, false otherwise
-     */
     @Query("""
-            select case when
-            exists (
-                  select 1
-                  from TaskInstance t
-                  where t.processInstance.id = :processInstanceId
-            )
-            and not exists (
-                  select 1
-                  from TaskInstance t2
-                  where t2.processInstance.id = :processInstanceId
-                    and t2.state not in ('COMPLETED', 'NOT_REQUIRED', 'DELETED')
-            )
-            then true else false end
-            from ProcessInstance p
-            where p.id = :processInstanceId
+            select distinct t.state
+            from TaskInstance t
+            where t.processInstance.id = :processInstanceId
             """)
-    Boolean areAllTasksInFinalState(UUID processInstanceId);
+    List<TaskState> getAllTasksStates(UUID processInstanceId);
 
     @Query("""
             SELECT r FROM MessageReference r

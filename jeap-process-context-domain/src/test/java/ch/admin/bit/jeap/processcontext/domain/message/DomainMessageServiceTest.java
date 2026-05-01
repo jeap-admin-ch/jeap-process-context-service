@@ -189,7 +189,7 @@ class DomainMessageServiceTest {
         doReturn(Optional.empty()).when(messageRepository).findByMessageNameAndIdempotenceId(EVENT_NAME, IDEMPOTENCE_ID);
         doReturn(Set.of("originProcessId-ProcessDataCorrelation")).when(processInstanceQueryRepository).findUncompletedProcessInstancesHavingProcessData(templateProcessDataCorrelationName, "process-data-key", "process-data-event-value", "process-data-event-role");
         doReturn(Set.of("originProcessId-ProcessDataCorrelationWithoutRole")).when(processInstanceQueryRepository).findUncompletedProcessInstancesHavingProcessData(templateProcessDataCorrelationWithoutRoleName, "process-data-without-role-key", "process-data-without-role-event-value", null);
-        TraceContext traceContext = new TraceContext(1L, 1L, 1L, 1L, "66016cec9b6734e17b88d21c0466c6e7");
+        TraceContext traceContext = new TraceContext(1L, 1L, 1L, 1L, "66016cec9b6734e17b88d21c0466c6e7", true);
         doReturn(traceContext).when(traceContextProvider).getTraceContext();
 
         doReturn(mock(Message.class)).when(messageRepository).save(any());
@@ -289,7 +289,7 @@ class DomainMessageServiceTest {
         doReturn(IDEMPOTENCE_ID).when(messageIdentity).getIdempotenceId();
 
         doReturn(Optional.empty()).when(messageRepository).findByMessageNameAndIdempotenceId(EVENT_NAME, IDEMPOTENCE_ID);
-        TraceContext traceContext = new TraceContext(1L, 1L, 1L, 1L, "66016cec9b6734e17b88d21c0466c6e7");
+        TraceContext traceContext = new TraceContext(1L, 1L, 1L, 1L, "66016cec9b6734e17b88d21c0466c6e7", true);
         doReturn(traceContext).when(traceContextProvider).getTraceContext();
 
         doReturn(mock(Message.class)).when(messageRepository).save(any());
@@ -328,7 +328,7 @@ class DomainMessageServiceTest {
         doReturn(IDEMPOTENCE_ID).when(messageIdentity).getIdempotenceId();
 
         doReturn(Optional.empty()).when(messageRepository).findByMessageNameAndIdempotenceId(EVENT_NAME, IDEMPOTENCE_ID);
-        TraceContext traceContext = new TraceContext(1L, 1L, 1L, 1L, "66016cec9b6734e17b88d21c0466c6e7");
+        TraceContext traceContext = new TraceContext(1L, 1L, 1L, 1L, "66016cec9b6734e17b88d21c0466c6e7", true);
         doReturn(traceContext).when(traceContextProvider).getTraceContext();
 
         doReturn(mock(Message.class)).when(messageRepository).save(any());

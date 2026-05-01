@@ -20,16 +20,16 @@ import java.util.UUID;
 @Timed(value = "jeap_pcs_repository_message")
 interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepository {
 
-    @Query("from events e join e.messageData d where e.messageName = :messageName and d.templateName = :messageDataTemplateName and d.key = :messageDataKey and d.value = :messageDataValue and d.role = :messageDataRole and e.id not in (:alreadyCorrelatedMessageIds)")
+    @Query("select e from events e join e.messageData d where e.messageName = :messageName and d.templateName = :messageDataTemplateName and d.key = :messageDataKey and d.value = :messageDataValue and d.role = :messageDataRole and e.id not in (:alreadyCorrelatedMessageIds)")
     List<Message> findMessagesToCorrelate(@Param("messageName") String messageName, @Param("messageDataTemplateName") String messageDataTemplateName, @Param("messageDataKey") String messageDataKey, @Param("messageDataValue") String messageDataValue, @Param("messageDataRole") String messageDataRole, @Param("alreadyCorrelatedMessageIds") List<UUID> alreadyCorrelatedMessageIds);
 
-    @Query("from events e join e.messageData d where e.messageName = :messageName and d.templateName = :messageDataTemplateName and d.key = :messageDataKey and d.value = :messageDataValue and d.role = :messageDataRole")
+    @Query("select e from events e join e.messageData d where e.messageName = :messageName and d.templateName = :messageDataTemplateName and d.key = :messageDataKey and d.value = :messageDataValue and d.role = :messageDataRole")
     List<Message> findMessagesToCorrelate(@Param("messageName") String messageName, @Param("messageDataTemplateName") String messageDataTemplateName, @Param("messageDataKey") String messageDataKey, @Param("messageDataValue") String messageDataValue, @Param("messageDataRole") String messageDataRole);
 
-    @Query("from events e join e.messageData d where e.messageName = :messageName and d.templateName = :messageDataTemplateName and d.key = :messageDataKey and d.value = :messageDataValue and d.role is null and e.id not in (:alreadyCorrelatedMessageIds)")
+    @Query("select e from events e join e.messageData d where e.messageName = :messageName and d.templateName = :messageDataTemplateName and d.key = :messageDataKey and d.value = :messageDataValue and d.role is null and e.id not in (:alreadyCorrelatedMessageIds)")
     List<Message> findMessagesToCorrelate(@Param("messageName") String messageName, @Param("messageDataTemplateName") String messageDataTemplateName, @Param("messageDataKey") String messageDataKey, @Param("messageDataValue") String messageDataValue, @Param("alreadyCorrelatedMessageIds") List<UUID> alreadyCorrelatedMessageIds);
 
-    @Query("from events e join e.messageData d where e.messageName = :messageName and d.templateName = :messageDataTemplateName and d.key = :messageDataKey and d.value = :messageDataValue and d.role is null")
+    @Query("select e from events e join e.messageData d where e.messageName = :messageName and d.templateName = :messageDataTemplateName and d.key = :messageDataKey and d.value = :messageDataValue and d.role is null")
     List<Message> findMessagesToCorrelate(@Param("messageName") String messageName, @Param("messageDataTemplateName") String messageDataTemplateName, @Param("messageDataKey") String messageDataKey, @Param("messageDataValue") String messageDataValue);
 
     @Query(nativeQuery = true, value = "SELECT e.key_, e.value_ FROM events_user_data e WHERE e.events_id = :id")
@@ -65,11 +65,9 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
      * Checks if the process instance contains at least one message of the given type.
      */
     @Query("""
-            select case when exists (
-                select 1 from MessageReference r
+            select count(r) > 0 from MessageReference r
                 join events e on e.id = r.messageId
                 where r.processInstance.id = :processInstanceId and e.messageName = :messageType
-            ) then true else false end
             """)
     boolean containsMessageOfType(@Param("processInstanceId") UUID processInstanceId,
                                   @Param("messageType") String messageType);
@@ -78,11 +76,9 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
      * Checks if the process instance contains at least one message of any of the given types.
      */
     @Query("""
-            select case when exists (
-                select 1 from MessageReference r
+            select count(r) > 0 from MessageReference r
                 join events e on e.id = r.messageId
                 where r.processInstance.id = :processInstanceId and e.messageName in :messageTypes
-            ) then true else false end
             """)
     boolean containsMessageOfAnyType(@Param("processInstanceId") UUID processInstanceId,
                                      @Param("messageTypes") Set<String> messageTypes);
@@ -152,8 +148,7 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
      * Checks if any message of the given type exists with the specified message data key and any of the given values.
      */
     @Query("""
-            select case when exists (
-                select 1 from MessageReference r
+            select count(d) > 0 from MessageReference r
                 join events e on e.id = r.messageId
                 join e.messageData d
                 where r.processInstance.id = :processInstanceId
@@ -161,7 +156,6 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
                   and d.templateName = :processTemplateName
                   and d.key = :dataKey
                   and d.value in :dataValues
-            ) then true else false end
             """)
     boolean containsMessageByTypeWithAnyMessageDataValue(@Param("processInstanceId") UUID processInstanceId,
                                                          @Param("messageType") String messageType,
@@ -173,8 +167,7 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
      * Checks if any message of the given type exists with the specified message data key/value pair.
      */
     @Query("""
-            select case when exists (
-                select 1 from MessageReference r
+            select count(d) > 0 from MessageReference r
                 join events e on e.id = r.messageId
                 join e.messageData d
                 where r.processInstance.id = :processInstanceId
@@ -182,7 +175,6 @@ interface MessageJpaRepository extends JpaRepository<Message, UUID>, MessageRepo
                   and d.templateName = :processTemplateName
                   and d.key = :messageDataKey
                   and d.value = :messageDataValue
-            ) then true else false end
             """)
     boolean containsMessageByTypeWithMessageData(@Param("processInstanceId") UUID processInstanceId,
                                                  @Param("messageType") String messageType,

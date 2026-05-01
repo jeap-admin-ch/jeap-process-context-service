@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -54,7 +54,7 @@ import static org.mockito.Mockito.when;
         })
 @ContextConfiguration(classes = {TestApp.class, KafkaIntegrationTestConfig.class})
 @Slf4j
-@AutoConfigureObservability
+@AutoConfigureMetrics
 public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
 
     protected static final Duration TIMEOUT = Duration.ofSeconds(60);
@@ -151,7 +151,7 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
     private Optional<ProcessInstanceDTO> getProcessInstance(String originProcessId) {
         try {
             return Optional.ofNullable(processInstanceController.getProcessInstanceByOriginProcessId(originProcessId));
-        } catch (Exception e) {
+        } catch (Exception _) {
             return Optional.empty();
         }
     }
