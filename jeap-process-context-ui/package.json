@@ -70,6 +70,10 @@
     "typescript": "5.9.3",
     "vite-tsconfig-paths": "^6.1.1"
   },
+  "overrides": {
+    "lodash": "^4.18.1",
+    "picomatch": "^4.0.4"
+  },
   "jestSonar": {
     "reportPath": "./coverage/sonarQube",
     "reportFile": "sqr.xml",
