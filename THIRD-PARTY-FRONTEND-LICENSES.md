@@ -2293,9 +2293,9 @@
     - version: 2.0.6
     - licenses: MIT
     - repository: https://github.com/hiddentao/fast-levenshtein
- - **[fast-uri@3.1.0](https://github.com/fastify/fast-uri)**
+ - **[fast-uri@3.1.2](https://github.com/fastify/fast-uri)**
     - name: fast-uri
-    - version: 3.1.0
+    - version: 3.1.2
     - licenses: BSD-3-Clause
     - repository: https://github.com/fastify/fast-uri
  - **[fastq@1.20.1](https://github.com/mcollina/fastq)**
@@ -3223,9 +3223,9 @@
     - version: 4.1.1
     - licenses: MIT
     - repository: https://github.com/lodash/lodash
- - **[lodash@4.17.23](https://github.com/lodash/lodash)**
+ - **[lodash@4.18.1](https://github.com/lodash/lodash)**
     - name: lodash
-    - version: 4.17.23
+    - version: 4.18.1
     - licenses: MIT
     - repository: https://github.com/lodash/lodash
  - **[log-symbols@4.1.0](https://github.com/sindresorhus/log-symbols)**
@@ -3828,14 +3828,9 @@
     - version: 1.1.1
     - licenses: ISC
     - repository: https://github.com/alexeyraspopov/picocolors
- - **[picomatch@2.3.2](https://github.com/micromatch/picomatch)**
+ - **[picomatch@4.0.4](https://github.com/micromatch/picomatch)**
     - name: picomatch
-    - version: 2.3.2
-    - licenses: MIT
-    - repository: https://github.com/micromatch/picomatch
- - **[picomatch@4.0.3](https://github.com/micromatch/picomatch)**
-    - name: picomatch
-    - version: 4.0.3
+    - version: 4.0.4
     - licenses: MIT
     - repository: https://github.com/micromatch/picomatch
  - **[pify@2.3.0](https://github.com/sindresorhus/pify)**
