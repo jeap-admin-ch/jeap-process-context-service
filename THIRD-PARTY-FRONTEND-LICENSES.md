@@ -93,9 +93,19 @@
     - version: 0.2102.3
     - licenses: MIT
     - repository: https://github.com/angular/angular-cli
+ - **[@angular-devkit/architect@0.2102.9](https://github.com/angular/angular-cli)**
+    - name: @angular-devkit/architect
+    - version: 0.2102.9
+    - licenses: MIT
+    - repository: https://github.com/angular/angular-cli
  - **[@angular-devkit/core@21.2.3](https://github.com/angular/angular-cli)**
     - name: @angular-devkit/core
     - version: 21.2.3
+    - licenses: MIT
+    - repository: https://github.com/angular/angular-cli
+ - **[@angular-devkit/core@21.2.9](https://github.com/angular/angular-cli)**
+    - name: @angular-devkit/core
+    - version: 21.2.9
     - licenses: MIT
     - repository: https://github.com/angular/angular-cli
  - **[@angular-devkit/schematics@21.2.3](https://github.com/angular/angular-cli)**
@@ -143,9 +153,9 @@
     - version: 21.2.5
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/build@21.2.3](https://github.com/angular/angular-cli)**
+ - **[@angular/build@21.2.9](https://github.com/angular/angular-cli)**
     - name: @angular/build
-    - version: 21.2.3
+    - version: 21.2.9
     - licenses: MIT
     - repository: https://github.com/angular/angular-cli
  - **[@angular/cdk@21.2.3](https://github.com/angular/components)**
@@ -428,9 +438,9 @@
     - version: 3.0.4
     - licenses: MIT
     - repository: https://github.com/csstools/postcss-plugins
- - **[@cypress/request@3.0.10](https://github.com/cypress-io/request)**
+ - **[@cypress/request@4.0.0](https://github.com/cypress-io/request)**
     - name: @cypress/request
-    - version: 3.0.10
+    - version: 4.0.0
     - licenses: Apache-2.0
     - repository: https://github.com/cypress-io/request
  - **[@cypress/vite-dev-server@7.2.1](https://github.com/cypress-io/cypress)**
@@ -518,9 +528,9 @@
     - version: 1.0.3
     - licenses: Apache-2.0
     - repository: https://github.com/harperdb/extended-iterable
- - **[@hono/node-server@1.19.11](https://github.com/honojs/node-server)**
+ - **[@hono/node-server@1.19.14](https://github.com/honojs/node-server)**
     - name: @hono/node-server
-    - version: 1.19.11
+    - version: 1.19.14
     - licenses: MIT
     - repository: https://github.com/honojs/node-server
  - **[@humanfs/core@0.19.1](https://github.com/humanwhocodes/humanfs)**
@@ -928,14 +938,14 @@
     - version: 1.0.0-rc.4
     - licenses: MIT
     - repository: https://github.com/rolldown/rolldown
- - **[@rollup/rollup-linux-x64-gnu@4.60.0](https://github.com/rollup/rollup)**
+ - **[@rollup/rollup-linux-x64-gnu@4.60.3](https://github.com/rollup/rollup)**
     - name: @rollup/rollup-linux-x64-gnu
-    - version: 4.60.0
+    - version: 4.60.3
     - licenses: MIT
     - repository: https://github.com/rollup/rollup
- - **[@rollup/rollup-linux-x64-musl@4.60.0](https://github.com/rollup/rollup)**
+ - **[@rollup/rollup-linux-x64-musl@4.60.3](https://github.com/rollup/rollup)**
     - name: @rollup/rollup-linux-x64-musl
-    - version: 4.60.0
+    - version: 4.60.3
     - licenses: MIT
     - repository: https://github.com/rollup/rollup
  - **[@schematics/angular@21.2.3](https://github.com/angular/angular-cli)**
@@ -1253,11 +1263,6 @@
     - version: 7.1.4
     - licenses: MIT
     - repository: https://github.com/TooTallNate/proxy-agents
- - **[aggregate-error@3.1.0](https://github.com/sindresorhus/aggregate-error)**
-    - name: aggregate-error
-    - version: 3.1.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/aggregate-error
  - **[ajv-formats@3.0.1](https://github.com/ajv-validator/ajv-formats)**
     - name: ajv-formats
     - version: 3.0.1
@@ -1393,11 +1398,6 @@
     - version: 1.0.0
     - licenses: MIT
     - repository: https://github.com/mcavage/node-assert-plus
- - **[astral-regex@2.0.0](https://github.com/kevva/astral-regex)**
-    - name: astral-regex
-    - version: 2.0.0
-    - licenses: MIT
-    - repository: https://github.com/kevva/astral-regex
  - **[asynckit@0.4.0](https://github.com/alexindigo/asynckit)**
     - name: asynckit
     - version: 0.4.0
@@ -1498,19 +1498,19 @@
     - version: 1.0.0
     - licenses: ISC
     - repository: https://github.com/fb55/boolbase
- - **[brace-expansion@1.1.12](https://github.com/juliangruber/brace-expansion)**
+ - **[brace-expansion@1.1.14](https://github.com/juliangruber/brace-expansion)**
     - name: brace-expansion
-    - version: 1.1.12
+    - version: 1.1.14
     - licenses: MIT
     - repository: https://github.com/juliangruber/brace-expansion
- - **[brace-expansion@2.0.2](https://github.com/juliangruber/brace-expansion)**
+ - **[brace-expansion@2.1.0](https://github.com/juliangruber/brace-expansion)**
     - name: brace-expansion
-    - version: 2.0.2
+    - version: 2.1.0
     - licenses: MIT
     - repository: https://github.com/juliangruber/brace-expansion
- - **[brace-expansion@5.0.4](https://github.com/juliangruber/brace-expansion)**
+ - **[brace-expansion@5.0.5](https://github.com/juliangruber/brace-expansion)**
     - name: brace-expansion
-    - version: 5.0.4
+    - version: 5.0.5
     - licenses: MIT
     - repository: https://github.com/juliangruber/brace-expansion
  - **[braces@3.0.3](https://github.com/micromatch/braces)**
@@ -1663,16 +1663,6 @@
     - version: 2.2.0
     - licenses: MIT
     - repository: https://github.com/nodejs/cjs-module-lexer
- - **[clean-stack@2.2.0](https://github.com/sindresorhus/clean-stack)**
-    - name: clean-stack
-    - version: 2.2.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/clean-stack
- - **[cli-cursor@3.1.0](https://github.com/sindresorhus/cli-cursor)**
-    - name: cli-cursor
-    - version: 3.1.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/cli-cursor
  - **[cli-cursor@5.0.0](https://github.com/sindresorhus/cli-cursor)**
     - name: cli-cursor
     - version: 5.0.0
@@ -1688,11 +1678,6 @@
     - version: 0.6.1
     - licenses: MIT
     - repository: https://github.com/cli-table/cli-table3
- - **[cli-truncate@2.1.0](https://github.com/sindresorhus/cli-truncate)**
-    - name: cli-truncate
-    - version: 2.1.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/cli-truncate
  - **[cli-truncate@5.2.0](https://github.com/sindresorhus/cli-truncate)**
     - name: cli-truncate
     - version: 5.2.0
@@ -1853,9 +1838,9 @@
     - version: 4.6.0
     - licenses: MIT
     - repository: https://github.com/jsdom/cssstyle
- - **[cypress@15.12.0](https://github.com/cypress-io/cypress)**
+ - **[cypress@15.15.0](https://github.com/cypress-io/cypress)**
     - name: cypress
-    - version: 15.12.0
+    - version: 15.15.0
     - licenses: MIT
     - repository: https://github.com/cypress-io/cypress
  - **[dashdash@1.14.1](https://github.com/trentm/node-dashdash)**
@@ -2038,11 +2023,6 @@
     - version: 1.4.5
     - licenses: MIT
     - repository: https://github.com/mafintosh/end-of-stream
- - **[enquirer@2.4.1](https://github.com/enquirer/enquirer)**
-    - name: enquirer
-    - version: 2.4.1
-    - licenses: MIT
-    - repository: https://github.com/enquirer/enquirer
  - **[entities@2.2.0](https://github.com/fb55/entities)**
     - name: entities
     - version: 2.2.0
@@ -2248,9 +2228,9 @@
     - version: 3.1.3
     - licenses: Apache-2.0
     - repository: https://github.com/coveooss/exponential-backoff
- - **[express-rate-limit@8.3.1](https://github.com/express-rate-limit/express-rate-limit)**
+ - **[express-rate-limit@8.5.1](https://github.com/express-rate-limit/express-rate-limit)**
     - name: express-rate-limit
-    - version: 8.3.1
+    - version: 8.5.1
     - licenses: MIT
     - repository: https://github.com/express-rate-limit/express-rate-limit
  - **[express@5.2.1](https://github.com/expressjs/express)**
@@ -2318,11 +2298,6 @@
     - version: 6.5.0
     - licenses: MIT
     - repository: https://github.com/thecodrr/fdir
- - **[figures@3.2.0](https://github.com/sindresorhus/figures)**
-    - name: figures
-    - version: 3.2.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/figures
  - **[file-entry-cache@8.0.0](https://github.com/jaredwray/file-entry-cache)**
     - name: file-entry-cache
     - version: 8.0.0
@@ -2523,9 +2498,9 @@
     - version: 1.4.0
     - licenses: MIT
     - repository: https://github.com/flmnt/graphemer
- - **[handlebars@4.7.8](https://github.com/handlebars-lang/handlebars.js)**
+ - **[handlebars@4.7.9](https://github.com/handlebars-lang/handlebars.js)**
     - name: handlebars
-    - version: 4.7.8
+    - version: 4.7.9
     - licenses: MIT
     - repository: https://github.com/handlebars-lang/handlebars.js
  - **[has-ansi@0.1.0](https://github.com/sindresorhus/has-ansi)**
@@ -2573,9 +2548,9 @@
     - version: 1.2.0
     - licenses: MIT
     - repository: https://github.com/mathiasbynens/he
- - **[hono@4.12.9](https://github.com/honojs/hono)**
+ - **[hono@4.12.18](https://github.com/honojs/hono)**
     - name: hono
-    - version: 4.12.9
+    - version: 4.12.18
     - licenses: MIT
     - repository: https://github.com/honojs/hono
  - **[hosted-git-info@2.8.9](https://github.com/npm/hosted-git-info)**
@@ -2693,11 +2668,6 @@
     - version: 0.1.4
     - licenses: MIT
     - repository: https://github.com/jensyt/imurmurhash-js
- - **[indent-string@4.0.0](https://github.com/sindresorhus/indent-string)**
-    - name: indent-string
-    - version: 4.0.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/indent-string
  - **[inflight@1.0.6](https://github.com/npm/inflight)**
     - name: inflight
     - version: 1.0.6
@@ -2718,9 +2688,9 @@
     - version: 6.0.0
     - licenses: ISC
     - repository: https://github.com/npm/ini
- - **[ip-address@10.1.0](https://github.com/beaugunderson/ip-address)**
+ - **[ip-address@10.2.0](https://github.com/beaugunderson/ip-address)**
     - name: ip-address
-    - version: 10.1.0
+    - version: 10.2.0
     - licenses: MIT
     - repository: https://github.com/beaugunderson/ip-address
  - **[ipaddr.js@1.9.1](https://github.com/whitequark/ipaddr.js)**
@@ -3178,11 +3148,6 @@
     - version: 1.2.4
     - licenses: MIT
     - repository: https://github.com/eventualbuddha/lines-and-columns
- - **[listr2@3.14.0](https://github.com/cenk1cenk2/listr2)**
-    - name: listr2
-    - version: 3.14.0
-    - licenses: MIT
-    - repository: https://github.com/cenk1cenk2/listr2
  - **[listr2@9.0.5](https://github.com/listr2/listr2)**
     - name: listr2
     - version: 9.0.5
@@ -3238,11 +3203,6 @@
     - version: 7.0.1
     - licenses: MIT
     - repository: https://github.com/sindresorhus/log-symbols
- - **[log-update@4.0.0](https://github.com/sindresorhus/log-update)**
-    - name: log-update
-    - version: 4.0.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/log-update
  - **[log-update@6.1.0](https://github.com/sindresorhus/log-update)**
     - name: log-update
     - version: 6.1.0
@@ -3703,11 +3663,6 @@
     - version: 6.0.0
     - licenses: MIT
     - repository: https://github.com/sindresorhus/p-locate
- - **[p-map@4.0.0](https://github.com/sindresorhus/p-map)**
-    - name: p-map
-    - version: 4.0.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/p-map
  - **[p-map@7.0.4](https://github.com/sindresorhus/p-map)**
     - name: p-map
     - version: 7.0.4
@@ -3808,9 +3763,9 @@
     - version: 2.0.2
     - licenses: BlueOak-1.0.0
     - repository: https://github.com/isaacs/path-scurry
- - **[path-to-regexp@8.3.0](https://github.com/pillarjs/path-to-regexp)**
+ - **[path-to-regexp@8.4.2](https://github.com/pillarjs/path-to-regexp)**
     - name: path-to-regexp
-    - version: 8.3.0
+    - version: 8.4.2
     - licenses: MIT
     - repository: https://github.com/pillarjs/path-to-regexp
  - **[pend@1.2.0](https://github.com/andrewrk/node-pend)**
@@ -3868,9 +3823,9 @@
     - version: 7.0.1
     - licenses: MIT
     - repository: https://github.com/postcss/postcss-safe-parser
- - **[postcss@8.5.6](https://github.com/postcss/postcss)**
+ - **[postcss@8.5.14](https://github.com/postcss/postcss)**
     - name: postcss
-    - version: 8.5.6
+    - version: 8.5.14
     - licenses: MIT
     - repository: https://github.com/postcss/postcss
  - **[prelude-ls@1.2.1](https://github.com/gkz/prelude-ls)**
@@ -4023,11 +3978,6 @@
     - version: 1.22.11
     - licenses: MIT
     - repository: https://github.com/browserify/resolve
- - **[restore-cursor@3.1.0](https://github.com/sindresorhus/restore-cursor)**
-    - name: restore-cursor
-    - version: 3.1.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/restore-cursor
  - **[restore-cursor@5.1.0](https://github.com/sindresorhus/restore-cursor)**
     - name: restore-cursor
     - version: 5.1.0
@@ -4058,9 +4008,9 @@
     - version: 1.0.0-rc.4
     - licenses: MIT
     - repository: https://github.com/rolldown/rolldown
- - **[rollup@4.60.0](https://github.com/rollup/rollup)**
+ - **[rollup@4.60.3](https://github.com/rollup/rollup)**
     - name: rollup
-    - version: 4.60.0
+    - version: 4.60.3
     - licenses: MIT
     - repository: https://github.com/rollup/rollup
  - **[router@2.2.0](https://github.com/pillarjs/router)**
@@ -4193,16 +4143,6 @@
     - version: 3.0.0
     - licenses: MIT
     - repository: https://github.com/sindresorhus/slash
- - **[slice-ansi@3.0.0](https://github.com/chalk/slice-ansi)**
-    - name: slice-ansi
-    - version: 3.0.0
-    - licenses: MIT
-    - repository: https://github.com/chalk/slice-ansi
- - **[slice-ansi@4.0.0](https://github.com/chalk/slice-ansi)**
-    - name: slice-ansi
-    - version: 4.0.0
-    - licenses: MIT
-    - repository: https://github.com/chalk/slice-ansi
  - **[slice-ansi@7.1.2](https://github.com/chalk/slice-ansi)**
     - name: slice-ansi
     - version: 7.1.2
@@ -4423,9 +4363,9 @@
     - version: 0.11.12
     - licenses: MIT
     - repository: https://github.com/un-ts/synckit
- - **[systeminformation@5.31.5](https://github.com/sebhildebrandt/systeminformation)**
+ - **[systeminformation@5.31.6](https://github.com/sebhildebrandt/systeminformation)**
     - name: systeminformation
-    - version: 5.31.5
+    - version: 5.31.6
     - licenses: MIT
     - repository: https://github.com/sebhildebrandt/systeminformation
  - **[tar@7.5.13](https://github.com/isaacs/node-tar)**
@@ -4443,11 +4383,6 @@
     - version: 1.0.1
     - licenses: MIT
     - repository: https://github.com/sindresorhus/throttleit
- - **[through@2.3.8](https://github.com/dominictarr/through)**
-    - name: through
-    - version: 2.3.8
-    - licenses: MIT
-    - repository: https://github.com/dominictarr/through
  - **[tinyglobby@0.2.15](https://github.com/SuperchupuDev/tinyglobby)**
     - name: tinyglobby
     - version: 0.2.15
@@ -4603,9 +4538,9 @@
     - version: 7.18.2
     - licenses: MIT
     - repository: https://github.com/nodejs/undici
- - **[undici@7.22.0](https://github.com/nodejs/undici)**
+ - **[undici@7.24.4](https://github.com/nodejs/undici)**
     - name: undici
-    - version: 7.22.0
+    - version: 7.24.4
     - licenses: MIT
     - repository: https://github.com/nodejs/undici
  - **[universalify@2.0.1](https://github.com/RyanZim/universalify)**
@@ -4643,11 +4578,6 @@
     - version: 1.0.3
     - licenses: MIT
     - repository: https://github.com/isaacs/util-extend
- - **[uuid@8.3.2](https://github.com/uuidjs/uuid)**
-    - name: uuid
-    - version: 8.3.2
-    - licenses: MIT
-    - repository: https://github.com/uuidjs/uuid
  - **[v8-compile-cache-lib@3.0.1](https://github.com/cspotcode/v8-compile-cache-lib)**
     - name: v8-compile-cache-lib
     - version: 3.0.1
@@ -4683,9 +4613,9 @@
     - version: 6.1.1
     - licenses: MIT
     - repository: https://github.com/aleclarson/vite-tsconfig-paths
- - **[vite@7.3.1](https://github.com/vitejs/vite)**
+ - **[vite@7.3.2](https://github.com/vitejs/vite)**
     - name: vite
-    - version: 7.3.1
+    - version: 7.3.2
     - licenses: MIT
     - repository: https://github.com/vitejs/vite
  - **[w3c-xmlserializer@5.0.0](https://github.com/jsdom/w3c-xmlserializer)**
