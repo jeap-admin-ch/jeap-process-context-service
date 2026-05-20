@@ -428,9 +428,9 @@
     - version: 3.0.4
     - licenses: MIT
     - repository: https://github.com/csstools/postcss-plugins
- - **[@cypress/request@3.0.10](https://github.com/cypress-io/request)**
+ - **[@cypress/request@4.0.0](https://github.com/cypress-io/request)**
     - name: @cypress/request
-    - version: 3.0.10
+    - version: 4.0.0
     - licenses: Apache-2.0
     - repository: https://github.com/cypress-io/request
  - **[@cypress/vite-dev-server@7.2.1](https://github.com/cypress-io/cypress)**
@@ -1253,11 +1253,6 @@
     - version: 7.1.4
     - licenses: MIT
     - repository: https://github.com/TooTallNate/proxy-agents
- - **[aggregate-error@3.1.0](https://github.com/sindresorhus/aggregate-error)**
-    - name: aggregate-error
-    - version: 3.1.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/aggregate-error
  - **[ajv-formats@3.0.1](https://github.com/ajv-validator/ajv-formats)**
     - name: ajv-formats
     - version: 3.0.1
@@ -1393,11 +1388,6 @@
     - version: 1.0.0
     - licenses: MIT
     - repository: https://github.com/mcavage/node-assert-plus
- - **[astral-regex@2.0.0](https://github.com/kevva/astral-regex)**
-    - name: astral-regex
-    - version: 2.0.0
-    - licenses: MIT
-    - repository: https://github.com/kevva/astral-regex
  - **[asynckit@0.4.0](https://github.com/alexindigo/asynckit)**
     - name: asynckit
     - version: 0.4.0
@@ -1663,16 +1653,6 @@
     - version: 2.2.0
     - licenses: MIT
     - repository: https://github.com/nodejs/cjs-module-lexer
- - **[clean-stack@2.2.0](https://github.com/sindresorhus/clean-stack)**
-    - name: clean-stack
-    - version: 2.2.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/clean-stack
- - **[cli-cursor@3.1.0](https://github.com/sindresorhus/cli-cursor)**
-    - name: cli-cursor
-    - version: 3.1.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/cli-cursor
  - **[cli-cursor@5.0.0](https://github.com/sindresorhus/cli-cursor)**
     - name: cli-cursor
     - version: 5.0.0
@@ -1688,11 +1668,6 @@
     - version: 0.6.1
     - licenses: MIT
     - repository: https://github.com/cli-table/cli-table3
- - **[cli-truncate@2.1.0](https://github.com/sindresorhus/cli-truncate)**
-    - name: cli-truncate
-    - version: 2.1.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/cli-truncate
  - **[cli-truncate@5.2.0](https://github.com/sindresorhus/cli-truncate)**
     - name: cli-truncate
     - version: 5.2.0
@@ -1853,9 +1828,9 @@
     - version: 4.6.0
     - licenses: MIT
     - repository: https://github.com/jsdom/cssstyle
- - **[cypress@15.12.0](https://github.com/cypress-io/cypress)**
+ - **[cypress@15.15.0](https://github.com/cypress-io/cypress)**
     - name: cypress
-    - version: 15.12.0
+    - version: 15.15.0
     - licenses: MIT
     - repository: https://github.com/cypress-io/cypress
  - **[dashdash@1.14.1](https://github.com/trentm/node-dashdash)**
@@ -2038,11 +2013,6 @@
     - version: 1.4.5
     - licenses: MIT
     - repository: https://github.com/mafintosh/end-of-stream
- - **[enquirer@2.4.1](https://github.com/enquirer/enquirer)**
-    - name: enquirer
-    - version: 2.4.1
-    - licenses: MIT
-    - repository: https://github.com/enquirer/enquirer
  - **[entities@2.2.0](https://github.com/fb55/entities)**
     - name: entities
     - version: 2.2.0
@@ -2318,11 +2288,6 @@
     - version: 6.5.0
     - licenses: MIT
     - repository: https://github.com/thecodrr/fdir
- - **[figures@3.2.0](https://github.com/sindresorhus/figures)**
-    - name: figures
-    - version: 3.2.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/figures
  - **[file-entry-cache@8.0.0](https://github.com/jaredwray/file-entry-cache)**
     - name: file-entry-cache
     - version: 8.0.0
@@ -2693,11 +2658,6 @@
     - version: 0.1.4
     - licenses: MIT
     - repository: https://github.com/jensyt/imurmurhash-js
- - **[indent-string@4.0.0](https://github.com/sindresorhus/indent-string)**
-    - name: indent-string
-    - version: 4.0.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/indent-string
  - **[inflight@1.0.6](https://github.com/npm/inflight)**
     - name: inflight
     - version: 1.0.6
@@ -3178,11 +3138,6 @@
     - version: 1.2.4
     - licenses: MIT
     - repository: https://github.com/eventualbuddha/lines-and-columns
- - **[listr2@3.14.0](https://github.com/cenk1cenk2/listr2)**
-    - name: listr2
-    - version: 3.14.0
-    - licenses: MIT
-    - repository: https://github.com/cenk1cenk2/listr2
  - **[listr2@9.0.5](https://github.com/listr2/listr2)**
     - name: listr2
     - version: 9.0.5
@@ -3238,11 +3193,6 @@
     - version: 7.0.1
     - licenses: MIT
     - repository: https://github.com/sindresorhus/log-symbols
- - **[log-update@4.0.0](https://github.com/sindresorhus/log-update)**
-    - name: log-update
-    - version: 4.0.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/log-update
  - **[log-update@6.1.0](https://github.com/sindresorhus/log-update)**
     - name: log-update
     - version: 6.1.0
@@ -3703,11 +3653,6 @@
     - version: 6.0.0
     - licenses: MIT
     - repository: https://github.com/sindresorhus/p-locate
- - **[p-map@4.0.0](https://github.com/sindresorhus/p-map)**
-    - name: p-map
-    - version: 4.0.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/p-map
  - **[p-map@7.0.4](https://github.com/sindresorhus/p-map)**
     - name: p-map
     - version: 7.0.4
@@ -4023,11 +3968,6 @@
     - version: 1.22.11
     - licenses: MIT
     - repository: https://github.com/browserify/resolve
- - **[restore-cursor@3.1.0](https://github.com/sindresorhus/restore-cursor)**
-    - name: restore-cursor
-    - version: 3.1.0
-    - licenses: MIT
-    - repository: https://github.com/sindresorhus/restore-cursor
  - **[restore-cursor@5.1.0](https://github.com/sindresorhus/restore-cursor)**
     - name: restore-cursor
     - version: 5.1.0
@@ -4193,16 +4133,6 @@
     - version: 3.0.0
     - licenses: MIT
     - repository: https://github.com/sindresorhus/slash
- - **[slice-ansi@3.0.0](https://github.com/chalk/slice-ansi)**
-    - name: slice-ansi
-    - version: 3.0.0
-    - licenses: MIT
-    - repository: https://github.com/chalk/slice-ansi
- - **[slice-ansi@4.0.0](https://github.com/chalk/slice-ansi)**
-    - name: slice-ansi
-    - version: 4.0.0
-    - licenses: MIT
-    - repository: https://github.com/chalk/slice-ansi
  - **[slice-ansi@7.1.2](https://github.com/chalk/slice-ansi)**
     - name: slice-ansi
     - version: 7.1.2
@@ -4423,9 +4353,9 @@
     - version: 0.11.12
     - licenses: MIT
     - repository: https://github.com/un-ts/synckit
- - **[systeminformation@5.31.5](https://github.com/sebhildebrandt/systeminformation)**
+ - **[systeminformation@5.31.6](https://github.com/sebhildebrandt/systeminformation)**
     - name: systeminformation
-    - version: 5.31.5
+    - version: 5.31.6
     - licenses: MIT
     - repository: https://github.com/sebhildebrandt/systeminformation
  - **[tar@7.5.13](https://github.com/isaacs/node-tar)**
@@ -4443,11 +4373,6 @@
     - version: 1.0.1
     - licenses: MIT
     - repository: https://github.com/sindresorhus/throttleit
- - **[through@2.3.8](https://github.com/dominictarr/through)**
-    - name: through
-    - version: 2.3.8
-    - licenses: MIT
-    - repository: https://github.com/dominictarr/through
  - **[tinyglobby@0.2.15](https://github.com/SuperchupuDev/tinyglobby)**
     - name: tinyglobby
     - version: 0.2.15
@@ -4643,11 +4568,6 @@
     - version: 1.0.3
     - licenses: MIT
     - repository: https://github.com/isaacs/util-extend
- - **[uuid@8.3.2](https://github.com/uuidjs/uuid)**
-    - name: uuid
-    - version: 8.3.2
-    - licenses: MIT
-    - repository: https://github.com/uuidjs/uuid
  - **[v8-compile-cache-lib@3.0.1](https://github.com/cspotcode/v8-compile-cache-lib)**
     - name: v8-compile-cache-lib
     - version: 3.0.1
