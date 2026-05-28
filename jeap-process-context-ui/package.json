@@ -41,7 +41,8 @@
   "overrides": {
     "lodash": "^4.18.1",
     "picomatch": ">=4.0.4",
-    "systeminformation": "^5.31.6"
+    "systeminformation": "^5.31.6",
+    "tmp": ">=0.2.6"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.3.1",

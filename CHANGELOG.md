@@ -12,7 +12,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Official release with spring boot 4
-- Update some frontend dependencies to fix vulnerabilities
+- Pin tmp to 0.2.6 due to CVE-2026-44705
 
 ## [18.8.0] - 2026-04-29
 
