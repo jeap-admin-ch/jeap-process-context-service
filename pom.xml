@@ -41,7 +41,7 @@
     <properties>
         <java-uuid-generator.version>5.2.0</java-uuid-generator.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
-        <guava.version>33.5.0-jre</guava.version>
+        <guava.version>33.6.0-jre</guava.version>
         <testcontainers.version>1.21.4</testcontainers.version>
         <maven-plugin-plugin.version>3.15.2</maven-plugin-plugin.version>
     </properties>

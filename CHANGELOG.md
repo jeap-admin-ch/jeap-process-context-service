@@ -12,6 +12,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Update parent from 35.0.0 to 35.3.0
+- update guava from 33.5.0-jre to 33.6.0-jre
 
 ## [20.0.0] - 2026-05-28
 
