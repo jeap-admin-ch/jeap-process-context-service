@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 > - Spring Boot 3 maintenance (bug fixes, patches, and regular updates) continues on branch `release/springboot3`.
 
+## [20.1.1] - 2026-06-08
+
+### Changed
+
+- Update js-cookie to 3.0.8 due to CVE-2026-46625
+
 ## [20.1.0] - 2026-06-04
 
 ### Changed
