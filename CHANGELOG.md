@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 > - Spring Boot 3 maintenance (bug fixes, patches, and regular updates) continues on branch `release/springboot3`.
 
+## [20.2.0] - 2026-06-09
+
+### Changed
+
+- Remove PcsReleaseProperties and the `jeap.processcontext.release.min-version` startup check, as it is no longer needed after the v17 migration period
+
 ## [20.1.1] - 2026-06-08
 
 ### Changed
