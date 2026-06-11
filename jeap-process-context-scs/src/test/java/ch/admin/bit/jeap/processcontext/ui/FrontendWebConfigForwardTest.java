@@ -16,13 +16,13 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = FrontendWebConfigRedirectTest.TestConfig.class)
-class FrontendWebConfigRedirectTest {
+@ContextConfiguration(classes = FrontendWebConfigForwardTest.TestConfig.class)
+class FrontendWebConfigForwardTest {
 
     @Configuration
     @EnableWebMvc
@@ -50,9 +50,9 @@ class FrontendWebConfigRedirectTest {
     }
 
     @Test
-    void rootPath_redirectsToIndexHtml() throws Exception {
+    void rootPath_forwardsToIndexHtml() throws Exception {
         mockMvc.perform(get("/"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/index.html"));
+                .andExpect(status().isOk())
+                .andExpect(forwardedUrl("/index.html"));
     }
 }
