@@ -5,8 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-> - Spring Boot 3 maintenance (bug fixes, patches, and regular updates) continues on branch `release/springboot3`.
-
 ## [20.3.0] - 2026-06-11
 
 ### Added
@@ -15,7 +13,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Serve `index.html` at the application root via forward instead of redirect
 - Update default Content Security Policy (CSP) for the SPA frontend to be compatible with Oblique and the ePortal/PAMS
   service-navigation widget
 
@@ -26,6 +23,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Make the Cypress component tests run locally and on CI without a host-specific Xvfb setup, and ensure the Cypress
   binary is installed before running them
 - Replace the deprecated multi-parameter `QdApplicationRoleFilter.hasRole` call with a complete role filter
+- Migrate to SP4 webmvc starter
 
 ## [20.2.0] - 2026-06-09
 

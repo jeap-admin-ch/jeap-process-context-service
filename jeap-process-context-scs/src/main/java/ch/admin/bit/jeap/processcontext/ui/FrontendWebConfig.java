@@ -43,14 +43,6 @@ class FrontendWebConfig implements WebMvcConfigurer {
         return origin;
     }
 
-    @Override
-    public void addViewControllers(ViewControllerRegistry registry) {
-        // Spring Boot 4 / Spring Framework 7 changed welcome page handling,
-        // causing an empty response for the root path. Forward to index.html so
-        // the SPA is served at "/" without a client-visible redirect.
-        registry.addViewController("/").setViewName("forward:/index.html");
-    }
-
     @Bean
     public FrontendRouteRedirectExceptionHandler frontendRouteRedirectExceptionHandler() {
         return new FrontendRouteRedirectExceptionHandler();
