@@ -21,6 +21,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Fix frontend unit test execution after the Angular 21 / jest-preset-angular upgrade and run the UI test suite during
   the Maven build before the production build
+- Make the Cypress component tests run locally and on CI without a host-specific Xvfb setup, and ensure the Cypress
+  binary is installed before running them
 
 ## [20.2.0] - 2026-06-09
 
