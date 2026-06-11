@@ -89,7 +89,18 @@
         "test": {
           "builder": "@angular-builders/jest:run",
           "options": {
-            "tsConfig": "tsconfig.spec.json"
+            "config": "./tests/jest.config.js",
+            "tsConfig": "tsconfig.spec.json",
+            "zoneless": false,
+            "cache": false,
+            "watch": true,
+            "verbose": true
+          },
+          "configurations": {
+            "production": {
+              "watch": false,
+              "verbose": false
+            }
           }
         },
         "lint": {

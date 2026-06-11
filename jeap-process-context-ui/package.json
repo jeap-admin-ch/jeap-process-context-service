@@ -11,6 +11,8 @@
     "start": "ng serve",
     "build": "ng build --base-href /process-context/",
     "build-prod": "ng build -c production --base-href /process-context/",
+    "test": "ng test",
+    "test:watch": "ng test --watchAll",
     "cypress:run": "cypress run --config video=false --component",
     "check-licenses": "apache2-license-checker",
     "generateLicenseFile": "license-checker --customPath custom-license-md-format.json --markdown > ../THIRD-PARTY-FRONTEND-LICENSES.md"

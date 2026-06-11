@@ -104,6 +104,23 @@
 								</configuration>
 							</execution>
 							<execution>
+								<id>test</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<skip>${maven.test.skip}</skip>
+									<executable>npm</executable>
+									<arguments>
+										<argument>run</argument>
+										<argument>test</argument>
+										<argument>--</argument>
+										<argument>--watch=false</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
 								<id>build-prod</id>
 								<phase>process-resources</phase>
 								<goals>

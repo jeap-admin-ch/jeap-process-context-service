@@ -7,11 +7,20 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 > - Spring Boot 3 maintenance (bug fixes, patches, and regular updates) continues on branch `release/springboot3`.
 
-## [20.3.0] - 2026-06-10
+## [20.3.0] - 2026-06-11
 
 ### Added
 
 - Add dependency `jeap-spring-boot-web-config-starter`
+
+### Changed
+
+- Serve `index.html` at the application root via forward instead of redirect
+
+### Fixed
+
+- Fix frontend unit test execution after the Angular 21 / jest-preset-angular upgrade and run the UI test suite during
+  the Maven build before the production build
 
 ## [20.2.0] - 2026-06-09
 
