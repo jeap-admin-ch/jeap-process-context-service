@@ -923,6 +923,16 @@
     - version: 20.1.3
     - licenses: Custom: http://localhost
     - repository: https://github.com/BAZG-Quadrel/quadrel-auth
+ - **[@rolldown/binding-linux-x64-gnu@1.0.0-rc.4](https://github.com/rolldown/rolldown)**
+    - name: @rolldown/binding-linux-x64-gnu
+    - version: 1.0.0-rc.4
+    - licenses: MIT
+    - repository: https://github.com/rolldown/rolldown
+ - **[@rolldown/binding-linux-x64-musl@1.0.0-rc.4](https://github.com/rolldown/rolldown)**
+    - name: @rolldown/binding-linux-x64-musl
+    - version: 1.0.0-rc.4
+    - licenses: MIT
+    - repository: https://github.com/rolldown/rolldown
  - **[@rolldown/pluginutils@1.0.0-rc.4](https://github.com/rolldown/rolldown)**
     - name: @rolldown/pluginutils
     - version: 1.0.0-rc.4
@@ -2983,9 +2993,9 @@
     - version: 6.2.2
     - licenses: MIT
     - repository: https://github.com/panva/jose
- - **[js-cookie@3.0.5](https://github.com/js-cookie/js-cookie)**
+ - **[js-cookie@3.0.8](https://github.com/js-cookie/js-cookie)**
     - name: js-cookie
-    - version: 3.0.5
+    - version: 3.0.8
     - licenses: MIT
     - repository: https://github.com/js-cookie/js-cookie
  - **[js-tokens@4.0.0](https://github.com/lydell/js-tokens)**
