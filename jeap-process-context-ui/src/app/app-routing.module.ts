@@ -2,12 +2,17 @@ import {NgModule} from '@angular/core';
 import {ExtraOptions, RouterModule, Routes} from '@angular/router';
 import {ObUnknownRouteModule} from '@oblique/oblique';
 import {StartPageComponent} from './pages/start-page/start-page.component';
-import {QdApplicationRoleFilter, QdAuthorizationGuard, QdRoleFilterMatcher} from '@quadrel-enterprise-ui/auth';
+import {QdApplicationRoleFilter, QdAuthorizationGuard} from '@quadrel-enterprise-ui/auth';
 import {ProcessInstanceByIdGuard} from './shared/guards/process-instance-by-id.guard';
 import {ProcessPageComponent} from './pages/process-page/process-page.component';
 import {ForbiddenPageComponent} from './pages/error-pages/forbidden-page/forbidden-page.component';
 
-const ROLE_FILTER_VIEW = QdApplicationRoleFilter.hasRole(QdRoleFilterMatcher.ANY, 'processinstance', 'view');
+// Passing a complete QdRoleFilter to hasRole() avoids the deprecated multi-parameter signature.
+// '[a-zA-Z-]+' is the "any system" matcher the library applies internally for QdRoleFilterMatcher.ANY
+// (wildcards are not allowed for the system field, hence the explicit pattern).
+const ANY_SYSTEM = '[a-zA-Z-]+';
+
+const ROLE_FILTER_VIEW = QdApplicationRoleFilter.hasRole({system: ANY_SYSTEM, resource: 'processinstance', operation: 'view'});
 
 const routes: Routes = [
 	{path: '', redirectTo: 'startpage', pathMatch: 'full'},

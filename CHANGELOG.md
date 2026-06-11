@@ -16,6 +16,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Serve `index.html` at the application root via forward instead of redirect
+- Update default Content Security Policy (CSP) for the SPA frontend to be compatible with Oblique and the ePortal/PAMS
+  service-navigation widget
 
 ### Fixed
 
@@ -23,6 +25,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the Maven build before the production build
 - Make the Cypress component tests run locally and on CI without a host-specific Xvfb setup, and ensure the Cypress
   binary is installed before running them
+- Replace the deprecated multi-parameter `QdApplicationRoleFilter.hasRole` call with a complete role filter
 
 ## [20.2.0] - 2026-06-09
 
