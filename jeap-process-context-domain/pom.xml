@@ -80,12 +80,12 @@
         <dependency>
             <groupId>ch.admin.bit.jeap.archivetype.jeap</groupId>
             <artifactId>process-snapshot-v1</artifactId>
-            <version>1</version>
+            <version>${process-snapshot-v1.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.admin.bit.jeap.archivetype.jeap</groupId>
             <artifactId>process-snapshot-v2</artifactId>
-            <version>2</version>
+            <version>${process-snapshot-v2.version}</version>
         </dependency>
 
         <!-- test -->
