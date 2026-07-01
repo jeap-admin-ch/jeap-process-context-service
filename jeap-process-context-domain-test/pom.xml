@@ -5,7 +5,7 @@
     <parent>
         <artifactId>jeap-process-context-service</artifactId>
         <groupId>ch.admin.bit.jeap</groupId>
-        <version>21.0.0-SNAPSHOT</version>
+        <version>21.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -24,6 +24,11 @@
         <dependency>
             <groupId>com.fasterxml.uuid</groupId>
             <artifactId>java-uuid-generator</artifactId>
+        </dependency>
+        <!-- Test fixtures in src/main use JUnit assertions; declared explicitly (compile scope, this is a -test module) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
         </dependency>
     </dependencies>
 </project>
