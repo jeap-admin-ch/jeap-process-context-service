@@ -93,19 +93,9 @@
     - version: 0.2102.3
     - licenses: MIT
     - repository: https://github.com/angular/angular-cli
- - **[@angular-devkit/architect@0.2102.9](https://github.com/angular/angular-cli)**
-    - name: @angular-devkit/architect
-    - version: 0.2102.9
-    - licenses: MIT
-    - repository: https://github.com/angular/angular-cli
  - **[@angular-devkit/core@21.2.3](https://github.com/angular/angular-cli)**
     - name: @angular-devkit/core
     - version: 21.2.3
-    - licenses: MIT
-    - repository: https://github.com/angular/angular-cli
- - **[@angular-devkit/core@21.2.9](https://github.com/angular/angular-cli)**
-    - name: @angular-devkit/core
-    - version: 21.2.9
     - licenses: MIT
     - repository: https://github.com/angular/angular-cli
  - **[@angular-devkit/schematics@21.2.3](https://github.com/angular/angular-cli)**
@@ -148,14 +138,14 @@
     - version: 21.3.1
     - licenses: MIT
     - repository: https://github.com/angular-eslint/angular-eslint
- - **[@angular/animations@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/animations@21.2.17](https://github.com/angular/angular)**
     - name: @angular/animations
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/build@21.2.9](https://github.com/angular/angular-cli)**
+ - **[@angular/build@21.2.3](https://github.com/angular/angular-cli)**
     - name: @angular/build
-    - version: 21.2.9
+    - version: 21.2.3
     - licenses: MIT
     - repository: https://github.com/angular/angular-cli
  - **[@angular/cdk@21.2.3](https://github.com/angular/components)**
@@ -168,29 +158,29 @@
     - version: 21.2.3
     - licenses: MIT
     - repository: https://github.com/angular/angular-cli
- - **[@angular/common@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/common@21.2.17](https://github.com/angular/angular)**
     - name: @angular/common
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/compiler-cli@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/compiler-cli@21.2.17](https://github.com/angular/angular)**
     - name: @angular/compiler-cli
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/compiler@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/compiler@21.2.17](https://github.com/angular/angular)**
     - name: @angular/compiler
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/core@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/core@21.2.17](https://github.com/angular/angular)**
     - name: @angular/core
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/forms@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/forms@21.2.17](https://github.com/angular/angular)**
     - name: @angular/forms
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
  - **[@angular/material@21.2.3](https://github.com/angular/components)**
@@ -198,19 +188,19 @@
     - version: 21.2.3
     - licenses: MIT
     - repository: https://github.com/angular/components
- - **[@angular/platform-browser-dynamic@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/platform-browser-dynamic@21.2.17](https://github.com/angular/angular)**
     - name: @angular/platform-browser-dynamic
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/platform-browser@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/platform-browser@21.2.17](https://github.com/angular/angular)**
     - name: @angular/platform-browser
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/router@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/router@21.2.17](https://github.com/angular/angular)**
     - name: @angular/router
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
  - **[@asamuzakjp/css-color@3.2.0](https://github.com/asamuzaK/cssColor)**
@@ -528,9 +518,9 @@
     - version: 1.0.3
     - licenses: Apache-2.0
     - repository: https://github.com/harperdb/extended-iterable
- - **[@hono/node-server@1.19.14](https://github.com/honojs/node-server)**
+ - **[@hono/node-server@1.19.11](https://github.com/honojs/node-server)**
     - name: @hono/node-server
-    - version: 1.19.14
+    - version: 1.19.11
     - licenses: MIT
     - repository: https://github.com/honojs/node-server
  - **[@humanfs/core@0.19.1](https://github.com/humanwhocodes/humanfs)**
@@ -938,14 +928,14 @@
     - version: 1.0.0-rc.4
     - licenses: MIT
     - repository: https://github.com/rolldown/rolldown
- - **[@rollup/rollup-linux-x64-gnu@4.60.3](https://github.com/rollup/rollup)**
+ - **[@rollup/rollup-linux-x64-gnu@4.60.0](https://github.com/rollup/rollup)**
     - name: @rollup/rollup-linux-x64-gnu
-    - version: 4.60.3
+    - version: 4.60.0
     - licenses: MIT
     - repository: https://github.com/rollup/rollup
- - **[@rollup/rollup-linux-x64-musl@4.60.3](https://github.com/rollup/rollup)**
+ - **[@rollup/rollup-linux-x64-musl@4.60.0](https://github.com/rollup/rollup)**
     - name: @rollup/rollup-linux-x64-musl
-    - version: 4.60.3
+    - version: 4.60.0
     - licenses: MIT
     - repository: https://github.com/rollup/rollup
  - **[@schematics/angular@21.2.3](https://github.com/angular/angular-cli)**
@@ -1498,19 +1488,19 @@
     - version: 1.0.0
     - licenses: ISC
     - repository: https://github.com/fb55/boolbase
- - **[brace-expansion@1.1.14](https://github.com/juliangruber/brace-expansion)**
+ - **[brace-expansion@1.1.12](https://github.com/juliangruber/brace-expansion)**
     - name: brace-expansion
-    - version: 1.1.14
+    - version: 1.1.12
     - licenses: MIT
     - repository: https://github.com/juliangruber/brace-expansion
- - **[brace-expansion@2.1.0](https://github.com/juliangruber/brace-expansion)**
+ - **[brace-expansion@2.0.2](https://github.com/juliangruber/brace-expansion)**
     - name: brace-expansion
-    - version: 2.1.0
+    - version: 2.0.2
     - licenses: MIT
     - repository: https://github.com/juliangruber/brace-expansion
- - **[brace-expansion@5.0.5](https://github.com/juliangruber/brace-expansion)**
+ - **[brace-expansion@5.0.4](https://github.com/juliangruber/brace-expansion)**
     - name: brace-expansion
-    - version: 5.0.5
+    - version: 5.0.4
     - licenses: MIT
     - repository: https://github.com/juliangruber/brace-expansion
  - **[braces@3.0.3](https://github.com/micromatch/braces)**
@@ -2228,9 +2218,9 @@
     - version: 3.1.3
     - licenses: Apache-2.0
     - repository: https://github.com/coveooss/exponential-backoff
- - **[express-rate-limit@8.5.1](https://github.com/express-rate-limit/express-rate-limit)**
+ - **[express-rate-limit@8.3.1](https://github.com/express-rate-limit/express-rate-limit)**
     - name: express-rate-limit
-    - version: 8.5.1
+    - version: 8.3.1
     - licenses: MIT
     - repository: https://github.com/express-rate-limit/express-rate-limit
  - **[express@5.2.1](https://github.com/expressjs/express)**
@@ -2353,9 +2343,9 @@
     - version: 0.6.1
     - licenses: Apache-2.0
     - repository: https://github.com/mikeal/forever-agent
- - **[form-data@4.0.5](https://github.com/form-data/form-data)**
+ - **[form-data@4.0.6](https://github.com/form-data/form-data)**
     - name: form-data
-    - version: 4.0.5
+    - version: 4.0.6
     - licenses: MIT
     - repository: https://github.com/form-data/form-data
  - **[forwarded@0.2.0](https://github.com/jshttp/forwarded)**
@@ -2498,9 +2488,9 @@
     - version: 1.4.0
     - licenses: MIT
     - repository: https://github.com/flmnt/graphemer
- - **[handlebars@4.7.9](https://github.com/handlebars-lang/handlebars.js)**
+ - **[handlebars@4.7.8](https://github.com/handlebars-lang/handlebars.js)**
     - name: handlebars
-    - version: 4.7.9
+    - version: 4.7.8
     - licenses: MIT
     - repository: https://github.com/handlebars-lang/handlebars.js
  - **[has-ansi@0.1.0](https://github.com/sindresorhus/has-ansi)**
@@ -2543,14 +2533,19 @@
     - version: 2.0.2
     - licenses: MIT
     - repository: https://github.com/inspect-js/hasOwn
+ - **[hasown@2.0.4](https://github.com/inspect-js/hasOwn)**
+    - name: hasown
+    - version: 2.0.4
+    - licenses: MIT
+    - repository: https://github.com/inspect-js/hasOwn
  - **[he@1.2.0](https://github.com/mathiasbynens/he)**
     - name: he
     - version: 1.2.0
     - licenses: MIT
     - repository: https://github.com/mathiasbynens/he
- - **[hono@4.12.18](https://github.com/honojs/hono)**
+ - **[hono@4.12.9](https://github.com/honojs/hono)**
     - name: hono
-    - version: 4.12.18
+    - version: 4.12.9
     - licenses: MIT
     - repository: https://github.com/honojs/hono
  - **[hosted-git-info@2.8.9](https://github.com/npm/hosted-git-info)**
@@ -2688,9 +2683,9 @@
     - version: 6.0.0
     - licenses: ISC
     - repository: https://github.com/npm/ini
- - **[ip-address@10.2.0](https://github.com/beaugunderson/ip-address)**
+ - **[ip-address@10.1.0](https://github.com/beaugunderson/ip-address)**
     - name: ip-address
-    - version: 10.2.0
+    - version: 10.1.0
     - licenses: MIT
     - repository: https://github.com/beaugunderson/ip-address
  - **[ipaddr.js@1.9.1](https://github.com/whitequark/ipaddr.js)**
@@ -3763,9 +3758,9 @@
     - version: 2.0.2
     - licenses: BlueOak-1.0.0
     - repository: https://github.com/isaacs/path-scurry
- - **[path-to-regexp@8.4.2](https://github.com/pillarjs/path-to-regexp)**
+ - **[path-to-regexp@8.3.0](https://github.com/pillarjs/path-to-regexp)**
     - name: path-to-regexp
-    - version: 8.4.2
+    - version: 8.3.0
     - licenses: MIT
     - repository: https://github.com/pillarjs/path-to-regexp
  - **[pend@1.2.0](https://github.com/andrewrk/node-pend)**
@@ -3823,9 +3818,9 @@
     - version: 7.0.1
     - licenses: MIT
     - repository: https://github.com/postcss/postcss-safe-parser
- - **[postcss@8.5.14](https://github.com/postcss/postcss)**
+ - **[postcss@8.5.6](https://github.com/postcss/postcss)**
     - name: postcss
-    - version: 8.5.14
+    - version: 8.5.6
     - licenses: MIT
     - repository: https://github.com/postcss/postcss
  - **[prelude-ls@1.2.1](https://github.com/gkz/prelude-ls)**
@@ -3888,9 +3883,9 @@
     - version: 7.0.1
     - licenses: MIT
     - repository: https://github.com/dubzzz/pure-rand
- - **[qs@6.14.2](https://github.com/ljharb/qs)**
+ - **[qs@6.15.2](https://github.com/ljharb/qs)**
     - name: qs
-    - version: 6.14.2
+    - version: 6.15.2
     - licenses: BSD-3-Clause
     - repository: https://github.com/ljharb/qs
  - **[queue-microtask@1.2.3](https://github.com/feross/queue-microtask)**
@@ -4008,9 +4003,9 @@
     - version: 1.0.0-rc.4
     - licenses: MIT
     - repository: https://github.com/rolldown/rolldown
- - **[rollup@4.60.3](https://github.com/rollup/rollup)**
+ - **[rollup@4.60.0](https://github.com/rollup/rollup)**
     - name: rollup
-    - version: 4.60.3
+    - version: 4.60.0
     - licenses: MIT
     - repository: https://github.com/rollup/rollup
  - **[router@2.2.0](https://github.com/pillarjs/router)**
@@ -4538,9 +4533,9 @@
     - version: 7.18.2
     - licenses: MIT
     - repository: https://github.com/nodejs/undici
- - **[undici@7.24.4](https://github.com/nodejs/undici)**
+ - **[undici@7.22.0](https://github.com/nodejs/undici)**
     - name: undici
-    - version: 7.24.4
+    - version: 7.22.0
     - licenses: MIT
     - repository: https://github.com/nodejs/undici
  - **[universalify@2.0.1](https://github.com/RyanZim/universalify)**
@@ -4613,9 +4608,9 @@
     - version: 6.1.1
     - licenses: MIT
     - repository: https://github.com/aleclarson/vite-tsconfig-paths
- - **[vite@7.3.2](https://github.com/vitejs/vite)**
+ - **[vite@7.3.1](https://github.com/vitejs/vite)**
     - name: vite
-    - version: 7.3.2
+    - version: 7.3.1
     - licenses: MIT
     - repository: https://github.com/vitejs/vite
  - **[w3c-xmlserializer@5.0.0](https://github.com/jsdom/w3c-xmlserializer)**
