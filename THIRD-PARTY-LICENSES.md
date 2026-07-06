@@ -168,7 +168,6 @@ Apache License Version 2.0
  * Apache Avro - [org.apache.avro:avro](https://avro.apache.org)
  * Apache Commons Collections - [org.apache.commons:commons-collections4](https://commons.apache.org/proper/commons-collections/)
  * Apache Commons Compress - [org.apache.commons:commons-compress](https://commons.apache.org/proper/commons-compress/)
- * Apache Commons Compress - [org.apache.commons:commons-compress](https://commons.apache.org/proper/commons-compress/)
  * Apache Commons Lang - [org.apache.commons:commons-lang3](https://commons.apache.org/proper/commons-lang/)
  * Apache Groovy - [org.apache.groovy:groovy](https://groovy-lang.org)
  * Apache Groovy - [org.apache.groovy:groovy-json](https://groovy-lang.org)
@@ -282,6 +281,7 @@ Apache License Version 2.0
  * spring-boot-opentelemetry - [org.springframework.boot:spring-boot-opentelemetry](https://spring.io/projects/spring-boot)
  * spring-boot-persistence - [org.springframework.boot:spring-boot-persistence](https://spring.io/projects/spring-boot)
  * spring-boot-restclient - [org.springframework.boot:spring-boot-restclient](https://spring.io/projects/spring-boot)
+ * spring-boot-resttestclient - [org.springframework.boot:spring-boot-resttestclient](https://spring.io/projects/spring-boot)
  * spring-boot-security - [org.springframework.boot:spring-boot-security](https://spring.io/projects/spring-boot)
  * spring-boot-security-oauth2-client - [org.springframework.boot:spring-boot-security-oauth2-client](https://spring.io/projects/spring-boot)
  * spring-boot-security-oauth2-resource-server - [org.springframework.boot:spring-boot-security-oauth2-resource-server](https://spring.io/projects/spring-boot)
@@ -294,6 +294,7 @@ Apache License Version 2.0
  * spring-boot-starter-data-jpa-test - [org.springframework.boot:spring-boot-starter-data-jpa-test](https://spring.io/projects/spring-boot)
  * spring-boot-starter-flyway - [org.springframework.boot:spring-boot-starter-flyway](https://spring.io/projects/spring-boot)
  * spring-boot-starter-jackson - [org.springframework.boot:spring-boot-starter-jackson](https://spring.io/projects/spring-boot)
+ * spring-boot-starter-jackson-test - [org.springframework.boot:spring-boot-starter-jackson-test](https://spring.io/projects/spring-boot)
  * spring-boot-starter-jdbc - [org.springframework.boot:spring-boot-starter-jdbc](https://spring.io/projects/spring-boot)
  * spring-boot-starter-jdbc-test - [org.springframework.boot:spring-boot-starter-jdbc-test](https://spring.io/projects/spring-boot)
  * spring-boot-starter-kafka - [org.springframework.boot:spring-boot-starter-kafka](https://spring.io/projects/spring-boot)
@@ -310,6 +311,7 @@ Apache License Version 2.0
  * spring-boot-starter-tomcat-runtime - [org.springframework.boot:spring-boot-starter-tomcat-runtime](https://spring.io/projects/spring-boot)
  * spring-boot-starter-validation - [org.springframework.boot:spring-boot-starter-validation](https://spring.io/projects/spring-boot)
  * spring-boot-starter-webmvc - [org.springframework.boot:spring-boot-starter-webmvc](https://spring.io/projects/spring-boot)
+ * spring-boot-starter-webmvc-test - [org.springframework.boot:spring-boot-starter-webmvc-test](https://spring.io/projects/spring-boot)
  * spring-boot-test - [org.springframework.boot:spring-boot-test](https://spring.io/projects/spring-boot)
  * spring-boot-test-autoconfigure - [org.springframework.boot:spring-boot-test-autoconfigure](https://spring.io/projects/spring-boot)
  * spring-boot-thymeleaf - [org.springframework.boot:spring-boot-thymeleaf](https://spring.io/projects/spring-boot)
@@ -339,7 +341,6 @@ Apache License Version 2.0
  * Togglz - Spring Framework integration - [org.togglz:togglz-spring-core](https://www.togglz.org/togglz-spring-core/)
  * Togglz - Spring Security integration - [org.togglz:togglz-spring-security](https://www.togglz.org/togglz-spring-security/)
  * Swagger UI - [org.webjars:swagger-ui](https://www.webjars.org)
- * WireMock - [org.wiremock:wiremock-standalone](http://wiremock.org)
  * snappy-java - [org.xerial.snappy:snappy-java](https://github.com/xerial/snappy-java)
  * org.xmlunit:xmlunit-core - [org.xmlunit:xmlunit-core](https://www.xmlunit.org/)
  * SnakeYAML - [org.yaml:snakeyaml](https://bitbucket.org/snakeyaml/snakeyaml)
@@ -401,7 +402,6 @@ BSD License 3
  * Protocol Buffers [Core] - [com.google.protobuf:protobuf-java](https://developers.google.com/protocol-buffers/protobuf-java/)
  * ANTLR 4 Runtime - [org.antlr:antlr4-runtime](https://www.antlr.org/antlr4-runtime/)
  * Hamcrest - [org.hamcrest:hamcrest](http://hamcrest.org/JavaHamcrest/)
- * Hamcrest Core - [org.hamcrest:hamcrest-core](http://hamcrest.org/JavaHamcrest/)
  * asm - [org.ow2.asm:asm](http://asm.ow2.io/)
 
 Bouncy Castle Licence
@@ -447,7 +447,6 @@ Eclipse Public License, Version 1.0
 -------------------------------
 
  * H2 Database Engine - [com.h2database:h2](https://h2database.com)
- * JUnit - [junit:junit](http://junit.org)
 
 GNU General Public License, version 2 (GPL2), with the classpath exception
 -------------------------------
@@ -499,9 +498,9 @@ MIT License
  * Duct Tape - [org.rnorth.duct-tape:duct-tape](https://github.com/rnorth/duct-tape)
  * JUL to SLF4J bridge - [org.slf4j:jul-to-slf4j](http://www.slf4j.org)
  * SLF4J API Module - [org.slf4j:slf4j-api](http://www.slf4j.org)
- * Testcontainers :: JUnit Jupiter Extension - [org.testcontainers:junit-jupiter](https://java.testcontainers.org)
- * Testcontainers :: MinIO - [org.testcontainers:minio](https://java.testcontainers.org)
  * Testcontainers Core - [org.testcontainers:testcontainers](https://java.testcontainers.org)
+ * Testcontainers :: JUnit Jupiter Extension - [org.testcontainers:testcontainers-junit-jupiter](https://java.testcontainers.org)
+ * Testcontainers :: MinIO - [org.testcontainers:testcontainers-minio](https://java.testcontainers.org)
  * webjars-locator-lite - [org.webjars:webjars-locator-lite](https://webjars.org)
 
 MPL 1.1
