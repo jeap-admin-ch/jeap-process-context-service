@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [22.0.0] - 2026-07-06
+
+### Dependencies
+- **ch.admin.bit.jeap:jeap-spring-boot-parent**: 36.1.0 → 36.2.0 (minor)
+- **org.testcontainers:testcontainers-bom**: 1.21.4 → 2.0.5 (major)
+
 ## [21.0.1] - 2026-07-01
 
 ### Fixed
