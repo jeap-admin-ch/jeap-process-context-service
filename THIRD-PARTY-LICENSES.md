@@ -341,6 +341,7 @@ Apache License Version 2.0
  * Togglz - Spring Framework integration - [org.togglz:togglz-spring-core](https://www.togglz.org/togglz-spring-core/)
  * Togglz - Spring Security integration - [org.togglz:togglz-spring-security](https://www.togglz.org/togglz-spring-security/)
  * Swagger UI - [org.webjars:swagger-ui](https://www.webjars.org)
+ * WireMock - [org.wiremock:wiremock-standalone](http://wiremock.org)
  * snappy-java - [org.xerial.snappy:snappy-java](https://github.com/xerial/snappy-java)
  * org.xmlunit:xmlunit-core - [org.xmlunit:xmlunit-core](https://www.xmlunit.org/)
  * SnakeYAML - [org.yaml:snakeyaml](https://bitbucket.org/snakeyaml/snakeyaml)
