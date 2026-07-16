@@ -453,21 +453,6 @@
     - version: 1.2.4
     - licenses: MIT
     - repository: https://github.com/cypress-io/xvfb
- - **[@emnapi/core@1.9.1](https://github.com/toyobayashi/emnapi)**
-    - name: @emnapi/core
-    - version: 1.9.1
-    - licenses: MIT
-    - repository: https://github.com/toyobayashi/emnapi
- - **[@emnapi/runtime@1.9.1](https://github.com/toyobayashi/emnapi)**
-    - name: @emnapi/runtime
-    - version: 1.9.1
-    - licenses: MIT
-    - repository: https://github.com/toyobayashi/emnapi
- - **[@emnapi/wasi-threads@1.2.0](https://github.com/toyobayashi/emnapi)**
-    - name: @emnapi/wasi-threads
-    - version: 1.2.0
-    - licenses: MIT
-    - repository: https://github.com/toyobayashi/emnapi
  - **[@esbuild/linux-x64@0.27.3](https://github.com/evanw/esbuild)**
     - name: @esbuild/linux-x64
     - version: 0.27.3
@@ -1038,11 +1023,6 @@
     - version: 4.1.0
     - licenses: MIT
     - repository: https://github.com/theupdateframework/tuf-js
- - **[@tybys/wasm-util@0.10.1](https://github.com/toyobayashi/wasm-util)**
-    - name: @tybys/wasm-util
-    - version: 0.10.1
-    - licenses: MIT
-    - repository: https://github.com/toyobayashi/wasm-util
  - **[@types/babel__core@7.20.5](https://github.com/DefinitelyTyped/DefinitelyTyped)**
     - name: @types/babel__core
     - version: 7.20.5
@@ -2993,9 +2973,9 @@
     - version: 6.2.2
     - licenses: MIT
     - repository: https://github.com/panva/jose
- - **[js-cookie@3.0.8](https://github.com/js-cookie/js-cookie)**
+ - **[js-cookie@3.0.5](https://github.com/js-cookie/js-cookie)**
     - name: js-cookie
-    - version: 3.0.8
+    - version: 3.0.5
     - licenses: MIT
     - repository: https://github.com/js-cookie/js-cookie
  - **[js-tokens@4.0.0](https://github.com/lydell/js-tokens)**
@@ -4398,9 +4378,9 @@
     - version: 6.1.86
     - licenses: MIT
     - repository: https://github.com/remusao/tldts
- - **[tmp@0.2.7](https://github.com/raszi/node-tmp)**
+ - **[tmp@0.2.5](https://github.com/raszi/node-tmp)**
     - name: tmp
-    - version: 0.2.7
+    - version: 0.2.5
     - licenses: MIT
     - repository: https://github.com/raszi/node-tmp
  - **[tmpl@1.0.5](https://github.com/daaku/nodejs-tmpl)**

@@ -1,0 +1,36 @@
+server:
+  port: 8303
+
+jeap:
+  security:
+    oauth2:
+      resourceserver:
+        application-name: process-context-service
+  messaging:
+    kafka:
+      error-topic-name: errorTopic
+      bootstrap-servers: ${spring.embedded.kafka.brokers}
+  processcontext:
+    kafka:
+      topic:
+        process-snapshot-created: process-snapshot-created
+        process-outdated-internal: outdated
+    housekeeping:
+      page-size: 1
+    objectstorage:
+      snapshot-bucket: test-bucket
+      snapshot-retention-days: 3
+    template:
+      classpath-location-pattern: classpath:/process/templates/domain_event_triggers_process_instance_instantiation.json
+    frontend:
+      application-url: http://localhost:8303/process-context/
+      logout-redirect-uri: http://localhost:8303/process-context/
+      token-aware-pattern:
+        - ^/process-context/api/.*
+        - ^http://localhost:8303/process-context/api/.*
+      client-id: process-context-service
+      system-name: jme
+      pams-environment: ""
+      mock-pams: true
+      auto-login: true
+      silent-renew: false
