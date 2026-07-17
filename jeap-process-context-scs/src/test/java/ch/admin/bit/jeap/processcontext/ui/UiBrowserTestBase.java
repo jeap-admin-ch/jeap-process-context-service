@@ -24,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -31,6 +32,8 @@ import org.springframework.test.context.DynamicPropertySource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
 import static org.awaitility.Awaitility.await;
 
@@ -67,6 +70,8 @@ public abstract class UiBrowserTestBase extends ProcessInstanceMockS3ITBase {
 
     @Autowired
     private ProcessInstanceRepository processInstanceRepository;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @DynamicPropertySource
     static void oidcProperties(DynamicPropertyRegistry registry) {
@@ -154,13 +159,29 @@ public abstract class UiBrowserTestBase extends ProcessInstanceMockS3ITBase {
     }
 
     protected void createStartedProcess() {
+        createStartedProcess(originProcessId);
+    }
+
+    protected void createStartedProcess(String processId) {
         Test1CreatingProcessInstanceEvent event = Test1CreatingProcessInstanceEventBuilder
-                .createForProcessId(originProcessId)
+                .createForProcessId(processId)
                 .build();
         sendSync("topic.test1creatingprocessinstance", event);
         await("process instance has been created")
                 .atMost(TIMEOUT)
-                .until(() -> processInstanceRepository.findByOriginProcessId(originProcessId).isPresent());
+                .until(() -> processInstanceRepository.findByOriginProcessId(processId).isPresent());
+    }
+
+    protected void createBidirectionalProcessRelation(String originId, String targetId) {
+        var origin = processInstanceRepository.findByOriginProcessId(originId).orElseThrow();
+        jdbcTemplate.update("""
+                        INSERT INTO process_instance_process_relations
+                            (id, process_instance_id, name, role_type, origin_role, target_role,
+                             visibility_type, related_process_id, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                UUID.randomUUID(), origin.getId(), "navigation", "ORIGIN", "source", "target",
+                "BOTH", targetId, ZonedDateTime.now());
     }
 
     protected void completeProcess() {

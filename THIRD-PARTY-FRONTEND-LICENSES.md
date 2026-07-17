@@ -148,9 +148,9 @@
     - version: 21.3.1
     - licenses: MIT
     - repository: https://github.com/angular-eslint/angular-eslint
- - **[@angular/animations@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/animations@21.2.17](https://github.com/angular/angular)**
     - name: @angular/animations
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
  - **[@angular/build@21.2.9](https://github.com/angular/angular-cli)**
@@ -168,29 +168,29 @@
     - version: 21.2.3
     - licenses: MIT
     - repository: https://github.com/angular/angular-cli
- - **[@angular/common@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/common@21.2.17](https://github.com/angular/angular)**
     - name: @angular/common
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/compiler-cli@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/compiler-cli@21.2.17](https://github.com/angular/angular)**
     - name: @angular/compiler-cli
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/compiler@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/compiler@21.2.17](https://github.com/angular/angular)**
     - name: @angular/compiler
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/core@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/core@21.2.17](https://github.com/angular/angular)**
     - name: @angular/core
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/forms@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/forms@21.2.17](https://github.com/angular/angular)**
     - name: @angular/forms
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
  - **[@angular/material@21.2.3](https://github.com/angular/components)**
@@ -198,19 +198,19 @@
     - version: 21.2.3
     - licenses: MIT
     - repository: https://github.com/angular/components
- - **[@angular/platform-browser-dynamic@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/platform-browser-dynamic@21.2.17](https://github.com/angular/angular)**
     - name: @angular/platform-browser-dynamic
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/platform-browser@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/platform-browser@21.2.17](https://github.com/angular/angular)**
     - name: @angular/platform-browser
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/router@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/router@21.2.17](https://github.com/angular/angular)**
     - name: @angular/router
-    - version: 21.2.5
+    - version: 21.2.17
     - licenses: MIT
     - repository: https://github.com/angular/angular
  - **[@asamuzakjp/css-color@3.2.0](https://github.com/asamuzaK/cssColor)**
@@ -453,6 +453,21 @@
     - version: 1.2.4
     - licenses: MIT
     - repository: https://github.com/cypress-io/xvfb
+ - **[@emnapi/core@1.9.1](https://github.com/toyobayashi/emnapi)**
+    - name: @emnapi/core
+    - version: 1.9.1
+    - licenses: MIT
+    - repository: https://github.com/toyobayashi/emnapi
+ - **[@emnapi/runtime@1.9.1](https://github.com/toyobayashi/emnapi)**
+    - name: @emnapi/runtime
+    - version: 1.9.1
+    - licenses: MIT
+    - repository: https://github.com/toyobayashi/emnapi
+ - **[@emnapi/wasi-threads@1.2.0](https://github.com/toyobayashi/emnapi)**
+    - name: @emnapi/wasi-threads
+    - version: 1.2.0
+    - licenses: MIT
+    - repository: https://github.com/toyobayashi/emnapi
  - **[@esbuild/linux-x64@0.27.3](https://github.com/evanw/esbuild)**
     - name: @esbuild/linux-x64
     - version: 0.27.3
@@ -1023,6 +1038,11 @@
     - version: 4.1.0
     - licenses: MIT
     - repository: https://github.com/theupdateframework/tuf-js
+ - **[@tybys/wasm-util@0.10.1](https://github.com/toyobayashi/wasm-util)**
+    - name: @tybys/wasm-util
+    - version: 0.10.1
+    - licenses: MIT
+    - repository: https://github.com/toyobayashi/wasm-util
  - **[@types/babel__core@7.20.5](https://github.com/DefinitelyTyped/DefinitelyTyped)**
     - name: @types/babel__core
     - version: 7.20.5
@@ -2333,9 +2353,9 @@
     - version: 0.6.1
     - licenses: Apache-2.0
     - repository: https://github.com/mikeal/forever-agent
- - **[form-data@4.0.5](https://github.com/form-data/form-data)**
+ - **[form-data@4.0.6](https://github.com/form-data/form-data)**
     - name: form-data
-    - version: 4.0.5
+    - version: 4.0.6
     - licenses: MIT
     - repository: https://github.com/form-data/form-data
  - **[forwarded@0.2.0](https://github.com/jshttp/forwarded)**
@@ -2518,9 +2538,9 @@
     - version: 5.2.2
     - licenses: MIT
     - repository: https://github.com/sindresorhus/hasha
- - **[hasown@2.0.2](https://github.com/inspect-js/hasOwn)**
+ - **[hasown@2.0.4](https://github.com/inspect-js/hasOwn)**
     - name: hasown
-    - version: 2.0.2
+    - version: 2.0.4
     - licenses: MIT
     - repository: https://github.com/inspect-js/hasOwn
  - **[he@1.2.0](https://github.com/mathiasbynens/he)**
@@ -2973,9 +2993,9 @@
     - version: 6.2.2
     - licenses: MIT
     - repository: https://github.com/panva/jose
- - **[js-cookie@3.0.5](https://github.com/js-cookie/js-cookie)**
+ - **[js-cookie@3.0.8](https://github.com/js-cookie/js-cookie)**
     - name: js-cookie
-    - version: 3.0.5
+    - version: 3.0.8
     - licenses: MIT
     - repository: https://github.com/js-cookie/js-cookie
  - **[js-tokens@4.0.0](https://github.com/lydell/js-tokens)**
@@ -3868,9 +3888,9 @@
     - version: 7.0.1
     - licenses: MIT
     - repository: https://github.com/dubzzz/pure-rand
- - **[qs@6.14.2](https://github.com/ljharb/qs)**
+ - **[qs@6.15.2](https://github.com/ljharb/qs)**
     - name: qs
-    - version: 6.14.2
+    - version: 6.15.2
     - licenses: BSD-3-Clause
     - repository: https://github.com/ljharb/qs
  - **[queue-microtask@1.2.3](https://github.com/feross/queue-microtask)**
@@ -4343,9 +4363,9 @@
     - version: 0.11.12
     - licenses: MIT
     - repository: https://github.com/un-ts/synckit
- - **[systeminformation@5.31.6](https://github.com/sebhildebrandt/systeminformation)**
+ - **[systeminformation@5.31.17](https://github.com/sebhildebrandt/systeminformation)**
     - name: systeminformation
-    - version: 5.31.6
+    - version: 5.31.17
     - licenses: MIT
     - repository: https://github.com/sebhildebrandt/systeminformation
  - **[tar@7.5.13](https://github.com/isaacs/node-tar)**
@@ -4378,9 +4398,9 @@
     - version: 6.1.86
     - licenses: MIT
     - repository: https://github.com/remusao/tldts
- - **[tmp@0.2.5](https://github.com/raszi/node-tmp)**
+ - **[tmp@0.2.7](https://github.com/raszi/node-tmp)**
     - name: tmp
-    - version: 0.2.5
+    - version: 0.2.7
     - licenses: MIT
     - repository: https://github.com/raszi/node-tmp
  - **[tmpl@1.0.5](https://github.com/daaku/nodejs-tmpl)**
