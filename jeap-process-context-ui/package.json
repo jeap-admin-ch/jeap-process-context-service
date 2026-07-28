@@ -43,7 +43,8 @@
     "picomatch": ">=4.0.4",
     "qs": ">=6.15.2",
     "systeminformation": "^5.31.7",
-    "tmp": ">=0.2.6"
+    "tmp": ">=0.2.6",
+    "fast-uri": "4.1.1"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.3.1",
