@@ -14,6 +14,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Documentation in `docs/`: getting started, architecture, process templates, configuration, user interface,
   operations, template migration and the upgrade guide for version 17.
 
+### Changed
+- The frontend build is no longer bound to a profile, it always runs.
+
 ## [24.0.0] - 2026-07-29
 
 ### Dependencies
