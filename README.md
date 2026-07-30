@@ -1,6 +1,24 @@
 # jEAP Process Context Service
-Service to check and visualize process context data. 
-This project provides a common library for the process context service, which can be used to set up a process context service instance. It also provides a UI to visualize the process context data and an example application that uses the process context service.
+
+The jEAP Process Context Service (PCS) provides a process context for cross-service processes in an event
+driven architecture, without having to control the execution of the processes with a central process engine
+(choreography over orchestration). It consumes the domain events and commands of the participating services,
+tracks the state of the process instances and their tasks, and visualizes them in a UI — so that a process can
+be followed and analysed, and events can be published in reaction to changed process states or milestones.
+
+This repository is published as a **library**: every business application creates and deploys its own PCS
+instance depending on it, containing the process definitions specific to that application.
+
+## Documentation
+
+- [Getting Started](docs/getting-started.md) — set up a PCS instance for your business application
+- [Architecture](docs/architecture.md) — goals, context, building blocks, domain model, cross-cutting concepts
+- [Process Templates](docs/process-templates.md) — the complete process definition reference
+- [Configuration](docs/configuration.md) — the property reference
+- [User Interface](docs/user-interface.md) — views, roles, deep links and the log system link
+- [Operations](docs/operations.md) — scaling, housekeeping and metrics
+- [Template Migration](docs/template-migration.md) — what happens when a process template changes
+- [Upgrading to version 17](docs/upgrading-to-v17.md) — the mandatory upgrade procedure and code changes
 
 ## Changes
 
@@ -72,35 +90,8 @@ The UI will also automatically connect to the process context service running on
 
 ## Configuration
 
-### PAMS / ePortal
-
-The UI header contains the ePortal service navigation of Oblique, which is backed by PAMS
-(`https://pams-api.eportal<environment>.admin.ch`). It is configured with the following properties under
-`jeap.processcontext.frontend`:
-
-| Property           | Description                                                                                                                 | Default |
-|--------------------|-----------------------------------------------------------------------------------------------------------------------------|---------|
-| `pams-enabled`     | Whether the application is integrated with PAMS/ePortal.                                                                     | `true`  |
-| `pams-environment` | ePortal environment of the service navigation: `DEV`, `TEST`, `REF`, `ABN` or `PROD`. Not required if PAMS is disabled.      | -       |
-| `mock-pams`        | Treat the PAMS session as always active instead of reading it from the service navigation. Implied by `pams-enabled: false`. | `false` |
-
-Set `pams-enabled: false` for deployments without PAMS:
-
-```yaml
-jeap:
-  processcontext:
-    frontend:
-      pams-enabled: false
-```
-
-The UI then does not contact the ePortal backend at all - no service navigation requests, no ePortal session
-timeout handling - and authentication is based solely on OAuth2/OIDC. The header controls served by PAMS
-(login/logout, profile, messages, applications) would be non-functional and are hidden; the language selection
-remains available.
-
-Note that `pams-environment` must match the environment of the identity provider the UI authenticates
-against. Pointing the service navigation at a different environment than the authentication leads to an
-inconsistent login state in the header and to logout and timeout redirects into the wrong ePortal.
+The properties of a PCS instance are documented in [Configuration](docs/configuration.md), including the
+[PAMS and ePortal](docs/configuration.md#pams-and-eportal) settings of the UI header.
 
 ## Local Cypress Component Tests
 

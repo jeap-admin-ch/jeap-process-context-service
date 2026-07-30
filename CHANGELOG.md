@@ -11,6 +11,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - New property `jeap.processcontext.frontend.pams-enabled` (default `true`) to deactivate the PAMS/ePortal
   integration. With `pams-enabled: false`, the UI does not contact the ePortal backend, hides the header
   controls served by PAMS and mocks the PAMS session; `pams-environment` is then no longer needed.
+- Documentation in `docs/`: getting started, architecture, process templates, configuration, user interface,
+  operations, template migration and the upgrade guide for version 17.
 
 ## [24.0.0] - 2026-07-29
 

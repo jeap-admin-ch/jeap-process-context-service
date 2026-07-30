@@ -130,6 +130,25 @@ Downstream projects implement these interfaces to customize behavior:
 Start dependencies via Docker Compose in the `docker/` directory (PostgreSQL on port 5555, Kafka on 9092, Schema
 Registry on 7781). Run Spring Boot app with profiles `local,local-npm-ui`. Access UI at http://localhost:4200/.
 
+## Documentation
+
+- The documentation lives in `docs/`, indexed from the "Documentation" section of [README.md](./README.md).
+- **Keep `docs/` up to date with every change.** A change to a configuration property, a REST endpoint, the
+  process template format, a metric or the UI is only complete once the corresponding page in `docs/` has been
+  updated — and a new page has been linked from the README index.
+- `README.md` and everything in `docs/` is published to the Docusaurus site at https://jeap-admin-ch.github.io,
+  which assembles the README and `docs/` of every jEAP repository. The markdown must therefore be **valid MDX**
+  (MDX v3, as used by Docusaurus v3):
+  - `<` and `{` outside of fenced code blocks and inline code spans are parsed as JSX and break the site build.
+    Always wrap placeholders such as `<system>-process-outdated`, `{traceId}` or generic types in backticks or
+    put them in a code fence.
+  - HTML comments (`<!-- ... -->`) are not valid MDX; use `{/* ... */}` inside a JSX context, or omit them.
+- The site builds with `onBrokenLinks: 'throw'`, so relative links between documents and their `#anchors` must
+  resolve. Anchors are slugged by github-slugger: lowercased, punctuation removed, each remaining whitespace
+  character replaced by a hyphen — avoid headings that produce surprising slugs (`A / B` becomes `a--b`).
+- The site adds its own front matter (`sidebar_position`, categories), so do not add generator-specific front
+  matter to the sources. `getting-started.md` is automatically pinned first in the sidebar.
+
 ## Versioning and Commits
 
 - Commit Message: Use the JIRA ID from the branch name as a prefix (if available), do not use conventional commit
