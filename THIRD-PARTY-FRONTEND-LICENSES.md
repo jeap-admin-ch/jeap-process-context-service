@@ -2273,9 +2273,9 @@
     - version: 2.0.6
     - licenses: MIT
     - repository: https://github.com/hiddentao/fast-levenshtein
- - **[fast-uri@3.1.2](https://github.com/fastify/fast-uri)**
+ - **[fast-uri@3.1.4](https://github.com/fastify/fast-uri)**
     - name: fast-uri
-    - version: 3.1.2
+    - version: 3.1.4
     - licenses: BSD-3-Clause
     - repository: https://github.com/fastify/fast-uri
  - **[fastq@1.20.1](https://github.com/mcollina/fastq)**

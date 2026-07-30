@@ -70,6 +70,38 @@ These will start the UI on http://localhost:4200/. The UI will automatically rel
 To run an example backend locally, you can use the example project [jme-process-context-example](https://github.com/jme-admin-ch/jme-process-context-example) or an own implementation of the process context service.
 The UI will also automatically connect to the process context service running on http://localhost:8080/.
 
+## Configuration
+
+### PAMS / ePortal
+
+The UI header contains the ePortal service navigation of Oblique, which is backed by PAMS
+(`https://pams-api.eportal<environment>.admin.ch`). It is configured with the following properties under
+`jeap.processcontext.frontend`:
+
+| Property           | Description                                                                                                                 | Default |
+|--------------------|-----------------------------------------------------------------------------------------------------------------------------|---------|
+| `pams-enabled`     | Whether the application is integrated with PAMS/ePortal.                                                                     | `true`  |
+| `pams-environment` | ePortal environment of the service navigation: `DEV`, `TEST`, `REF`, `ABN` or `PROD`. Not required if PAMS is disabled.      | -       |
+| `mock-pams`        | Treat the PAMS session as always active instead of reading it from the service navigation. Implied by `pams-enabled: false`. | `false` |
+
+Set `pams-enabled: false` for deployments without PAMS:
+
+```yaml
+jeap:
+  processcontext:
+    frontend:
+      pams-enabled: false
+```
+
+The UI then does not contact the ePortal backend at all - no service navigation requests, no ePortal session
+timeout handling - and authentication is based solely on OAuth2/OIDC. The header controls served by PAMS
+(login/logout, profile, messages, applications) would be non-functional and are hidden; the language selection
+remains available.
+
+Note that `pams-environment` must match the environment of the identity provider the UI authenticates
+against. Pointing the service navigation at a different environment than the authentication leads to an
+inconsistent login state in the header and to logout and timeout redirects into the wrong ePortal.
+
 ## Local Cypress Component Tests
 
 ### Testing in Browser with UI:

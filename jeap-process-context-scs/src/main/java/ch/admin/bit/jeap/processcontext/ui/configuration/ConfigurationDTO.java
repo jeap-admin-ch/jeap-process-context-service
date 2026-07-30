@@ -14,6 +14,7 @@ import java.util.List;
 class ConfigurationDTO {
     private String applicationUrl;
     private String logoutRedirectUri;
+    private boolean pamsEnabled;
     private boolean mockPams;
     private String pamsEnvironment;
     private List<String> tokenAwarePatterns;

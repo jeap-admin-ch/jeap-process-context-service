@@ -30,7 +30,6 @@ jeap:
         - ^http://localhost:8303/process-context/api/.*
       client-id: process-context-service
       system-name: jme
-      pams-environment: ""
-      mock-pams: true
+      pams-enabled: false
       auto-login: true
       silent-renew: false

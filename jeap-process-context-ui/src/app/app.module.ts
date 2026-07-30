@@ -51,8 +51,7 @@ import {ForbiddenPageComponent} from './pages/error-pages/forbidden-page/forbidd
 import {TaskDetailViewComponent} from './pages/process-page/task-detail-view/task-detail-view.component';
 import {TaskDetailsNodataRowComponent} from './pages/process-page/task-detail-view/task-details-nodata-row/task-details-nodata-row.component';
 import {QdAuthModule, QdConfigService} from '@quadrel-enterprise-ui/auth';
-
-export type QdShellHeaderWidgetEnvironment = 'DEV' | 'TEST' | 'REF' | 'ABN' | 'PROD';
+import {configureServiceNavigation, PamsConfig} from './shared/pams/pams-header-config';
 
 registerLocaleData(localeDECH);
 registerLocaleData(localeFRCH);
@@ -145,8 +144,7 @@ export class AppModule {
 
 	/**
 	 * Retrieves the current PAMS environment for the ServiceNavigation in Oblique.
-	 * Possible values: "-d", "-r", "-t", "-a", ""
-	 *
+	 * Possible values: "-d", "-r", "-t", "-a", "", or null if the PAMS integration is disabled.
 	 */
 	getObPamsEnvironment() {
 		return {environment: this.obEPamsEnvironment};
@@ -157,41 +155,13 @@ export class AppModule {
 		this.masterLayoutConfig.locale.locales = ['de', 'fr', 'it'];
 		this.masterLayoutConfig.locale.defaultLanguage = 'de';
 		this.masterLayoutConfig.header.serviceNavigation.pamsAppId = 'notUsed';
-		this.masterLayoutConfig.header.serviceNavigation.displayInfo = false;
-		this.masterLayoutConfig.header.serviceNavigation.displayLanguages = true;
-		this.masterLayoutConfig.header.serviceNavigation.displayMessage = true;
-		this.masterLayoutConfig.header.serviceNavigation.displayApplications = true;
-		this.masterLayoutConfig.header.serviceNavigation.displayProfile = true;
-		this.masterLayoutConfig.header.serviceNavigation.displayAuthentication = true;
-		this.masterLayoutConfig.header.serviceNavigation.handleLogout = true;
 
 		this.configService.config$.subscribe(qdConfig => {
 			if (qdConfig) {
 				authConfig.clientId = qdConfig.clientId;
 				authConfig.systemName = qdConfig.systemName;
-				this.obEPamsEnvironment = this.mapEnvironmentEnum(qdConfig.pamsEnvironment);
+				this.obEPamsEnvironment = configureServiceNavigation(qdConfig as PamsConfig, this.masterLayoutConfig);
 			}
 		});
-	}
-
-	/**
-	 * Maps a given QdShellHeaderWidgetEnvironment string to the corresponding ObEPamsEnvironment enumeration value.
-	 */
-	private mapEnvironmentEnum(qdEnv: '' | QdShellHeaderWidgetEnvironment): ObEPamsEnvironment | null {
-		switch (qdEnv) {
-			case 'DEV':
-				return ObEPamsEnvironment.DEV;
-			case 'REF':
-				return ObEPamsEnvironment.REF;
-			case 'ABN':
-				return ObEPamsEnvironment.ABN;
-			case 'TEST':
-				return ObEPamsEnvironment.TEST;
-			case 'PROD':
-				return ObEPamsEnvironment.PROD;
-			default:
-				console.warn(`Unrecognized pamsEnvironment: ${qdEnv}. ServiceNavigation will not work.`);
-				return null;
-		}
 	}
 }

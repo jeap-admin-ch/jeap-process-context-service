@@ -29,11 +29,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import static org.awaitility.Awaitility.await;
 
@@ -61,12 +64,23 @@ public abstract class UiBrowserTestBase extends ProcessInstanceMockS3ITBase {
             VIEW_ROLES, "default",
             UNRELATED_ROLES, UNRELATED_PROFILE);
 
+    // the ePortal service navigation of Oblique talks to https://pams-api.eportal<env>.admin.ch and redirects
+    // to https://eportal<env>.admin.ch
+    private static final Pattern EPORTAL_REQUEST_PATTERN = Pattern.compile("eportal|pams", Pattern.CASE_INSENSITIVE);
+
     private static OidcAuthorizationMockServer oidcMockServer;
     private static Playwright playwright;
     private static Browser browser;
 
     protected BrowserContext context;
     protected Page page;
+
+    /**
+     * Requests the browser sent to the ePortal/PAMS backend of the Oblique service navigation, recorded for
+     * the currently open page. Empty as long as the PAMS integration is disabled, see
+     * {@code jeap.processcontext.frontend.pams-enabled}.
+     */
+    protected final List<String> ePortalRequests = Collections.synchronizedList(new ArrayList<>());
 
     @Autowired
     private ProcessInstanceRepository processInstanceRepository;
@@ -123,6 +137,7 @@ public abstract class UiBrowserTestBase extends ProcessInstanceMockS3ITBase {
         oidcMockServer.reset();
         oidcMockServer.setActiveProfile(profile);
         closeContext();
+        ePortalRequests.clear();
 
         context = browser.newContext(new Browser.NewContextOptions().setLocale("de-CH"));
         context.route("http://localhost:" + OIDC_PORT + OIDC_BASE_PATH + "/**", route -> {
@@ -140,6 +155,12 @@ public abstract class UiBrowserTestBase extends ProcessInstanceMockS3ITBase {
         PlaywrightAssertions.setDefaultAssertionTimeout(15_000);
         page.onConsoleMessage(message -> log.info("Browser console {}: {}", message.type(), message.text()));
         page.onPageError(error -> log.warn("Browser page error: {}", error));
+        page.onRequest(request -> {
+            if (EPORTAL_REQUEST_PATTERN.matcher(request.url()).find()) {
+                log.info("Browser request to ePortal/PAMS: {} {}", request.method(), request.url());
+                ePortalRequests.add(request.url());
+            }
+        });
         page.onResponse(response -> {
             if (response.url().contains("/api/") || response.url().contains(OIDC_BASE_PATH)
                     || response.status() >= 400) {
