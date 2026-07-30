@@ -72,6 +72,12 @@
             "$ref": "#/definitions/relationPatterns"
           }
         },
+        "processRelationPatterns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/processRelationPattern"
+          }
+        },
         "completions": {
           "type": "array",
           "items": {
@@ -269,6 +275,57 @@
         "object",
         "subject",
         "predicateType"
+      ]
+    },
+    "processRelationPattern": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "roleType": {
+          "type": "string",
+          "enum": ["origin", "target"]
+        },
+        "originRole": {
+          "type": "string"
+        },
+        "targetRole": {
+          "type": "string"
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["origin", "target", "both"]
+        },
+        "source": {
+          "type": "object",
+          "$ref": "#/definitions/processRelationSource"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "roleType",
+        "originRole",
+        "targetRole",
+        "visibility",
+        "source"
+      ]
+    },
+    "processRelationSource": {
+      "type": "object",
+      "properties": {
+        "messageName": {
+          "type": "string"
+        },
+        "messageDataKey": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "messageName",
+        "messageDataKey"
       ]
     },
     "relationNode": {

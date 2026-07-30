@@ -6,9 +6,7 @@ from the classpath matching the pattern `classpath:/process/templates/*.json`, c
 
 A JSON schema supporting code completion and validation in the IDE is available at
 `jeap-process-context-repository-template-json/src/main/schema/process-template-schema.json`, see
-[Getting Started](getting-started.md#json-schema-support-in-the-ide). Note that the schema does not cover
-`processRelationPatterns` yet, so the IDE flags [process relations](#process-relations) as an unknown
-attribute although they are supported.
+[Getting Started](getting-started.md#json-schema-support-in-the-ide).
 
 ## Structure
 
