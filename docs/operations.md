@@ -55,10 +55,10 @@ is created for 50%, 80% and 99% of all measurements (`quantile` tag).
 | `jeap_pcs_housekeeping_cleanup`                    | Duration of a housekeeping run                                                                  |
 | `jeap_pcs_create_snapshot`                         | Creating a process snapshot                                                                     |
 | `jeap_pcs_produce_process_snapshot_created_event`  | Producing a `ProcessSnapshotCreatedEvent`                                                       |
+| `jeap_pcs_relation_service_new_process_data`       | Deriving new relations from newly created process data                                          |
+| `jeap_pcs_relation_service_notify_listeners`       | Notifying the registered `RelationListener`s about new relations                                |
 | `jeap_pcs_s3_client_*`                             | S3 client operations for snapshots (`put_object`, `get_object`, `head_bucket`, `list_objects`, and the bucket lifecycle configuration) |
-| `jeap_pcs_transparenza_relations_commands_created` | Creating relation commands for newly discovered relations, including hashing and signing. Only when the corresponding relation listener is used. |
-| `jeap_pcs_transparenza_relations_commands_sent`    | Sending the relation commands. Only when the corresponding relation listener is used.           |
-| `jeap_pcs_repository*`                             | Repository and query timers for database access                                                 |
+| `jeap_pcs_repository_*`                            | Repository and query timers for database access, per entity (`processinstance`, `message`, `taskinstance`, `processdata`, `relation`, …) |
 
 In addition, the state of the [feature flags](process-templates.md#relation-patterns-with-a-feature-flag) is
 published as the `feature_flag` gauge.

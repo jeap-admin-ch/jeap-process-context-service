@@ -110,6 +110,10 @@ The process view role is typically granted to the business user of the frontend 
 code flow. An up-to-date description of the API is served by the running application at
 `/swagger-ui/index.html`.
 
+In addition, `/api/configuration`, `/api/configuration/version` and `/api/configuration/log-deeplink` serve
+the bundled Angular UI with its OIDC configuration, the application version and the
+[log deep link template](configuration.md#log-deep-link).
+
 ### Aggregate roots
 
 | Aggregate         | Description                                                                                                     |
@@ -143,9 +147,9 @@ Internal Kafka messages decouple the processing steps inside the PCS. They decou
 partitioning of the source topics, shorten transactions, simplify error handling and generally increase
 robustness. These technical messages are modelled as jEAP domain events.
 
-| Topic                      | Message type                  | Payload                                                                               | Description                                                                                     |
+| Topic (configuration key)  | Message type                  | Payload                                                                               | Description                                                                                     |
 |----------------------------|-------------------------------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| `process-instance-outdated`| `ProcessContextOutdatedEvent` | `originProcessId`, `processUpdateType` (`MESSAGE_RECEIVED`, `PROCESS_CREATION_MESSAGE_RECEIVED`, `MIGRATION_TRIGGERED`), `messageId`, `templateName` | Something happened for a process instance that potentially affects its state → the state has to be recomputed (or the instance created). |
+| `jeap.processcontext.kafka.topic.process-outdated-internal` | `ProcessContextOutdatedEvent` | `originProcessId`, `processUpdateType` (`MESSAGE_RECEIVED`, `PROCESS_CREATION_MESSAGE_RECEIVED`, `MIGRATION_TRIGGERED`), `messageId`, `templateName` | Something happened for a process instance that potentially affects its state → the state has to be recomputed (or the instance created). |
 
 ## Cross-cutting concepts
 

@@ -17,6 +17,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - The frontend build is no longer bound to a profile, it always runs.
 
+### Fixed
+- Correct the documentation of process templates: tasks carry no `label` and completions no `reason`, both
+  texts come from the translations. Correct the default of the template migration `lock-at-most` property and
+  document the previously undocumented properties and metrics.
+
 ## [24.0.0] - 2026-07-29
 
 ### Dependencies

@@ -1,11 +1,14 @@
 # Process Templates
 
 A process definition is described as a JSON document, the **process template**. The PCS loads its templates
-from the classpath matching the pattern `process/templates/*.json`.
+from the classpath matching the pattern `classpath:/process/templates/*.json`, configurable with
+`jeap.processcontext.template.classpath-location-pattern`.
 
 A JSON schema supporting code completion and validation in the IDE is available at
 `jeap-process-context-repository-template-json/src/main/schema/process-template-schema.json`, see
-[Getting Started](getting-started.md#json-schema-support-in-the-ide).
+[Getting Started](getting-started.md#json-schema-support-in-the-ide). Note that the schema does not cover
+`processRelationPatterns` yet, so the IDE flags [process relations](#process-relations) as an unknown
+attribute although they are supported.
 
 ## Structure
 
@@ -54,18 +57,20 @@ At runtime, task instances are created in a process based on the template. A tas
 For a `dynamic` task the task instance ID is provided by a correlation provider. For an `observed` task the
 task ID is irrelevant, as the task can never be modified after its instantiation.
 
+The first task below is a mandatory static single-instance task — `lifecycle=static` and
+`cardinality=single-instance` are the defaults — completed when a certain message is received. The second one
+is a dynamic multi-instance task whose instance count is planned by a message:
+
 ```json
 "tasks": [
   {
     "name": "singleTask",
-    "label": "Mandatory static single-instance task, lifecycle=static (default), cardinality=single-instance (default)",
     "completedBy": {
       "message": "MyExampleEvent"
     }
   },
   {
     "name": "dynamicTaskCompletedByDomainEvent",
-    "label": "Dynamic multi-instance task, instance count planned when a certain domain event is received",
     "lifecycle": "dynamic",
     "plannedBy": {
       "message": "MyPlanningEvent"
@@ -76,6 +81,10 @@ task ID is irrelevant, as the task can never be modified after its instantiation
   }
 ]
 ```
+
+> Task templates carry no display text: the label shown in the UI comes from the translations, keyed by the
+> task name (see [Internationalization](#internationalization)). The template model rejects unknown fields, so
+> a stray attribute makes the PCS fail to load the template at startup.
 
 > **Legacy cardinality configuration.** PCS versions before 5.13.0 only knew `cardinality` with the values
 > `single` and `dynamic`. Newer versions still support them and translate them as
@@ -165,7 +174,6 @@ visualise important occurrences for the business user within the task list:
 ```json
 {
   "name": "objectsOnRoadSpotted",
-  "label": "Objects on the road",
   "lifecycle": "observed",
   "observes": {
     "message": "JmeRaceObjectsOnRoadSpottedEvent"
@@ -182,7 +190,6 @@ The instantiation of an observation task can be controlled by a condition as wel
 ```json
 {
   "name": "triggerSafetyCar",
-  "label": "Trigger safety car",
   "observes": {
     "message": "JmeRaceObjectsOnRoadSpottedEvent",
     "condition": "ch.admin.bit.jeap.jme.processcontext.condition.TriggerSafetyCarTaskInstantiationCondition"
@@ -573,7 +580,7 @@ When a process is created it is in the state `started`. When certain conditions 
 | Attribute     | Description            | Values                                                                                                                                                                 |
 |---------------|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `conclusion`  | Completion status      | `succeeded` — completed successfully; `cancelled` — cancelled in a controlled way, participating systems in a consistent state; `aborted` — aborted in an uncontrolled way, participating systems possibly inconsistent |
-| `reason`      | Reason for completion  | String                                                                                                                                                                  |
+| `name`        | Name of the completion | String. Keys the translation of the human-readable completion reason, see [Internationalization](#internationalization). |
 | `completedAt` | Completion timestamp   | Determined by the PCS                                                                                                                                                   |
 
 More than one completion condition can be configured.
@@ -586,8 +593,7 @@ More than one completion condition can be configured.
     "completedBy": {
       "message": "JmeRaceWeatherAlertActivatedEvent",
       "conclusion": "aborted",
-      "name": "raceWeatherAlertAborted",
-      "reason": "Race aborted immediately because of weather alert."
+      "name": "raceWeatherAlertAborted"
     }
   }
 ]
@@ -614,7 +620,7 @@ public interface ProcessCompletionCondition {
 
 A custom condition decides, based on the process context, whether the process is completed. If it is not,
 `ProcessCompletionConditionResult.IN_PROGRESS` has to be returned; otherwise the matching conclusion and
-reason:
+completion name:
 
 ```java
 @Override
@@ -622,7 +628,7 @@ public ProcessCompletionConditionResult isProcessCompleted(ProcessContext proces
     if (isCompleted) {
         return ProcessCompletionConditionResult.completedBuilder()
                 .conclusion(conclusion)
-                .reason(reason)
+                .name("myCompletionName")
                 .build();
     } else {
         return ProcessCompletionConditionResult.IN_PROGRESS;
@@ -740,6 +746,37 @@ Without a version parameter, the newest available snapshot version is returned.
 For a PAS instance to be able to validate the archive data objects, the process snapshot schema defined by
 the PCS has to be added to the archive type registry of the business application. Make sure that the snapshot
 schema versions matching the currently and previously used PCS versions are known to the PAS instance.
+
+## Provided implementations
+
+The plugin API ships ready-made implementations that can be referenced from a template instead of writing an
+own class:
+
+| Class                                                | Purpose                                                                                       |
+|------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| `MessageProcessIdCorrelationProvider`                | Correlates a message via its `processId` attribute — the default behaviour.                    |
+| `AlwaysProcessInstantiationCondition`                | Always instantiates the process, equivalent to `"triggersProcessInstantiation": true`.         |
+| `NeverProcessInstantiationCondition`                 | Never instantiates the process.                                                                |
+| `AllTasksInFinalStateProcessCompletionCondition`     | Completes the process when all its tasks have reached a final state.                           |
+| `EmptySetPayloadExtractor` / `EmptySetReferenceExtractor` | Extract nothing; useful as an explicit no-op.                                             |
+| `LoggingRelationListener`                            | Logs newly discovered relations — useful for development and for verifying relation patterns.  |
+
+### Testing custom conditions
+
+`ProcessContextStub` (in `jeap-process-context-plugin-api`, package `…plugin.api.context.test`) builds a
+`ProcessContext` from a list of messages, so custom conditions can be unit tested without a database or a
+running application:
+
+```java
+ProcessContext processContext = ProcessContextStub.builder()
+        .originProcessId("origin-process-id")
+        .processName("raceProcess")
+        .messages(List.of(message))
+        .allTasksCompleted(true)
+        .build();
+
+assertThat(new MyCompletionCondition().isProcessCompleted(processContext).isCompleted()).isTrue();
+```
 
 ## Internationalization
 

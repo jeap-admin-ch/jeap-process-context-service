@@ -12,6 +12,7 @@ defaults are defined in `processContextDefaultProperties.properties` of the serv
 | `jeap.processcontext.kafka.topic.process-snapshot-created`   | Topic on which the creation of a process snapshot is announced. Required only if snapshots are configured.     |
 | `jeap.processcontext.kafka.message-consumer-paused`          | Stops message consumption, e.g. while performing a maintenance operation. Default: `false`.                     |
 | `jeap.processcontext.kafka.filters.<MessageType>`            | A [message filter](#message-filters) for the given message type.                                               |
+| `jeap.processcontext.kafka.topic-check`                      | Whether the existence of the configured topics is checked at startup. Default: `true`, inactive in the `local` profile. |
 
 The topics carrying the business messages are declared per message in the process template, together with the
 optional `clusterName` — the PCS supports reading from multiple Kafka clusters. The internal messages of the
@@ -76,7 +77,7 @@ public class JmeRaceStartedEventMessageFilter implements MessageFilter<JmeRaceSt
 
 | Property                                              | Description                                                                     |
 |-------------------------------------------------------|---------------------------------------------------------------------------------|
-| `jeap.processcontext.template.classpath-location-pattern` | Where to load the process templates from. Default: `process/templates/*.json`. |
+| `jeap.processcontext.template.classpath-location-pattern` | Where to load the process templates from. Default: `classpath:/process/templates/*.json`. |
 
 ### Template migration scheduler
 
@@ -90,7 +91,7 @@ jeap:
     template:
       migration:
         lock-at-least: PT1M          # Minimal time to keep a lock at the migration triggering job
-        lock-at-most: PT20M          # Max time to keep a lock at the migration triggering job
+        lock-at-most: PT60M          # Max time to keep a lock at the migration triggering job
         batch-size: 500              # How many process instances to migrate at most in one batch
                                      # (only considers non-completed process instances)
         max-created-at-age-days: 180 # How old a process instance may be at most to be considered
@@ -125,6 +126,11 @@ Configured under `jeap.processcontext.objectstorage`:
 | `snapshot-bucket`         | Name of the bucket the snapshots are stored in.      |         | no                  |
 | `snapshot-retention-days` | Number of days the snapshots are kept.               | 3       | yes                 |
 
+| Property                                                              | Description                                                                     | Default |
+|-----------------------------------------------------------------------|---------------------------------------------------------------------------------|---------|
+| `jeap.processcontext.process-snapshot-language`                       | Language of the labels written into a process snapshot (`DE`, `FR`, `IT`).      | `DE`    |
+| `jeap.processcontext.process-snapshot-archive-retention-period-months`| Retention period declared in the archive data of a snapshot, in months.         | 60      |
+
 If no snapshot bucket name is configured, the snapshot feature is inactive. If the PCS then finds a process
 template configuring snapshots at startup, it aborts the startup with an exception.
 
@@ -144,7 +150,9 @@ startup and aborts with an exception if it is not possible.
 ## Frontend and OAuth
 
 The PCS UI is secured with OAuth2/OIDC; the backend is a jEAP OAuth2 resource server
-(`jeap.security.oauth2.resourceserver.*`).
+(`jeap.security.oauth2.resourceserver.*`). `jeap.processcontext.frontend.sts-server` and
+`token-aware-pattern` default to the issuer of the configured authorization server and to the API path of the
+application, so they usually do not have to be set.
 
 ```yaml
 jeap:
