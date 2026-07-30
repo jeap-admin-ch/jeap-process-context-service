@@ -4,6 +4,64 @@ This guide describes how to set up an instance of the Process Context Service (P
 application. For the process definition itself see [Process Templates](process-templates.md), for the
 available properties see [Configuration](configuration.md).
 
+## How it works
+
+The PCS consumes the messages declared in its process templates, keeps the state of the process instances up
+to date, and publishes what it has derived from them:
+
+```mermaid
+flowchart LR
+  Services["Business services"]
+  Topics[/"Business topics<br/>(domain events, commands)"/]
+
+  subgraph PCS["Process Context Service"]
+    direction TB
+    Consumer["Message consumer<br/>(topics from the process templates)"]
+    Filter["Message filter<br/>(optional, per message type)"]
+    Correlate["Correlation to a process instance<br/>(processId, correlation provider<br/>or process data)"]
+    Internal[/"Internal topic<br/>process-outdated-internal<br/>(keyed by origin process ID)"/]
+    Update["Process update:<br/>plan and complete tasks,<br/>derive process data and relations,<br/>evaluate completion conditions"]
+    Snapshot["Snapshot creation<br/>(on completion, if configured)"]
+    Api["REST API<br/>+ bundled Angular UI"]
+    DB[("PostgreSQL")]
+
+    Consumer --> Filter
+    Filter --> Correlate
+    Correlate -->|" Persist message,<br/>notify that the state is outdated "| Internal
+    Internal --> Update
+    Update --> DB
+    Update --> Snapshot
+    Api --- DB
+  end
+
+  subgraph EXTERNAL["Other systems"]
+    direction TB
+    S3[("S3 object storage")]
+    PAS["Process Archive Service"]
+    EHS["Error Handling Service"]
+    Listener["RelationListener<br/>(instance-specific plugin)"]
+    Browser["Business user<br/>(browser)"]
+  end
+
+  Services -->|" Publish "| Topics
+  Topics --> Consumer
+  Consumer -->|" MessageProcessingFailedEvent<br/>on a processing failure "| EHS
+  Snapshot -->|" Store snapshot "| S3
+  Snapshot -->|" ProcessSnapshotCreatedEvent "| PAS
+  PAS -->|" Fetch snapshot for archiving "| Api
+  Update -->|" New relations between<br/>business objects "| Listener
+  Browser --> Api
+```
+
+The internal topic decouples the ingestion from the state computation: it is keyed by the origin process ID,
+so the updates of one process instance are processed serially while different instances are processed in
+parallel. This keeps the transactions short and makes the parallelism independent of the partitioning of the
+business topics — see [Architecture](architecture.md#asynchronous-notifications-and-eventual-consistency).
+
+Note that the PCS is strictly passive: it never decides which activities are to be executed and never
+triggers one. `ProcessSnapshotCreatedEvent` is the only message it publishes on its own; anything else
+reaching other systems is produced by an instance-specific `RelationListener`.
+
 ## 1. Create a service instance
 
 The PCS is published as a **library**. Every business application creates its own instance, i.e. a source
