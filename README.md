@@ -18,7 +18,6 @@ instance depending on it, containing the process definitions specific to that ap
 - [User Interface](docs/user-interface.md) — views, roles, deep links and the log system link
 - [Operations](docs/operations.md) — scaling, housekeeping and metrics
 - [Template Migration](docs/template-migration.md) — what happens when a process template changes
-- [Upgrading to version 17](docs/upgrading-to-v17.md) — the mandatory upgrade procedure and code changes
 
 ## Changes
 

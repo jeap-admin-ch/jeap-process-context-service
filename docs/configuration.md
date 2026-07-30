@@ -10,7 +10,7 @@ defaults are defined in `processContextDefaultProperties.properties` of the serv
 |--------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
 | `jeap.processcontext.kafka.topic.process-outdated-internal`  | Internal topic controlling the maximum internal parallelism of the PCS. Required.                              |
 | `jeap.processcontext.kafka.topic.process-snapshot-created`   | Topic on which the creation of a process snapshot is announced. Required only if snapshots are configured.     |
-| `jeap.processcontext.kafka.message-consumer-paused`          | Stops message consumption. Only needed while following the [version 17 upgrade](upgrading-to-v17.md).          |
+| `jeap.processcontext.kafka.message-consumer-paused`          | Stops message consumption, e.g. while performing a maintenance operation. Default: `false`.                     |
 | `jeap.processcontext.kafka.filters.<MessageType>`            | A [message filter](#message-filters) for the given message type.                                               |
 
 The topics carrying the business messages are declared per message in the process template, together with the

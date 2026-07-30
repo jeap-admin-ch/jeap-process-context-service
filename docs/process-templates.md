@@ -630,9 +630,59 @@ public ProcessCompletionConditionResult isProcessCompleted(ProcessContext proces
 }
 ```
 
+#### Accessing messages in a condition
+
 To access the messages of a process instance in a condition, use the query methods of
-`ProcessContextMessageQueryRepository`, which `ProcessContext` inherits. Always use the most specific query
-method available — see [Upgrading to version 17](upgrading-to-v17.md#custom-conditions).
+`ProcessContextMessageQueryRepository`, which `ProcessContext` inherits.
+
+**Always use the most specific query method possible.** These methods issue database queries optimised for
+the specific use case, so the most specific method gives the best performance:
+
+- to check for the existence of a message type regardless of the actual count, use a `contains…()` method
+  instead of a `count…()` method,
+- to check for the existence of a certain message data key/value, use a `contains…()` method instead of
+  loading all message data.
+
+```java
+public class TooManyMaintenanceStopsProcessCompletionCondition implements ProcessCompletionCondition {
+
+    @Override
+    public ProcessCompletionConditionResult isProcessCompleted(ProcessContext processContext) {
+        if (processContext.containsMessageOfType("JmeRaceCarMaintenanceRequiredEvent")) {
+            return ProcessCompletionConditionResult.completedBuilder()
+                    .conclusion(ProcessCompletionConclusion.CANCELLED)
+                    .name("tooManyMaintenanceStopsProcessCompletionCondition")
+                    .build();
+        } else {
+            return ProcessCompletionConditionResult.IN_PROGRESS;
+        }
+    }
+}
+```
+
+The available query methods:
+
+```java
+// get message data
+processContext.getMessageDataForMessageType("JmeDocumentReviewedEvent");
+
+// contains
+processContext.containsMessageOfType("JmeDocumentReviewedEvent");
+processContext.containsMessageByTypeWithAnyMessageDataKeyValue("JmeDocumentReviewedEvent",
+        Map.of("anyKey", Set.of("anyValue", "anotherValue")));
+processContext.containsMessageByTypeWithAnyMessageDataValue("JmeDocumentReviewedEvent",
+        "anyKey", Set.of("anyValue", "anotherValue"));
+processContext.containsMessageByTypeWithMessageData("JmeDocumentReviewedEvent", "anyKey", "anyValue");
+
+// count
+processContext.countMessagesByType("JmeDocumentReviewedEvent");
+processContext.countMessagesByTypes(Set.of("JmeDocumentReviewedEvent"));
+processContext.countMessagesByTypeWithAnyMessageData("JmeDocumentReviewedEvent", Map.of("anyKey", "anyValue"));
+processContext.countMessagesByTypeWithMessageData("JmeDocumentReviewedEvent", "anyKey", "anyValue");
+
+// tasks
+boolean allTasksInFinalState = processContext.areAllTasksInFinalState();
+```
 
 ### Completion when all tasks are completed
 
