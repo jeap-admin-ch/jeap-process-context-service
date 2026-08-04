@@ -138,9 +138,9 @@
     - version: 21.3.1
     - licenses: MIT
     - repository: https://github.com/angular-eslint/angular-eslint
- - **[@angular/animations@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/animations@21.2.19](https://github.com/angular/angular)**
     - name: @angular/animations
-    - version: 21.2.5
+    - version: 21.2.19
     - licenses: MIT
     - repository: https://github.com/angular/angular
  - **[@angular/build@21.2.3](https://github.com/angular/angular-cli)**
@@ -158,29 +158,29 @@
     - version: 21.2.3
     - licenses: MIT
     - repository: https://github.com/angular/angular-cli
- - **[@angular/common@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/common@21.2.19](https://github.com/angular/angular)**
     - name: @angular/common
-    - version: 21.2.5
+    - version: 21.2.19
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/compiler-cli@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/compiler-cli@21.2.19](https://github.com/angular/angular)**
     - name: @angular/compiler-cli
-    - version: 21.2.5
+    - version: 21.2.19
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/compiler@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/compiler@21.2.19](https://github.com/angular/angular)**
     - name: @angular/compiler
-    - version: 21.2.5
+    - version: 21.2.19
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/core@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/core@21.2.19](https://github.com/angular/angular)**
     - name: @angular/core
-    - version: 21.2.5
+    - version: 21.2.19
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/forms@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/forms@21.2.19](https://github.com/angular/angular)**
     - name: @angular/forms
-    - version: 21.2.5
+    - version: 21.2.19
     - licenses: MIT
     - repository: https://github.com/angular/angular
  - **[@angular/material@21.2.3](https://github.com/angular/components)**
@@ -188,19 +188,19 @@
     - version: 21.2.3
     - licenses: MIT
     - repository: https://github.com/angular/components
- - **[@angular/platform-browser-dynamic@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/platform-browser-dynamic@21.2.19](https://github.com/angular/angular)**
     - name: @angular/platform-browser-dynamic
-    - version: 21.2.5
+    - version: 21.2.19
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/platform-browser@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/platform-browser@21.2.19](https://github.com/angular/angular)**
     - name: @angular/platform-browser
-    - version: 21.2.5
+    - version: 21.2.19
     - licenses: MIT
     - repository: https://github.com/angular/angular
- - **[@angular/router@21.2.5](https://github.com/angular/angular)**
+ - **[@angular/router@21.2.19](https://github.com/angular/angular)**
     - name: @angular/router
-    - version: 21.2.5
+    - version: 21.2.19
     - licenses: MIT
     - repository: https://github.com/angular/angular
  - **[@asamuzakjp/css-color@3.2.0](https://github.com/asamuzaK/cssColor)**
@@ -208,14 +208,14 @@
     - version: 3.2.0
     - licenses: MIT
     - repository: https://github.com/asamuzaK/cssColor
- - **[@babel/code-frame@7.29.0](https://github.com/babel/babel)**
+ - **[@babel/code-frame@7.29.7](https://github.com/babel/babel)**
     - name: @babel/code-frame
-    - version: 7.29.0
+    - version: 7.29.7
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/compat-data@7.29.0](https://github.com/babel/babel)**
+ - **[@babel/compat-data@7.29.7](https://github.com/babel/babel)**
     - name: @babel/compat-data
-    - version: 7.29.0
+    - version: 7.29.7
     - licenses: MIT
     - repository: https://github.com/babel/babel
  - **[@babel/core@7.29.0](https://github.com/babel/babel)**
@@ -223,9 +223,14 @@
     - version: 7.29.0
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/generator@7.29.1](https://github.com/babel/babel)**
+ - **[@babel/core@7.29.7](https://github.com/babel/babel)**
+    - name: @babel/core
+    - version: 7.29.7
+    - licenses: MIT
+    - repository: https://github.com/babel/babel
+ - **[@babel/generator@7.29.8](https://github.com/babel/babel)**
     - name: @babel/generator
-    - version: 7.29.1
+    - version: 7.29.8
     - licenses: MIT
     - repository: https://github.com/babel/babel
  - **[@babel/helper-annotate-as-pure@7.27.3](https://github.com/babel/babel)**
@@ -233,24 +238,24 @@
     - version: 7.27.3
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/helper-compilation-targets@7.28.6](https://github.com/babel/babel)**
+ - **[@babel/helper-compilation-targets@7.29.7](https://github.com/babel/babel)**
     - name: @babel/helper-compilation-targets
-    - version: 7.28.6
+    - version: 7.29.7
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/helper-globals@7.28.0](https://github.com/babel/babel)**
+ - **[@babel/helper-globals@7.29.7](https://github.com/babel/babel)**
     - name: @babel/helper-globals
-    - version: 7.28.0
+    - version: 7.29.7
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/helper-module-imports@7.28.6](https://github.com/babel/babel)**
+ - **[@babel/helper-module-imports@7.29.7](https://github.com/babel/babel)**
     - name: @babel/helper-module-imports
-    - version: 7.28.6
+    - version: 7.29.7
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/helper-module-transforms@7.28.6](https://github.com/babel/babel)**
+ - **[@babel/helper-module-transforms@7.29.7](https://github.com/babel/babel)**
     - name: @babel/helper-module-transforms
-    - version: 7.28.6
+    - version: 7.29.7
     - licenses: MIT
     - repository: https://github.com/babel/babel
  - **[@babel/helper-plugin-utils@7.28.6](https://github.com/babel/babel)**
@@ -263,29 +268,29 @@
     - version: 7.24.7
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/helper-string-parser@7.27.1](https://github.com/babel/babel)**
+ - **[@babel/helper-string-parser@7.29.7](https://github.com/babel/babel)**
     - name: @babel/helper-string-parser
-    - version: 7.27.1
+    - version: 7.29.7
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/helper-validator-identifier@7.28.5](https://github.com/babel/babel)**
+ - **[@babel/helper-validator-identifier@7.29.7](https://github.com/babel/babel)**
     - name: @babel/helper-validator-identifier
-    - version: 7.28.5
+    - version: 7.29.7
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/helper-validator-option@7.27.1](https://github.com/babel/babel)**
+ - **[@babel/helper-validator-option@7.29.7](https://github.com/babel/babel)**
     - name: @babel/helper-validator-option
-    - version: 7.27.1
+    - version: 7.29.7
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/helpers@7.29.2](https://github.com/babel/babel)**
+ - **[@babel/helpers@7.29.7](https://github.com/babel/babel)**
     - name: @babel/helpers
-    - version: 7.29.2
+    - version: 7.29.7
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/parser@7.29.2](https://github.com/babel/babel)**
+ - **[@babel/parser@7.29.8](https://github.com/babel/babel)**
     - name: @babel/parser
-    - version: 7.29.2
+    - version: 7.29.8
     - licenses: MIT
     - repository: https://github.com/babel/babel
  - **[@babel/plugin-syntax-async-generators@7.8.4](https://github.com/babel/babel/tree/master/packages/babel-plugin-syntax-async-generators)**
@@ -373,19 +378,19 @@
     - version: 7.28.6
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/template@7.28.6](https://github.com/babel/babel)**
+ - **[@babel/template@7.29.7](https://github.com/babel/babel)**
     - name: @babel/template
-    - version: 7.28.6
+    - version: 7.29.7
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/traverse@7.29.0](https://github.com/babel/babel)**
+ - **[@babel/traverse@7.29.8](https://github.com/babel/babel)**
     - name: @babel/traverse
-    - version: 7.29.0
+    - version: 7.29.8
     - licenses: MIT
     - repository: https://github.com/babel/babel
- - **[@babel/types@7.29.0](https://github.com/babel/babel)**
+ - **[@babel/types@7.29.8](https://github.com/babel/babel)**
     - name: @babel/types
-    - version: 7.29.0
+    - version: 7.29.8
     - licenses: MIT
     - repository: https://github.com/babel/babel
  - **[@bbc/apache2-license-checker@1.1.4](https://github.com/bbc/apache2-license-checker)**
@@ -2263,9 +2268,9 @@
     - version: 2.0.6
     - licenses: MIT
     - repository: https://github.com/hiddentao/fast-levenshtein
- - **[fast-uri@3.1.2](https://github.com/fastify/fast-uri)**
+ - **[fast-uri@4.1.2](https://github.com/fastify/fast-uri)**
     - name: fast-uri
-    - version: 3.1.2
+    - version: 4.1.2
     - licenses: BSD-3-Clause
     - repository: https://github.com/fastify/fast-uri
  - **[fastq@1.20.1](https://github.com/mcollina/fastq)**
@@ -2343,9 +2348,9 @@
     - version: 0.6.1
     - licenses: Apache-2.0
     - repository: https://github.com/mikeal/forever-agent
- - **[form-data@4.0.5](https://github.com/form-data/form-data)**
+ - **[form-data@4.0.6](https://github.com/form-data/form-data)**
     - name: form-data
-    - version: 4.0.5
+    - version: 4.0.6
     - licenses: MIT
     - repository: https://github.com/form-data/form-data
  - **[forwarded@0.2.0](https://github.com/jshttp/forwarded)**
@@ -2531,6 +2536,11 @@
  - **[hasown@2.0.2](https://github.com/inspect-js/hasOwn)**
     - name: hasown
     - version: 2.0.2
+    - licenses: MIT
+    - repository: https://github.com/inspect-js/hasOwn
+ - **[hasown@2.0.4](https://github.com/inspect-js/hasOwn)**
+    - name: hasown
+    - version: 2.0.4
     - licenses: MIT
     - repository: https://github.com/inspect-js/hasOwn
  - **[he@1.2.0](https://github.com/mathiasbynens/he)**
@@ -2983,9 +2993,9 @@
     - version: 6.2.2
     - licenses: MIT
     - repository: https://github.com/panva/jose
- - **[js-cookie@3.0.5](https://github.com/js-cookie/js-cookie)**
+ - **[js-cookie@3.0.8](https://github.com/js-cookie/js-cookie)**
     - name: js-cookie
-    - version: 3.0.5
+    - version: 3.0.8
     - licenses: MIT
     - repository: https://github.com/js-cookie/js-cookie
  - **[js-tokens@4.0.0](https://github.com/lydell/js-tokens)**
@@ -3878,9 +3888,9 @@
     - version: 7.0.1
     - licenses: MIT
     - repository: https://github.com/dubzzz/pure-rand
- - **[qs@6.14.2](https://github.com/ljharb/qs)**
+ - **[qs@6.15.2](https://github.com/ljharb/qs)**
     - name: qs
-    - version: 6.14.2
+    - version: 6.15.2
     - licenses: BSD-3-Clause
     - repository: https://github.com/ljharb/qs
  - **[queue-microtask@1.2.3](https://github.com/feross/queue-microtask)**
@@ -4353,9 +4363,9 @@
     - version: 0.11.12
     - licenses: MIT
     - repository: https://github.com/un-ts/synckit
- - **[systeminformation@5.31.6](https://github.com/sebhildebrandt/systeminformation)**
+ - **[systeminformation@5.31.17](https://github.com/sebhildebrandt/systeminformation)**
     - name: systeminformation
-    - version: 5.31.6
+    - version: 5.31.17
     - licenses: MIT
     - repository: https://github.com/sebhildebrandt/systeminformation
  - **[tar@7.5.13](https://github.com/isaacs/node-tar)**
@@ -4388,9 +4398,9 @@
     - version: 6.1.86
     - licenses: MIT
     - repository: https://github.com/remusao/tldts
- - **[tmp@0.2.5](https://github.com/raszi/node-tmp)**
+ - **[tmp@0.2.7](https://github.com/raszi/node-tmp)**
     - name: tmp
-    - version: 0.2.5
+    - version: 0.2.7
     - licenses: MIT
     - repository: https://github.com/raszi/node-tmp
  - **[tmpl@1.0.5](https://github.com/daaku/nodejs-tmpl)**
