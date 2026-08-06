@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [25.0.0] - 2026-08-06
+
+### Dependencies
+- **ch.admin.bit.jeap:jeap-spring-boot-parent**: 38.0.1 → 38.1.0 (minor)
+- **com.microsoft.playwright:playwright**: 1.61.0 → 1.62.0 (minor)
+- **zone.js**: 0.15.1 → 0.16.2 (minor)
+- **systeminformation**: 5.31.17 → 5.33.1 (minor)
+- **qs**: 6.15.2 → 6.15.3 (patch)
+- **prettier**: 3.8.1 → 3.9.6 (minor)
+- **picomatch**: 4.0.4 → 4.0.5 (patch)
+- **ng-mocks**: 14.15.2 → 14.16.1 (minor)
+- **jest-environment-jsdom**: 30.3.0 → 30.4.1 (minor)
+- **jest**: 30.3.0 → 30.4.2 (minor)
+- **husky**: 8.0.3 → 9.1.7 (major)
+- **fast-uri**: 3.1.5 → 4.1.2 (major)
+- **eslint**: 9.39.4 → 10.8.0 (major)
+- **cypress**: 15.15.0 → 15.20.0 (minor)
+- **angular-oauth2-oidc**: 20.0.2 → 22.0.2 (major)
+- **ajv**: 8.18.0 → 8.20.0 (minor)
+- **@typescript-eslint/parser**: 8.46.2 → 8.66.0 (minor)
+- **@typescript-eslint/eslint-plugin**: 8.46.2 → 8.66.0 (minor)
+- **@oblique/oblique**: 15.1.2 → 15.4.3 (minor)
+- **@cypress/vite-dev-server**: 7.2.1 → 7.3.4 (minor)
+- **@analogjs/vite-plugin-angular**: 2.3.1 → 2.6.4 (minor)
+
 ## [24.1.2] - 2026-08-04
 
 ### Changed
