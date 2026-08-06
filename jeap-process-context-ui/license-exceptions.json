@@ -90,6 +90,9 @@
     "minimatch@10.2.4": {
       "reason": "BlueOak-1.0.0; see: https://github.com/isaacs/minimatch"
     },
+    "minimatch@10.2.6": {
+      "reason": "BlueOak-1.0.0; see: https://github.com/isaacs/minimatch"
+    },
     "tar@7.5.12": {
       "reason": "BlueOak-1.0.0; see: https://github.com/isaacs/node-tar"
     },
