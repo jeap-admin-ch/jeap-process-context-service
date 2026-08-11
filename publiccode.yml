@@ -1,8 +1,8 @@
 publiccodeYmlVersion: 0.5.0
 name: jeap-process-context-service
 applicationSuite: jEAP
-softwareVersion: 25.0.0
-releaseDate: 2026-08-06
+softwareVersion: 25.1.0
+releaseDate: 2026-08-11
 url: "https://github.com/jeap-admin-ch/jeap-process-context-service.git"
 landingURL: "https://github.com/jeap-admin-ch/jeap"
 platforms:
