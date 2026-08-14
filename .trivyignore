@@ -1,0 +1,4 @@
+# Transitive dependency of Cypress, used only for frontend component tests.
+# Not included in the runtime artifact. No fixed upstream version available.
+# Re-evaluate by 2026-09-14.
+CVE-2026-56876
