@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [26.0.0] - 2026-08-14
+
+### Changed
+
+- Update **ch.admin.bit.jeap:jeap-spring-boot-parent** from 38.3.0 to 39.0.0, resolving CVE-2026-54428 by upgrading
+  **org.apache.httpcomponents.core5:httpcore5-h2** from 5.4.2 to 5.4.3.
+
 ## [25.1.0] - 2026-08-11
 
 ### Dependencies

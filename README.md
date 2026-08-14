@@ -16,6 +16,8 @@ instance depending on it, containing the process definitions specific to that ap
 - [Process Templates](docs/process-templates.md) — the complete process definition reference
 - [Configuration](docs/configuration.md) — the property reference
 - [User Interface](docs/user-interface.md) — views, roles, deep links and the log system link
+- [Frontend Authentication Decoupling Discussion](docs/frontend-authentication-decoupling-discussion.md) — decision paper for repository, artifact and integration concepts
+- [Frontend Authentication Decoupling Options](docs/frontend-authentication-decoupling-options.md) — options for removing the hard Quadrel and PAMS dependencies
 - [Operations](docs/operations.md) — scaling, housekeeping and metrics
 - [Template Migration](docs/template-migration.md) — what happens when a process template changes
 
