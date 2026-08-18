@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [26.1.0] - 2026-08-16
 
+### Changed
+- Pin the npm `overrides` in `jeap-process-context-ui/package.json` to exact versions and require pinned overrides in
+  `renovate.json`. Range overrides made Renovate apply new versions as lockfile-only updates via
+  `npm install <pkg>@<version> --package-lock-only`, which npm rejects with `EOVERRIDE` because the override then
+  conflicts with a direct dependency.
+
 ### Dependencies
 - **ch.admin.bit.jeap:jeap-spring-boot-parent**: 39.0.0 → 39.0.1 (patch)
 - **systeminformation**: 5.31.17 → 5.33.1 (minor)
