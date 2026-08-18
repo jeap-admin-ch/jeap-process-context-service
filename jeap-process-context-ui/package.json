@@ -9,8 +9,8 @@
   },
   "scripts": {
     "start": "ng serve",
-    "build": "ng build --base-href /process-context/",
-    "build-prod": "ng build -c production --base-href /process-context/",
+    "build": "npm run check-licenses && npm run generateLicenseFile && ng build --base-href /process-context/",
+    "build-prod": "npm run check-licenses && npm run generateLicenseFile && ng build -c production --base-href /process-context/",
     "test": "ng test",
     "test:watch": "ng test --watchAll",
     "cypress:run": "cypress run --config video=false --component",

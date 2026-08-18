@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [26.1.1] - 2026-08-18
+
+### Changed
+- Replaced the frontend license checker with `@jeap/jeap-frontend-license-checker`. The generated third-party notices now
+  carry the full license texts of the redistributed dependencies, and the license steps run as part of the npm frontend
+  build.
+
 ## [26.1.0] - 2026-08-18
 
 ### Changed
