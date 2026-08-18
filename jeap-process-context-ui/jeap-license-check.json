@@ -1,0 +1,13 @@
+{
+  "exceptions": {
+    "@quadrel-enterprise-ui/*": {
+      "reason": "Quadrel runtime dependencies whose published npm packages omit SPDX license metadata."
+    },
+    "jsonify@*": {
+      "reason": "Public domain dedication by the author; a free-form claim rather than an SPDX identifier. See https://github.com/ljharb/jsonify"
+    }
+  },
+  "notices": {
+    "out": "../THIRD-PARTY-FRONTEND-LICENSES.md"
+  }
+}

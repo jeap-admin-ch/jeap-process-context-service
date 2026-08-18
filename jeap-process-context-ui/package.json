@@ -14,8 +14,8 @@
     "test": "ng test",
     "test:watch": "ng test --watchAll",
     "cypress:run": "cypress run --config video=false --component",
-    "check-licenses": "apache2-license-checker",
-    "generateLicenseFile": "license-checker --customPath custom-license-md-format.json --markdown > ../THIRD-PARTY-FRONTEND-LICENSES.md"
+    "check-licenses": "jeap-frontend-license-checker",
+    "generateLicenseFile": "jeap-frontend-license-checker notices"
   },
   "private": true,
   "dependencies": {
@@ -58,8 +58,8 @@
     "@angular/build": "^21.2.3",
     "@angular/cli": "~21.2.3",
     "@angular/compiler-cli": "^21.2.19",
-    "@bbc/apache2-license-checker": "^1.1.4",
     "@cypress/vite-dev-server": "^7.2.1",
+    "@jeap/jeap-frontend-license-checker": "^1.0.0",
     "cypress": "^15.15.0",
     "@schematics/angular": "^21.2.3",
     "@types/jest": "^30.0.0",
@@ -73,7 +73,6 @@
     "jest-environment-jsdom": "^30.0.0",
     "jest-sonar-reporter": "2.0.0",
     "js-cookie": "^3.0.8",
-    "license-checker": "^25.0.1",
     "ng-mocks": "^14.15.2",
     "patch-package": "^8.0.1",
     "prettier": "^3.8.1",
