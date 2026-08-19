@@ -43,8 +43,8 @@
     "fast-uri": "4.1.2",
     "lodash": "4.18.1",
     "picomatch": "4.0.5",
-    "qs": "6.15.2",
-    "systeminformation": "5.31.17",
+    "qs": "6.15.3",
+    "systeminformation": "5.33.1",
     "tmp": "0.2.7"
   },
   "devDependencies": {
