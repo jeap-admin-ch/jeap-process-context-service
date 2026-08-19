@@ -41,7 +41,8 @@
             ],
             "scripts": ["node_modules/@oblique/oblique/ob-features.js"],
             "allowedCommonJsDependencies": ["lodash", "ajv", "ajv-formats"],
-            "browser": "src/main.ts"
+            "browser": "src/main.ts",
+            "extractLicenses": false
           },
           "configurations": {
             "production": {

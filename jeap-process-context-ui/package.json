@@ -15,7 +15,7 @@
     "test:watch": "ng test --watchAll",
     "cypress:run": "cypress run --config video=false --component",
     "check-licenses": "jeap-frontend-license-checker",
-    "generateLicenseFile": "jeap-frontend-license-checker notices"
+    "generateLicenseFile": "jeap-frontend-license-checker notices && jeap-frontend-license-checker notices --out src/assets/THIRD-PARTY-LICENSES.md --texts folder --texts-dir third-party-licenses"
   },
   "private": true,
   "dependencies": {

@@ -82,7 +82,6 @@
     - name: @angular-devkit/core
     - licenses: MIT
     - repository: https://github.com/angular/angular-cli
-    - license text: [jeap-process-context-ui/third-party-licenses/@angular-devkit__core/LICENSE](jeap-process-context-ui/third-party-licenses/@angular-devkit__core/LICENSE)
  - **[@angular-devkit/core](https://github.com/angular/angular-cli)**
     - name: @angular-devkit/core
     - licenses: MIT
@@ -91,7 +90,6 @@
     - name: @angular-devkit/schematics
     - licenses: MIT
     - repository: https://github.com/angular/angular-cli
-    - license text: [jeap-process-context-ui/third-party-licenses/@angular-devkit__schematics/LICENSE](jeap-process-context-ui/third-party-licenses/@angular-devkit__schematics/LICENSE)
  - **[@angular-eslint/builder](https://github.com/angular-eslint/angular-eslint)**
     - name: @angular-eslint/builder
     - licenses: MIT
@@ -124,7 +122,6 @@
     - name: @angular/animations
     - licenses: MIT
     - repository: https://github.com/angular/angular
-    - license text: [jeap-process-context-ui/third-party-licenses/@angular__animations/LICENSE](jeap-process-context-ui/third-party-licenses/@angular__animations/LICENSE)
  - **[@angular/build](https://github.com/angular/angular-cli)**
     - name: @angular/build
     - licenses: MIT
@@ -133,7 +130,6 @@
     - name: @angular/cdk
     - licenses: MIT
     - repository: https://github.com/angular/components
-    - license text: [jeap-process-context-ui/third-party-licenses/@angular__cdk/LICENSE](jeap-process-context-ui/third-party-licenses/@angular__cdk/LICENSE)
  - **[@angular/cli](https://github.com/angular/angular-cli)**
     - name: @angular/cli
     - licenses: MIT
@@ -142,7 +138,6 @@
     - name: @angular/common
     - licenses: MIT
     - repository: https://github.com/angular/angular
-    - license text: [jeap-process-context-ui/third-party-licenses/@angular__common/LICENSE](jeap-process-context-ui/third-party-licenses/@angular__common/LICENSE)
  - **[@angular/compiler-cli](https://github.com/angular/angular)**
     - name: @angular/compiler-cli
     - licenses: MIT
@@ -151,37 +146,30 @@
     - name: @angular/compiler
     - licenses: MIT
     - repository: https://github.com/angular/angular
-    - license text: [jeap-process-context-ui/third-party-licenses/@angular__compiler/LICENSE](jeap-process-context-ui/third-party-licenses/@angular__compiler/LICENSE)
  - **[@angular/core](https://github.com/angular/angular)**
     - name: @angular/core
     - licenses: MIT
     - repository: https://github.com/angular/angular
-    - license text: [jeap-process-context-ui/third-party-licenses/@angular__core/LICENSE](jeap-process-context-ui/third-party-licenses/@angular__core/LICENSE)
  - **[@angular/forms](https://github.com/angular/angular)**
     - name: @angular/forms
     - licenses: MIT
     - repository: https://github.com/angular/angular
-    - license text: [jeap-process-context-ui/third-party-licenses/@angular__forms/LICENSE](jeap-process-context-ui/third-party-licenses/@angular__forms/LICENSE)
  - **[@angular/material](https://github.com/angular/components)**
     - name: @angular/material
     - licenses: MIT
     - repository: https://github.com/angular/components
-    - license text: [jeap-process-context-ui/third-party-licenses/@angular__material/LICENSE](jeap-process-context-ui/third-party-licenses/@angular__material/LICENSE)
  - **[@angular/platform-browser-dynamic](https://github.com/angular/angular)**
     - name: @angular/platform-browser-dynamic
     - licenses: MIT
     - repository: https://github.com/angular/angular
-    - license text: [jeap-process-context-ui/third-party-licenses/@angular__platform-browser-dynamic/LICENSE](jeap-process-context-ui/third-party-licenses/@angular__platform-browser-dynamic/LICENSE)
  - **[@angular/platform-browser](https://github.com/angular/angular)**
     - name: @angular/platform-browser
     - licenses: MIT
     - repository: https://github.com/angular/angular
-    - license text: [jeap-process-context-ui/third-party-licenses/@angular__platform-browser/LICENSE](jeap-process-context-ui/third-party-licenses/@angular__platform-browser/LICENSE)
  - **[@angular/router](https://github.com/angular/angular)**
     - name: @angular/router
     - licenses: MIT
     - repository: https://github.com/angular/angular
-    - license text: [jeap-process-context-ui/third-party-licenses/@angular__router/LICENSE](jeap-process-context-ui/third-party-licenses/@angular__router/LICENSE)
  - **[@asamuzakjp/css-color](https://github.com/asamuzaK/cssColor)**
     - name: @asamuzakjp/css-color
     - licenses: MIT
@@ -622,7 +610,6 @@
     - name: @jridgewell/sourcemap-codec
     - licenses: MIT
     - repository: https://github.com/jridgewell/sourcemaps
-    - license text: [jeap-process-context-ui/third-party-licenses/@jridgewell__sourcemap-codec/LICENSE](jeap-process-context-ui/third-party-licenses/@jridgewell__sourcemap-codec/LICENSE)
  - **[@jridgewell/trace-mapping](https://github.com/jridgewell/sourcemaps)**
     - name: @jridgewell/trace-mapping
     - licenses: MIT
@@ -663,7 +650,6 @@
     - name: @ngx-translate/core
     - licenses: MIT
     - repository: https://github.com/ngx-translate/core
-    - license text: [jeap-process-context-ui/third-party-licenses/@ngx-translate__core/LICENSE](jeap-process-context-ui/third-party-licenses/@ngx-translate__core/LICENSE)
  - **[@nodelib/fs.scandir](https://github.com/nodelib/nodelib/tree/master/packages/fs/fs.scandir)**
     - name: @nodelib/fs.scandir
     - licenses: MIT
@@ -716,7 +702,6 @@
     - name: @oblique/oblique
     - licenses: MIT
     - repository: https://github.com/oblique-bit/oblique
-    - license text: [jeap-process-context-ui/third-party-licenses/@oblique__oblique/LICENSE](jeap-process-context-ui/third-party-licenses/@oblique__oblique/LICENSE)
  - **[@oxc-project/types](https://github.com/oxc-project/oxc)**
     - name: @oxc-project/types
     - licenses: MIT
@@ -745,12 +730,10 @@
     - name: @popperjs/core
     - licenses: MIT
     - repository: github:popperjs/popper-core
-    - license text: [jeap-process-context-ui/third-party-licenses/@popperjs__core/LICENSE.md](jeap-process-context-ui/third-party-licenses/@popperjs__core/LICENSE.md)
  - **[@quadrel-enterprise-ui/auth](https://github.com/BAZG-Quadrel/quadrel-auth)**
     - name: @quadrel-enterprise-ui/auth
     - licenses: UNKNOWN
     - repository: https://github.com/BAZG-Quadrel/quadrel-auth
-    - text: not shipped by the package
  - **[@rolldown/binding-linux-x64-gnu](https://github.com/rolldown/rolldown)**
     - name: @rolldown/binding-linux-x64-gnu
     - licenses: MIT
@@ -775,7 +758,6 @@
     - name: @schematics/angular
     - licenses: MIT
     - repository: https://github.com/angular/angular-cli
-    - license text: [jeap-process-context-ui/third-party-licenses/@schematics__angular/LICENSE](jeap-process-context-ui/third-party-licenses/@schematics__angular/LICENSE)
  - **[@sigstore/bundle](https://github.com/sigstore/sigstore-js)**
     - name: @sigstore/bundle
     - licenses: Apache-2.0
@@ -816,7 +798,6 @@
     - name: @standard-schema/spec
     - licenses: MIT
     - repository: https://github.com/standard-schema/standard-schema
-    - license text: [jeap-process-context-ui/third-party-licenses/@standard-schema__spec/LICENSE](jeap-process-context-ui/third-party-licenses/@standard-schema__spec/LICENSE)
  - **[@ts-morph/common](https://github.com/dsherret/ts-morph)**
     - name: @ts-morph/common
     - licenses: MIT
@@ -1021,7 +1002,6 @@
     - name: ajv-formats
     - licenses: MIT
     - repository: https://github.com/ajv-validator/ajv-formats
-    - license text: [jeap-process-context-ui/third-party-licenses/ajv-formats/LICENSE](jeap-process-context-ui/third-party-licenses/ajv-formats/LICENSE)
  - **[ajv](https://github.com/ajv-validator/ajv)**
     - name: ajv
     - licenses: MIT
@@ -1030,7 +1010,6 @@
     - name: ajv
     - licenses: MIT
     - repository: ajv-validator/ajv
-    - license text: [jeap-process-context-ui/third-party-licenses/ajv/LICENSE](jeap-process-context-ui/third-party-licenses/ajv/LICENSE)
  - **[algoliasearch](https://github.com/algolia/algoliasearch-client-javascript)**
     - name: algoliasearch
     - licenses: MIT
@@ -1039,17 +1018,14 @@
     - name: angular-auth-oidc-client
     - licenses: MIT
     - repository: https://github.com/damienbod/angular-auth-oidc-client
-    - license text: [jeap-process-context-ui/third-party-licenses/angular-auth-oidc-client/LICENSE](jeap-process-context-ui/third-party-licenses/angular-auth-oidc-client/LICENSE)
  - **[angular-oauth2-oidc](https://github.com/manfredsteyer/angular-oauth2-oidc)**
     - name: angular-oauth2-oidc
     - licenses: MIT
     - repository: https://github.com/manfredsteyer/angular-oauth2-oidc
-    - license text: [jeap-process-context-ui/third-party-licenses/angular-oauth2-oidc/LICENSE](jeap-process-context-ui/third-party-licenses/angular-oauth2-oidc/LICENSE)
  - **[ansi-colors](doowb/ansi-colors)**
     - name: ansi-colors
     - licenses: MIT
     - repository: doowb/ansi-colors
-    - license text: [jeap-process-context-ui/third-party-licenses/ansi-colors/LICENSE](jeap-process-context-ui/third-party-licenses/ansi-colors/LICENSE)
  - **[ansi-escapes](sindresorhus/ansi-escapes)**
     - name: ansi-escapes
     - licenses: MIT
@@ -1066,7 +1042,6 @@
     - name: ansi-regex
     - licenses: MIT
     - repository: chalk/ansi-regex
-    - license text: [jeap-process-context-ui/third-party-licenses/ansi-regex/license](jeap-process-context-ui/third-party-licenses/ansi-regex/license)
  - **[ansi-styles](chalk/ansi-styles)**
     - name: ansi-styles
     - licenses: MIT
@@ -1283,7 +1258,6 @@
     - name: chalk
     - licenses: MIT
     - repository: chalk/chalk
-    - license text: [jeap-process-context-ui/third-party-licenses/chalk/license](jeap-process-context-ui/third-party-licenses/chalk/license)
  - **[char-regex](https://github.com/Richienb/char-regex)**
     - name: char-regex
     - licenses: MIT
@@ -1320,12 +1294,10 @@
     - name: cli-cursor
     - licenses: MIT
     - repository: sindresorhus/cli-cursor
-    - license text: [jeap-process-context-ui/third-party-licenses/cli-cursor/license](jeap-process-context-ui/third-party-licenses/cli-cursor/license)
  - **[cli-spinners](sindresorhus/cli-spinners)**
     - name: cli-spinners
     - licenses: MIT
     - repository: sindresorhus/cli-spinners
-    - license text: [jeap-process-context-ui/third-party-licenses/cli-spinners/license](jeap-process-context-ui/third-party-licenses/cli-spinners/license)
  - **[cli-table3](https://github.com/cli-table/cli-table3)**
     - name: cli-table3
     - licenses: MIT
@@ -1598,7 +1570,6 @@
     - name: entities
     - licenses: BSD-2-Clause
     - repository: https://github.com/fb55/entities
-    - license text: [jeap-process-context-ui/third-party-licenses/entities/LICENSE](jeap-process-context-ui/third-party-licenses/entities/LICENSE)
  - **[entities](https://github.com/fb55/entities)**
     - name: entities
     - licenses: BSD-2-Clause
@@ -1767,7 +1738,6 @@
     - name: fast-deep-equal
     - licenses: MIT
     - repository: https://github.com/epoberezkin/fast-deep-equal
-    - license text: [jeap-process-context-ui/third-party-licenses/fast-deep-equal/LICENSE](jeap-process-context-ui/third-party-licenses/fast-deep-equal/LICENSE)
  - **[fast-glob](mrmlnc/fast-glob)**
     - name: fast-glob
     - licenses: MIT
@@ -1784,7 +1754,6 @@
     - name: fast-uri
     - licenses: BSD-3-Clause
     - repository: https://github.com/fastify/fast-uri
-    - license text: [jeap-process-context-ui/third-party-licenses/fast-uri/LICENSE](jeap-process-context-ui/third-party-licenses/fast-uri/LICENSE)
  - **[fastq](https://github.com/mcollina/fastq)**
     - name: fastq
     - licenses: ISC
@@ -1889,7 +1858,6 @@
     - name: get-east-asian-width
     - licenses: MIT
     - repository: sindresorhus/get-east-asian-width
-    - license text: [jeap-process-context-ui/third-party-licenses/get-east-asian-width/license](jeap-process-context-ui/third-party-licenses/get-east-asian-width/license)
  - **[get-intrinsic](https://github.com/ljharb/get-intrinsic)**
     - name: get-intrinsic
     - licenses: MIT
@@ -2134,7 +2102,6 @@
     - name: is-interactive
     - licenses: MIT
     - repository: sindresorhus/is-interactive
-    - license text: [jeap-process-context-ui/third-party-licenses/is-interactive/license](jeap-process-context-ui/third-party-licenses/is-interactive/license)
  - **[is-number](jonschlinkert/is-number)**
     - name: is-number
     - licenses: MIT
@@ -2167,7 +2134,6 @@
     - name: is-unicode-supported
     - licenses: MIT
     - repository: sindresorhus/is-unicode-supported
-    - license text: [jeap-process-context-ui/third-party-licenses/is-unicode-supported/license](jeap-process-context-ui/third-party-licenses/is-unicode-supported/license)
  - **[is-wsl](sindresorhus/is-wsl)**
     - name: is-wsl
     - licenses: MIT
@@ -2332,7 +2298,6 @@
     - name: js-cookie
     - licenses: MIT
     - repository: https://github.com/js-cookie/js-cookie
-    - license text: [jeap-process-context-ui/third-party-licenses/js-cookie/LICENSE](jeap-process-context-ui/third-party-licenses/js-cookie/LICENSE)
  - **[js-tokens](lydell/js-tokens)**
     - name: js-tokens
     - licenses: MIT
@@ -2373,7 +2338,6 @@
     - name: json-schema-traverse
     - licenses: MIT
     - repository: https://github.com/epoberezkin/json-schema-traverse
-    - license text: [jeap-process-context-ui/third-party-licenses/json-schema-traverse/LICENSE](jeap-process-context-ui/third-party-licenses/json-schema-traverse/LICENSE)
  - **[json-schema-typed](https://github.com/RemyRylan/json-schema-typed)**
     - name: json-schema-typed
     - licenses: BSD-2-Clause
@@ -2402,7 +2366,6 @@
     - name: jsonc-parser
     - licenses: MIT
     - repository: https://github.com/microsoft/node-jsonc-parser
-    - license text: [jeap-process-context-ui/third-party-licenses/jsonc-parser/LICENSE.md](jeap-process-context-ui/third-party-licenses/jsonc-parser/LICENSE.md)
  - **[jsonfile](https://github.com/jprichardson/node-jsonfile)**
     - name: jsonfile
     - licenses: MIT
@@ -2423,7 +2386,6 @@
     - name: jwt-decode
     - licenses: MIT
     - repository: https://github.com/auth0/jwt-decode
-    - license text: [jeap-process-context-ui/third-party-licenses/jwt-decode/LICENSE](jeap-process-context-ui/third-party-licenses/jwt-decode/LICENSE)
  - **[keyv](https://github.com/jaredwray/keyv)**
     - name: keyv
     - licenses: MIT
@@ -2476,7 +2438,6 @@
     - name: lodash
     - licenses: MIT
     - repository: lodash/lodash
-    - license text: [jeap-process-context-ui/third-party-licenses/lodash/LICENSE](jeap-process-context-ui/third-party-licenses/lodash/LICENSE)
  - **[log-symbols](sindresorhus/log-symbols)**
     - name: log-symbols
     - licenses: MIT
@@ -2485,7 +2446,6 @@
     - name: log-symbols
     - licenses: MIT
     - repository: sindresorhus/log-symbols
-    - license text: [jeap-process-context-ui/third-party-licenses/log-symbols/license](jeap-process-context-ui/third-party-licenses/log-symbols/license)
  - **[log-update](sindresorhus/log-update)**
     - name: log-update
     - licenses: MIT
@@ -2506,7 +2466,6 @@
     - name: magic-string
     - licenses: MIT
     - repository: https://github.com/Rich-Harris/magic-string
-    - license text: [jeap-process-context-ui/third-party-licenses/magic-string/LICENSE](jeap-process-context-ui/third-party-licenses/magic-string/LICENSE)
  - **[make-dir](sindresorhus/make-dir)**
     - name: make-dir
     - licenses: MIT
@@ -2571,7 +2530,6 @@
     - name: mimic-function
     - licenses: MIT
     - repository: sindresorhus/mimic-function
-    - license text: [jeap-process-context-ui/third-party-licenses/mimic-function/license](jeap-process-context-ui/third-party-licenses/mimic-function/license)
  - **[minimatch](https://github.com/isaacs/minimatch)**
     - name: minimatch
     - licenses: BlueOak-1.0.0
@@ -2775,7 +2733,6 @@
     - name: onetime
     - licenses: MIT
     - repository: sindresorhus/onetime
-    - license text: [jeap-process-context-ui/third-party-licenses/onetime/license](jeap-process-context-ui/third-party-licenses/onetime/license)
  - **[open](sindresorhus/open)**
     - name: open
     - licenses: MIT
@@ -2788,7 +2745,6 @@
     - name: ora
     - licenses: MIT
     - repository: sindresorhus/ora
-    - license text: [jeap-process-context-ui/third-party-licenses/ora/license](jeap-process-context-ui/third-party-licenses/ora/license)
  - **[ordered-binary](http://github.com/kriszyp/ordered-binary)**
     - name: ordered-binary
     - licenses: MIT
@@ -2857,7 +2813,6 @@
     - name: parse5
     - licenses: MIT
     - repository: https://github.com/inikulin/parse5
-    - license text: [jeap-process-context-ui/third-party-licenses/parse5/LICENSE](jeap-process-context-ui/third-party-licenses/parse5/LICENSE)
  - **[parseurl](pillarjs/parseurl)**
     - name: parseurl
     - licenses: MIT
@@ -2914,7 +2869,6 @@
     - name: picomatch
     - licenses: MIT
     - repository: micromatch/picomatch
-    - license text: [jeap-process-context-ui/third-party-licenses/picomatch/LICENSE](jeap-process-context-ui/third-party-licenses/picomatch/LICENSE)
  - **[pify](sindresorhus/pify)**
     - name: pify
     - licenses: MIT
@@ -3039,7 +2993,6 @@
     - name: require-from-string
     - licenses: MIT
     - repository: floatdrop/require-from-string
-    - license text: [jeap-process-context-ui/third-party-licenses/require-from-string/license](jeap-process-context-ui/third-party-licenses/require-from-string/license)
  - **[resolve-cwd](sindresorhus/resolve-cwd)**
     - name: resolve-cwd
     - licenses: MIT
@@ -3052,7 +3005,6 @@
     - name: restore-cursor
     - licenses: MIT
     - repository: sindresorhus/restore-cursor
-    - license text: [jeap-process-context-ui/third-party-licenses/restore-cursor/license](jeap-process-context-ui/third-party-licenses/restore-cursor/license)
  - **[retry](https://github.com/tim-kos/node-retry)**
     - name: retry
     - licenses: MIT
@@ -3065,7 +3017,6 @@
     - name: rfc4648
     - licenses: MIT
     - repository: https://github.com/swansontec/rfc4648.js
-    - license text: [jeap-process-context-ui/third-party-licenses/rfc4648/LICENSE](jeap-process-context-ui/third-party-licenses/rfc4648/LICENSE)
  - **[rfdc](https://github.com/davidmarkclements/rfdc)**
     - name: rfdc
     - licenses: MIT
@@ -3094,7 +3045,6 @@
     - name: rxjs
     - licenses: Apache-2.0
     - repository: https://github.com/reactivex/rxjs
-    - license text: [jeap-process-context-ui/third-party-licenses/rxjs/LICENSE.txt](jeap-process-context-ui/third-party-licenses/rxjs/LICENSE.txt)
  - **[safe-buffer](https://github.com/feross/safe-buffer)**
     - name: safe-buffer
     - licenses: MIT
@@ -3167,7 +3117,6 @@
     - name: signal-exit
     - licenses: ISC
     - repository: https://github.com/tapjs/signal-exit
-    - license text: [jeap-process-context-ui/third-party-licenses/signal-exit/LICENSE.txt](jeap-process-context-ui/third-party-licenses/signal-exit/LICENSE.txt)
  - **[sigstore](https://github.com/sigstore/sigstore-js)**
     - name: sigstore
     - licenses: Apache-2.0
@@ -3220,7 +3169,6 @@
     - name: source-map
     - licenses: BSD-3-Clause
     - repository: http://github.com/mozilla/source-map
-    - license text: [jeap-process-context-ui/third-party-licenses/source-map/LICENSE](jeap-process-context-ui/third-party-licenses/source-map/LICENSE)
  - **[spdx-exceptions](kemitchell/spdx-exceptions.json)**
     - name: spdx-exceptions
     - licenses: CC-BY-3.0
@@ -3257,7 +3205,6 @@
     - name: stdin-discarder
     - licenses: MIT
     - repository: sindresorhus/stdin-discarder
-    - license text: [jeap-process-context-ui/third-party-licenses/stdin-discarder/license](jeap-process-context-ui/third-party-licenses/stdin-discarder/license)
  - **[string-length](sindresorhus/string-length)**
     - name: string-length
     - licenses: MIT
@@ -3278,7 +3225,6 @@
     - name: string-width
     - licenses: MIT
     - repository: sindresorhus/string-width
-    - license text: [jeap-process-context-ui/third-party-licenses/string-width/license](jeap-process-context-ui/third-party-licenses/string-width/license)
  - **[strip-ansi](chalk/strip-ansi)**
     - name: strip-ansi
     - licenses: MIT
@@ -3287,7 +3233,6 @@
     - name: strip-ansi
     - licenses: MIT
     - repository: chalk/strip-ansi
-    - license text: [jeap-process-context-ui/third-party-licenses/strip-ansi/license](jeap-process-context-ui/third-party-licenses/strip-ansi/license)
  - **[strip-bom](sindresorhus/strip-bom)**
     - name: strip-bom
     - licenses: MIT
@@ -3408,7 +3353,6 @@
     - name: tslib
     - licenses: 0BSD
     - repository: https://github.com/Microsoft/tslib
-    - license text: [jeap-process-context-ui/third-party-licenses/tslib/LICENSE.txt](jeap-process-context-ui/third-party-licenses/tslib/LICENSE.txt)
  - **[tuf-js](https://github.com/theupdateframework/tuf-js)**
     - name: tuf-js
     - licenses: MIT
@@ -3661,7 +3605,6 @@
     - name: yoctocolors
     - licenses: MIT
     - repository: sindresorhus/yoctocolors
-    - license text: [jeap-process-context-ui/third-party-licenses/yoctocolors/license](jeap-process-context-ui/third-party-licenses/yoctocolors/license)
  - **[zod-to-json-schema](https://github.com/StefanTerdell/zod-to-json-schema)**
     - name: zod-to-json-schema
     - licenses: ISC
@@ -3674,5 +3617,3 @@
     - name: zone.js
     - licenses: MIT
     - repository: https://github.com/angular/angular
-    - license text: [jeap-process-context-ui/third-party-licenses/zone.js/LICENSE](jeap-process-context-ui/third-party-licenses/zone.js/LICENSE)
-    - license text: [jeap-process-context-ui/third-party-licenses/zone.js/LICENSE.wrapped](jeap-process-context-ui/third-party-licenses/zone.js/LICENSE.wrapped)

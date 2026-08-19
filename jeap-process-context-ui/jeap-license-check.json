@@ -9,6 +9,6 @@
   },
   "notices": {
     "out": "../THIRD-PARTY-FRONTEND-LICENSES.md",
-    "textsDir": "jeap-process-context-ui/third-party-licenses"
+    "texts": "none"
   }
 }
