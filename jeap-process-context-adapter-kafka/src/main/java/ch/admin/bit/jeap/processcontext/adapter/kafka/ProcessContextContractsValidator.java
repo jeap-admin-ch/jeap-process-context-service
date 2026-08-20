@@ -21,14 +21,18 @@ public class ProcessContextContractsValidator extends DefaultContractsValidator 
             "ProcessContextOutdatedEvent",
             "MessageProcessingFailedEvent",
             "ProcessSnapshotCreatedEvent");
+    private final boolean maintenanceEnabled;
 
-    public ProcessContextContractsValidator(@Value("${spring.application.name}") String appName, ContractsProvider contractsProvider) {
+    public ProcessContextContractsValidator(@Value("${spring.application.name}") String appName,
+                                            ContractsProvider contractsProvider,
+                                            @Value("${jeap.processcontext.maintenance.enabled:false}") boolean maintenanceEnabled) {
         super(appName, contractsProvider);
+        this.maintenanceEnabled = maintenanceEnabled;
     }
 
     @Override
     public void ensurePublisherContract(MessageType type, String topic) {
-        if (SHARED_EVENTS_ALLOWED_TO_PUBLISH.contains(type.getName())) {
+        if (isContractCheckBypassed(type)) {
             return;
         }
         super.ensurePublisherContract(type, topic);
@@ -36,9 +40,14 @@ public class ProcessContextContractsValidator extends DefaultContractsValidator 
 
     @Override
     public void ensureConsumerContract(MessageType domainEventType, String topic) {
-        if (SHARED_EVENTS_ALLOWED_TO_PUBLISH.contains(domainEventType.getName())) {
+        if (isContractCheckBypassed(domainEventType)) {
             return;
         }
         super.ensureConsumerContract(domainEventType, topic);
+    }
+
+    private boolean isContractCheckBypassed(MessageType type) {
+        return SHARED_EVENTS_ALLOWED_TO_PUBLISH.contains(type.getName())
+                && !(maintenanceEnabled && "ProcessContextOutdatedEvent".equals(type.getName()));
     }
 }

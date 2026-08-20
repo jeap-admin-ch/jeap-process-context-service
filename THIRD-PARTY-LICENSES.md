@@ -22,6 +22,7 @@ Apache License Version 2.0
  * ch.admin.bit.jeap:jeap-messaging-infrastructure-kafka - [ch.admin.bit.jeap:jeap-messaging-infrastructure-kafka](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-infrastructure-kafka)
  * ch.admin.bit.jeap:jeap-messaging-infrastructure-kafka-test - [ch.admin.bit.jeap:jeap-messaging-infrastructure-kafka-test](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-infrastructure-kafka-test)
  * ch.admin.bit.jeap:jeap-messaging-model - [ch.admin.bit.jeap:jeap-messaging-model](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-model)
+ * ch.admin.bit.jeap:jeap-messaging-outbox - [ch.admin.bit.jeap:jeap-messaging-outbox](https://github.com/jeap-admin-ch/jeap-messaging-outbox/tree/main/jeap-messaging-outbox)
  * ch.admin.bit.jeap:jeap-process-context-adapter-kafka - [ch.admin.bit.jeap:jeap-process-context-adapter-kafka](https://github.com/jeap-admin-ch/jeap-process-context-service/tree/main/jeap-process-context-adapter-kafka)
  * ch.admin.bit.jeap:jeap-process-context-adapter-micrometer - [ch.admin.bit.jeap:jeap-process-context-adapter-micrometer](https://github.com/jeap-admin-ch/jeap-process-context-service/tree/main/jeap-process-context-adapter-micrometer)
  * ch.admin.bit.jeap:jeap-process-context-adapter-objectstorage - [ch.admin.bit.jeap:jeap-process-context-adapter-objectstorage](https://github.com/jeap-admin-ch/jeap-process-context-service/tree/main/jeap-process-context-adapter-objectstorage)

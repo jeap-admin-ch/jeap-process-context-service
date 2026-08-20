@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance.relation;
 
 import ch.admin.bit.jeap.processcontext.domain.StubMetricsListener;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.Relation;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.RelationRepository;
@@ -42,6 +43,9 @@ class RelationServiceTest {
     private FeatureManager featureManager;
 
     @Mock
+    private ProcessDataRepository processDataRepository;
+
+    @Mock
     private ProcessInstance processInstance;
 
     @Captor
@@ -54,8 +58,55 @@ class RelationServiceTest {
 
     @BeforeEach
     void setUp() {
-        relationService = new RelationService(relationRepository, relationFactory, relationListener, featureManager, new StubMetricsListener());
+        relationService = new RelationService(relationRepository, relationFactory, relationListener, featureManager,
+                new StubMetricsListener(), processDataRepository);
         lenient().when(processInstance.getOriginProcessId()).thenReturn(ORIGIN_PROCESS_ID);
+    }
+
+    @Test
+    void reevaluateRelations_usesAllDataAndNotifiesOnlyNewRelations() {
+        ProcessData object = new ProcessData("object", "object-1");
+        ProcessData subject = new ProcessData("subject", "subject-1");
+        Relation candidate = Relation.builder()
+                .processInstance(processInstance)
+                .systemId("system")
+                .subjectType("subjectType")
+                .subjectId("subject-1")
+                .objectType("objectType")
+                .objectId("object-1")
+                .predicateType("predicate")
+                .build();
+        when(processInstance.getId()).thenReturn(java.util.UUID.randomUUID());
+        when(processDataRepository.findByProcessInstanceId(processInstance.getId())).thenReturn(List.of(object, subject));
+        when(relationFactory.createAllRelations(processInstance, List.of(object, subject))).thenReturn(Set.of(candidate));
+        when(relationRepository.saveAllNewRelations(Set.of(candidate))).thenReturn(Set.of(candidate));
+
+        relationService.reevaluateRelations(processInstance);
+
+        verify(relationListener).relationsAdded(notifiedRelationsCaptor.capture());
+        assertThat(notifiedRelationsCaptor.getValue()).hasSize(1);
+    }
+
+    @Test
+    void reevaluateRelations_existingRelationsAreNotNotifiedAgain() {
+        ProcessData data = new ProcessData("key", "value");
+        Relation candidate = Relation.builder()
+                .processInstance(processInstance)
+                .systemId("system")
+                .subjectType("subjectType")
+                .subjectId("subject-1")
+                .objectType("objectType")
+                .objectId("object-1")
+                .predicateType("predicate")
+                .build();
+        when(processInstance.getId()).thenReturn(java.util.UUID.randomUUID());
+        when(processDataRepository.findByProcessInstanceId(processInstance.getId())).thenReturn(List.of(data));
+        when(relationFactory.createAllRelations(processInstance, List.of(data))).thenReturn(Set.of(candidate));
+        when(relationRepository.saveAllNewRelations(Set.of(candidate))).thenReturn(Set.of());
+
+        relationService.reevaluateRelations(processInstance);
+
+        verifyNoInteractions(relationListener);
     }
 
     @Test

@@ -105,6 +105,8 @@ operations.
 | `/api/processes/{originProcessId}/process-relations`| GET  | Process relations (paged)  | `processinstance` / `view`   |
 | `/api/processes/{originProcessId}/relations`        | GET  | Relations (paged)          | `processinstance` / `view`   |
 | `/api/snapshot/{originProcessId}`                   | GET  | A process snapshot version | `processsnapshot` / `view`   |
+| `/api/reevaluation-jobs/{jobId}`                    | PUT  | Empty `200` response       | `processcontextjob` / `write` |
+| `/api/reevaluation-jobs/{jobId}`                    | GET  | YAML job report            | `processcontextjob` / `read` |
 
 The process view role is typically granted to the business user of the frontend via the OAuth authorization
 code flow. An up-to-date description of the API is served by the running application at
@@ -123,6 +125,7 @@ the bundled Angular UI with its OIDC configuration, the application version and 
 | Pending message   | Messages that could not yet be correlated to an existing process instance when they were received.               |
 | Message           | Messages (domain events, commands) with their message key/value data.                                            |
 | Process snapshot  | The representation of a process instance at a given point in time.                                               |
+| Maintenance job   | Durable relation-reevaluation request containing one independently tracked task per process.                    |
 
 A process snapshot deliberately does not represent the complete state of a process instance, only the part
 needed for traceability. Snapshots are stored in the Avro format recommended for archiving by the Process
@@ -149,7 +152,11 @@ robustness. These technical messages are modelled as jEAP domain events.
 
 | Topic (configuration key)  | Message type                  | Payload                                                                               | Description                                                                                     |
 |----------------------------|-------------------------------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| `jeap.processcontext.kafka.topic.process-outdated-internal` | `ProcessContextOutdatedEvent` | `originProcessId`, `processUpdateType` (`MESSAGE_RECEIVED`, `PROCESS_CREATION_MESSAGE_RECEIVED`, `MIGRATION_TRIGGERED`), `messageId`, `templateName` | Something happened for a process instance that potentially affects its state → the state has to be recomputed (or the instance created). |
+| `jeap.processcontext.kafka.topic.process-outdated-internal` | `ProcessContextOutdatedEvent` | `originProcessId`, `processUpdateType`, optional message/template data or maintenance task envelope | Something happened for a process instance that potentially affects its state, or a durable relation-reevaluation task must be executed. |
+
+Maintenance events are written through the transactional outbox with the origin process ID as Kafka key. An instance
+with maintenance enabled must declare both producer and consumer contracts for `ProcessContextOutdatedEvent` on the
+configured internal topic.
 
 ## Cross-cutting concepts
 

@@ -20,6 +20,7 @@ public class MaintenanceYamlConverterCustomizer implements ServerHttpMessageConv
     private static JacksonYamlHttpMessageConverter maintenanceYamlConverter() {
         var yamlFactory = YAMLFactory.builder()
                 .enable(YAMLWriteFeature.MINIMIZE_QUOTES)
+                .enable(YAMLWriteFeature.ALWAYS_QUOTE_NUMBERS_AS_STRINGS)
                 .enable(YAMLWriteFeature.LITERAL_BLOCK_STYLE)
                 .disable(YAMLWriteFeature.SPLIT_LINES)
                 .disable(YAMLWriteFeature.WRITE_DOC_START_MARKER)

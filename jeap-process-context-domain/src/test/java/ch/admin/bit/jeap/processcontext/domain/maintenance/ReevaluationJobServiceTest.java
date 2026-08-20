@@ -94,8 +94,9 @@ class ReevaluationJobServiceTest {
         ReevaluationJobSubmission first = submission("assessmentProcess", List.of("process-a"));
         MaintenanceJob existing = MaintenanceJob.createReevaluation(first.normalized(maintenanceProperties.getLimits()));
         when(maintenanceJobRepository.findById(JOB_ID)).thenReturn(Optional.of(existing));
+        ReevaluationJobSubmission differentSubmission = submission("assessmentProcess", List.of("process-b"));
 
-        assertThatThrownBy(() -> service.submit(submission("assessmentProcess", List.of("process-b"))))
+        assertThatThrownBy(() -> service.submit(differentSubmission))
                 .isInstanceOf(MaintenanceJobException.class)
                 .extracting("reason")
                 .isEqualTo(MaintenanceJobExceptionReason.CONFLICT);

@@ -71,4 +71,10 @@ class MaintenanceJobEntity {
                 startedByExtId,
                 tasks);
     }
+
+    void apply(MaintenanceJob job) {
+        this.jobState = job.jobState();
+        this.jobResult = job.jobResult();
+        this.completedAt = job.completedAt();
+    }
 }

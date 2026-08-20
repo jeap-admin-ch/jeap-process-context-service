@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.processcontext.domain.housekeeping;
 
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
+import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceJobRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.PendingMessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceQueryResult;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
@@ -15,8 +16,10 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
@@ -30,6 +33,7 @@ public class HouseKeepingService {
     private final ProcessInstanceRepository processInstanceRepository;
     private final MessageRepository messageRepository;
     private final PendingMessageRepository pendingMessageRepository;
+    private final Optional<MaintenanceJobRepository> maintenanceJobRepository;
     private final HouseKeepingConfigProperties configProperties;
     private final TransactionTemplate transactionTemplate;
     private final Pageable pageable;
@@ -37,11 +41,13 @@ public class HouseKeepingService {
     public HouseKeepingService(ProcessInstanceRepository processInstanceRepository,
                                MessageRepository messageRepository,
                                PendingMessageRepository pendingMessageRepository,
+                               Optional<MaintenanceJobRepository> maintenanceJobRepository,
                                HouseKeepingConfigProperties configProperties,
                                PlatformTransactionManager transactionManager) {
         this.processInstanceRepository = processInstanceRepository;
         this.messageRepository = messageRepository;
         this.pendingMessageRepository = pendingMessageRepository;
+        this.maintenanceJobRepository = maintenanceJobRepository;
         this.configProperties = configProperties;
         this.pageable = Pageable.ofSize(configProperties.getPageSize());
 
@@ -55,6 +61,17 @@ public class HouseKeepingService {
         deleteProcessInstances(ProcessState.STARTED, configProperties.getStartedProcessInstancesMaxAge());
         deletePendingMessages(configProperties.getEventsMaxAge());
         deleteMessagesWithoutProcessCorrelation(configProperties.getEventsMaxAge());
+        deleteCompletedMaintenanceJobs(configProperties.getCompletedMaintenanceJobsMaxAge());
+    }
+
+    protected void deleteCompletedMaintenanceJobs(Duration maxAge) {
+        maintenanceJobRepository.ifPresent(repository -> {
+            Instant olderThan = Instant.now().minus(maxAge);
+            log.info("Housekeeping: delete completed maintenance jobs older than {} ({})", maxAge, olderThan);
+            executeInTransactionPerPage(() ->
+                    repository.deleteCompletedBefore(olderThan, configProperties.getPageSize())
+                            == configProperties.getPageSize());
+        });
     }
 
     protected void deleteProcessInstances(ProcessState processState, Duration maxAge) {

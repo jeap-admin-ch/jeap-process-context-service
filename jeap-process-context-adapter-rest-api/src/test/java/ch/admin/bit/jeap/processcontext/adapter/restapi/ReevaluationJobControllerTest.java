@@ -66,6 +66,12 @@ class ReevaluationJobControllerTest {
     private static final UUID TASK_ID = UUID.fromString("019c8c72-6fd1-7f25-a9a1-3b3d51fbb321");
     private static final Instant STARTED = Instant.parse("2026-08-06T08:03:12Z");
     private static final String REQUEST_YAML = """
+            process-template-name: assessmentProcess
+            processes:
+              - origin-process-id: assessment-4711
+              - origin-process-id: assessment-4712
+            """;
+    private static final String LEGACY_REQUEST_YAML = """
             processTemplateName: assessmentProcess
             processes:
               - originProcessId: assessment-4711
@@ -102,10 +108,10 @@ class ReevaluationJobControllerTest {
     }
 
     @Test
-    void put_validLegacyYamlMediaType_returnsOk() throws Exception {
+    void put_legacyCamelCaseWithLegacyYamlMediaType_returnsOk() throws Exception {
         mockMvc.perform(put("/api/reevaluation-jobs/{jobId}", JOB_ID)
                         .contentType(ReevaluationJobController.APPLICATION_X_YAML_VALUE)
-                        .content(REQUEST_YAML)
+                        .content(LEGACY_REQUEST_YAML)
                         .with(authenticationForUserRoles(WRITE_ROLE))
                         .with(csrf()))
                 .andExpect(status().isOk());
@@ -147,6 +153,22 @@ class ReevaluationJobControllerTest {
                         .with(authenticationForUserRoles(WRITE_ROLE))
                         .with(csrf()))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void put_invalidBeanValidation_returnsSanitizedBadRequest() throws Exception {
+        mockMvc.perform(put("/api/reevaluation-jobs/{jobId}", JOB_ID)
+                        .contentType(ReevaluationJobController.APPLICATION_YAML_VALUE)
+                        .content("""
+                                process-template-name: ""
+                                processes: []
+                                """)
+                        .with(authenticationForUserRoles(WRITE_ROLE))
+                        .with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Invalid request"));
+
+        verifyNoInteractions(reevaluationJobService);
     }
 
     @Test
@@ -211,10 +233,21 @@ class ReevaluationJobControllerTest {
                 .andExpect(content().string(containsString("job-state: open")))
                 .andExpect(content().string(not(containsString("job-result:"))))
                 .andExpect(content().string(containsString("started-by-name: John Doe")))
-                .andExpect(content().string(containsString("started-by-ext-id: 287365")))
+                .andExpect(content().string(containsString("started-by-ext-id: \"287365\"")))
                 .andExpect(content().string(containsString("- task-id: 019c8c72-6fd1-7f25-a9a1-3b3d51fbb321")))
-                .andExpect(content().string(containsString("origin-process-id: assessment-4711")))
+                .andExpect(content().string(containsString("origin-process-id: \"00123\"")))
                 .andExpect(content().string(containsString("state: created")));
+    }
+
+    @Test
+    void get_existingJob_acceptsLegacyYamlMediaType() throws Exception {
+        when(reevaluationJobService.get(JOB_ID)).thenReturn(Optional.of(job()));
+
+        mockMvc.perform(get("/api/reevaluation-jobs/{jobId}", JOB_ID)
+                        .accept(ReevaluationJobController.APPLICATION_X_YAML_VALUE)
+                        .with(authenticationForUserRoles(READ_ROLE)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(ReevaluationJobController.APPLICATION_X_YAML_VALUE));
     }
 
     @Test
@@ -252,8 +285,8 @@ class ReevaluationJobControllerTest {
                 List.of(new MaintenanceTask(
                         TASK_ID,
                         MaintenanceTargetType.PROCESS,
-                        "assessment-4711",
-                        "assessment-4711",
+                        "00123",
+                        "00123",
                         MaintenanceTaskState.CREATED,
                         STARTED,
                         null,

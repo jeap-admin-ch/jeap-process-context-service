@@ -46,10 +46,10 @@ public class ReevaluationJobController {
                     mediaType = APPLICATION_YAML_VALUE,
                     schema = @Schema(implementation = ReevaluationJobRequest.class),
                     examples = @ExampleObject(value = """
-                            processTemplateName: assessmentProcess
+                            process-template-name: assessmentProcess
                             processes:
-                              - originProcessId: assessment-4711
-                              - originProcessId: assessment-4712
+                              - origin-process-id: assessment-4711
+                              - origin-process-id: assessment-4712
                             """))),
             responses = {
                     @ApiResponse(responseCode = "200", description = "Job accepted or already submitted with the same content"),
@@ -97,7 +97,7 @@ public class ReevaluationJobController {
             },
             security = {@SecurityRequirement(name = "OIDC_Enduser"), @SecurityRequirement(name = "OIDC_System")})
     @PreAuthorize("hasRole('processcontextjob', 'read')")
-    @GetMapping(value = "/{jobId}", produces = APPLICATION_YAML_VALUE)
+    @GetMapping(value = "/{jobId}", produces = {APPLICATION_YAML_VALUE, APPLICATION_X_YAML_VALUE})
     public ResponseEntity<ReevaluationJobReport> get(@PathVariable UUID jobId) {
         return reevaluationJobService.get(jobId)
                 .map(ReevaluationJobReport::from)

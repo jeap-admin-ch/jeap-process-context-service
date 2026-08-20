@@ -48,6 +48,11 @@ public class HouseKeepingConfigProperties {
     private Duration eventsMaxAge = Duration.of(90, ChronoUnit.DAYS);
 
     /**
+     * Delete completed maintenance jobs older than this value [duration]. Default is 180 days
+     */
+    private Duration completedMaintenanceJobsMaxAge = Duration.of(180, ChronoUnit.DAYS);
+
+    /**
      * Size for the queries [pages]. Default is 500
      */
     private int pageSize = 500;

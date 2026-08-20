@@ -65,4 +65,15 @@ class MaintenanceTaskEntity {
                 errorMessage,
                 errorTraceId);
     }
+
+    UUID getJobId() {
+        return jobId;
+    }
+
+    void apply(MaintenanceTask task) {
+        this.taskState = task.taskState();
+        this.modifiedAt = task.modifiedAt();
+        this.errorMessage = task.errorMessage();
+        this.errorTraceId = task.errorTraceId();
+    }
 }

@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance.relation;
 
 import ch.admin.bit.jeap.processcontext.domain.port.MetricsListener;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.Relation;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.RelationRepository;
@@ -26,12 +27,24 @@ public class RelationService {
     private final RelationListener relationListener;
     private final FeatureManager featureManager;
     private final MetricsListener metricsListener;
+    private final ProcessDataRepository processDataRepository;
 
 
     @Timed(value = "jeap_pcs_relation_service_new_process_data", percentiles = {0.5, 0.8, 0.99})
     public void onNewProcessData(ProcessInstance processInstance, List<ProcessData> newProcessData) {
         Set<Relation> relations = relationFactory.createNewRelations(processInstance, newProcessData);
 
+        saveAndNotify(processInstance, relations);
+    }
+
+    @Timed(value = "jeap_pcs_relation_service_reevaluate", percentiles = {0.5, 0.8, 0.99})
+    public void reevaluateRelations(ProcessInstance processInstance) {
+        List<ProcessData> processData = processDataRepository.findByProcessInstanceId(processInstance.getId());
+        Set<Relation> relations = relationFactory.createAllRelations(processInstance, processData);
+        saveAndNotify(processInstance, relations);
+    }
+
+    private void saveAndNotify(ProcessInstance processInstance, Set<Relation> relations) {
         relations.forEach(Relation::onPrePersist);
         Set<Relation> newRelations = relationRepository.saveAllNewRelations(relations);
 

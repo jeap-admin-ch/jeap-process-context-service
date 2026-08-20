@@ -29,9 +29,9 @@ class ProcessContextConfig {
         return new LoggingRelationListener();
     }
 
-    @Bean
+    @Bean("processContextLockProvider")
+    @ConditionalOnMissingBean(LockProvider.class)
     LockProvider lockProvider(DataSource dataSource) {
         return new JdbcTemplateLockProvider(dataSource);
     }
 }
-

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
@@ -29,8 +30,9 @@ class MaintenanceJobRepositoryImplTest {
     void create_uniqueConstraintViolation_reportsAlreadyExists() {
         PersistenceException exception = new PersistenceException(new SQLException("duplicate", "23505"));
         doThrow(exception).when(entityManager).flush();
+        MaintenanceJob maintenanceJob = job();
 
-        assertThatThrownBy(() -> repository.create(job()))
+        assertThatThrownBy(() -> repository.create(maintenanceJob))
                 .isInstanceOf(MaintenanceJobAlreadyExistsException.class)
                 .hasCause(exception);
     }
@@ -39,8 +41,18 @@ class MaintenanceJobRepositoryImplTest {
     void create_otherPersistenceFailure_isNotMisclassified() {
         PersistenceException exception = new PersistenceException(new SQLException("connection failed", "08006"));
         doThrow(exception).when(entityManager).flush();
+        MaintenanceJob maintenanceJob = job();
 
-        assertThatThrownBy(() -> repository.create(job())).isSameAs(exception);
+        assertThatThrownBy(() -> repository.create(maintenanceJob)).isSameAs(exception);
+    }
+
+    @Test
+    void create_taskConstraintViolation_isNotMisclassifiedAsExistingJob() {
+        PersistenceException exception = new PersistenceException(new SQLException("duplicate task", "23505"));
+        doNothing().doThrow(exception).when(entityManager).flush();
+        MaintenanceJob maintenanceJob = job();
+
+        assertThatThrownBy(() -> repository.create(maintenanceJob)).isSameAs(exception);
     }
 
     private static MaintenanceJob job() {

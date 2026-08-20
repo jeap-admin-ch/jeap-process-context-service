@@ -11,11 +11,14 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class ProcessContextOutdatedEventConsumer {
     private final ProcessInstanceService processInstanceService;
+    private final Optional<MaintenanceProcessContextOutdatedEventHandler> maintenanceHandler;
 
     @KafkaListener(groupId = "${spring.application.name}-event-received",
             topics = TopicConfiguration.PROCESS_OUTDATED_TOPIC_NAME)
@@ -35,6 +38,9 @@ public class ProcessContextOutdatedEventConsumer {
             case MESSAGE_RECEIVED -> updateProcessState(event.getProcessId(), event.getPayload().getReceivedMessage());
             case PROCESS_CREATION_MESSAGE_RECEIVED ->
                     updateProcessStateCreatingProcess(event.getProcessId(), event.getPayload().getReceivedProcessCreationMessage());
+            case REEVALUATE_JOB, BACKFILL_JOB, REPUBLISH_RELATION_JOB -> maintenanceHandler
+                    .orElseThrow(() -> new IllegalStateException("Maintenance processing is disabled"))
+                    .handle(event);
             default ->
                     log.warn("Received process context outdated event with unknown process update type: {}", event.getPayload().getProcessUpdateType());
         }

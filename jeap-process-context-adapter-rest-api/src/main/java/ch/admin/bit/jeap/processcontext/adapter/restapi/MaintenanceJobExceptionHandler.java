@@ -21,8 +21,8 @@ class MaintenanceJobExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    ResponseEntity<String> handleValidationException(MethodArgumentNotValidException exception) {
-        return ResponseEntity.badRequest().body(exception.getMessage());
+    ResponseEntity<String> handleValidationException() {
+        return ResponseEntity.badRequest().body("Invalid request");
     }
 
     @ExceptionHandler(AuthorizationDeniedException.class)

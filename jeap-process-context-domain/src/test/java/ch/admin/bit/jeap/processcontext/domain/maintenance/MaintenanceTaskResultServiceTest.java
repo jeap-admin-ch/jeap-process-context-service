@@ -1,0 +1,101 @@
+package ch.admin.bit.jeap.processcontext.domain.maintenance;
+
+import ch.admin.bit.jeap.processcontext.domain.tx.Transactions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.MDC;
+import org.junit.jupiter.api.AfterEach;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class MaintenanceTaskResultServiceTest {
+
+    private static final UUID JOB_ID = UUID.fromString("88dbb65f-9634-4685-bc86-17b72d715d3e");
+    private static final UUID TASK_ID = UUID.fromString("019c8c72-6fd1-7f25-a9a1-3b3d51fbb321");
+    private static final UUID OTHER_TASK_ID = UUID.fromString("019c8c72-7b42-7a04-9443-bf8ec98ce871");
+
+    @Mock
+    private MaintenanceJobRepository repository;
+    @Mock
+    private Transactions transactions;
+
+    private MaintenanceTaskResultService service;
+
+    @AfterEach
+    void clearMdc() {
+        MDC.clear();
+    }
+
+    @BeforeEach
+    void setUp() {
+        service = new MaintenanceTaskResultService(repository, transactions);
+        doAnswer(invocation -> {
+            invocation.getArgument(0, Runnable.class).run();
+            return null;
+        }).when(transactions).withinNewTransaction(any());
+    }
+
+    @Test
+    void markFailed_completesMixedJobAsPartiallySucceeded() {
+        when(repository.findByTaskIdForUpdate(TASK_ID)).thenReturn(Optional.of(job()));
+        MDC.put("traceId", "4bf92f3577b34da6a3ce929d0e0e4736");
+
+        service.markFailedInNewTransaction(TASK_ID, new IllegalStateException("relation failed"));
+
+        ArgumentCaptor<MaintenanceJob> captor = ArgumentCaptor.forClass(MaintenanceJob.class);
+        verify(repository).update(captor.capture());
+        MaintenanceJob updated = captor.getValue();
+        assertThat(updated.jobState()).isEqualTo(MaintenanceJobState.COMPLETED);
+        assertThat(updated.jobResult()).isEqualTo(MaintenanceJobResult.PARTIALLY_SUCCEEDED);
+        assertThat(updated.tasks().getFirst().taskState()).isEqualTo(MaintenanceTaskState.FAILED);
+        assertThat(updated.tasks().getFirst().errorMessage())
+                .isEqualTo("IllegalStateException: relation failed")
+                .doesNotContain("MaintenanceTaskResultServiceTest");
+        assertThat(updated.tasks().getFirst().errorTraceId()).isEqualTo("4bf92f3577b34da6a3ce929d0e0e4736");
+    }
+
+    @Test
+    void markFailed_sanitizesAndLimitsActionableMessage() {
+        when(repository.findByTaskIdForUpdate(TASK_ID)).thenReturn(Optional.of(job()));
+
+        service.markFailedInNewTransaction(TASK_ID, new IllegalArgumentException("invalid relation\n" + "x".repeat(600)));
+
+        ArgumentCaptor<MaintenanceJob> captor = ArgumentCaptor.forClass(MaintenanceJob.class);
+        verify(repository).update(captor.capture());
+        String errorMessage = captor.getValue().tasks().getFirst().errorMessage();
+        assertThat(errorMessage).startsWith("IllegalArgumentException: invalid relation x").hasSize(500).doesNotContain("\n");
+    }
+
+    @Test
+    void markFailed_missingTask_rethrowsSoEventIsNotAcknowledged() {
+        when(repository.findByTaskIdForUpdate(TASK_ID)).thenReturn(Optional.empty());
+        IllegalStateException processingFailure = new IllegalStateException();
+
+        assertThatThrownBy(() -> service.markFailedInNewTransaction(TASK_ID, processingFailure))
+                .isInstanceOf(MaintenanceTaskNotFoundException.class);
+    }
+
+    private static MaintenanceJob job() {
+        Instant now = Instant.parse("2026-08-06T08:03:12Z");
+        return new MaintenanceJob(JOB_ID, MaintenanceJobType.RELATION_REEVALUATION, "assessmentProcess",
+                "a".repeat(64), MaintenanceJobState.OPEN, null, now, null, null, null,
+                List.of(
+                        new MaintenanceTask(TASK_ID, MaintenanceTargetType.PROCESS, "assessment-4711",
+                                "assessment-4711", MaintenanceTaskState.EVENT_QUEUED, now, null, null, null),
+                        new MaintenanceTask(OTHER_TASK_ID, MaintenanceTargetType.PROCESS, "assessment-4712",
+                                "assessment-4712", MaintenanceTaskState.SUCCEEDED, now, now, null, null)));
+    }
+}

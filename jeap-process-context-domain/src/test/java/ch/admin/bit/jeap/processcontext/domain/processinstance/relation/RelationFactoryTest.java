@@ -338,6 +338,42 @@ class RelationFactoryTest {
         assertThat(relation.getSubjectId()).isEqualTo("persistent-subject");
     }
 
+    @Test
+    void createAllRelations_evaluatesCartesianProductFromCompleteDataSet() {
+        when(processInstance.getProcessTemplate()).thenReturn(createProcessTemplate(List.of(createRelationPattern(null))));
+        List<ProcessData> allProcessData = List.of(
+                new ProcessData(OBJECT_KEY, "object-1"),
+                new ProcessData(OBJECT_KEY, "object-2"),
+                new ProcessData(SUBJECT_KEY, "subject-1"),
+                new ProcessData(SUBJECT_KEY, "subject-2"));
+
+        Set<Relation> relations = relationFactory.createAllRelations(processInstance, allProcessData);
+
+        assertThat(relations).hasSize(4);
+    }
+
+    @Test
+    void createAllRelations_appliesRoleAndValueJoins() {
+        RelationPattern rolePattern = createRelationPattern(RelationPattern.JoinType.BY_ROLE);
+        RelationPattern valuePattern = RelationPattern.builder()
+                .predicateType("same-value")
+                .joinType(RelationPattern.JoinType.BY_VALUE)
+                .objectSelector(rolePattern.getObjectSelector())
+                .subjectSelector(rolePattern.getSubjectSelector())
+                .build();
+        when(processInstance.getProcessTemplate()).thenReturn(createProcessTemplate(List.of(rolePattern, valuePattern)));
+        List<ProcessData> allProcessData = List.of(
+                new ProcessData(OBJECT_KEY, "shared", "role-a"),
+                new ProcessData(OBJECT_KEY, "other", "role-b"),
+                new ProcessData(SUBJECT_KEY, "shared", "role-c"),
+                new ProcessData(SUBJECT_KEY, "different", "role-a"));
+
+        Set<Relation> relations = relationFactory.createAllRelations(processInstance, allProcessData);
+
+        assertThat(relations).extracting(Relation::getPredicateType)
+                .containsExactlyInAnyOrder(PREDICATE_TYPE, "same-value");
+    }
+
     private ProcessTemplate createProcessTemplate(List<RelationPattern> relationPatterns) {
         return ProcessTemplate.builder()
                 .name("test-template")

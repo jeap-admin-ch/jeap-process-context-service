@@ -18,6 +18,9 @@ public class MaintenanceProperties {
     @Valid
     private Limits limits = new Limits();
 
+    @Valid
+    private Dispatcher dispatcher = new Dispatcher();
+
     @Data
     public static class Limits {
         @Min(1)
@@ -26,5 +29,15 @@ public class MaintenanceProperties {
         @Min(1)
         @Max(2_000)
         private int maxFieldLength = 2_000;
+    }
+
+    @Data
+    public static class Dispatcher {
+        @Min(1)
+        @Max(2_000)
+        private int batchSize = 100;
+
+        @Min(100)
+        private long fixedDelayMs = 1_000;
     }
 }

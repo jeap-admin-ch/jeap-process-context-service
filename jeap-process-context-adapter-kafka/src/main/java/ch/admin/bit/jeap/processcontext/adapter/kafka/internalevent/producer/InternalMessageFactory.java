@@ -2,6 +2,8 @@ package ch.admin.bit.jeap.processcontext.adapter.kafka.internalevent.producer;
 
 
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventBuilder;
+import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceJob;
+import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceTask;
 import ch.admin.bit.jeap.processcontext.internal.event.key.ProcessContextProcessIdKey;
 import ch.admin.bit.jeap.processcontext.internal.event.outdated.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +39,13 @@ class InternalMessageFactory {
                 .build();
     }
 
+    ProcessContextOutdatedEvent processContextOutdatedMaintenanceEvent(MaintenanceJob job, MaintenanceTask task) {
+        String idempotenceId = job.jobId() + "-" + task.taskId();
+        return new ProcessContextUpdatedEventBuilder(task.originProcessId(), "maintenance", idempotenceId)
+                .maintenanceTask(job, task)
+                .build();
+    }
+
     ProcessContextProcessIdKey key(String originProcessId) {
         return ProcessContextProcessIdKey.newBuilder()
                 .setProcessId(originProcessId)
@@ -63,6 +72,17 @@ class InternalMessageFactory {
         ProcessContextUpdatedEventBuilder triggerMigration() {
             setPayload(ProcessContextOutdatedPayload.newBuilder()
                     .setProcessUpdateType(ProcessUpdateType.MIGRATION_TRIGGERED)
+                    .build());
+            return this;
+        }
+
+        ProcessContextUpdatedEventBuilder maintenanceTask(MaintenanceJob job, MaintenanceTask task) {
+            setPayload(ProcessContextOutdatedPayload.newBuilder()
+                    .setProcessUpdateType(ProcessUpdateType.REEVALUATE_JOB)
+                    .setMaintenanceJobTaskBuilder(MaintenanceJobTask.newBuilder()
+                            .setJobId(job.jobId())
+                            .setTaskId(task.taskId())
+                            .setTemplateName(job.processTemplateName()))
                     .build());
             return this;
         }

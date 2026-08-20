@@ -18,10 +18,12 @@ of the process template, see
 
 ## Roles
 
-| Semantic role                     | Usage                                            |
-|-----------------------------------|--------------------------------------------------|
-| `<system>_@processinstance_#view` | Required to open the UI and read the REST API.   |
-| `<system>_@processsnapshot_#view` | Required to read process snapshots over the REST API. |
+| Semantic role                         | Usage                                                   |
+|---------------------------------------|---------------------------------------------------------|
+| `<system>_@processinstance_#view`     | Required to open the UI and read the REST API.          |
+| `<system>_@processsnapshot_#view`     | Required to read process snapshots over the REST API.   |
+| `<system>_@processcontextjob_#write`  | Required to submit a relation-reevaluation job.         |
+| `<system>_@processcontextjob_#read`   | Required to retrieve a relation-reevaluation job report. |
 
 The system name has to be configured in `jeap.security.oauth2.resourceserver.system-name` and
 `jeap.processcontext.frontend.system-name`.

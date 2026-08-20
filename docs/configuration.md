@@ -114,6 +114,7 @@ process updates and messages.
 | `completed-process-instances-max-age`           | `P180D`        | Completed processes are deleted after 180 days. Note the duration syntax.                   |
 | `started-process-instances-max-age`             | `P365D`        | Processes that are not completed are deleted after 365 days. Note the duration syntax.      |
 | `events-max-age`                                | `P90D`         | Messages not referenced by a process instance are deleted after 90 days.                    |
+| `completed-maintenance-jobs-max-age`            | `P180D`        | Completed maintenance jobs and their tasks are deleted after 180 days.                      |
 | `page-size`                                     | 500            | Number of records deleted at once.                                                          |
 | `max-pages`                                     | 100000         | Max. pages to housekeep in one run, limiting the time one run can spend.                    |
 
@@ -189,15 +190,32 @@ jeap:
       limits:
         max-tasks-per-job: 10000
         max-field-length: 2000
+      dispatcher:
+        batch-size: 100
+        fixed-delay-ms: 1000
 ```
 
 When enabled, `PUT /api/reevaluation-jobs/{jobId}` accepts a YAML relation-reevaluation request and
 `GET /api/reevaluation-jobs/{jobId}` returns its durable YAML report. Creation requires the semantic role
 `processcontextjob:write`; retrieval requires `processcontextjob:read`. Reusing a job ID with equivalent normalized
-content is idempotent, while different content returns `409 Conflict`.
+content is idempotent, while different content returns `409 Conflict`. The canonical request fields are
+`process-template-name` and `origin-process-id`; the camel-case aliases `processTemplateName` and `originProcessId`
+remain accepted. Both endpoints support `application/yaml` and `application/x-yaml`. Scalar values that resemble
+numbers are quoted in reports so identifiers retain their YAML string type.
 
-This API initially records jobs and tasks only. It does not publish Kafka messages, execute relation evaluation, or
-require the referenced process instances to exist.
+The endpoints use OAuth2 bearer-token authentication. Bearer-token requests are excluded from Spring Security's CSRF
+matcher and therefore do not require a browser CSRF cookie/header pair.
+
+Created tasks are claimed in bounded batches and queued as keyed `ProcessContextOutdatedEvent` messages through the
+transactional outbox. The existing internal consumer evaluates the currently deployed relation patterns against all
+stored process data. Missing processes and processing failures are recorded as terminal task results and acknowledged;
+an event is retried only when its terminal result cannot be persisted. The outbox relay must remain enabled, and an
+enabled PCS instance must declare producer and consumer contracts for its configured process-outdated topic.
+
+A job starts in `open` state. Each process task moves from `created` to `event-queued` and then to a terminal state
+(`succeeded`, `not-found`, or `failed`). The job becomes `completed` when all tasks are terminal and records a
+`successful`, `partially-failed`, or `failed` result. Completed jobs are removed by regular housekeeping after
+`jeap.processcontext.housekeeping.completed-maintenance-jobs-max-age`, which defaults to `P180D`.
 
 ### PAMS and ePortal
 

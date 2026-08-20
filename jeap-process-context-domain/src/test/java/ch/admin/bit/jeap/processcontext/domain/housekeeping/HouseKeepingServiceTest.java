@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.processcontext.domain.housekeeping;
 
 import ch.admin.bit.jeap.processcontext.domain.message.MessageRepository;
+import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceJobRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.PendingMessageRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceQueryResult;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
@@ -20,9 +21,11 @@ import org.springframework.data.domain.Slice;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -44,6 +47,9 @@ class HouseKeepingServiceTest {
     private PendingMessageRepository pendingMessageRepository;
 
     @Mock
+    private MaintenanceJobRepository maintenanceJobRepository;
+
+    @Mock
     private HouseKeepingConfigProperties houseKeepingConfigProperties;
 
     @Mock
@@ -61,7 +67,8 @@ class HouseKeepingServiceTest {
         houseKeepingConfigProperties.setMaxPages(100);
 
         houseKeepingService = new HouseKeepingService(processInstanceRepository,
-                messageRepository, pendingMessageRepository, houseKeepingConfigProperties, transactionManager);
+                messageRepository, pendingMessageRepository, Optional.of(maintenanceJobRepository),
+                houseKeepingConfigProperties, transactionManager);
     }
 
     @Test
@@ -139,6 +146,28 @@ class HouseKeepingServiceTest {
         final List<Set<UUID>> uuidCaptorAllValues = uuidCaptor.getAllValues();
         assertThat(uuidCaptorAllValues.getFirst()).isEqualTo(firstSet.stream().map(ProcessInstanceQueryResult::getId).collect(Collectors.toSet()));
         assertThat(uuidCaptorAllValues.get(1)).isEqualTo(secondSet.stream().map(ProcessInstanceQueryResult::getId).collect(Collectors.toSet()));
+    }
+
+    @Test
+    void deleteCompletedMaintenanceJobs_deletesBoundedPages() {
+        when(maintenanceJobRepository.deleteCompletedBefore(any(Instant.class), eq(5)))
+                .thenReturn(5)
+                .thenReturn(2);
+
+        houseKeepingService.deleteCompletedMaintenanceJobs(Duration.ofDays(180));
+
+        verify(maintenanceJobRepository, times(2)).deleteCompletedBefore(any(Instant.class), eq(5));
+    }
+
+    @Test
+    void deleteCompletedMaintenanceJobs_maintenanceDisabled_doesNothing() {
+        HouseKeepingService serviceWithoutMaintenance = new HouseKeepingService(processInstanceRepository,
+                messageRepository, pendingMessageRepository, Optional.empty(), houseKeepingConfigProperties,
+                transactionManager);
+
+        serviceWithoutMaintenance.deleteCompletedMaintenanceJobs(Duration.ofDays(180));
+
+        verifyNoInteractions(maintenanceJobRepository);
     }
 
     @RequiredArgsConstructor
