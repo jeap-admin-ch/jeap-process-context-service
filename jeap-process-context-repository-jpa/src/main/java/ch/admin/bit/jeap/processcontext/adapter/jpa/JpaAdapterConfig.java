@@ -8,6 +8,7 @@ import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -16,7 +17,9 @@ import java.time.Duration;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories
+@EnableJpaRepositories(excludeFilters = @ComponentScan.Filter(
+        type = FilterType.REGEX,
+        pattern = "ch\\.admin\\.bit\\.jeap\\.processcontext\\.adapter\\.jpa\\.maintenance\\..*"))
 @EnableJpaAuditing
 @EnableCaching
 @ComponentScan

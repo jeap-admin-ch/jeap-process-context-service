@@ -177,6 +177,28 @@ jeap:
 
 The required user role is described in [User Interface](user-interface.md#roles).
 
+## Maintenance jobs
+
+Maintenance job APIs are disabled by default. Enable them only for controlled operator access:
+
+```yaml
+jeap:
+  processcontext:
+    maintenance:
+      enabled: true
+      limits:
+        max-tasks-per-job: 10000
+        max-field-length: 2000
+```
+
+When enabled, `PUT /api/reevaluation-jobs/{jobId}` accepts a YAML relation-reevaluation request and
+`GET /api/reevaluation-jobs/{jobId}` returns its durable YAML report. Creation requires the semantic role
+`processcontextjob:write`; retrieval requires `processcontextjob:read`. Reusing a job ID with equivalent normalized
+content is idempotent, while different content returns `409 Conflict`.
+
+This API initially records jobs and tasks only. It does not publish Kafka messages, execute relation evaluation, or
+require the referenced process instances to exist.
+
 ### PAMS and ePortal
 
 The UI header contains the ePortal service navigation of Oblique, which is backed by PAMS
