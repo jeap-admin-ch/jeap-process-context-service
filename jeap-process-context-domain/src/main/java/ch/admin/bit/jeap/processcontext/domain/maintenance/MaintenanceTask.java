@@ -13,4 +13,10 @@ public record MaintenanceTask(
         Instant modifiedAt,
         String errorMessage,
         String errorTraceId) {
+
+    public MaintenanceTask transitionTo(MaintenanceTaskState state, String errorMessage, String errorTraceId,
+                                        Instant now) {
+        return new MaintenanceTask(taskId, targetType, targetKey, originProcessId, state, createdAt, now,
+                errorMessage, errorTraceId);
+    }
 }

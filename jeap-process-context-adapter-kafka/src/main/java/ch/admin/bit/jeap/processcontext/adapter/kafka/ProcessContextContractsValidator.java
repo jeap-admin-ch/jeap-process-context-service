@@ -17,22 +17,19 @@ import java.util.List;
 @Component
 @Slf4j
 public class ProcessContextContractsValidator extends DefaultContractsValidator {
-    private static final Collection<String> SHARED_EVENTS_ALLOWED_TO_PUBLISH = List.of(
+    private static final Collection<String> INTERNAL_MESSAGES_WITHOUT_EXPLICIT_CONTRACT = List.of(
             "ProcessContextOutdatedEvent",
             "MessageProcessingFailedEvent",
             "ProcessSnapshotCreatedEvent");
-    private final boolean maintenanceEnabled;
 
     public ProcessContextContractsValidator(@Value("${spring.application.name}") String appName,
-                                            ContractsProvider contractsProvider,
-                                            @Value("${jeap.processcontext.maintenance.enabled:false}") boolean maintenanceEnabled) {
+                                            ContractsProvider contractsProvider) {
         super(appName, contractsProvider);
-        this.maintenanceEnabled = maintenanceEnabled;
     }
 
     @Override
     public void ensurePublisherContract(MessageType type, String topic) {
-        if (isContractCheckBypassed(type)) {
+        if (INTERNAL_MESSAGES_WITHOUT_EXPLICIT_CONTRACT.contains(type.getName())) {
             return;
         }
         super.ensurePublisherContract(type, topic);
@@ -40,20 +37,9 @@ public class ProcessContextContractsValidator extends DefaultContractsValidator 
 
     @Override
     public void ensureConsumerContract(MessageType domainEventType, String topic) {
-        if (isContractCheckBypassed(domainEventType)) {
+        if (INTERNAL_MESSAGES_WITHOUT_EXPLICIT_CONTRACT.contains(domainEventType.getName())) {
             return;
         }
         super.ensureConsumerContract(domainEventType, topic);
-    }
-
-    private boolean isContractCheckBypassed(MessageType type) {
-        if (!SHARED_EVENTS_ALLOWED_TO_PUBLISH.contains(type.getName())) {
-            return false;
-        }
-        return !requiresExplicitMaintenanceContract(type);
-    }
-
-    private boolean requiresExplicitMaintenanceContract(MessageType type) {
-        return maintenanceEnabled && "ProcessContextOutdatedEvent".equals(type.getName());
     }
 }

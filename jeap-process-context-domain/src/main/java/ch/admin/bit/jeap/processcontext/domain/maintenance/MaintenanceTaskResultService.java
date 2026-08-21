@@ -31,10 +31,13 @@ public class MaintenanceTaskResultService {
 
     private void transitionInNewTransaction(UUID taskId, MaintenanceTaskState state, String errorMessage) {
         transactions.withinNewTransaction(() -> {
-            MaintenanceJob job = repository.findByTaskIdForUpdate(taskId)
+            MaintenanceJob job = repository.findTaskForUpdate(taskId)
                     .orElseThrow(MaintenanceTaskNotFoundException::new);
-            if (!job.task(taskId).taskState().isTerminal()) {
-                repository.update(job.transitionTask(taskId, state, errorMessage, MDC.get("traceId"), Instant.now()));
+            MaintenanceTask task = job.task(taskId);
+            if (!task.taskState().isTerminal()) {
+                Instant now = Instant.now();
+                repository.updateTaskAndJob(job,
+                        task.transitionTo(state, errorMessage, MDC.get("traceId"), now));
             }
         });
     }

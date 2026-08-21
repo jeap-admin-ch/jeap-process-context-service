@@ -73,25 +73,34 @@ public record MaintenanceJob(
                                          String errorTraceId, Instant now) {
         List<MaintenanceTask> updatedTasks = tasks.stream()
                 .map(task -> task.taskId().equals(taskId)
-                        ? transition(task, state, errorMessage, errorTraceId, now)
+                        ? task.transitionTo(state, errorMessage, errorTraceId, now)
                         : task)
                 .toList();
-        boolean completed = updatedTasks.stream().allMatch(task -> task.taskState().isTerminal());
-        return new MaintenanceJob(jobId, jobType, processTemplateName, requestHash,
-                completed ? MaintenanceJobState.COMPLETED : MaintenanceJobState.OPEN,
-                completed ? result(updatedTasks) : null, startedAt, completed ? now : null,
-                startedByName, startedByExtId, updatedTasks);
+        return withTasks(updatedTasks).completeIfAllTasksTerminal(now);
     }
 
-    private static MaintenanceTask transition(MaintenanceTask task, MaintenanceTaskState state,
-                                              String errorMessage, String errorTraceId, Instant now) {
-        return new MaintenanceTask(task.taskId(), task.targetType(), task.targetKey(), task.originProcessId(), state,
-                task.createdAt(), now, errorMessage, errorTraceId);
-    }
-
-    private static MaintenanceJobResult result(List<MaintenanceTask> tasks) {
+    public MaintenanceJob completeIfAllTasksTerminal(Instant now) {
+        long terminal = tasks.stream().filter(task -> task.taskState().isTerminal()).count();
         long succeeded = tasks.stream().filter(task -> task.taskState() == MaintenanceTaskState.SUCCEEDED).count();
-        if (succeeded == tasks.size()) {
+        return completeIfAllTasksTerminal(now, new MaintenanceTaskCounts(tasks.size(), terminal, succeeded));
+    }
+
+    public MaintenanceJob completeIfAllTasksTerminal(Instant now, MaintenanceTaskCounts counts) {
+        boolean completed = counts.terminal() == counts.total();
+        if (!completed) {
+            return this;
+        }
+        return new MaintenanceJob(jobId, jobType, processTemplateName, requestHash, MaintenanceJobState.COMPLETED,
+                result(counts.total(), counts.succeeded()), startedAt, now, startedByName, startedByExtId, tasks);
+    }
+
+    private MaintenanceJob withTasks(List<MaintenanceTask> updatedTasks) {
+        return new MaintenanceJob(jobId, jobType, processTemplateName, requestHash, jobState, jobResult, startedAt,
+                completedAt, startedByName, startedByExtId, updatedTasks);
+    }
+
+    private static MaintenanceJobResult result(long total, long succeeded) {
+        if (succeeded == total) {
             return MaintenanceJobResult.SUCCEEDED;
         }
         return succeeded == 0 ? MaintenanceJobResult.FAILED : MaintenanceJobResult.PARTIALLY_SUCCEEDED;

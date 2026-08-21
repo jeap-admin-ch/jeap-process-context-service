@@ -25,7 +25,7 @@ public class MaintenanceTaskExecutionService {
     }
 
     private void executeInTransaction(UUID taskId, MaintenanceUpdateType updateType) {
-        MaintenanceJob job = repository.findByTaskIdForUpdate(taskId)
+        MaintenanceJob job = repository.findTaskForUpdate(taskId)
                 .orElseThrow(MaintenanceTaskNotFoundException::new);
         MaintenanceTask task = job.task(taskId);
         if (task.taskState().isTerminal()) {
@@ -35,11 +35,12 @@ public class MaintenanceTaskExecutionService {
             throw new IllegalStateException("Maintenance task cannot be processed");
         }
 
-        repository.update(job.transitionTask(taskId, MaintenanceTaskState.PROCESSING, null, Instant.now()));
         ProcessInstance processInstance = processInstanceRepository.findByOriginProcessId(task.originProcessId())
                 .filter(instance -> job.processTemplateName().equals(instance.getProcessTemplate().getName()))
                 .orElseThrow(MaintenanceTargetNotFoundException::new);
         relationService.reevaluateRelations(processInstance);
-        repository.update(job.transitionTask(taskId, MaintenanceTaskState.SUCCEEDED, null, Instant.now()));
+        Instant now = Instant.now();
+        repository.updateTaskAndJob(job,
+                task.transitionTo(MaintenanceTaskState.SUCCEEDED, null, null, now));
     }
 }

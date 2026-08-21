@@ -197,7 +197,8 @@ jeap:
 When enabled, `PUT /api/reevaluation-jobs/{jobId}` accepts a YAML relation-reevaluation request and
 `GET /api/reevaluation-jobs/{jobId}` returns its durable YAML report. Creation requires the semantic role
 `processcontextjob:write`; retrieval requires `processcontextjob:read`. Reusing a job ID with equivalent normalized
-content is idempotent, while different content returns `409 Conflict`. The canonical request fields are
+content is idempotent and returns `200 OK`; a new job returns `201 Created`, while different content returns
+`409 Conflict`. The canonical request fields are
 `process-template-name` and `origin-process-id`; the camel-case aliases `processTemplateName` and `originProcessId`
 remain accepted. Both endpoints support `application/yaml` and `application/x-yaml`. Scalar values that resemble
 numbers are quoted in reports so identifiers retain their YAML string type.
@@ -209,12 +210,14 @@ Jobs, tasks, and keyed `ProcessContextOutdatedEvent` outbox messages are persist
 immediately after commit; the outbox relay remains the delivery fallback. Relation candidates are selected from the
 database in pages, and `max-relation-candidates-per-task` rejects unsafe Cartesian workloads before any relation is
 created. Missing processes and processing failures are recorded as terminal task results and acknowledged; an event is
-retried only when its terminal result cannot be persisted. An enabled PCS instance must declare producer and consumer
-contracts for its configured process-outdated topic.
+retried only when its terminal result cannot be persisted. PCS-internal maintenance messages are exempt from
+application contract validation, so enabling maintenance does not require additional message contracts.
 
-A job starts in `open` state. Each process task starts in `event-queued`, moves through `processing`, and then reaches a terminal state
-(`succeeded`, `not-found`, or `failed`). The job becomes `completed` when all tasks are terminal and records a
-`succeeded`, `partially-succeeded`, or `failed` result. Completed jobs are removed by regular housekeeping after
+A job starts in `open` state. Each process task remains `event-queued` until it atomically reaches a terminal state
+(`succeeded`, `not-found`, or `failed`). Processing locks only the current task, so tasks for different processes in
+the same job can run concurrently. The shared job is locked only after task processing to calculate its result from
+the latest task states. The job becomes `completed` when all tasks are terminal and records a `succeeded`,
+`partially-succeeded`, or `failed` result. Completed jobs are removed by regular housekeeping after
 `jeap.processcontext.housekeeping.completed-maintenance-jobs-max-age`, which defaults to `P30D`.
 
 ### PAMS and ePortal

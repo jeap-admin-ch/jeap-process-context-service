@@ -22,7 +22,7 @@ class InternalMessageFactoryTest {
         ReflectionTestUtils.setField(factory, "serviceName", "process-context-service");
         Instant now = Instant.parse("2026-08-06T08:03:12Z");
         MaintenanceTask task = new MaintenanceTask(TASK_ID, MaintenanceTargetType.PROCESS,
-                "assessment-4711", "assessment-4711", MaintenanceTaskState.CREATED, now, null, null, null);
+                "assessment-4711", "assessment-4711", MaintenanceTaskState.EVENT_QUEUED, now, null, null, null);
         MaintenanceJob job = new MaintenanceJob(JOB_ID, MaintenanceJobType.RELATION_REEVALUATION,
                 "assessmentProcess", "a".repeat(64), MaintenanceJobState.OPEN, null, now,
                 null, null, null, List.of(task));

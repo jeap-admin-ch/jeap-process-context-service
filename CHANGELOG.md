@@ -13,6 +13,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - Harden the relation-reevaluation API contract and retain completed maintenance jobs for 30 days by default.
+- Complete record-only jobs from 26.3.0 as failed during migration.
 
 ## [26.3.0] - 2026-08-20
 

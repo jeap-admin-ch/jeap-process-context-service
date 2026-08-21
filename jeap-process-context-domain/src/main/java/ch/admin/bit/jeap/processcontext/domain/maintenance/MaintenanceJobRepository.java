@@ -9,9 +9,9 @@ public interface MaintenanceJobRepository {
 
     Optional<MaintenanceJob> findById(UUID jobId);
 
-    Optional<MaintenanceJob> findByTaskIdForUpdate(UUID taskId);
+    Optional<MaintenanceJob> findTaskForUpdate(UUID taskId);
 
-    void update(MaintenanceJob job);
+    void updateTaskAndJob(MaintenanceJob job, MaintenanceTask task);
 
     int deleteCompletedBefore(Instant completedBefore, int limit);
 }

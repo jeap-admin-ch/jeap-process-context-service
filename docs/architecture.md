@@ -105,7 +105,7 @@ operations.
 | `/api/processes/{originProcessId}/process-relations`| GET  | Process relations (paged)  | `processinstance` / `view`   |
 | `/api/processes/{originProcessId}/relations`        | GET  | Relations (paged)          | `processinstance` / `view`   |
 | `/api/snapshot/{originProcessId}`                   | GET  | A process snapshot version | `processsnapshot` / `view`   |
-| `/api/reevaluation-jobs/{jobId}`                    | PUT  | Empty `200` response       | `processcontextjob` / `write` |
+| `/api/reevaluation-jobs/{jobId}`                    | PUT  | Empty `201` (new) or `200` (idempotent) response | `processcontextjob` / `write` |
 | `/api/reevaluation-jobs/{jobId}`                    | GET  | YAML job report            | `processcontextjob` / `read` |
 
 The process view role is typically granted to the business user of the frontend via the OAuth authorization
@@ -154,9 +154,9 @@ robustness. These technical messages are modelled as jEAP domain events.
 |----------------------------|-------------------------------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
 | `jeap.processcontext.kafka.topic.process-outdated-internal` | `ProcessContextOutdatedEvent` | `originProcessId`, `processUpdateType`, optional message/template data or maintenance task envelope | Something happened for a process instance that potentially affects its state, or a durable relation-reevaluation task must be executed. |
 
-Maintenance events are written through the transactional outbox with the origin process ID as Kafka key. An instance
-with maintenance enabled must declare both producer and consumer contracts for `ProcessContextOutdatedEvent` on the
-configured internal topic.
+Maintenance events are written through the transactional outbox with the origin process ID as Kafka key. As a
+PCS-internal message, `ProcessContextOutdatedEvent` is exempt from application contract validation; PCS instances do
+not need to declare producer or consumer contracts for it.
 
 ## Cross-cutting concepts
 

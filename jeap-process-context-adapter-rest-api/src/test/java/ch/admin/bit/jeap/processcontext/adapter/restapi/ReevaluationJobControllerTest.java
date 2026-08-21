@@ -238,7 +238,7 @@ class ReevaluationJobControllerTest {
                 .andExpect(content().string(containsString("started-by-ext-id: \"287365\"")))
                 .andExpect(content().string(containsString("- task-id: 019c8c72-6fd1-7f25-a9a1-3b3d51fbb321")))
                 .andExpect(content().string(containsString("origin-process-id: \"00123\"")))
-                .andExpect(content().string(containsString("state: created")));
+                .andExpect(content().string(containsString("state: event-queued")));
     }
 
     @Test
@@ -289,7 +289,7 @@ class ReevaluationJobControllerTest {
                         MaintenanceTargetType.PROCESS,
                         "00123",
                         "00123",
-                        MaintenanceTaskState.CREATED,
+                        MaintenanceTaskState.EVENT_QUEUED,
                         STARTED,
                         null,
                         null,

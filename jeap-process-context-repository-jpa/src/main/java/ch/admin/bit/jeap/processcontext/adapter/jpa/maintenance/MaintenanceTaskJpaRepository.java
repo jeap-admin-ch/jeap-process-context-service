@@ -14,6 +14,12 @@ import java.util.UUID;
 interface MaintenanceTaskJpaRepository extends JpaRepository<MaintenanceTaskEntity, UUID> {
     List<MaintenanceTaskEntity> findByJobIdOrderByTargetKey(UUID jobId);
 
+    long countByJobId(UUID jobId);
+
+    long countByJobIdAndTaskStateIn(UUID jobId, List<MaintenanceTaskState> states);
+
+    long countByJobIdAndTaskState(UUID jobId, MaintenanceTaskState state);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from MaintenanceTaskEntity t where t.taskId = :taskId")
     Optional<MaintenanceTaskEntity> findByIdForUpdate(@Param("taskId") UUID taskId);
