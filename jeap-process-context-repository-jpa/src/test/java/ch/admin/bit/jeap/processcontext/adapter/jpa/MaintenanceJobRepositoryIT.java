@@ -67,13 +67,11 @@ class MaintenanceJobRepositoryIT {
     }
 
     @Test
-    void findCreatedTasksAndUpdate_persistsLifecycleAndAggregateResult() {
+    void findQueuedTaskAndUpdate_persistsLifecycleAndAggregateResult() {
         MaintenanceJob created = job(List.of(task(TASK_ID_1, "assessment-4711")));
         maintenanceJobRepository.create(created);
         entityManager.clear();
 
-        assertThat(maintenanceJobRepository.findTaskIdsByState(MaintenanceTaskState.CREATED, 10))
-                .containsExactly(TASK_ID_1);
         MaintenanceJob claimed = maintenanceJobRepository.findByTaskIdForUpdate(TASK_ID_1).orElseThrow();
         maintenanceJobRepository.update(claimed.transitionTask(
                 TASK_ID_1, MaintenanceTaskState.SUCCEEDED, null, STARTED.plusSeconds(1)));
@@ -185,7 +183,7 @@ class MaintenanceJobRepositoryIT {
                 MaintenanceTargetType.PROCESS,
                 originProcessId,
                 originProcessId,
-                MaintenanceTaskState.CREATED,
+                MaintenanceTaskState.EVENT_QUEUED,
                 STARTED,
                 null,
                 null,

@@ -32,7 +32,7 @@ class OutboxMaintenanceEventPublisherTest {
 
         new OutboxMaintenanceEventPublisher(outbox, topics, factory).publish(job, task);
 
-        verify(outbox).sendMessageScheduled(event, key, "process-outdated");
+        verify(outbox).sendMessage(event, key, "process-outdated");
     }
 
     private static MaintenanceJob job(MaintenanceTask task) {
@@ -43,6 +43,6 @@ class OutboxMaintenanceEventPublisherTest {
     private static MaintenanceTask task() {
         Instant now = Instant.parse("2026-08-06T08:03:12Z");
         return new MaintenanceTask(TASK_ID, MaintenanceTargetType.PROCESS, "assessment-4711", "assessment-4711",
-                MaintenanceTaskState.CREATED, now, null, null, null);
+                MaintenanceTaskState.EVENT_QUEUED, now, null, null, null);
     }
 }

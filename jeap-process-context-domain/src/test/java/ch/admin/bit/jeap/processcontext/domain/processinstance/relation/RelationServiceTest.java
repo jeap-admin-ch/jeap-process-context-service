@@ -1,11 +1,14 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance.relation;
 
 import ch.admin.bit.jeap.processcontext.domain.StubMetricsListener;
+import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceProperties;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
-import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.Relation;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.RelationRepository;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.RelationNodeSelector;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.RelationPattern;
 import ch.admin.bit.jeap.processcontext.plugin.api.relation.RelationListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,10 +46,13 @@ class RelationServiceTest {
     private FeatureManager featureManager;
 
     @Mock
-    private ProcessDataRepository processDataRepository;
+    private RelationCandidateRepository relationCandidateRepository;
 
     @Mock
     private ProcessInstance processInstance;
+
+    @Mock
+    private ProcessTemplate processTemplate;
 
     @Captor
     private ArgumentCaptor<Collection<Relation>> savedRelationsCaptor;
@@ -55,18 +61,20 @@ class RelationServiceTest {
     private ArgumentCaptor<Collection<ch.admin.bit.jeap.processcontext.plugin.api.relation.Relation>> notifiedRelationsCaptor;
 
     private RelationService relationService;
+    private MaintenanceProperties maintenanceProperties;
 
     @BeforeEach
     void setUp() {
+        maintenanceProperties = new MaintenanceProperties();
         relationService = new RelationService(relationRepository, relationFactory, relationListener, featureManager,
-                new StubMetricsListener(), processDataRepository);
+                new StubMetricsListener(), relationCandidateRepository, maintenanceProperties);
         lenient().when(processInstance.getOriginProcessId()).thenReturn(ORIGIN_PROCESS_ID);
     }
 
     @Test
-    void reevaluateRelations_usesAllDataAndNotifiesOnlyNewRelations() {
-        ProcessData object = new ProcessData("object", "object-1");
-        ProcessData subject = new ProcessData("subject", "subject-1");
+    void reevaluateRelations_pagesCandidatesAndNotifiesOnlyNewRelations() {
+        RelationPattern pattern = relationPattern();
+        RelationCandidate candidateData = candidate("object-1", "subject-1");
         Relation candidate = Relation.builder()
                 .processInstance(processInstance)
                 .systemId("system")
@@ -77,8 +85,11 @@ class RelationServiceTest {
                 .predicateType("predicate")
                 .build();
         when(processInstance.getId()).thenReturn(java.util.UUID.randomUUID());
-        when(processDataRepository.findByProcessInstanceId(processInstance.getId())).thenReturn(List.of(object, subject));
-        when(relationFactory.createAllRelations(processInstance, List.of(object, subject))).thenReturn(Set.of(candidate));
+        when(processInstance.getProcessTemplate()).thenReturn(processTemplate);
+        when(processTemplate.getRelationPatterns()).thenReturn(List.of(pattern));
+        when(relationCandidateRepository.findCandidates(processInstance.getId(), pattern, null, 500))
+                .thenReturn(List.of(candidateData), List.of(candidateData));
+        when(relationFactory.createRelation(processInstance, pattern, candidateData)).thenReturn(candidate);
         when(relationRepository.saveAllNewRelations(Set.of(candidate))).thenReturn(Set.of(candidate));
 
         relationService.reevaluateRelations(processInstance);
@@ -89,7 +100,8 @@ class RelationServiceTest {
 
     @Test
     void reevaluateRelations_existingRelationsAreNotNotifiedAgain() {
-        ProcessData data = new ProcessData("key", "value");
+        RelationPattern pattern = relationPattern();
+        RelationCandidate candidateData = candidate("object-1", "subject-1");
         Relation candidate = Relation.builder()
                 .processInstance(processInstance)
                 .systemId("system")
@@ -100,13 +112,32 @@ class RelationServiceTest {
                 .predicateType("predicate")
                 .build();
         when(processInstance.getId()).thenReturn(java.util.UUID.randomUUID());
-        when(processDataRepository.findByProcessInstanceId(processInstance.getId())).thenReturn(List.of(data));
-        when(relationFactory.createAllRelations(processInstance, List.of(data))).thenReturn(Set.of(candidate));
+        when(processInstance.getProcessTemplate()).thenReturn(processTemplate);
+        when(processTemplate.getRelationPatterns()).thenReturn(List.of(pattern));
+        when(relationCandidateRepository.findCandidates(processInstance.getId(), pattern, null, 500))
+                .thenReturn(List.of(candidateData), List.of(candidateData));
+        when(relationFactory.createRelation(processInstance, pattern, candidateData)).thenReturn(candidate);
         when(relationRepository.saveAllNewRelations(Set.of(candidate))).thenReturn(Set.of());
 
         relationService.reevaluateRelations(processInstance);
 
         verifyNoInteractions(relationListener);
+    }
+
+    @Test
+    void reevaluateRelations_candidateLimitExceeded_failsBeforeCreatingRelations() {
+        RelationPattern pattern = relationPattern();
+        maintenanceProperties.getLimits().setMaxRelationCandidatesPerTask(1);
+        when(processInstance.getId()).thenReturn(java.util.UUID.randomUUID());
+        when(processInstance.getProcessTemplate()).thenReturn(processTemplate);
+        when(processTemplate.getRelationPatterns()).thenReturn(List.of(pattern));
+        when(relationCandidateRepository.findCandidates(processInstance.getId(), pattern, null, 2))
+                .thenReturn(List.of(candidate("object-1", "subject-1"), candidate("object-2", "subject-2")));
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> relationService.reevaluateRelations(processInstance))
+                .isInstanceOf(RelationCandidateLimitExceededException.class);
+
+        verifyNoInteractions(relationFactory, relationRepository, relationListener);
     }
 
     @Test
@@ -330,5 +361,24 @@ class RelationServiceTest {
 
         verify(relationListener).relationsAdded(notifiedRelationsCaptor.capture());
         assertThat(notifiedRelationsCaptor.getValue()).hasSize(2);
+    }
+
+    private static RelationCandidate candidate(String objectValue, String subjectValue) {
+        return new RelationCandidate(java.util.UUID.randomUUID(), objectValue,
+                java.util.UUID.randomUUID(), subjectValue);
+    }
+
+    private static RelationPattern relationPattern() {
+        return RelationPattern.builder()
+                .predicateType("predicate")
+                .objectSelector(RelationNodeSelector.builder()
+                        .type("objectType")
+                        .processDataKey("object")
+                        .build())
+                .subjectSelector(RelationNodeSelector.builder()
+                        .type("subjectType")
+                        .processDataKey("subject")
+                        .build())
+                .build();
     }
 }

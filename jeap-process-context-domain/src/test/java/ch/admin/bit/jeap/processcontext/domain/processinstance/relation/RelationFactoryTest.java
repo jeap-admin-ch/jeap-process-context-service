@@ -339,39 +339,20 @@ class RelationFactoryTest {
     }
 
     @Test
-    void createAllRelations_evaluatesCartesianProductFromCompleteDataSet() {
-        when(processInstance.getProcessTemplate()).thenReturn(createProcessTemplate(List.of(createRelationPattern(null))));
-        List<ProcessData> allProcessData = List.of(
-                new ProcessData(OBJECT_KEY, "object-1"),
-                new ProcessData(OBJECT_KEY, "object-2"),
-                new ProcessData(SUBJECT_KEY, "subject-1"),
-                new ProcessData(SUBJECT_KEY, "subject-2"));
+    void createRelation_mapsDatabaseCandidate() {
+        RelationPattern pattern = createRelationPattern(null);
+        when(processInstance.getProcessTemplate()).thenReturn(createProcessTemplate(List.of(pattern)));
+        RelationCandidate candidate = new RelationCandidate(
+                java.util.UUID.randomUUID(), "object-1", java.util.UUID.randomUUID(), "subject-1");
 
-        Set<Relation> relations = relationFactory.createAllRelations(processInstance, allProcessData);
+        Relation relation = relationFactory.createRelation(processInstance, pattern, candidate);
 
-        assertThat(relations).hasSize(4);
-    }
-
-    @Test
-    void createAllRelations_appliesRoleAndValueJoins() {
-        RelationPattern rolePattern = createRelationPattern(RelationPattern.JoinType.BY_ROLE);
-        RelationPattern valuePattern = RelationPattern.builder()
-                .predicateType("same-value")
-                .joinType(RelationPattern.JoinType.BY_VALUE)
-                .objectSelector(rolePattern.getObjectSelector())
-                .subjectSelector(rolePattern.getSubjectSelector())
-                .build();
-        when(processInstance.getProcessTemplate()).thenReturn(createProcessTemplate(List.of(rolePattern, valuePattern)));
-        List<ProcessData> allProcessData = List.of(
-                new ProcessData(OBJECT_KEY, "shared", "role-a"),
-                new ProcessData(OBJECT_KEY, "other", "role-b"),
-                new ProcessData(SUBJECT_KEY, "shared", "role-c"),
-                new ProcessData(SUBJECT_KEY, "different", "role-a"));
-
-        Set<Relation> relations = relationFactory.createAllRelations(processInstance, allProcessData);
-
-        assertThat(relations).extracting(Relation::getPredicateType)
-                .containsExactlyInAnyOrder(PREDICATE_TYPE, "same-value");
+        assertThat(relation.getSystemId()).isEqualTo(SYSTEM_ID);
+        assertThat(relation.getPredicateType()).isEqualTo(PREDICATE_TYPE);
+        assertThat(relation.getObjectType()).isEqualTo(OBJECT_TYPE);
+        assertThat(relation.getObjectId()).isEqualTo("object-1");
+        assertThat(relation.getSubjectType()).isEqualTo(SUBJECT_TYPE);
+        assertThat(relation.getSubjectId()).isEqualTo("subject-1");
     }
 
     private ProcessTemplate createProcessTemplate(List<RelationPattern> relationPatterns) {

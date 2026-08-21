@@ -24,6 +24,8 @@ class RelationRepositoryImplTest {
 
     @Mock
     private RelationJpaRepository relationJpaRepository;
+    @Mock
+    private jakarta.persistence.EntityManager entityManager;
 
     @Mock
     private ProcessInstance processInstance;
@@ -32,7 +34,7 @@ class RelationRepositoryImplTest {
 
     @BeforeEach
     void setUp() {
-        relationRepository = new RelationRepositoryImpl(relationJpaRepository);
+        relationRepository = new RelationRepositoryImpl(relationJpaRepository, entityManager);
         lenient().when(processInstance.getId()).thenReturn(UUID.randomUUID());
     }
 

@@ -92,13 +92,15 @@ class ReevaluationJobControllerTest {
     }
 
     @Test
-    void put_validYaml_submitsJobAndReturnsOk() throws Exception {
+    void put_validYaml_submitsJobAndReturnsCreated() throws Exception {
+        when(reevaluationJobService.submit(any())).thenReturn(true);
+
         mockMvc.perform(put("/api/reevaluation-jobs/{jobId}", JOB_ID)
                         .contentType(ReevaluationJobController.APPLICATION_YAML_VALUE)
                         .content(REQUEST_YAML)
                         .with(authenticationForUserRoles(WRITE_ROLE))
                         .with(csrf()))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         ArgumentCaptor<ReevaluationJobSubmission> captor = ArgumentCaptor.forClass(ReevaluationJobSubmission.class);
         verify(reevaluationJobService).submit(captor.capture());

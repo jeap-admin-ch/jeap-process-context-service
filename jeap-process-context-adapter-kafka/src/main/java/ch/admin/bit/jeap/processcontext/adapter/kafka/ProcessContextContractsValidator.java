@@ -47,7 +47,13 @@ public class ProcessContextContractsValidator extends DefaultContractsValidator 
     }
 
     private boolean isContractCheckBypassed(MessageType type) {
-        return SHARED_EVENTS_ALLOWED_TO_PUBLISH.contains(type.getName())
-                && !(maintenanceEnabled && "ProcessContextOutdatedEvent".equals(type.getName()));
+        if (!SHARED_EVENTS_ALLOWED_TO_PUBLISH.contains(type.getName())) {
+            return false;
+        }
+        return !requiresExplicitMaintenanceContract(type);
+    }
+
+    private boolean requiresExplicitMaintenanceContract(MessageType type) {
+        return maintenanceEnabled && "ProcessContextOutdatedEvent".equals(type.getName());
     }
 }

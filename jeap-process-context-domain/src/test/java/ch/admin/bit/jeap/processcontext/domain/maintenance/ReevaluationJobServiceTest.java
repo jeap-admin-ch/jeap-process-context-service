@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.domain.maintenance;
 
+import ch.admin.bit.jeap.processcontext.domain.tx.Transactions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -22,6 +24,10 @@ class ReevaluationJobServiceTest {
 
     @Mock
     private MaintenanceJobRepository maintenanceJobRepository;
+    @Mock
+    private MaintenanceEventPublisher maintenanceEventPublisher;
+    @Mock
+    private Transactions transactions;
 
     private MaintenanceProperties maintenanceProperties;
     private ReevaluationJobService service;
@@ -31,14 +37,17 @@ class ReevaluationJobServiceTest {
         maintenanceProperties = new MaintenanceProperties();
         maintenanceProperties.getLimits().setMaxTasksPerJob(10);
         maintenanceProperties.getLimits().setMaxFieldLength(50);
-        service = new ReevaluationJobService(maintenanceJobRepository, maintenanceProperties);
+        service = new ReevaluationJobService(maintenanceJobRepository, maintenanceEventPublisher,
+                maintenanceProperties, transactions);
+        lenient().when(transactions.withinNewTransactionWithResult(any())).thenAnswer(invocation ->
+                invocation.getArgument(0, Supplier.class).get());
     }
 
     @Test
-    void submit_validRequest_normalizesSortsAndPersistsCreatedTasks() {
+    void submit_validRequest_normalizesSortsPersistsAndPublishesQueuedTasks() {
         when(maintenanceJobRepository.findById(JOB_ID)).thenReturn(Optional.empty());
 
-        service.submit(new ReevaluationJobSubmission(
+        boolean created = service.submit(new ReevaluationJobSubmission(
                 JOB_ID,
                 " assessmentProcess ",
                 List.of(" assessment-4712 ", "assessment-4711"),
@@ -65,13 +74,15 @@ class ReevaluationJobServiceTest {
                     assertThat(task.taskId()).isNotNull();
                     assertThat(task.targetType()).isEqualTo(MaintenanceTargetType.PROCESS);
                     assertThat(task.targetKey()).isEqualTo(task.originProcessId());
-                    assertThat(task.taskState()).isEqualTo(MaintenanceTaskState.CREATED);
+                    assertThat(task.taskState()).isEqualTo(MaintenanceTaskState.EVENT_QUEUED);
                     assertThat(task.createdAt()).isNotNull();
                     assertThat(task.modifiedAt()).isNull();
                     assertThat(task.errorMessage()).isNull();
                     assertThat(task.errorTraceId()).isNull();
                 });
         assertThat(job.tasks()).extracting(MaintenanceTask::taskId).doesNotHaveDuplicates();
+        assertThat(created).isTrue();
+        job.tasks().forEach(task -> verify(maintenanceEventPublisher).publish(job, task));
     }
 
     @Test
@@ -80,13 +91,15 @@ class ReevaluationJobServiceTest {
         MaintenanceJob existing = MaintenanceJob.createReevaluation(first.normalized(maintenanceProperties.getLimits()));
         when(maintenanceJobRepository.findById(JOB_ID)).thenReturn(Optional.of(existing));
 
-        service.submit(new ReevaluationJobSubmission(
+        boolean created = service.submit(new ReevaluationJobSubmission(
                 JOB_ID,
                 " assessmentProcess ",
                 List.of(" process-a ", "process-b"),
                 new MaintenanceJobSubmitter("Another User", "999")));
 
         verify(maintenanceJobRepository, never()).create(any());
+        verifyNoInteractions(maintenanceEventPublisher);
+        assertThat(created).isFalse();
     }
 
     @Test
@@ -102,6 +115,7 @@ class ReevaluationJobServiceTest {
                 .isEqualTo(MaintenanceJobExceptionReason.CONFLICT);
 
         verify(maintenanceJobRepository, never()).create(any());
+        verifyNoInteractions(maintenanceEventPublisher);
     }
 
     @Test
@@ -113,10 +127,12 @@ class ReevaluationJobServiceTest {
                 .thenReturn(Optional.of(existing));
         doThrow(MaintenanceJobAlreadyExistsException.class).when(maintenanceJobRepository).create(any());
 
-        service.submit(submission);
+        boolean created = service.submit(submission);
 
         verify(maintenanceJobRepository).create(any());
         verify(maintenanceJobRepository, times(2)).findById(JOB_ID);
+        verifyNoInteractions(maintenanceEventPublisher);
+        assertThat(created).isFalse();
     }
 
     @Test
@@ -138,6 +154,17 @@ class ReevaluationJobServiceTest {
     @Test
     void submit_duplicateProcessIdAfterNormalization_throwsInvalidRequest() {
         assertInvalid(submission("assessmentProcess", List.of("process-a", " process-a ")));
+    }
+
+    @Test
+    void submit_publisherFailure_propagates() {
+        when(maintenanceJobRepository.findById(JOB_ID)).thenReturn(Optional.empty());
+        doThrow(new IllegalStateException("outbox unavailable"))
+                .when(maintenanceEventPublisher).publish(any(), any());
+
+        assertThatThrownBy(() -> service.submit(submission("assessmentProcess", List.of("process-a"))))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("outbox unavailable");
     }
 
     @Test

@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -52,7 +53,8 @@ public class ReevaluationJobController {
                               - origin-process-id: assessment-4712
                             """))),
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Job accepted or already submitted with the same content"),
+                    @ApiResponse(responseCode = "201", description = "Job created"),
+                    @ApiResponse(responseCode = "200", description = "Job already exists with the same content"),
                     @ApiResponse(responseCode = "400", description = "Invalid request"),
                     @ApiResponse(responseCode = "403", description = "Access denied"),
                     @ApiResponse(responseCode = "409", description = "Job already exists with different content")
@@ -64,12 +66,12 @@ public class ReevaluationJobController {
             @PathVariable UUID jobId,
             @Valid @RequestBody ReevaluationJobRequest request,
             Authentication authentication) {
-        reevaluationJobService.submit(new ReevaluationJobSubmission(
+        boolean created = reevaluationJobService.submit(new ReevaluationJobSubmission(
                 jobId,
                 request.processTemplateName(),
                 request.processes().stream().map(ReevaluationJobRequest.ProcessRequest::originProcessId).toList(),
                 submitter(jwt(authentication))));
-        return ResponseEntity.ok().build();
+        return created ? ResponseEntity.status(HttpStatus.CREATED).build() : ResponseEntity.ok().build();
     }
 
     @Operation(
@@ -90,7 +92,7 @@ public class ReevaluationJobController {
                                     processes:
                                       - task-id: 019c8c72-6fd1-7f25-a9a1-3b3d51fbb321
                                         origin-process-id: assessment-4711
-                                        state: created
+                                        state: event-queued
                                     """))),
                     @ApiResponse(responseCode = "403", description = "Access denied"),
                     @ApiResponse(responseCode = "404", description = "Job not found")

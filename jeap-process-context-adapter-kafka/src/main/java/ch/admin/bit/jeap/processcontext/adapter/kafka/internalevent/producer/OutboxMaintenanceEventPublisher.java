@@ -19,7 +19,7 @@ class OutboxMaintenanceEventPublisher implements MaintenanceEventPublisher {
 
     @Override
     public void publish(MaintenanceJob job, MaintenanceTask task) {
-        transactionalOutbox.sendMessageScheduled(
+        transactionalOutbox.sendMessage(
                 messageFactory.processContextOutdatedMaintenanceEvent(job, task),
                 messageFactory.key(task.originProcessId()),
                 topicConfiguration.getProcessOutdatedInternal());

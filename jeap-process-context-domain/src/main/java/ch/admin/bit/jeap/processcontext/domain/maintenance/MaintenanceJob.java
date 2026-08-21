@@ -34,7 +34,7 @@ public record MaintenanceJob(
                         MaintenanceTargetType.PROCESS,
                         originProcessId,
                         originProcessId,
-                        MaintenanceTaskState.CREATED,
+                        MaintenanceTaskState.EVENT_QUEUED,
                         now,
                         null,
                         null,

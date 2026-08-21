@@ -114,7 +114,7 @@ process updates and messages.
 | `completed-process-instances-max-age`           | `P180D`        | Completed processes are deleted after 180 days. Note the duration syntax.                   |
 | `started-process-instances-max-age`             | `P365D`        | Processes that are not completed are deleted after 365 days. Note the duration syntax.      |
 | `events-max-age`                                | `P90D`         | Messages not referenced by a process instance are deleted after 90 days.                    |
-| `completed-maintenance-jobs-max-age`            | `P180D`        | Completed maintenance jobs and their tasks are deleted after 180 days.                      |
+| `completed-maintenance-jobs-max-age`            | `P30D`         | Completed maintenance jobs and their tasks are deleted after 30 days.                       |
 | `page-size`                                     | 500            | Number of records deleted at once.                                                          |
 | `max-pages`                                     | 100000         | Max. pages to housekeep in one run, limiting the time one run can spend.                    |
 
@@ -190,9 +190,8 @@ jeap:
       limits:
         max-tasks-per-job: 10000
         max-field-length: 2000
-      dispatcher:
-        batch-size: 100
-        fixed-delay-ms: 1000
+        relation-reevaluation-page-size: 500
+        max-relation-candidates-per-task: 100000
 ```
 
 When enabled, `PUT /api/reevaluation-jobs/{jobId}` accepts a YAML relation-reevaluation request and
@@ -206,16 +205,17 @@ numbers are quoted in reports so identifiers retain their YAML string type.
 The endpoints use OAuth2 bearer-token authentication. Bearer-token requests are excluded from Spring Security's CSRF
 matcher and therefore do not require a browser CSRF cookie/header pair.
 
-Created tasks are claimed in bounded batches and queued as keyed `ProcessContextOutdatedEvent` messages through the
-transactional outbox. The existing internal consumer evaluates the currently deployed relation patterns against all
-stored process data. Missing processes and processing failures are recorded as terminal task results and acknowledged;
-an event is retried only when its terminal result cannot be persisted. The outbox relay must remain enabled, and an
-enabled PCS instance must declare producer and consumer contracts for its configured process-outdated topic.
+Jobs, tasks, and keyed `ProcessContextOutdatedEvent` outbox messages are persisted atomically. Messages are sent
+immediately after commit; the outbox relay remains the delivery fallback. Relation candidates are selected from the
+database in pages, and `max-relation-candidates-per-task` rejects unsafe Cartesian workloads before any relation is
+created. Missing processes and processing failures are recorded as terminal task results and acknowledged; an event is
+retried only when its terminal result cannot be persisted. An enabled PCS instance must declare producer and consumer
+contracts for its configured process-outdated topic.
 
-A job starts in `open` state. Each process task moves from `created` to `event-queued` and then to a terminal state
+A job starts in `open` state. Each process task starts in `event-queued`, moves through `processing`, and then reaches a terminal state
 (`succeeded`, `not-found`, or `failed`). The job becomes `completed` when all tasks are terminal and records a
 `successful`, `partially-failed`, or `failed` result. Completed jobs are removed by regular housekeeping after
-`jeap.processcontext.housekeeping.completed-maintenance-jobs-max-age`, which defaults to `P180D`.
+`jeap.processcontext.housekeeping.completed-maintenance-jobs-max-age`, which defaults to `P30D`.
 
 ### PAMS and ePortal
 

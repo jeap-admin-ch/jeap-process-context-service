@@ -2,7 +2,6 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa.maintenance;
 
 import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceTaskState;
 import jakarta.persistence.LockModeType;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -14,9 +13,6 @@ import java.util.UUID;
 
 interface MaintenanceTaskJpaRepository extends JpaRepository<MaintenanceTaskEntity, UUID> {
     List<MaintenanceTaskEntity> findByJobIdOrderByTargetKey(UUID jobId);
-
-    @Query("select t.taskId from MaintenanceTaskEntity t where t.taskState = :state order by t.createdAt, t.taskId")
-    List<UUID> findIdsByState(@Param("state") MaintenanceTaskState state, Pageable pageable);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from MaintenanceTaskEntity t where t.taskId = :taskId")

@@ -12,7 +12,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   stored process data.
 
 ### Changed
-- Harden the relation-reevaluation API contract and retain completed maintenance jobs for 180 days by default.
+- Harden the relation-reevaluation API contract and retain completed maintenance jobs for 30 days by default.
 
 ## [26.3.0] - 2026-08-20
 

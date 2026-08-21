@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.Relation;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.RelationRepository;
 import io.micrometer.core.annotation.Timed;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ class RelationRepositoryImpl implements RelationRepository {
     static final int BATCH_SIZE = 100;
 
     private final RelationJpaRepository relationJpaRepository;
+    private final EntityManager entityManager;
 
     @Override
     public Page<Relation> findByProcessInstanceId(UUID processInstanceId, Pageable pageable) {
@@ -37,7 +39,9 @@ class RelationRepositoryImpl implements RelationRepository {
 
         // Persist only relations that do not already exist
         if (!newRelations.isEmpty()) {
-            relationJpaRepository.saveAll(newRelations);
+            List<Relation> persistedRelations = relationJpaRepository.saveAll(newRelations);
+            relationJpaRepository.flush();
+            persistedRelations.forEach(entityManager::detach);
         }
 
         return newRelations;
@@ -69,7 +73,10 @@ class RelationRepositoryImpl implements RelationRepository {
 
         Set<Relation> newRelations = new HashSet<>(relations);
         // Remove duplicates, keep only new relations
-        duplicateRelations.forEach(newRelations::remove);
+        duplicateRelations.forEach(relation -> {
+            newRelations.remove(relation);
+            entityManager.detach(relation);
+        });
 
         return newRelations;
     }

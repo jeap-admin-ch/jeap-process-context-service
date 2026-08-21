@@ -97,6 +97,9 @@ public abstract class ProcessInstanceITBase extends KafkaIntegrationTestBase {
     @BeforeEach
     void clearDatabase() {
         originProcessId = Generators.timeBasedEpochGenerator().generate().toString();
+        jdbcTemplate.update("DELETE FROM pcs_maintenance_task");
+        jdbcTemplate.update("DELETE FROM pcs_maintenance_job");
+        jdbcTemplate.update("DELETE FROM deferred_message");
         jdbcTemplate.update("DELETE FROM task_instance");
         jdbcTemplate.update("DELETE FROM process_instance_process_data");
         jdbcTemplate.update("DELETE FROM pending_message");

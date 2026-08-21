@@ -55,12 +55,6 @@ class MaintenanceJobRepositoryImpl implements MaintenanceJobRepository {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<UUID> findTaskIdsByState(MaintenanceTaskState state, int limit) {
-        return maintenanceTaskJpaRepository.findIdsByState(state, PageRequest.of(0, limit));
-    }
-
-    @Override
     @Transactional
     public Optional<MaintenanceJob> findByTaskIdForUpdate(UUID taskId) {
         return maintenanceTaskJpaRepository.findById(taskId).flatMap(task ->

@@ -2,6 +2,11 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
 import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationCandidate;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationCandidateCursor;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationCandidateRepository;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.RelationNodeSelector;
+import ch.admin.bit.jeap.processcontext.domain.processtemplate.RelationPattern;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -41,6 +46,8 @@ class ProcessDataJpaRepositoryTest {
 
     @Autowired
     private ProcessInstanceJpaRepository processInstanceJpaRepository;
+    @Autowired
+    private RelationCandidateRepository relationCandidateRepository;
 
     @Test
     void saveIfNew() {
@@ -169,5 +176,95 @@ class ProcessDataJpaRepositoryTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().getValue()).isEqualTo("value1");
+    }
+
+    @Test
+    void findRelationCandidates_cartesianProductUsesKeysetPaging() {
+        ProcessInstance process = saveProcessWithData(List.of(
+                new ProcessData("object", "object-1"),
+                new ProcessData("object", "object-2"),
+                new ProcessData("subject", "subject-1"),
+                new ProcessData("subject", "subject-2")));
+        RelationPattern pattern = relationPattern(null, null, null);
+
+        List<RelationCandidate> firstPage = relationCandidateRepository.findCandidates(
+                process.getId(), pattern, null, 2);
+        RelationCandidate last = firstPage.getLast();
+        List<RelationCandidate> secondPage = relationCandidateRepository.findCandidates(
+                process.getId(), pattern,
+                new RelationCandidateCursor(last.objectProcessDataId(), last.subjectProcessDataId()), 2);
+
+        assertThat(firstPage).hasSize(2);
+        assertThat(secondPage).hasSize(2);
+        assertThat(java.util.stream.Stream.concat(firstPage.stream(), secondPage.stream()).toList())
+                .extracting(RelationCandidate::objectValue, RelationCandidate::subjectValue)
+                .containsExactlyInAnyOrder(
+                        org.assertj.core.groups.Tuple.tuple("object-1", "subject-1"),
+                        org.assertj.core.groups.Tuple.tuple("object-1", "subject-2"),
+                        org.assertj.core.groups.Tuple.tuple("object-2", "subject-1"),
+                        org.assertj.core.groups.Tuple.tuple("object-2", "subject-2"));
+    }
+
+    @Test
+    void findRelationCandidates_appliesValueJoin() {
+        ProcessInstance process = saveProcessWithData(List.of(
+                new ProcessData("object", "same"),
+                new ProcessData("object", "different"),
+                new ProcessData("subject", "same"),
+                new ProcessData("subject", "other")));
+
+        List<RelationCandidate> candidates = relationCandidateRepository.findCandidates(
+                process.getId(), relationPattern(RelationPattern.JoinType.BY_VALUE, null, null), null, 10);
+
+        assertThat(candidates).singleElement()
+                .satisfies(candidate -> {
+                    assertThat(candidate.objectValue()).isEqualTo("same");
+                    assertThat(candidate.subjectValue()).isEqualTo("same");
+                });
+    }
+
+    @Test
+    void findRelationCandidates_appliesRoleJoinAndSelectorRoles() {
+        ProcessInstance process = saveProcessWithData(List.of(
+                new ProcessData("object", "object-a", "a"),
+                new ProcessData("object", "object-b", "b"),
+                new ProcessData("subject", "subject-a", "a"),
+                new ProcessData("subject", "subject-b", "b")));
+
+        List<RelationCandidate> candidates = relationCandidateRepository.findCandidates(
+                process.getId(), relationPattern(RelationPattern.JoinType.BY_ROLE, "a", "a"), null, 10);
+
+        assertThat(candidates).singleElement()
+                .satisfies(candidate -> {
+                    assertThat(candidate.objectValue()).isEqualTo("object-a");
+                    assertThat(candidate.subjectValue()).isEqualTo("subject-a");
+                });
+    }
+
+    private ProcessInstance saveProcessWithData(List<ProcessData> processData) {
+        ProcessInstance process = ProcessInstanceStubs.createProcessWithSingleTaskInstanceSavingProcessData(
+                "template", processData, processInstanceRepository, processDataRepository);
+        processInstanceJpaRepository.saveAndFlush(process);
+        entityManager.flush();
+        entityManager.clear();
+        return process;
+    }
+
+    private static RelationPattern relationPattern(RelationPattern.JoinType joinType,
+                                                   String objectRole, String subjectRole) {
+        return RelationPattern.builder()
+                .predicateType("relates-to")
+                .joinType(joinType)
+                .objectSelector(RelationNodeSelector.builder()
+                        .type("Object")
+                        .processDataKey("object")
+                        .processDataRole(objectRole)
+                        .build())
+                .subjectSelector(RelationNodeSelector.builder()
+                        .type("Subject")
+                        .processDataKey("subject")
+                        .processDataRole(subjectRole)
+                        .build())
+                .build();
     }
 }

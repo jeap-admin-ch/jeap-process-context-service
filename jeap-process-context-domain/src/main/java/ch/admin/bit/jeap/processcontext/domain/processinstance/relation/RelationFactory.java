@@ -37,22 +37,12 @@ class RelationFactory {
         return newRelations;
     }
 
-    public Set<Relation> createAllRelations(ProcessInstance processInstance, List<ProcessData> allProcessData) {
-        if (allProcessData.isEmpty()) {
-            return Set.of();
-        }
-        ProcessTemplate processTemplate = processInstance.getProcessTemplate();
-        Set<Relation> relations = new HashSet<>();
-        for (RelationPattern pattern : processTemplate.getRelationPatterns()) {
-            List<ProcessData> objects = allProcessData.stream()
-                    .filter(pattern.getObjectSelector()::matches)
-                    .toList();
-            List<ProcessData> subjects = allProcessData.stream()
-                    .filter(pattern.getSubjectSelector()::matches)
-                    .toList();
-            createRelations(processInstance, relations, processTemplate.getRelationSystemId(), pattern, objects, subjects);
-        }
-        return relations;
+    Relation createRelation(ProcessInstance processInstance, RelationPattern pattern, RelationCandidate candidate) {
+        return createRelation(processInstance, processInstance.getProcessTemplate().getRelationSystemId(),
+                pattern.getPredicateType(),
+                new RelationNode(pattern.getObjectSelector().getType(), candidate.objectValue(), null),
+                new RelationNode(pattern.getSubjectSelector().getType(), candidate.subjectValue(), null),
+                pattern.getFeatureFlag());
     }
 
     private void createRelationsForMatchingSubjectPatterns(ProcessInstance processInstance, List<ProcessData> newProcessDataList, ProcessData newProcessData, Set<Relation> newRelations) {
