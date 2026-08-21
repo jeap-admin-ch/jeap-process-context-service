@@ -214,7 +214,7 @@ contracts for its configured process-outdated topic.
 
 A job starts in `open` state. Each process task starts in `event-queued`, moves through `processing`, and then reaches a terminal state
 (`succeeded`, `not-found`, or `failed`). The job becomes `completed` when all tasks are terminal and records a
-`successful`, `partially-failed`, or `failed` result. Completed jobs are removed by regular housekeeping after
+`succeeded`, `partially-succeeded`, or `failed` result. Completed jobs are removed by regular housekeeping after
 `jeap.processcontext.housekeeping.completed-maintenance-jobs-max-age`, which defaults to `P30D`.
 
 ### PAMS and ePortal
