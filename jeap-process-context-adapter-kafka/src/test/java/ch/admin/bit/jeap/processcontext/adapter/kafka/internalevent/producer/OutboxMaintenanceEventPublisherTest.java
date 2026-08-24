@@ -1,10 +1,12 @@
 package ch.admin.bit.jeap.processcontext.adapter.kafka.internalevent.producer;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.TransactionalOutbox;
 import ch.admin.bit.jeap.processcontext.adapter.kafka.TopicConfiguration;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.*;
 import ch.admin.bit.jeap.processcontext.internal.event.key.ProcessContextProcessIdKey;
 import ch.admin.bit.jeap.processcontext.internal.event.outdated.ProcessContextOutdatedEvent;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -16,6 +18,11 @@ import static org.mockito.Mockito.*;
 class OutboxMaintenanceEventPublisherTest {
     private static final UUID JOB_ID = UUID.fromString("88dbb65f-9634-4685-bc86-17b72d715d3e");
     private static final UUID TASK_ID = UUID.fromString("019c8c72-6fd1-7f25-a9a1-3b3d51fbb321");
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     @Test
     void publish_queuesEventWithOriginProcessIdKey() {

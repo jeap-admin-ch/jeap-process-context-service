@@ -5,6 +5,7 @@ import ch.admin.bit.jeap.processcontext.domain.message.MessageData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -138,5 +139,25 @@ class ProcessDataServiceTest {
         assertThat(result)
                 .hasSize(1)
                 .contains(new ProcessData("anotherTargetKeyName", "anotherValue"));
+    }
+
+    @Test
+    void addProcessData_persistsValuesDirectlyAndIgnoresExistingValues() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTask();
+        when(processDataRepository.saveIfNew(any())).thenReturn(true, false);
+
+        processDataService.addProcessData(processInstance, List.of(
+                new ProcessDataValue("assessmentId", "a-123", null),
+                new ProcessDataValue("artefactId", "art-456", "FinalVersion")));
+
+        ArgumentCaptor<ProcessData> captor = ArgumentCaptor.forClass(ProcessData.class);
+        verify(processDataRepository, times(2)).saveIfNew(captor.capture());
+        assertThat(captor.getAllValues())
+                .extracting(ProcessData::getKey, ProcessData::getValue, ProcessData::getRole)
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple("assessmentId", "a-123", null),
+                        org.assertj.core.groups.Tuple.tuple("artefactId", "art-456", "FinalVersion"));
+        assertThat(captor.getAllValues()).allSatisfy(data ->
+                assertThat(data.getProcessInstance()).isSameAs(processInstance));
     }
 }

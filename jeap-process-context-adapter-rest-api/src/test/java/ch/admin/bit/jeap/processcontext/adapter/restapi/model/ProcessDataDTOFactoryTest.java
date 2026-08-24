@@ -1,8 +1,10 @@
 package ch.admin.bit.jeap.processcontext.adapter.restapi.model;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessSnapshot;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessData;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataRepository;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
@@ -20,6 +22,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ProcessDataDTOFactoryTest {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     private ProcessDataRepository processDataRepository;
     private ProcessDataDTOFactory factory;

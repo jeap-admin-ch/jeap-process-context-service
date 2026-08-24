@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.processcontext.domain.maintenance;
 
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataValue;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.tx.Transactions;
@@ -41,7 +42,8 @@ class MaintenanceTaskExecutionServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new MaintenanceTaskExecutionService(repository, processInstanceRepository, relationService, transactions);
+        service = new MaintenanceTaskExecutionService(repository, processInstanceRepository, relationService,
+                transactions);
         doAnswer(invocation -> {
             invocation.getArgument(0, Runnable.class).run();
             return null;
@@ -50,7 +52,7 @@ class MaintenanceTaskExecutionServiceTest {
 
     @Test
     void execute_reevaluatesCurrentTemplateAndCompletesTask() {
-        when(repository.findTaskForUpdate(TASK_ID)).thenReturn(Optional.of(job(MaintenanceTaskState.EVENT_QUEUED)));
+        when(repository.findByTaskIdForUpdate(TASK_ID)).thenReturn(Optional.of(job(MaintenanceTaskState.EVENT_QUEUED)));
         ProcessInstance processInstance = mock(ProcessInstance.class);
         ProcessTemplate template = mock(ProcessTemplate.class);
         when(template.getName()).thenReturn("assessmentProcess");
@@ -67,16 +69,17 @@ class MaintenanceTaskExecutionServiceTest {
 
     @Test
     void execute_missingProcess_throwsTargetNotFound() {
-        when(repository.findTaskForUpdate(TASK_ID)).thenReturn(Optional.of(job(MaintenanceTaskState.EVENT_QUEUED)));
+        when(repository.findByTaskIdForUpdate(TASK_ID)).thenReturn(Optional.of(job(MaintenanceTaskState.EVENT_QUEUED)));
         when(processInstanceRepository.findByOriginProcessId("assessment-4711")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.execute(TASK_ID, MaintenanceUpdateType.REEVALUATE_JOB))
                 .isInstanceOf(MaintenanceTargetNotFoundException.class);
+        verify(repository, never()).updateTaskAndJob(any(), any());
     }
 
     @Test
     void execute_terminalTask_acknowledgesWithoutExecutingAgain() {
-        when(repository.findTaskForUpdate(TASK_ID)).thenReturn(Optional.of(job(MaintenanceTaskState.SUCCEEDED)));
+        when(repository.findByTaskIdForUpdate(TASK_ID)).thenReturn(Optional.of(job(MaintenanceTaskState.SUCCEEDED)));
 
         service.execute(TASK_ID, MaintenanceUpdateType.REEVALUATE_JOB);
 
@@ -84,10 +87,80 @@ class MaintenanceTaskExecutionServiceTest {
         verify(repository, never()).updateTaskAndJob(any(), any());
     }
 
+    @Test
+    void execute_backfillReevaluatesAndCompletesTask() {
+        MaintenanceJob job = backfillJob(MaintenanceTaskState.EVENT_QUEUED);
+        when(repository.findByTaskIdForUpdate(TASK_ID)).thenReturn(Optional.of(job));
+        ProcessInstance processInstance = processInstance("assessmentProcess");
+        when(processInstanceRepository.findByOriginProcessId("assessment-4711")).thenReturn(Optional.of(processInstance));
+
+        service.execute(TASK_ID, MaintenanceUpdateType.BACKFILL_JOB);
+
+        verify(relationService).reevaluateRelations(processInstance);
+        ArgumentCaptor<MaintenanceTask> captor = ArgumentCaptor.forClass(MaintenanceTask.class);
+        verify(repository).updateTaskAndJob(eq(job), captor.capture());
+        MaintenanceTask completedTask = captor.getValue();
+        assertThat(completedTask.taskState()).isEqualTo(MaintenanceTaskState.SUCCEEDED);
+        assertThat(completedTask.processData()).isEqualTo(job.task(TASK_ID).processData());
+    }
+
+    @Test
+    void execute_backfillMissingProcessThrowsTargetNotFound() {
+        when(repository.findByTaskIdForUpdate(TASK_ID))
+                .thenReturn(Optional.of(backfillJob(MaintenanceTaskState.EVENT_QUEUED)));
+        when(processInstanceRepository.findByOriginProcessId("assessment-4711")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.execute(TASK_ID, MaintenanceUpdateType.BACKFILL_JOB))
+                .isInstanceOf(MaintenanceTargetNotFoundException.class);
+    }
+
+    @Test
+    void execute_backfillTemplateMismatchThrowsTargetNotFound() {
+        when(repository.findByTaskIdForUpdate(TASK_ID))
+                .thenReturn(Optional.of(backfillJob(MaintenanceTaskState.EVENT_QUEUED)));
+        ProcessInstance processInstance = processInstance("otherTemplate");
+        when(processInstanceRepository.findByOriginProcessId("assessment-4711"))
+                .thenReturn(Optional.of(processInstance));
+
+        assertThatThrownBy(() -> service.execute(TASK_ID, MaintenanceUpdateType.BACKFILL_JOB))
+                .isInstanceOf(MaintenanceTargetNotFoundException.class);
+        verifyNoInteractions(relationService);
+    }
+
+    @Test
+    void execute_backfillRejectsMismatchingJobType() {
+        when(repository.findByTaskIdForUpdate(TASK_ID))
+                .thenReturn(Optional.of(job(MaintenanceTaskState.EVENT_QUEUED)));
+
+        assertThatThrownBy(() -> service.execute(TASK_ID, MaintenanceUpdateType.BACKFILL_JOB))
+                .isInstanceOf(IllegalStateException.class);
+        verifyNoInteractions(processInstanceRepository, relationService);
+    }
+
+    private static ProcessInstance processInstance(String templateName) {
+        ProcessInstance processInstance = mock(ProcessInstance.class);
+        ProcessTemplate template = mock(ProcessTemplate.class);
+        when(template.getName()).thenReturn(templateName);
+        when(processInstance.getProcessTemplate()).thenReturn(template);
+        return processInstance;
+    }
+
+    private static MaintenanceJob backfillJob(MaintenanceTaskState state) {
+        Instant now = Instant.parse("2026-08-06T08:03:12Z");
+        return new MaintenanceJob(JOB_ID, MaintenanceJobType.PROCESS_DATA_BACKFILL, "assessmentProcess",
+                "b".repeat(64), MaintenanceJobState.OPEN, null, now, null, null, null,
+                List.of(new MaintenanceTask(TASK_ID, MaintenanceTargetType.PROCESS, "assessment-4711",
+                        "assessment-4711", state, now, null, null, null, List.of(
+                        new ProcessDataValue("assessmentId", "a-123", null),
+                        new ProcessDataValue("artefactId", "art-456", "FinalVersion")))));
+    }
+
     private static MaintenanceJob job(MaintenanceTaskState state) {
         Instant now = Instant.parse("2026-08-06T08:03:12Z");
         return new MaintenanceJob(JOB_ID, MaintenanceJobType.RELATION_REEVALUATION, "assessmentProcess",
-                "a".repeat(64), MaintenanceJobState.OPEN, null, now, null, null, null,
+                "a".repeat(64), state == MaintenanceTaskState.SUCCEEDED ? MaintenanceJobState.COMPLETED : MaintenanceJobState.OPEN,
+                state == MaintenanceTaskState.SUCCEEDED ? MaintenanceJobResult.SUCCEEDED : null, now,
+                state == MaintenanceTaskState.SUCCEEDED ? now : null, null, null,
                 List.of(new MaintenanceTask(TASK_ID, MaintenanceTargetType.PROCESS, "assessment-4711",
                         "assessment-4711", state, now, null, null, null)));
     }

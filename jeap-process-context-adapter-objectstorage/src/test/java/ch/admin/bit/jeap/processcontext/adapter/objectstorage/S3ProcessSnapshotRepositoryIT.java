@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.adapter.objectstorage;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.*;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessSnapshotArchiveData;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessSnapshotMetadata;
@@ -10,6 +11,7 @@ import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.specific.SpecificDatumWriter;
 import org.apache.avro.specific.SpecificRecord;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MinIOContainer;
@@ -36,6 +38,11 @@ class S3ProcessSnapshotRepositoryIT {
     private static final String MINIO_IMAGE = "minio/minio:RELEASE.2025-09-07T16-13-09Z";
     private static final String TEST_BUCKET_NAME = "test-bucket";
     private static final int SNAPSHOT_RETENTION_DAYS = 2;
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     private TimedS3Client s3Client;
     private S3ProcessSnapshotRepository s3ProcessSnapshotRepository;

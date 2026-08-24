@@ -22,8 +22,8 @@ of the process template, see
 |---------------------------------------|---------------------------------------------------------|
 | `<system>_@processinstance_#view`     | Required to open the UI and read the REST API.          |
 | `<system>_@processsnapshot_#view`     | Required to read process snapshots over the REST API.   |
-| `<system>_@processcontextjob_#write`  | Required to submit a relation-reevaluation job.         |
-| `<system>_@processcontextjob_#read`   | Required to retrieve a relation-reevaluation job report. |
+| `<system>_@processcontextjob_#write`  | Required to submit relation-reevaluation and process-data backfill jobs. |
+| `<system>_@processcontextjob_#read`   | Required to retrieve maintenance job reports.           |
 
 The system name has to be configured in `jeap.security.oauth2.resourceserver.system-name` and
 `jeap.processcontext.frontend.system-name`.

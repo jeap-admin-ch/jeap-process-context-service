@@ -31,11 +31,12 @@ class ProcessContextContractsValidatorTest {
     }
 
     @Test
-    void internalMessageDoesNotRequireApplicationContracts() {
-        MessageType type = messageType("ProcessContextOutdatedEvent");
-
-        assertThatCode(() -> validator.ensurePublisherContract(type, "outdated")).doesNotThrowAnyException();
-        assertThatCode(() -> validator.ensureConsumerContract(type, "outdated")).doesNotThrowAnyException();
+    void internalMessagesDoNotRequireApplicationContracts() {
+        for (String messageName : List.of("ProcessContextOutdatedEvent", "AddProcessDataCommand")) {
+            MessageType type = messageType(messageName);
+            assertThatCode(() -> validator.ensurePublisherContract(type, "internal-topic")).doesNotThrowAnyException();
+            assertThatCode(() -> validator.ensureConsumerContract(type, "internal-topic")).doesNotThrowAnyException();
+        }
     }
 
     @Test

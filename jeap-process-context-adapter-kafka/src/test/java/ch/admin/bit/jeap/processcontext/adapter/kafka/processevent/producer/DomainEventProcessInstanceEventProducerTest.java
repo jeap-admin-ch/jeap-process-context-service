@@ -2,10 +2,12 @@ package ch.admin.bit.jeap.processcontext.adapter.kafka.processevent.producer;
 
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
 import ch.admin.bit.jeap.processcontext.adapter.kafka.KafkaProducerException;
 import ch.admin.bit.jeap.processcontext.adapter.kafka.TopicConfiguration;
 import ch.admin.bit.jeap.processcontext.event.process.snapshot.created.ProcessSnapshotCreatedEvent;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +28,11 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DomainEventProcessInstanceEventProducerTest {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     private static final String TOPIC_NAME = "process-snapshot-created-topic";
     private static final String SYSTEM_NAME = "test-system";

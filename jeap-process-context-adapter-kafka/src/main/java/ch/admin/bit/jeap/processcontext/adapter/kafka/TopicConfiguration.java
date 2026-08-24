@@ -37,6 +37,14 @@ public class TopicConfiguration {
      */
     private String processSnapshotCreated;
 
+    /**
+     * Name of the maintenance command topic used for process-data backfills
+     */
+    private String addProcessDataCommand;
+
+    @Value("${jeap.processcontext.maintenance.enabled:false}")
+    private boolean maintenanceEnabled;
+
     @Configuration
     @Profile("!local")
     @ConditionalOnProperty(value = "jeap.processcontext.kafka.topic-check", havingValue = "true", matchIfMissing = true)
@@ -59,6 +67,9 @@ public class TopicConfiguration {
                 List<String> topicNames = new ArrayList<>(List.of(
                         topicConfiguration.getProcessOutdatedInternal(),
                         eventProcessingFailedTopicName));
+                if (topicConfiguration.isMaintenanceEnabled()) {
+                    topicNames.add(topicConfiguration.getAddProcessDataCommand());
+                }
                 if (processTemplateRepository.hasProcessSnapshotsConfigured()) {
                     // The notification of a snapshot creation requires the following topic
                     topicNames.add(topicConfiguration.getProcessSnapshotCreated());

@@ -47,15 +47,14 @@ class MaintenanceTaskResultServiceTest {
     }
 
     @Test
-    void markFailed_persistsSanitizedFailureAndTraceId() {
-        MaintenanceJob job = job();
-        when(repository.findTaskForUpdate(TASK_ID)).thenReturn(Optional.of(job));
+    void markFailed_completesMixedJobAsPartiallySucceeded() {
+        when(repository.findByTaskIdForUpdate(TASK_ID)).thenReturn(Optional.of(job()));
         MDC.put("traceId", "4bf92f3577b34da6a3ce929d0e0e4736");
 
         service.markFailedInNewTransaction(TASK_ID, new IllegalStateException("relation failed"));
 
         ArgumentCaptor<MaintenanceTask> captor = ArgumentCaptor.forClass(MaintenanceTask.class);
-        verify(repository).updateTaskAndJob(eq(job), captor.capture());
+        verify(repository).updateTaskAndJob(eq(job()), captor.capture());
         MaintenanceTask updated = captor.getValue();
         assertThat(updated.taskState()).isEqualTo(MaintenanceTaskState.FAILED);
         assertThat(updated.errorMessage())
@@ -66,7 +65,7 @@ class MaintenanceTaskResultServiceTest {
 
     @Test
     void markFailed_sanitizesAndLimitsActionableMessage() {
-        when(repository.findTaskForUpdate(TASK_ID)).thenReturn(Optional.of(job()));
+        when(repository.findByTaskIdForUpdate(TASK_ID)).thenReturn(Optional.of(job()));
 
         service.markFailedInNewTransaction(TASK_ID, new IllegalArgumentException("invalid relation\n" + "x".repeat(600)));
 
@@ -78,11 +77,12 @@ class MaintenanceTaskResultServiceTest {
 
     @Test
     void markFailed_missingTask_rethrowsSoEventIsNotAcknowledged() {
-        when(repository.findTaskForUpdate(TASK_ID)).thenReturn(Optional.empty());
+        when(repository.findByTaskIdForUpdate(TASK_ID)).thenReturn(Optional.empty());
         IllegalStateException processingFailure = new IllegalStateException();
 
         assertThatThrownBy(() -> service.markFailedInNewTransaction(TASK_ID, processingFailure))
                 .isInstanceOf(MaintenanceTaskNotFoundException.class);
+        verify(repository, never()).updateTaskAndJob(any(), any());
     }
 
     private static MaintenanceJob job() {

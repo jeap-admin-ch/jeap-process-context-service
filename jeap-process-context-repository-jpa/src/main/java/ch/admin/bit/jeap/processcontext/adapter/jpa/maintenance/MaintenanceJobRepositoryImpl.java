@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceJobReposit
 import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceTask;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceTaskCounts;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceTaskState;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataValue;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ class MaintenanceJobRepositoryImpl implements MaintenanceJobRepository {
 
     private final MaintenanceJobJpaRepository maintenanceJobJpaRepository;
     private final MaintenanceTaskJpaRepository maintenanceTaskJpaRepository;
+    private final MaintenanceProcessDataJpaRepository maintenanceProcessDataJpaRepository;
     private final EntityManager entityManager;
 
     @Override
@@ -45,44 +47,59 @@ class MaintenanceJobRepositoryImpl implements MaintenanceJobRepository {
                 .map(task -> MaintenanceTaskEntity.fromDomain(job.jobId(), task))
                 .forEach(entityManager::persist);
         entityManager.flush();
+        job.tasks().forEach(task -> task.processData().stream()
+                .map(value -> MaintenanceProcessDataEntity.fromDomain(task.taskId(), value))
+                .forEach(entityManager::persist));
+        entityManager.flush();
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<MaintenanceJob> findById(UUID jobId) {
         return maintenanceJobJpaRepository.findById(jobId)
-                .map(job -> job.toDomain(maintenanceTaskJpaRepository.findByJobIdOrderByTargetKey(jobId).stream()
-                        .map(MaintenanceTaskEntity::toDomain)
-                        .toList()));
+                .map(job -> job.toDomain(loadTaskMetadata(jobId)));
     }
 
     @Override
     @Transactional
-    public Optional<MaintenanceJob> findTaskForUpdate(UUID taskId) {
+    public Optional<MaintenanceJob> findByTaskIdForUpdate(UUID taskId) {
         return maintenanceTaskJpaRepository.findByIdForUpdate(taskId).flatMap(task ->
                 maintenanceJobJpaRepository.findById(task.getJobId())
-                        .map(job -> job.toDomain(List.of(task.toDomain()))));
+                        .map(job -> job.toDomain(List.of(loadTaskWithProcessData(task)))));
+    }
+
+    @Override
+    @Transactional
+    public void updateTask(MaintenanceJob job, MaintenanceTask task) {
+        applyTask(job, task);
     }
 
     @Override
     @Transactional
     public void updateTaskAndJob(MaintenanceJob job, MaintenanceTask task) {
-        MaintenanceTaskEntity taskEntity = maintenanceTaskJpaRepository.findById(task.taskId())
-                .filter(entity -> entity.getJobId().equals(job.jobId()))
-                .orElseThrow(() -> new IllegalArgumentException("Maintenance task not found"));
-        taskEntity.apply(task);
+        applyTask(job, task);
         entityManager.flush();
 
         MaintenanceJobEntity jobEntity = maintenanceJobJpaRepository.findByIdForUpdate(job.jobId())
                 .orElseThrow(() -> new IllegalArgumentException("Maintenance job not found"));
-        MaintenanceTaskCounts counts = new MaintenanceTaskCounts(
-                maintenanceTaskJpaRepository.countByJobId(job.jobId()),
-                maintenanceTaskJpaRepository.countByJobIdAndTaskStateIn(job.jobId(), List.of(
-                        MaintenanceTaskState.SUCCEEDED, MaintenanceTaskState.NOT_FOUND, MaintenanceTaskState.FAILED)),
-                maintenanceTaskJpaRepository.countByJobIdAndTaskState(
-                        job.jobId(), MaintenanceTaskState.SUCCEEDED));
-        MaintenanceJob currentJob = jobEntity.toDomain(List.of(task));
-        jobEntity.apply(currentJob.completeIfAllTasksTerminal(Instant.now(), counts));
+        jobEntity.apply(jobEntity.toDomain(List.of(task))
+                .completeIfAllTasksTerminal(Instant.now(), taskCounts(job.jobId())));
+    }
+
+    private void applyTask(MaintenanceJob job, MaintenanceTask task) {
+        maintenanceTaskJpaRepository.findById(task.taskId())
+                .filter(entity -> entity.getJobId().equals(job.jobId()))
+                .orElseThrow(() -> new IllegalArgumentException("Maintenance task not found"))
+                .apply(task);
+    }
+
+    private MaintenanceTaskCounts taskCounts(UUID jobId) {
+        long total = maintenanceTaskJpaRepository.countByJobId(jobId);
+        long terminal = maintenanceTaskJpaRepository.countByJobIdAndTaskStateIn(jobId, List.of(
+                MaintenanceTaskState.SUCCEEDED, MaintenanceTaskState.NOT_FOUND, MaintenanceTaskState.FAILED));
+        long succeeded = maintenanceTaskJpaRepository.countByJobIdAndTaskState(
+                jobId, MaintenanceTaskState.SUCCEEDED);
+        return new MaintenanceTaskCounts(total, terminal, succeeded);
     }
 
     @Override
@@ -101,5 +118,19 @@ class MaintenanceJobRepositoryImpl implements MaintenanceJobRepository {
             }
         }
         return false;
+    }
+
+    private List<MaintenanceTask> loadTaskMetadata(UUID jobId) {
+        return maintenanceTaskJpaRepository.findByJobIdOrderByTargetKey(jobId).stream()
+                .map(task -> task.toDomain(List.of()))
+                .toList();
+    }
+
+    private MaintenanceTask loadTaskWithProcessData(MaintenanceTaskEntity task) {
+        List<ProcessDataValue> targetProcessData =
+                maintenanceProcessDataJpaRepository.findByTaskId(task.getTaskId()).stream()
+                        .map(MaintenanceProcessDataEntity::toDomain)
+                        .toList();
+        return task.toDomain(targetProcessData);
     }
 }

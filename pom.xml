@@ -28,13 +28,13 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
         <artifactId>jeap-spring-boot-parent</artifactId>
-        <version>39.5.0</version>
+        <version>40.1.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <artifactId>jeap-process-context-service</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>26.3.1-SNAPSHOT</version>
+    <version>27.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>JEAP Process Context Service</description>
 
@@ -50,6 +50,7 @@
         <process-snapshot-v1.version>1</process-snapshot-v1.version>
         <process-snapshot-v2.version>2</process-snapshot-v2.version>
         <process-context-outdated-event.version>1.3.0</process-context-outdated-event.version>
+        <add-process-data-command.version>1.0.0</add-process-data-command.version>
         <java-json-canonicalization.version>1.1</java-json-canonicalization.version>
         <jme-simple-test-event.version>3.0.0</jme-simple-test-event.version>
         <jme-declaration-created-event.version>1.5.0</jme-declaration-created-event.version>
@@ -77,68 +78,73 @@
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-domain</artifactId>
-                <version>26.3.1-SNAPSHOT</version>
+                <version>27.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-plugin-api</artifactId>
-                <version>26.3.1-SNAPSHOT</version>
+                <version>27.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-domain-test</artifactId>
-                <version>26.3.1-SNAPSHOT</version>
+                <version>27.0.0-SNAPSHOT</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-ui</artifactId>
-                <version>26.3.1-SNAPSHOT</version>
+                <version>27.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-scs</artifactId>
-                <version>26.3.1-SNAPSHOT</version>
+                <version>27.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-repository-jpa</artifactId>
-                <version>26.3.1-SNAPSHOT</version>
+                <version>27.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-repository-template-json</artifactId>
-                <version>26.3.1-SNAPSHOT</version>
+                <version>27.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-adapter-kafka</artifactId>
-                <version>26.3.1-SNAPSHOT</version>
+                <version>27.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-message</artifactId>
-                <version>26.3.1-SNAPSHOT</version>
+                <version>27.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-adapter-micrometer</artifactId>
-                <version>26.3.1-SNAPSHOT</version>
+                <version>27.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-adapter-rest-api</artifactId>
-                <version>26.3.1-SNAPSHOT</version>
+                <version>27.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-adapter-objectstorage</artifactId>
-                <version>26.3.1-SNAPSHOT</version>
+                <version>27.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-service-instance</artifactId>
-                <version>26.3.1-SNAPSHOT</version>
+                <version>27.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap.messagetype.jeap</groupId>
+                <artifactId>add-process-data-command</artifactId>
+                <version>${add-process-data-command.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.uuid</groupId>

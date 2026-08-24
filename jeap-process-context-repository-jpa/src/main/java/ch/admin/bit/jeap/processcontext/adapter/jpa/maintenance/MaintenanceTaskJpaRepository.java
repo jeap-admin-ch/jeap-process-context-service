@@ -19,7 +19,6 @@ interface MaintenanceTaskJpaRepository extends JpaRepository<MaintenanceTaskEnti
     long countByJobIdAndTaskStateIn(UUID jobId, List<MaintenanceTaskState> states);
 
     long countByJobIdAndTaskState(UUID jobId, MaintenanceTaskState state);
-
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from MaintenanceTaskEntity t where t.taskId = :taskId")
     Optional<MaintenanceTaskEntity> findByIdForUpdate(@Param("taskId") UUID taskId);

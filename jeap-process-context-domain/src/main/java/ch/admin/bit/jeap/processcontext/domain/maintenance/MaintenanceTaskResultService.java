@@ -31,7 +31,7 @@ public class MaintenanceTaskResultService {
 
     private void transitionInNewTransaction(UUID taskId, MaintenanceTaskState state, String errorMessage) {
         transactions.withinNewTransaction(() -> {
-            MaintenanceJob job = repository.findTaskForUpdate(taskId)
+            MaintenanceJob job = repository.findByTaskIdForUpdate(taskId)
                     .orElseThrow(MaintenanceTaskNotFoundException::new);
             MaintenanceTask task = job.task(taskId);
             if (!task.taskState().isTerminal()) {

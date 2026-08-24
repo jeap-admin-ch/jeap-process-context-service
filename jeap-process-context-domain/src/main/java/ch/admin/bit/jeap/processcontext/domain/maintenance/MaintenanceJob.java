@@ -29,16 +29,8 @@ public record MaintenanceJob(
                 ? new MaintenanceJobSubmitter(null, null)
                 : submission.submitter();
         List<MaintenanceTask> tasks = submission.originProcessIds().stream()
-                .map(originProcessId -> new MaintenanceTask(
-                        Generators.timeBasedEpochGenerator().generate(),
-                        MaintenanceTargetType.PROCESS,
-                        originProcessId,
-                        originProcessId,
-                        MaintenanceTaskState.EVENT_QUEUED,
-                        now,
-                        null,
-                        null,
-                        null))
+                .map(originProcessId -> MaintenanceTask.reevaluation(
+                        Generators.timeBasedEpochGenerator().generate(), originProcessId, now))
                 .toList();
         return new MaintenanceJob(
                 submission.jobId(),
@@ -54,8 +46,35 @@ public record MaintenanceJob(
                 tasks);
     }
 
+    static MaintenanceJob createBackfill(NormalizedBackfillJobSubmission submission) {
+        Instant now = Instant.now();
+        MaintenanceJobSubmitter submitter = submission.submitter() == null
+                ? new MaintenanceJobSubmitter(null, null)
+                : submission.submitter();
+        List<MaintenanceTask> tasks = submission.entries().stream()
+                .map(entry -> MaintenanceTask.backfill(
+                        Generators.timeBasedEpochGenerator().generate(), entry.originProcessId(), entry.processData(), now))
+                .toList();
+        return new MaintenanceJob(
+                submission.jobId(),
+                MaintenanceJobType.PROCESS_DATA_BACKFILL,
+                submission.processTemplateName(),
+                submission.requestHash(),
+                MaintenanceJobState.OPEN,
+                null,
+                now,
+                null,
+                submitter.name(),
+                submitter.extId(),
+                tasks);
+    }
+
     boolean hasSameRequest(NormalizedReevaluationJobSubmission submission) {
         return jobType == MaintenanceJobType.RELATION_REEVALUATION && requestHash.equals(submission.requestHash());
+    }
+
+    boolean hasSameRequest(NormalizedBackfillJobSubmission submission) {
+        return jobType == MaintenanceJobType.PROCESS_DATA_BACKFILL && requestHash.equals(submission.requestHash());
     }
 
     public MaintenanceTask task(UUID taskId) {
@@ -71,32 +90,52 @@ public record MaintenanceJob(
 
     public MaintenanceJob transitionTask(UUID taskId, MaintenanceTaskState state, String errorMessage,
                                          String errorTraceId, Instant now) {
+        if (state.isTerminal()) {
+            throw new IllegalArgumentException("Terminal task transitions require task counts");
+        }
         List<MaintenanceTask> updatedTasks = tasks.stream()
                 .map(task -> task.taskId().equals(taskId)
                         ? task.transitionTo(state, errorMessage, errorTraceId, now)
                         : task)
                 .toList();
-        return withTasks(updatedTasks).completeIfAllTasksTerminal(now);
+        return new MaintenanceJob(jobId, jobType, processTemplateName, requestHash,
+                MaintenanceJobState.OPEN, null, startedAt, null,
+                startedByName, startedByExtId, updatedTasks);
     }
 
-    public MaintenanceJob completeIfAllTasksTerminal(Instant now) {
-        long terminal = tasks.stream().filter(task -> task.taskState().isTerminal()).count();
-        long succeeded = tasks.stream().filter(task -> task.taskState() == MaintenanceTaskState.SUCCEEDED).count();
-        return completeIfAllTasksTerminal(now, new MaintenanceTaskCounts(tasks.size(), terminal, succeeded));
+    public MaintenanceJob transitionTask(UUID taskId, MaintenanceTaskState state, String errorMessage, Instant now,
+                                         MaintenanceTaskCounts counts) {
+        return transitionTask(taskId, state, errorMessage, null, now, counts);
+    }
+
+    public MaintenanceJob transitionTask(UUID taskId, MaintenanceTaskState state, String errorMessage,
+                                         String errorTraceId, Instant now, MaintenanceTaskCounts counts) {
+        if (!state.isTerminal()) {
+            throw new IllegalArgumentException("Task-count transitions require a terminal state");
+        }
+        MaintenanceTask oldTask = task(taskId);
+        List<MaintenanceTask> updatedTasks = tasks.stream()
+                .map(task -> task.taskId().equals(taskId)
+                        ? task.transitionTo(state, errorMessage, errorTraceId, now)
+                        : task)
+                .toList();
+        long terminal = counts.terminal() - (oldTask.taskState().isTerminal() ? 1 : 0) + 1;
+        long succeeded = counts.succeeded()
+                - (oldTask.taskState() == MaintenanceTaskState.SUCCEEDED ? 1 : 0)
+                + (state == MaintenanceTaskState.SUCCEEDED ? 1 : 0);
+        boolean completed = terminal == counts.total();
+        return new MaintenanceJob(jobId, jobType, processTemplateName, requestHash,
+                completed ? MaintenanceJobState.COMPLETED : MaintenanceJobState.OPEN,
+                completed ? result(counts.total(), succeeded) : null, startedAt, completed ? now : null,
+                startedByName, startedByExtId, updatedTasks);
     }
 
     public MaintenanceJob completeIfAllTasksTerminal(Instant now, MaintenanceTaskCounts counts) {
-        boolean completed = counts.terminal() == counts.total();
-        if (!completed) {
+        if (counts.terminal() != counts.total()) {
             return this;
         }
         return new MaintenanceJob(jobId, jobType, processTemplateName, requestHash, MaintenanceJobState.COMPLETED,
                 result(counts.total(), counts.succeeded()), startedAt, now, startedByName, startedByExtId, tasks);
-    }
-
-    private MaintenanceJob withTasks(List<MaintenanceTask> updatedTasks) {
-        return new MaintenanceJob(jobId, jobType, processTemplateName, requestHash, jobState, jobResult, startedAt,
-                completedAt, startedByName, startedByExtId, updatedTasks);
     }
 
     private static MaintenanceJobResult result(long total, long succeeded) {

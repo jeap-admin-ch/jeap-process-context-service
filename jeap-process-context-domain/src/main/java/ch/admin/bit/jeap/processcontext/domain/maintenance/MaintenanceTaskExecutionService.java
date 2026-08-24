@@ -25,22 +25,31 @@ public class MaintenanceTaskExecutionService {
     }
 
     private void executeInTransaction(UUID taskId, MaintenanceUpdateType updateType) {
-        MaintenanceJob job = repository.findTaskForUpdate(taskId)
+        MaintenanceJob job = repository.findByTaskIdForUpdate(taskId)
                 .orElseThrow(MaintenanceTaskNotFoundException::new);
         MaintenanceTask task = job.task(taskId);
         if (task.taskState().isTerminal()) {
             return;
         }
-        if (task.taskState() != MaintenanceTaskState.EVENT_QUEUED || updateType != MaintenanceUpdateType.REEVALUATE_JOB) {
+        if (task.taskState() != MaintenanceTaskState.EVENT_QUEUED || !matches(job.jobType(), updateType)) {
             throw new IllegalStateException("Maintenance task cannot be processed");
         }
 
         ProcessInstance processInstance = processInstanceRepository.findByOriginProcessId(task.originProcessId())
-                .filter(instance -> job.processTemplateName().equals(instance.getProcessTemplate().getName()))
                 .orElseThrow(MaintenanceTargetNotFoundException::new);
+        if (!job.processTemplateName().equals(processInstance.getProcessTemplate().getName())) {
+            throw new MaintenanceTargetNotFoundException();
+        }
         relationService.reevaluateRelations(processInstance);
         Instant now = Instant.now();
         repository.updateTaskAndJob(job,
                 task.transitionTo(MaintenanceTaskState.SUCCEEDED, null, null, now));
+    }
+
+    private static boolean matches(MaintenanceJobType jobType, MaintenanceUpdateType updateType) {
+        return (jobType == MaintenanceJobType.RELATION_REEVALUATION
+                && updateType == MaintenanceUpdateType.REEVALUATE_JOB)
+                || (jobType == MaintenanceJobType.PROCESS_DATA_BACKFILL
+                && updateType == MaintenanceUpdateType.BACKFILL_JOB);
     }
 }

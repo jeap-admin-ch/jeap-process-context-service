@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.domain.processinstance;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.*;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessRelation;
 import ch.admin.bit.jeap.processcontext.domain.Language;
@@ -14,6 +15,7 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessRelationRo
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskType;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +34,11 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProcessSnapshotServiceTest {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     @Mock
     private ProcessTemplateRepository processTemplateRepository;

@@ -1,6 +1,5 @@
 package ch.admin.bit.jeap.processcontext.adapter.restapi;
 
-import ch.admin.bit.jeap.processcontext.adapter.restapi.config.MaintenanceYamlConverterCustomizer;
 import ch.admin.bit.jeap.processcontext.test.ReevaluationJobControllerTestApplication;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceJob;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceJobException;
@@ -19,11 +18,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.http.converter.autoconfigure.ServerHttpMessageConvertersCustomizer;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -58,7 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         ReevaluationJobController.class,
         MaintenanceJobExceptionHandler.class
 })
-@Import(ReevaluationJobControllerTest.YamlTestConfig.class)
+@Import(MaintenanceYamlTestConfig.class)
 @AutoConfigureMockMvc
 class ReevaluationJobControllerTest {
 
@@ -263,6 +259,16 @@ class ReevaluationJobControllerTest {
     }
 
     @Test
+    void get_crossTypeJobId_returnsNotFound() throws Exception {
+        when(reevaluationJobService.get(JOB_ID)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/reevaluation-jobs/{jobId}", JOB_ID)
+                        .accept(ReevaluationJobController.APPLICATION_YAML_VALUE)
+                        .with(authenticationForUserRoles(READ_ROLE)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void get_withoutReadRole_returnsForbidden() throws Exception {
         mockMvc.perform(get("/api/reevaluation-jobs/{jobId}", JOB_ID)
                         .accept(ReevaluationJobController.APPLICATION_YAML_VALUE)
@@ -312,13 +318,5 @@ class ReevaluationJobControllerTest {
             TestSecurityContextHolder.setContext(securityContext);
             return testSecurityContext().postProcessRequest(request);
         };
-    }
-
-    @TestConfiguration
-    static class YamlTestConfig {
-        @Bean
-        ServerHttpMessageConvertersCustomizer yamlConverterCustomizer() {
-            return new MaintenanceYamlConverterCustomizer();
-        }
     }
 }

@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.adapter.restapi;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessRelation;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessRelationRole;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessSnapshot;
@@ -14,6 +15,7 @@ import ch.admin.bit.jeap.security.resource.semanticAuthentication.SemanticApplic
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.JeapAuthenticationTestTokenBuilder;
 import com.fasterxml.uuid.Generators;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SuppressWarnings("java:S5976") // Replace test with parametrized test, doesn't help readability in this case, ignore
 class ProcessInstanceControllerTest {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     @Autowired
     private MockMvc mockMvc;

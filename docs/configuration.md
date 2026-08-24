@@ -10,6 +10,7 @@ defaults are defined in `processContextDefaultProperties.properties` of the serv
 |--------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
 | `jeap.processcontext.kafka.topic.process-outdated-internal`  | Internal topic controlling the maximum internal parallelism of the PCS. Required.                              |
 | `jeap.processcontext.kafka.topic.process-snapshot-created`   | Topic on which the creation of a process snapshot is announced. Required only if snapshots are configured.     |
+| `jeap.processcontext.kafka.topic.add-process-data-command`   | Topic used to dispatch process-data backfill commands. Required when maintenance is enabled.                    |
 | `jeap.processcontext.kafka.message-consumer-paused`          | Stops message consumption, e.g. while performing a maintenance operation. Default: `false`.                     |
 | `jeap.processcontext.kafka.filters.<MessageType>`            | A [message filter](#message-filters) for the given message type.                                               |
 | `jeap.processcontext.kafka.topic-check`                      | Whether the existence of the configured topics is checked at startup. Default: `true`, inactive in the `local` profile. |
@@ -190,34 +191,40 @@ jeap:
       limits:
         max-tasks-per-job: 10000
         max-field-length: 2000
+        max-process-data-values-per-task: 100
+        max-process-data-values-per-job: 10000
+        max-request-bytes: 10485760
         relation-reevaluation-page-size: 500
         max-relation-candidates-per-task: 100000
 ```
 
-When enabled, `PUT /api/reevaluation-jobs/{jobId}` accepts a YAML relation-reevaluation request and
-`GET /api/reevaluation-jobs/{jobId}` returns its durable YAML report. Creation requires the semantic role
-`processcontextjob:write`; retrieval requires `processcontextjob:read`. Reusing a job ID with equivalent normalized
-content is idempotent and returns `200 OK`; a new job returns `201 Created`, while different content returns
-`409 Conflict`. The canonical request fields are
-`process-template-name` and `origin-process-id`; the camel-case aliases `processTemplateName` and `originProcessId`
-remain accepted. Both endpoints support `application/yaml` and `application/x-yaml`. Scalar values that resemble
-numbers are quoted in reports so identifiers retain their YAML string type.
+`max-tasks-per-job` limits the number of processes in a relation-reevaluation request or entries in a process-data
+backfill request. `max-field-length` limits request strings by their UTF-8 byte length.
+`max-process-data-values-per-task` limits the values in each backfill entry.
+`max-process-data-values-per-job` limits the total values across a backfill request, and `max-request-bytes` limits the
+YAML request size in bytes before full deserialization (10 MiB by default).
+
+When enabled, the relation-reevaluation and process-data backfill APIs described under
+[Maintenance jobs](maintenance.md) are available.
 
 The endpoints use OAuth2 bearer-token authentication. Bearer-token requests are excluded from Spring Security's CSRF
 matcher and therefore do not require a browser CSRF cookie/header pair.
 
-Jobs, tasks, and keyed `ProcessContextOutdatedEvent` outbox messages are persisted atomically. Messages are sent
-immediately after commit; the outbox relay remains the delivery fallback. Relation candidates are selected from the
-database in pages, and `max-relation-candidates-per-task` rejects unsafe Cartesian workloads before any relation is
-created. Missing processes and processing failures are recorded as terminal task results and acknowledged; an event is
-retried only when its terminal result cannot be persisted. PCS-internal maintenance messages are exempt from
-application contract validation, so enabling maintenance does not require additional message contracts.
+Jobs, tasks, and their keyed `ProcessContextOutdatedEvent` or `AddProcessDataCommand` outbox messages are persisted
+atomically. A backfill command atomically adds process data, queues its `ProcessContextOutdatedEvent`, and moves the task
+to `event-queued`; the event reevaluates relations and completes the task. Messages are sent immediately after commit;
+the outbox relay remains the delivery fallback. Relation candidates are selected from the database in pages, and
+`max-relation-candidates-per-task` rejects unsafe Cartesian workloads before any relation is created. Missing processes
+and processing failures are recorded as terminal task results and acknowledged; a message is retried only when its
+terminal result cannot be persisted. PCS-internal maintenance messages are exempt from application contract validation,
+so enabling maintenance does not require additional message contracts.
 
-A job starts in `open` state. Each process task remains `event-queued` until it atomically reaches a terminal state
-(`succeeded`, `not-found`, or `failed`). Processing locks only the current task, so tasks for different processes in
-the same job can run concurrently. The shared job is locked only after task processing to calculate its result from
-the latest task states. The job becomes `completed` when all tasks are terminal and records a `succeeded`,
-`partially-succeeded`, or `failed` result. Completed jobs are removed by regular housekeeping after
+A job starts in `open` state. Relation-reevaluation tasks start in `event-queued`; process-data backfill tasks move from
+`command-queued` to `event-queued`. A task remains `event-queued` until it atomically reaches a terminal state
+(`succeeded`, `not-found`, or `failed`). Processing locks only the current task, so tasks for different processes in the
+same job can run concurrently. The shared job is locked only after task processing to calculate its result from current
+task counts. The job becomes `completed` when all tasks are terminal and records a `succeeded`, `partially-succeeded`,
+or `failed` result. Completed jobs are removed by regular housekeeping after
 `jeap.processcontext.housekeeping.completed-maintenance-jobs-max-age`, which defaults to `P30D`.
 
 ### PAMS and ePortal

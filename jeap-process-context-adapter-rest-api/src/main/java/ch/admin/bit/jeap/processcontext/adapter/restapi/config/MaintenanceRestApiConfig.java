@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.adapter.restapi.config;
 
+import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.http.converter.autoconfigure.ServerHttpMessageConvertersCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +11,8 @@ import org.springframework.context.annotation.Configuration;
 class MaintenanceRestApiConfig {
 
     @Bean
-    ServerHttpMessageConvertersCustomizer maintenanceYamlConverterCustomizer() {
-        return new MaintenanceYamlConverterCustomizer();
+    ServerHttpMessageConvertersCustomizer maintenanceYamlConverterCustomizer(
+            MaintenanceProperties maintenanceProperties) {
+        return new MaintenanceYamlConverterCustomizer(maintenanceProperties.getLimits().getMaxRequestBytes());
     }
 }

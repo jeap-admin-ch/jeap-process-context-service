@@ -107,6 +107,8 @@ operations.
 | `/api/snapshot/{originProcessId}`                   | GET  | A process snapshot version | `processsnapshot` / `view`   |
 | `/api/reevaluation-jobs/{jobId}`                    | PUT  | Empty `201` (new) or `200` (idempotent) response | `processcontextjob` / `write` |
 | `/api/reevaluation-jobs/{jobId}`                    | GET  | YAML job report            | `processcontextjob` / `read` |
+| `/api/backfill-jobs/{jobId}`                        | PUT  | Empty `201` (new) or `200` (idempotent) response | `processcontextjob` / `write` |
+| `/api/backfill-jobs/{jobId}`                        | GET  | YAML job report            | `processcontextjob` / `read` |
 
 The process view role is typically granted to the business user of the frontend via the OAuth authorization
 code flow. An up-to-date description of the API is served by the running application at
@@ -125,7 +127,7 @@ the bundled Angular UI with its OIDC configuration, the application version and 
 | Pending message   | Messages that could not yet be correlated to an existing process instance when they were received.               |
 | Message           | Messages (domain events, commands) with their message key/value data.                                            |
 | Process snapshot  | The representation of a process instance at a given point in time.                                               |
-| Maintenance job   | Durable relation-reevaluation request containing one independently tracked task per process.                    |
+| Maintenance job   | Durable relation-reevaluation or process-data backfill request containing one independently tracked task per process. |
 
 A process snapshot deliberately does not represent the complete state of a process instance, only the part
 needed for traceability. Snapshots are stored in the Avro format recommended for archiving by the Process
@@ -152,11 +154,15 @@ robustness. These technical messages are modelled as jEAP domain events.
 
 | Topic (configuration key)  | Message type                  | Payload                                                                               | Description                                                                                     |
 |----------------------------|-------------------------------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| `jeap.processcontext.kafka.topic.process-outdated-internal` | `ProcessContextOutdatedEvent` | `originProcessId`, `processUpdateType`, optional message/template data or maintenance task envelope | Something happened for a process instance that potentially affects its state, or a durable relation-reevaluation task must be executed. |
+| `jeap.processcontext.kafka.topic.process-outdated-internal` | `ProcessContextOutdatedEvent` | `originProcessId`, `processUpdateType`, optional message/template data or maintenance task envelope | Something happened for a process instance that potentially affects its state, or a durable maintenance task must be executed. |
+| `jeap.processcontext.kafka.topic.add-process-data-command` | `AddProcessDataCommand` | Maintenance job/task identity, template, origin process ID, and normalized process-data values | Adds durable backfill data and triggers relation reevaluation through the internal process-outdated event flow. |
 
-Maintenance events are written through the transactional outbox with the origin process ID as Kafka key. As a
-PCS-internal message, `ProcessContextOutdatedEvent` is exempt from application contract validation; PCS instances do
-not need to declare producer or consumer contracts for it.
+Maintenance commands and events are written through the transactional outbox with the origin process ID as Kafka key.
+Submitting a backfill job atomically persists the job, its `COMMAND_QUEUED` tasks, and their outbox commands. The command
+service reloads the locked durable job and task, validates the command, and atomically adds process data, queues a
+`BACKFILL_JOB` event, and moves the task to `EVENT_QUEUED`. The event reevaluates relations and completes the task.
+Duplicate commands are ignored after the transition. As PCS-internal messages, both message types are exempt from
+application contract validation; PCS instances do not need to declare producer or consumer contracts for them.
 
 ## Cross-cutting concepts
 

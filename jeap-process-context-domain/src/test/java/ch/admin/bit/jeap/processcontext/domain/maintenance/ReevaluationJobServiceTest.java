@@ -204,6 +204,19 @@ class ReevaluationJobServiceTest {
         assertThat(service.get(JOB_ID)).containsSame(job);
     }
 
+    @Test
+    void get_backfillJob_returnsEmpty() {
+        MaintenanceJob job = MaintenanceJob.createBackfill(new BackfillJobSubmission(
+                JOB_ID, "assessmentProcess",
+                List.of(new BackfillJobEntry("process-a", List.of(
+                        new ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataValue(
+                                "key", "value", null)))), null)
+                .normalized(maintenanceProperties.getLimits()));
+        when(maintenanceJobRepository.findById(JOB_ID)).thenReturn(Optional.of(job));
+
+        assertThat(service.get(JOB_ID)).isEmpty();
+    }
+
     private void assertInvalid(ReevaluationJobSubmission submission) {
         assertThatThrownBy(() -> service.submit(submission))
                 .isInstanceOf(MaintenanceJobException.class)

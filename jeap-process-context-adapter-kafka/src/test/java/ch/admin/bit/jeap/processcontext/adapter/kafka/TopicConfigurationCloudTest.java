@@ -32,6 +32,7 @@ class TopicConfigurationCloudTest {
     private static final String PROCESS_OUTDATED_TOPIC = "process-outdated-internal";
     private static final String EVENT_PROCESSING_FAILED_TOPIC = "event-processing-failed";
     private static final String PROCESS_SNAPSHOT_CREATED_TOPIC = "process-snapshot-created";
+    private static final String ADD_PROCESS_DATA_COMMAND_TOPIC = "add-process-data";
 
     @Mock
     private KafkaAdmin kafkaAdmin;
@@ -100,6 +101,27 @@ class TopicConfigurationCloudTest {
 
             verify(adminClient, times(3)).describeTopics(anyCollection());
             verify(topicConfiguration).getProcessSnapshotCreated();
+        }
+    }
+
+    @Test
+    void checkIfTopicsExist_whenMaintenanceEnabled_shouldCheckCommandTopic() throws Exception {
+        when(topicConfiguration.getProcessOutdatedInternal()).thenReturn(PROCESS_OUTDATED_TOPIC);
+        when(topicConfiguration.isMaintenanceEnabled()).thenReturn(true);
+        when(topicConfiguration.getAddProcessDataCommand()).thenReturn(ADD_PROCESS_DATA_COMMAND_TOPIC);
+        when(processTemplateRepository.hasProcessSnapshotsConfigured()).thenReturn(false);
+        when(kafkaAdmin.getConfigurationProperties()).thenReturn(Map.of());
+        when(describeTopicsResult.allTopicNames()).thenReturn(allTopicNamesFuture);
+        when(allTopicNamesFuture.get()).thenReturn(Map.of());
+
+        try (MockedStatic<AdminClient> adminClientMockedStatic = mockStatic(AdminClient.class)) {
+            adminClientMockedStatic.when(() -> AdminClient.create(anyMap())).thenReturn(adminClient);
+            when(adminClient.describeTopics(anyCollection())).thenReturn(describeTopicsResult);
+
+            assertDoesNotThrow(this::invokeCheckIfTopicsExist);
+
+            verify(adminClient, times(3)).describeTopics(anyCollection());
+            verify(topicConfiguration).getAddProcessDataCommand();
         }
     }
 

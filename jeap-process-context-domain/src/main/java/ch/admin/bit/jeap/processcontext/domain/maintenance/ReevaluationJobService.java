@@ -53,7 +53,8 @@ public class ReevaluationJobService {
     }
 
     public Optional<MaintenanceJob> get(UUID jobId) {
-        return maintenanceJobRepository.findById(jobId);
+        return maintenanceJobRepository.findById(jobId)
+                .filter(job -> job.jobType() == MaintenanceJobType.RELATION_REEVALUATION);
     }
 
     private void ensureSameRequest(MaintenanceJob existingJob, NormalizedReevaluationJobSubmission submission) {

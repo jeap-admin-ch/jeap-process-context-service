@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.processcontext.domain.message;
 
 import ch.admin.bit.jeap.messaging.avro.AvroMessageUser;
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.messaging.kafka.tracing.TraceContext;
 import ch.admin.bit.jeap.messaging.kafka.tracing.TraceContextProvider;
 import ch.admin.bit.jeap.messaging.model.*;
@@ -10,6 +11,7 @@ import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceQu
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import ch.admin.bit.jeap.processcontext.domain.processupdate.ProcessUpdateService;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +34,11 @@ import static org.mockito.Mockito.*;
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 @ExtendWith(MockitoExtension.class)
 class DomainMessageServiceTest {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     private static final String EVENT_ID = "eventId";
     private static final String EVENT_NAME = "eventName";

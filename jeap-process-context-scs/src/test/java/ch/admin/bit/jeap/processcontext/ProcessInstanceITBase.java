@@ -45,6 +45,7 @@ import static org.mockito.Mockito.when;
         value = {
                 "jeap.processcontext.kafka.topic.process-snapshot-created=process-snapshot-created",
                 "jeap.processcontext.kafka.topic.process-outdated-internal=outdated",
+                "jeap.processcontext.kafka.topic.add-process-data-command=add-process-data",
                 "jeap.messaging.kafka.error-topic-name=errorTopic",
                 "jeap.security.oauth2.resourceserver.authorizationServer.issuer=http://test/",
                 "jeap.processcontext.housekeeping.pageSize=1",

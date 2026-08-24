@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa.maintenance;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceTargetType;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceTask;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceTaskState;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -14,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -53,7 +55,7 @@ class MaintenanceTaskEntity {
                 0);
     }
 
-    MaintenanceTask toDomain() {
+    MaintenanceTask toDomain(List<ProcessDataValue> processData) {
         return new MaintenanceTask(
                 taskId,
                 targetType,
@@ -63,11 +65,16 @@ class MaintenanceTaskEntity {
                 createdAt,
                 modifiedAt,
                 errorMessage,
-                errorTraceId);
+                errorTraceId,
+                processData);
     }
 
     UUID getJobId() {
         return jobId;
+    }
+
+    UUID getTaskId() {
+        return taskId;
     }
 
     void apply(MaintenanceTask task) {

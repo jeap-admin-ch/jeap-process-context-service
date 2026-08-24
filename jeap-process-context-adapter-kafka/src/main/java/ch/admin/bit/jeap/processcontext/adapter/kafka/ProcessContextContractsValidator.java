@@ -19,6 +19,7 @@ import java.util.List;
 public class ProcessContextContractsValidator extends DefaultContractsValidator {
     private static final Collection<String> INTERNAL_MESSAGES_WITHOUT_EXPLICIT_CONTRACT = List.of(
             "ProcessContextOutdatedEvent",
+            "AddProcessDataCommand",
             "MessageProcessingFailedEvent",
             "ProcessSnapshotCreatedEvent");
 

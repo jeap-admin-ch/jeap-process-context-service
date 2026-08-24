@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.processcontext.adapter.jpa;
 
 import ch.admin.bit.jeap.processcontext.domain.maintenance.*;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContextFactory;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataValue;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplateRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
@@ -106,10 +107,10 @@ class MaintenanceJobRepositoryIT {
         maintenanceJobRepository.create(created);
         entityManager.clear();
 
-        MaintenanceJob lockedJob = maintenanceJobRepository.findTaskForUpdate(TASK_ID_1).orElseThrow();
+        MaintenanceJob claimed = maintenanceJobRepository.findByTaskIdForUpdate(TASK_ID_1).orElseThrow();
         Instant completedAt = STARTED.plusSeconds(1);
-        maintenanceJobRepository.updateTaskAndJob(lockedJob,
-                lockedJob.task(TASK_ID_1).transitionTo(MaintenanceTaskState.SUCCEEDED, null, null, completedAt));
+        maintenanceJobRepository.updateTaskAndJob(claimed,
+                claimed.task(TASK_ID_1).transitionTo(MaintenanceTaskState.SUCCEEDED, null, null, completedAt));
         entityManager.flush();
         entityManager.clear();
 
@@ -216,8 +217,13 @@ class MaintenanceJobRepositoryIT {
 
     @Test
     void deleteCompletedBefore_deletesJobAndTasksByCascade() {
-        MaintenanceJob completed = job(List.of(task(TASK_ID_1, "assessment-4711")))
-                .transitionTask(TASK_ID_1, MaintenanceTaskState.SUCCEEDED, null, STARTED.plusSeconds(1));
+        MaintenanceTask completedTask = new MaintenanceTask(TASK_ID_1, MaintenanceTargetType.PROCESS,
+                "assessment-4711", "assessment-4711", MaintenanceTaskState.SUCCEEDED, STARTED,
+                STARTED.plusSeconds(1), null, null);
+        MaintenanceJob completed = new MaintenanceJob(JOB_ID, MaintenanceJobType.RELATION_REEVALUATION,
+                "assessmentProcess", "a".repeat(64), MaintenanceJobState.COMPLETED,
+                MaintenanceJobResult.SUCCEEDED, STARTED, STARTED.plusSeconds(1), "John Doe", "287365",
+                List.of(completedTask));
         maintenanceJobRepository.create(completed);
         entityManager.clear();
 
@@ -228,6 +234,74 @@ class MaintenanceJobRepositoryIT {
         assertThat(deleted).isOne();
         assertThat(maintenanceJobRepository.findById(JOB_ID)).isEmpty();
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM pcs_maintenance_task", Integer.class)).isZero();
+    }
+
+    @Test
+    void reportLoadOmitsProcessDataAndTargetLockLoadsOnlyTargetTaskAndProcessData() {
+        MaintenanceTask firstTask = new MaintenanceTask(TASK_ID_1, MaintenanceTargetType.PROCESS, "assessment-4711",
+                "assessment-4711", MaintenanceTaskState.COMMAND_QUEUED, STARTED, null, null, null, List.of(
+                new ProcessDataValue("z-key", "value", null),
+                new ProcessDataValue("a-key", "value", "role")));
+        MaintenanceTask secondTask = new MaintenanceTask(TASK_ID_2, MaintenanceTargetType.PROCESS, "assessment-4712",
+                "assessment-4712", MaintenanceTaskState.COMMAND_QUEUED, STARTED, null, null, null,
+                List.of(new ProcessDataValue("other-key", "other-value", null)));
+        MaintenanceJob expected = new MaintenanceJob(JOB_ID, MaintenanceJobType.PROCESS_DATA_BACKFILL,
+                "assessmentProcess", "b".repeat(64), MaintenanceJobState.OPEN, null, STARTED, null,
+                null, null, List.of(firstTask, secondTask));
+
+        maintenanceJobRepository.create(expected);
+        entityManager.clear();
+
+        MaintenanceJob loaded = maintenanceJobRepository.findById(JOB_ID).orElseThrow();
+        assertThat(loaded.tasks()).allSatisfy(task -> assertThat(task.processData()).isEmpty());
+
+        MaintenanceJob locked = maintenanceJobRepository.findByTaskIdForUpdate(TASK_ID_1).orElseThrow();
+        assertThat(locked.tasks()).extracting(MaintenanceTask::taskId).containsExactly(TASK_ID_1);
+        assertThat(locked.task(TASK_ID_1).processData()).containsExactly(
+                new ProcessDataValue("a-key", "value", "role"),
+                new ProcessDataValue("z-key", "value", null));
+    }
+
+    @Test
+    void updateTaskAndJob_appliesAggregateAndOnlySpecifiedTransitionedTask() {
+        MaintenanceTask failedTask = task(TASK_ID_2, "assessment-4712")
+                .transitionTo(MaintenanceTaskState.FAILED, "failure", null, STARTED.plusSeconds(1));
+        maintenanceJobRepository.create(job(List.of(
+                task(TASK_ID_1, "assessment-4711"),
+                failedTask)));
+        entityManager.clear();
+        MaintenanceJob locked = maintenanceJobRepository.findByTaskIdForUpdate(TASK_ID_1).orElseThrow();
+        Instant completedAt = STARTED.plusSeconds(2);
+        MaintenanceTask succeededTask = locked.task(TASK_ID_1)
+                .transitionTo(MaintenanceTaskState.SUCCEEDED, null, null, completedAt);
+
+        maintenanceJobRepository.updateTaskAndJob(locked, succeededTask);
+        entityManager.flush();
+        entityManager.clear();
+
+        MaintenanceJob persisted = maintenanceJobRepository.findById(JOB_ID).orElseThrow();
+        assertThat(persisted.jobState()).isEqualTo(MaintenanceJobState.COMPLETED);
+        assertThat(persisted.jobResult()).isEqualTo(MaintenanceJobResult.PARTIALLY_SUCCEEDED);
+        assertThat(persisted.task(TASK_ID_1).taskState()).isEqualTo(MaintenanceTaskState.SUCCEEDED);
+        assertThat(persisted.task(TASK_ID_2).taskState()).isEqualTo(MaintenanceTaskState.FAILED);
+    }
+
+    @Test
+    void deleteCompletedBefore_cascadesToBackfillProcessData() {
+        MaintenanceTask task = new MaintenanceTask(TASK_ID_1, MaintenanceTargetType.PROCESS, "assessment-4711",
+                "assessment-4711", MaintenanceTaskState.SUCCEEDED, STARTED, STARTED.plusSeconds(1), null, null,
+                List.of(new ProcessDataValue("key", "value", null)));
+        maintenanceJobRepository.create(new MaintenanceJob(JOB_ID, MaintenanceJobType.PROCESS_DATA_BACKFILL,
+                "assessmentProcess", "b".repeat(64), MaintenanceJobState.COMPLETED,
+                MaintenanceJobResult.SUCCEEDED, STARTED, STARTED.plusSeconds(1), null, null, List.of(task)));
+        entityManager.clear();
+
+        maintenanceJobRepository.deleteCompletedBefore(STARTED.plusSeconds(2), 10);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM pcs_maintenance_process_data", Integer.class)).isZero();
     }
 
     private MaintenanceJob job(List<MaintenanceTask> tasks) {
@@ -263,7 +337,7 @@ class MaintenanceJobRepositoryIT {
         return executor.submit(() -> {
             TransactionTemplate transaction = new TransactionTemplate(transactionManager);
             transaction.executeWithoutResult(ignored -> {
-                MaintenanceJob lockedJob = maintenanceJobRepository.findTaskForUpdate(taskId).orElseThrow();
+                MaintenanceJob lockedJob = maintenanceJobRepository.findByTaskIdForUpdate(taskId).orElseThrow();
                 tasksLocked.countDown();
                 try {
                     if (!completeTasks.await(10, TimeUnit.SECONDS)) {

@@ -1,8 +1,10 @@
 package ch.admin.bit.jeap.processcontext.event.test;
 
 import ch.admin.bit.jeap.messaging.avro.AvroMessageBuilderException;
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.processcontext.event.ProcessSnapshotCreatedEventBuilder;
 import ch.admin.bit.jeap.processcontext.event.process.snapshot.created.ProcessSnapshotCreatedEvent;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,6 +16,11 @@ class ProcessSnapshotCreatedEventBuilderTest {
     private static final String PROCESS_ID = "test-process-id";
     private static final String IDEMPOTENCE_ID = "test-idempotence-id";
     private static final int SNAPSHOT_VERSION = 2;
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     @Test
     void testBuild() {

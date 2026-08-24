@@ -28,6 +28,15 @@ public class MaintenanceProperties {
         private int maxFieldLength = 2_000;
 
         @Min(1)
+        private int maxProcessDataValuesPerTask = 100;
+
+        @Min(1)
+        private int maxProcessDataValuesPerJob = 10_000;
+
+        @Min(1)
+        private int maxRequestBytes = 10 * 1024 * 1024;
+
+        @Min(1)
         @Max(2_000)
         private int relationReevaluationPageSize = 500;
 

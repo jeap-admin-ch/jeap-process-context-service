@@ -14,6 +14,12 @@ The service scales with the number of instances and the number of partitions of 
 Old data is deleted automatically from the database by a scheduled job, see
 [Configuration](configuration.md#housekeeping).
 
+## Maintenance jobs
+
+PCS provides maintenance jobs for relation reevaluation and process-data backfill. The APIs are disabled by default and
+execute each process as a durable, independently tracked task. See [Maintenance jobs](maintenance.md) for enablement,
+authorization, request and report formats, processing semantics, and failure handling.
+
 ## Metrics
 
 The PCS publishes metrics that allow it to be monitored and analysed in operation.

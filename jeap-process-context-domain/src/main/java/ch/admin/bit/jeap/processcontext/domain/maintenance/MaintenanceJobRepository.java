@@ -9,7 +9,9 @@ public interface MaintenanceJobRepository {
 
     Optional<MaintenanceJob> findById(UUID jobId);
 
-    Optional<MaintenanceJob> findTaskForUpdate(UUID taskId);
+    Optional<MaintenanceJob> findByTaskIdForUpdate(UUID taskId);
+
+    void updateTask(MaintenanceJob job, MaintenanceTask task);
 
     void updateTaskAndJob(MaintenanceJob job, MaintenanceTask task);
 

@@ -78,7 +78,10 @@ class InternalMessageFactory {
 
         ProcessContextUpdatedEventBuilder maintenanceTask(MaintenanceJob job, MaintenanceTask task) {
             setPayload(ProcessContextOutdatedPayload.newBuilder()
-                    .setProcessUpdateType(ProcessUpdateType.REEVALUATE_JOB)
+                    .setProcessUpdateType(switch (job.jobType()) {
+                        case PROCESS_DATA_BACKFILL -> ProcessUpdateType.BACKFILL_JOB;
+                        case RELATION_REEVALUATION -> ProcessUpdateType.REEVALUATE_JOB;
+                    })
                     .setMaintenanceJobTaskBuilder(MaintenanceJobTask.newBuilder()
                             .setJobId(job.jobId())
                             .setTaskId(task.taskId())

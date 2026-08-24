@@ -8,12 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-class ProcessDataService {
+public class ProcessDataService {
 
     private final ProcessDataRepository processDataRepository;
 
@@ -26,6 +27,11 @@ class ProcessDataService {
         processDataTemplates.forEach(template ->
                 applyProcessDataTemplate(processInstance, addedProcessData, messageData, template));
         return addedProcessData;
+    }
+
+    public void addProcessData(ProcessInstance processInstance, Collection<ProcessDataValue> values) {
+        values.forEach(value -> addProcessDataToProcessInstance(
+                processInstance, value.key(), value.value(), value.role()));
     }
 
     private void applyProcessDataTemplate(ProcessInstance processInstance, List<ProcessData> addedProcessData,
@@ -47,7 +53,12 @@ class ProcessDataService {
     }
 
     private ProcessData addProcessDataToProcessInstance(ProcessInstance processInstance, String targetKey, MessageData messageData) {
-        ProcessData processDataItem = new ProcessData(targetKey, messageData.getValue(), messageData.getRole());
+        return addProcessDataToProcessInstance(processInstance, targetKey, messageData.getValue(), messageData.getRole());
+    }
+
+    private ProcessData addProcessDataToProcessInstance(ProcessInstance processInstance, String key, String value,
+                                                        String role) {
+        ProcessData processDataItem = new ProcessData(key, value, role);
         processDataItem.setProcessInstance(processInstance);
         boolean saved = processDataRepository.saveIfNew(processDataItem);
         return saved ? processDataItem : null;

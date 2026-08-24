@@ -1,11 +1,16 @@
 package ch.admin.bit.jeap.processcontext;
 
 import ch.admin.bit.jeap.processcontext.adapter.restapi.ReevaluationJobController;
+import ch.admin.bit.jeap.processcontext.domain.maintenance.BackfillJobEntry;
+import ch.admin.bit.jeap.processcontext.domain.maintenance.BackfillJobService;
+import ch.admin.bit.jeap.processcontext.domain.maintenance.BackfillJobSubmission;
+import ch.admin.bit.jeap.processcontext.domain.maintenance.AddProcessDataCommandService;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceJobResult;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceJobRepository;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceJobSubmitter;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.ReevaluationJobSubmission;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.ReevaluationJobService;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataValue;
 import ch.admin.bit.jeap.processcontext.event.test1.SubjectReference;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1EventReferences;
@@ -37,17 +42,52 @@ class MaintenanceEnabledContextIT extends ProcessInstanceMockS3ITBase {
     @Autowired
     private ReevaluationJobService reevaluationJobService;
     @Autowired
+    private BackfillJobService backfillJobService;
+    @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private RelationListenerStub relationListenerStub;
 
     @Test
     void maintenanceEnabled_registersCompleteRuntimeSlice() {
         assertThat(applicationContext.getBeansOfType(MaintenanceJobRepository.class)).hasSize(1);
         assertThat(applicationContext.getBean(ReevaluationJobService.class)).isNotNull();
+        assertThat(applicationContext.getBean(BackfillJobService.class)).isNotNull();
         assertThat(applicationContext.getBean(ReevaluationJobController.class)).isNotNull();
+        assertThat(applicationContext.getBean(AddProcessDataCommandService.class)).isNotNull();
         assertThat(applicationContext.containsBean("maintenanceJobJpaRepository")).isTrue();
         assertThat(applicationContext.containsBean("maintenanceTaskJpaRepository")).isTrue();
         assertThat(applicationContext.containsBean("outboxMaintenanceEventPublisher")).isTrue();
+        assertThat(applicationContext.containsBean("outboxMaintenanceCommandPublisher")).isTrue();
+        assertThat(applicationContext.containsBean("addProcessDataCommandConsumer")).isTrue();
         assertThat(applicationContext.containsBean("maintenanceProcessContextOutdatedEventHandler")).isTrue();
+    }
+
+    @Test
+    void backfillJob_addsProcessDataRecreatesRelationAndCompletesJob() {
+        Test1Event subjectEvent = Test1EventBuilder.createForProcessId(originProcessId).taskIds().build();
+        subjectEvent.setReferences(Test1EventReferences.newBuilder()
+                .setSubjectReference(SubjectReference.newBuilder().setSubjectId("subject-1").build())
+                .build());
+        sendSync("topic.test1", subjectEvent);
+        Awaitility.await().untilAsserted(() -> assertThat(processDataCount("subjectKey", "subject-1")).isOne());
+
+        UUID jobId = UUID.randomUUID();
+        boolean created = backfillJobService.submit(new BackfillJobSubmission(
+                jobId, "relations", List.of(new BackfillJobEntry(originProcessId,
+                        List.of(new ProcessDataValue("objectKey", "object-1", null)))),
+                new MaintenanceJobSubmitter("test", "test")));
+
+        assertThat(created).isTrue();
+        Awaitility.await().untilAsserted(() -> {
+            assertThat(processDataCount("objectKey", "object-1")).isOne();
+            assertThat(relationCount()).isOne();
+            assertThat(relationListenerStub.getRelations(originProcessId)).hasSize(1);
+            assertThat(backfillJobService.get(jobId))
+                    .get()
+                    .extracting(job -> job.jobResult())
+                    .isEqualTo(MaintenanceJobResult.SUCCEEDED);
+        });
     }
 
     @Test
@@ -84,5 +124,16 @@ class MaintenanceEnabledContextIT extends ProcessInstanceMockS3ITBase {
                   JOIN process_instance process ON process.id = relation.process_instance_id
                  WHERE process.origin_process_id = ?
                 """, Integer.class, originProcessId);
+    }
+
+    private int processDataCount(String key, String value) {
+        return jdbcTemplate.queryForObject("""
+                SELECT COUNT(*)
+                  FROM process_instance_process_data data
+                  JOIN process_instance process ON process.id = data.process_instance_id
+                 WHERE process.origin_process_id = ?
+                   AND data.key_ = ?
+                   AND data.value_ = ?
+                """, Integer.class, originProcessId, key, value);
     }
 }

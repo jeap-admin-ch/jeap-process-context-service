@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.processcontext.adapter.restapi.model;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.ProcessSnapshot;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.Task;
 import ch.admin.bit.jeap.processcontext.archive.processsnapshot.v2.User;
@@ -13,6 +14,7 @@ import ch.admin.bit.jeap.processcontext.domain.processinstance.*;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.TaskData;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.TimeBasedEpochGenerator;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -33,6 +35,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ProcessInstanceDTOFactoryTest {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     private MessageRepository messageRepository;
     private MessageReferenceRepository messageReferenceRepository;
