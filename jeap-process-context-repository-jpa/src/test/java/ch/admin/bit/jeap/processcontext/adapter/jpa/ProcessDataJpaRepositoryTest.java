@@ -69,6 +69,31 @@ class ProcessDataJpaRepositoryTest {
     }
 
     @Test
+    void saveAllIfNew_insertsBatchAndIgnoresDuplicates() {
+        ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();
+        processInstanceJpaRepository.saveAndFlush(processInstance);
+        ProcessData data1 = new ProcessData("key1", "value1");
+        ProcessData data2 = new ProcessData("key1", "value2", "role");
+        ReflectionTestUtils.setField(data1, "processInstance", processInstance);
+        ReflectionTestUtils.setField(data2, "processInstance", processInstance);
+
+        processDataRepository.saveAllIfNew(List.of(data1, data2));
+
+        ProcessData duplicateData1 = new ProcessData("key1", "value1");
+        ProcessData data3 = new ProcessData("key2", "value3");
+        ReflectionTestUtils.setField(duplicateData1, "processInstance", processInstance);
+        ReflectionTestUtils.setField(data3, "processInstance", processInstance);
+        processDataRepository.saveAllIfNew(List.of(duplicateData1, data3));
+
+        assertThat(processDataJpaRepository.findByProcessInstanceId(processInstance.getId()))
+                .extracting(ProcessData::getKey, ProcessData::getValue, ProcessData::getRole)
+                .containsExactlyInAnyOrder(
+                        org.assertj.core.groups.Tuple.tuple("key1", "value1", null),
+                        org.assertj.core.groups.Tuple.tuple("key1", "value2", "role"),
+                        org.assertj.core.groups.Tuple.tuple("key2", "value3", null));
+    }
+
+    @Test
     void findByProcessInstanceAndKey_findsMatchingProcessData() {
         ProcessData data1 = new ProcessData("key1", "value1");
         ProcessData data2 = new ProcessData("key1", "value2");

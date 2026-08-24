@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.processcontext.domain.processinstance;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,5 +28,11 @@ public interface ProcessDataRepository {
      * @return true if the ProcessData has been saved, or null if it already existed
      */
     boolean saveIfNew(ProcessData processData);
+
+    /**
+     * Saves all given process data that do not already exist (based on the unique constraint
+     * on process_instance_id, key, value, role).
+     */
+    void saveAllIfNew(Collection<ProcessData> processData);
 
 }

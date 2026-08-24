@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
@@ -20,13 +21,16 @@ class ProcessDataRepositoryImplTest {
     private ProcessDataJpaRepository processDataJpaRepository;
 
     @Mock
+    private JdbcTemplate jdbcTemplate;
+
+    @Mock
     private ProcessInstance processInstance;
 
     private ProcessDataRepositoryImpl processDataRepository;
 
     @BeforeEach
     void setUp() {
-        processDataRepository = new ProcessDataRepositoryImpl(processDataJpaRepository);
+        processDataRepository = new ProcessDataRepositoryImpl(processDataJpaRepository, jdbcTemplate);
     }
 
     @Test
@@ -80,5 +84,12 @@ class ProcessDataRepositoryImplTest {
         List<ProcessData> result = processDataRepository.findProcessData(processInstance, key, null);
 
         assertThat(result).containsExactly(processData1, processData2);
+    }
+
+    @Test
+    void saveAllIfNew_emptyCollectionDoesNotExecuteBatch() {
+        processDataRepository.saveAllIfNew(List.of());
+
+        verifyNoInteractions(jdbcTemplate);
     }
 }

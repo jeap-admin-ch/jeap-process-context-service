@@ -30,8 +30,10 @@ public class ProcessDataService {
     }
 
     public void addProcessData(ProcessInstance processInstance, Collection<ProcessDataValue> values) {
-        values.forEach(value -> addProcessDataToProcessInstance(
-                processInstance, value.key(), value.value(), value.role()));
+        List<ProcessData> processData = values.stream()
+                .map(value -> createProcessData(processInstance, value.key(), value.value(), value.role()))
+                .toList();
+        processDataRepository.saveAllIfNew(processData);
     }
 
     private void applyProcessDataTemplate(ProcessInstance processInstance, List<ProcessData> addedProcessData,
@@ -58,9 +60,14 @@ public class ProcessDataService {
 
     private ProcessData addProcessDataToProcessInstance(ProcessInstance processInstance, String key, String value,
                                                         String role) {
-        ProcessData processDataItem = new ProcessData(key, value, role);
-        processDataItem.setProcessInstance(processInstance);
+        ProcessData processDataItem = createProcessData(processInstance, key, value, role);
         boolean saved = processDataRepository.saveIfNew(processDataItem);
         return saved ? processDataItem : null;
+    }
+
+    private ProcessData createProcessData(ProcessInstance processInstance, String key, String value, String role) {
+        ProcessData processData = new ProcessData(key, value, role);
+        processData.setProcessInstance(processInstance);
+        return processData;
     }
 }

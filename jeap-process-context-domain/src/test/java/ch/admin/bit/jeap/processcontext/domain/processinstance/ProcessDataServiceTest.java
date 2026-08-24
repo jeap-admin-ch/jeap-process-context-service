@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -142,22 +143,22 @@ class ProcessDataServiceTest {
     }
 
     @Test
-    void addProcessData_persistsValuesDirectlyAndIgnoresExistingValues() {
+    void addProcessData_persistsValuesInBatch() {
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleDynamicTask();
-        when(processDataRepository.saveIfNew(any())).thenReturn(true, false);
 
         processDataService.addProcessData(processInstance, List.of(
                 new ProcessDataValue("assessmentId", "a-123", null),
                 new ProcessDataValue("artefactId", "art-456", "FinalVersion")));
 
-        ArgumentCaptor<ProcessData> captor = ArgumentCaptor.forClass(ProcessData.class);
-        verify(processDataRepository, times(2)).saveIfNew(captor.capture());
-        assertThat(captor.getAllValues())
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Collection<ProcessData>> captor = ArgumentCaptor.forClass(Collection.class);
+        verify(processDataRepository).saveAllIfNew(captor.capture());
+        assertThat(captor.getValue())
                 .extracting(ProcessData::getKey, ProcessData::getValue, ProcessData::getRole)
                 .containsExactly(
                         org.assertj.core.groups.Tuple.tuple("assessmentId", "a-123", null),
                         org.assertj.core.groups.Tuple.tuple("artefactId", "art-456", "FinalVersion"));
-        assertThat(captor.getAllValues()).allSatisfy(data ->
+        assertThat(captor.getValue()).allSatisfy(data ->
                 assertThat(data.getProcessInstance()).isSameAs(processInstance));
     }
 }
