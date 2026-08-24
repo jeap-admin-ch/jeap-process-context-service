@@ -4,7 +4,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface RelationRepository {
@@ -16,4 +18,8 @@ public interface RelationRepository {
     Set<Relation> saveAllNewRelations(Collection<Relation> relations);
 
     Page<Relation> findByProcessInstanceId(UUID processInstanceId, Pageable pageable);
+
+    Optional<Relation> findById(UUID relationId);
+
+    Map<UUID, String> findOriginProcessIdsByIds(Collection<UUID> relationIds);
 }

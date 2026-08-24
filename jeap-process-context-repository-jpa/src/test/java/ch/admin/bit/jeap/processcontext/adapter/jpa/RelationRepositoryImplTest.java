@@ -11,6 +11,8 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -52,6 +54,35 @@ class RelationRepositoryImplTest {
         assertThat(result).containsExactlyInAnyOrder(relation1, relation2);
         verify(relationJpaRepository).findAll(any(Specification.class));
         verify(relationJpaRepository).saveAll(result);
+    }
+
+    @Test
+    void findById_delegatesToJpaRepository() {
+        UUID relationId = UUID.randomUUID();
+        Relation relation = createRelation("subject", "object");
+        when(relationJpaRepository.findById(relationId)).thenReturn(Optional.of(relation));
+
+        assertThat(relationRepository.findById(relationId)).contains(relation);
+    }
+
+    @Test
+    void findOriginProcessIdsByIds_usesBoundedBatches() {
+        List<UUID> relationIds = java.util.stream.IntStream.range(0, RelationRepositoryImpl.BATCH_SIZE + 1)
+                .mapToObj(_ -> UUID.randomUUID())
+                .toList();
+        RelationOwnerProjection first = owner(relationIds.getFirst(), "process-1");
+        RelationOwnerProjection second = owner(relationIds.getLast(), "process-2");
+        when(relationJpaRepository.findOwnersByRelationIds(relationIds.subList(0, RelationRepositoryImpl.BATCH_SIZE)))
+                .thenReturn(List.of(first));
+        when(relationJpaRepository.findOwnersByRelationIds(relationIds.subList(RelationRepositoryImpl.BATCH_SIZE,
+                relationIds.size()))).thenReturn(List.of(second));
+
+        Map<UUID, String> owners = relationRepository.findOriginProcessIdsByIds(relationIds);
+
+        assertThat(owners).containsExactlyInAnyOrderEntriesOf(Map.of(
+                relationIds.getFirst(), "process-1",
+                relationIds.getLast(), "process-2"));
+        verify(relationJpaRepository, times(2)).findOwnersByRelationIds(any());
     }
 
     @Test
@@ -147,5 +178,12 @@ class RelationRepositoryImplTest {
                 .objectId(objectId)
                 .predicateType("relates-to")
                 .build();
+    }
+
+    private static RelationOwnerProjection owner(UUID relationId, String originProcessId) {
+        RelationOwnerProjection owner = mock(RelationOwnerProjection.class);
+        when(owner.getRelationId()).thenReturn(relationId);
+        when(owner.getOriginProcessId()).thenReturn(originProcessId);
+        return owner;
     }
 }

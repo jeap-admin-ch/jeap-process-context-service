@@ -96,9 +96,10 @@ class BackfillJobServiceTest {
         BackfillJobSubmission first = submission(List.of(entry("process-a", value("key", "value-a", null))));
         when(maintenanceJobRepository.findById(JOB_ID)).thenReturn(Optional.of(
                 MaintenanceJob.createBackfill(first.normalized(maintenanceProperties.getLimits()))));
+        BackfillJobSubmission conflictingSubmission =
+                submission(List.of(entry("process-a", value("key", "value-b", null))));
 
-        assertThatThrownBy(() -> service.submit(
-                submission(List.of(entry("process-a", value("key", "value-b", null))))))
+        assertThatThrownBy(() -> service.submit(conflictingSubmission))
                 .isInstanceOf(MaintenanceJobException.class)
                 .extracting("reason")
                 .isEqualTo(MaintenanceJobExceptionReason.CONFLICT);

@@ -3,7 +3,6 @@ package ch.admin.bit.jeap.processcontext.adapter.restapi;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.BackfillJobEntry;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.BackfillJobService;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.BackfillJobSubmission;
-import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceJobSubmitter;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataValue;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,8 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -87,7 +84,7 @@ public class BackfillJobController {
                                         .map(data -> new ProcessDataValue(data.key(), data.value(), data.role()))
                                         .toList()))
                         .toList(),
-                submitter(jwt(authentication))));
+                MaintenanceJobSubmitterFactory.from(authentication)));
         return created ? ResponseEntity.status(HttpStatus.CREATED).build() : ResponseEntity.ok().build();
     }
 
@@ -124,15 +121,4 @@ public class BackfillJobController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    private static MaintenanceJobSubmitter submitter(Jwt jwt) {
-        return jwt == null
-                ? null
-                : new MaintenanceJobSubmitter(jwt.getClaimAsString("name"), jwt.getClaimAsString("ext_id"));
-    }
-
-    private static Jwt jwt(Authentication authentication) {
-        return authentication instanceof JwtAuthenticationToken jwtAuthenticationToken
-                ? jwtAuthenticationToken.getToken()
-                : null;
-    }
 }

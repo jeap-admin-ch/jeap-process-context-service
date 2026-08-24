@@ -31,9 +31,9 @@ public class AddProcessDataCommandConsumer implements AcknowledgingMessageListen
     @KafkaListener(groupId = "${spring.application.name}-add-process-data-command",
             topics = "${jeap.processcontext.kafka.topic.add-process-data-command}")
     @Override
-    public void onMessage(ConsumerRecord<AvroMessageKey, AddProcessDataCommand> record,
+    public void onMessage(ConsumerRecord<AvroMessageKey, AddProcessDataCommand> consumerRecord,
                           Acknowledgment acknowledgment) {
-        AddProcessDataCommand command = record.value();
+        AddProcessDataCommand command = consumerRecord.value();
         UUID taskId = command.getPayload().getTaskId();
         try {
             commandService.handle(toDomain(command));

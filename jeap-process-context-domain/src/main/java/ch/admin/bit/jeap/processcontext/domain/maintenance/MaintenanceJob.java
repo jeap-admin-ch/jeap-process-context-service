@@ -69,12 +69,31 @@ public record MaintenanceJob(
                 tasks);
     }
 
+    static MaintenanceJob createRepublication(NormalizedRelationPublicationJobSubmission submission,
+                                               java.util.Map<UUID, String> relationOwners) {
+        Instant now = Instant.now();
+        MaintenanceJobSubmitter submitter = submission.submitter() == null
+                ? new MaintenanceJobSubmitter(null, null)
+                : submission.submitter();
+        List<MaintenanceTask> tasks = submission.relationIds().stream()
+                .map(relationId -> MaintenanceTask.republication(
+                        Generators.timeBasedEpochGenerator().generate(), relationId, relationOwners.get(relationId), now))
+                .toList();
+        return new MaintenanceJob(submission.jobId(), MaintenanceJobType.RELATION_REPUBLICATION, null,
+                submission.requestHash(), MaintenanceJobState.OPEN, null, now, null,
+                submitter.name(), submitter.extId(), tasks);
+    }
+
     boolean hasSameRequest(NormalizedReevaluationJobSubmission submission) {
         return jobType == MaintenanceJobType.RELATION_REEVALUATION && requestHash.equals(submission.requestHash());
     }
 
     boolean hasSameRequest(NormalizedBackfillJobSubmission submission) {
         return jobType == MaintenanceJobType.PROCESS_DATA_BACKFILL && requestHash.equals(submission.requestHash());
+    }
+
+    boolean hasSameRequest(NormalizedRelationPublicationJobSubmission submission) {
+        return jobType == MaintenanceJobType.RELATION_REPUBLICATION && requestHash.equals(submission.requestHash());
     }
 
     public MaintenanceTask task(UUID taskId) {

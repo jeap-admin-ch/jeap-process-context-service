@@ -11,6 +11,7 @@ public record MaintenanceTask(
         MaintenanceTargetType targetType,
         String targetKey,
         String originProcessId,
+        UUID relationId,
         MaintenanceTaskState taskState,
         Instant createdAt,
         Instant modifiedAt,
@@ -25,13 +26,20 @@ public record MaintenanceTask(
     public MaintenanceTask(UUID taskId, MaintenanceTargetType targetType, String targetKey, String originProcessId,
                            MaintenanceTaskState taskState, Instant createdAt, Instant modifiedAt,
                            String errorMessage, String errorTraceId) {
-        this(taskId, targetType, targetKey, originProcessId, taskState, createdAt, modifiedAt,
+        this(taskId, targetType, targetKey, originProcessId, null, taskState, createdAt, modifiedAt,
                 errorMessage, errorTraceId, List.of());
+    }
+
+    public MaintenanceTask(UUID taskId, MaintenanceTargetType targetType, String targetKey, String originProcessId,
+                           MaintenanceTaskState taskState, Instant createdAt, Instant modifiedAt,
+                           String errorMessage, String errorTraceId, List<ProcessDataValue> processData) {
+        this(taskId, targetType, targetKey, originProcessId, null, taskState, createdAt, modifiedAt,
+                errorMessage, errorTraceId, processData);
     }
 
     public MaintenanceTask transitionTo(MaintenanceTaskState state, String errorMessage, String errorTraceId,
                                          Instant now) {
-        return new MaintenanceTask(taskId, targetType, targetKey, originProcessId, state, createdAt, now,
+        return new MaintenanceTask(taskId, targetType, targetKey, originProcessId, relationId, state, createdAt, now,
                 errorMessage, errorTraceId, processData);
     }
 
@@ -44,5 +52,10 @@ public record MaintenanceTask(
                                     Instant now) {
         return new MaintenanceTask(taskId, MaintenanceTargetType.PROCESS, originProcessId, originProcessId,
                 MaintenanceTaskState.COMMAND_QUEUED, now, null, null, null, processData);
+    }
+
+    static MaintenanceTask republication(UUID taskId, UUID relationId, String originProcessId, Instant now) {
+        return new MaintenanceTask(taskId, MaintenanceTargetType.RELATION, relationId.toString(), originProcessId,
+                relationId, MaintenanceTaskState.EVENT_QUEUED, now, null, null, null, List.of());
     }
 }

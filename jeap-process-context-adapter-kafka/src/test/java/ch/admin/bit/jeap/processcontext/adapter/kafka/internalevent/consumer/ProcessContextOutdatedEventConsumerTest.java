@@ -55,7 +55,7 @@ class ProcessContextOutdatedEventConsumerTest {
     }
 
     private static ProcessContextOutdatedEvent event() {
-        return event(ProcessUpdateType.REEVALUATE_JOB);
+        return event(ProcessUpdateType.REPUBLISH_RELATION_JOB);
     }
 
     private static ProcessContextOutdatedEvent event(ProcessUpdateType processUpdateType) {

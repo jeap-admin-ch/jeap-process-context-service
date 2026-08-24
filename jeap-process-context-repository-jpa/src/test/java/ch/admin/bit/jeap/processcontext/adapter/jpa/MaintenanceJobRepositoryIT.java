@@ -253,7 +253,8 @@ class MaintenanceJobRepositoryIT {
         entityManager.clear();
 
         MaintenanceJob loaded = maintenanceJobRepository.findById(JOB_ID).orElseThrow();
-        assertThat(loaded.tasks()).allSatisfy(task -> assertThat(task.processData()).isEmpty());
+        assertThat(loaded.tasks()).isNotEmpty()
+                .allSatisfy(task -> assertThat(task.processData()).isEmpty());
 
         MaintenanceJob locked = maintenanceJobRepository.findByTaskIdForUpdate(TASK_ID_1).orElseThrow();
         assertThat(locked.tasks()).extracting(MaintenanceTask::taskId).containsExactly(TASK_ID_1);
@@ -302,6 +303,22 @@ class MaintenanceJobRepositoryIT {
 
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT count(*) FROM pcs_maintenance_process_data", Integer.class)).isZero();
+    }
+
+    @Test
+    void createAndLoad_preservesNullableRelationId() {
+        UUID relationId = UUID.fromString("019c8c72-6fd1-7f25-a9a1-3b3d51fbb322");
+        MaintenanceTask task = new MaintenanceTask(TASK_ID_1, MaintenanceTargetType.RELATION,
+                relationId.toString(), null, relationId, MaintenanceTaskState.EVENT_QUEUED,
+                STARTED, null, null, null, List.of());
+        maintenanceJobRepository.create(new MaintenanceJob(JOB_ID, MaintenanceJobType.RELATION_REPUBLICATION,
+                null, "c".repeat(64), MaintenanceJobState.OPEN, null, STARTED, null, null, null, List.of(task)));
+        entityManager.clear();
+
+        MaintenanceTask loaded = maintenanceJobRepository.findById(JOB_ID).orElseThrow().task(TASK_ID_1);
+
+        assertThat(loaded.relationId()).isEqualTo(relationId);
+        assertThat(loaded.originProcessId()).isNull();
     }
 
     private MaintenanceJob job(List<MaintenanceTask> tasks) {

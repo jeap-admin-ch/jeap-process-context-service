@@ -15,10 +15,13 @@ public record MaintenanceTaskReport(
         ErrorReport error) {
 
     static MaintenanceTaskReport from(MaintenanceTask task) {
-        ErrorReport error = task.errorMessage() == null && task.errorTraceId() == null
+        return new MaintenanceTaskReport(task.taskId(), task.originProcessId(), value(task.taskState()), error(task));
+    }
+
+    static ErrorReport error(MaintenanceTask task) {
+        return task.errorMessage() == null && task.errorTraceId() == null
                 ? null
                 : new ErrorReport(task.errorMessage(), task.errorTraceId());
-        return new MaintenanceTaskReport(task.taskId(), task.originProcessId(), value(task.taskState()), error);
     }
 
     static String value(Enum<?> value) {

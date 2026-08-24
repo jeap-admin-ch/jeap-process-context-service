@@ -41,9 +41,13 @@ class InternalMessageFactory {
 
     ProcessContextOutdatedEvent processContextOutdatedMaintenanceEvent(MaintenanceJob job, MaintenanceTask task) {
         String idempotenceId = job.jobId() + "-" + task.taskId();
-        return new ProcessContextUpdatedEventBuilder(task.originProcessId(), "maintenance", idempotenceId)
+        return new ProcessContextUpdatedEventBuilder(maintenanceProcessId(task), "maintenance", idempotenceId)
                 .maintenanceTask(job, task)
                 .build();
+    }
+
+    String maintenanceProcessId(MaintenanceTask task) {
+        return task.originProcessId() != null ? task.originProcessId() : task.targetKey();
     }
 
     ProcessContextProcessIdKey key(String originProcessId) {
@@ -77,15 +81,22 @@ class InternalMessageFactory {
         }
 
         ProcessContextUpdatedEventBuilder maintenanceTask(MaintenanceJob job, MaintenanceTask task) {
+            MaintenanceJobTask.Builder maintenanceTask = MaintenanceJobTask.newBuilder()
+                    .setJobId(job.jobId())
+                    .setTaskId(task.taskId());
+            if (job.processTemplateName() != null) {
+                maintenanceTask.setTemplateName(job.processTemplateName());
+            }
+            if (task.relationId() != null) {
+                maintenanceTask.setRelationId(task.relationId());
+            }
             setPayload(ProcessContextOutdatedPayload.newBuilder()
                     .setProcessUpdateType(switch (job.jobType()) {
                         case PROCESS_DATA_BACKFILL -> ProcessUpdateType.BACKFILL_JOB;
                         case RELATION_REEVALUATION -> ProcessUpdateType.REEVALUATE_JOB;
+                        case RELATION_REPUBLICATION -> ProcessUpdateType.REPUBLISH_RELATION_JOB;
                     })
-                    .setMaintenanceJobTaskBuilder(MaintenanceJobTask.newBuilder()
-                            .setJobId(job.jobId())
-                            .setTaskId(task.taskId())
-                            .setTemplateName(job.processTemplateName()))
+                    .setMaintenanceJobTaskBuilder(maintenanceTask)
                     .build());
             return this;
         }

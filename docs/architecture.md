@@ -109,6 +109,8 @@ operations.
 | `/api/reevaluation-jobs/{jobId}`                    | GET  | YAML job report            | `processcontextjob` / `read` |
 | `/api/backfill-jobs/{jobId}`                        | PUT  | Empty `201` (new) or `200` (idempotent) response | `processcontextjob` / `write` |
 | `/api/backfill-jobs/{jobId}`                        | GET  | YAML job report            | `processcontextjob` / `read` |
+| `/api/relation-publication-jobs/{jobId}`             | PUT  | Empty `201` (new) or `200` (idempotent) response | `processcontextjob` / `write` |
+| `/api/relation-publication-jobs/{jobId}`             | GET  | YAML job report            | `processcontextjob` / `read` |
 
 The process view role is typically granted to the business user of the frontend via the OAuth authorization
 code flow. An up-to-date description of the API is served by the running application at
@@ -127,7 +129,7 @@ the bundled Angular UI with its OIDC configuration, the application version and 
 | Pending message   | Messages that could not yet be correlated to an existing process instance when they were received.               |
 | Message           | Messages (domain events, commands) with their message key/value data.                                            |
 | Process snapshot  | The representation of a process instance at a given point in time.                                               |
-| Maintenance job   | Durable relation-reevaluation or process-data backfill request containing one independently tracked task per process. |
+| Maintenance job   | Durable relation reevaluation, process-data backfill, or relation-republication request containing independently tracked tasks. |
 
 A process snapshot deliberately does not represent the complete state of a process instance, only the part
 needed for traceability. Snapshots are stored in the Avro format recommended for archiving by the Process
@@ -163,6 +165,11 @@ service reloads the locked durable job and task, validates the command, and atom
 `BACKFILL_JOB` event, and moves the task to `EVENT_QUEUED`. The event reevaluates relations and completes the task.
 Duplicate commands are ignored after the transition. As PCS-internal messages, both message types are exempt from
 application contract validation; PCS instances do not need to declare producer or consumer contracts for them.
+
+Relation republication writes one `REPUBLISH_RELATION_JOB` event per selected relation through the same outbox. Existing
+relations use their owning process ID as Kafka key; unresolved UUIDs use the relation ID so missing targets are still
+processed and reported. Execution reloads the persisted relation, reapplies its live feature flag, and passes the
+unchanged mapped relation to `RelationListener`. The task reaches `SUCCEEDED` only after listener handoff.
 
 ## Cross-cutting concepts
 

@@ -124,7 +124,7 @@ public class MaintenanceYamlConverterCustomizer implements ServerHttpMessageConv
             return count;
         }
 
-        private void validateLength(long length) throws IOException {
+        private void validateLength(long length) {
             streamReadConstraints.validateDocumentLength(length);
         }
     }

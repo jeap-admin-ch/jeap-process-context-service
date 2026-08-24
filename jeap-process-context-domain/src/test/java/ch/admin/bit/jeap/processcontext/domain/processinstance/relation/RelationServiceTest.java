@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -361,6 +362,53 @@ class RelationServiceTest {
 
         verify(relationListener).relationsAdded(notifiedRelationsCaptor.capture());
         assertThat(notifiedRelationsCaptor.getValue()).hasSize(2);
+    }
+
+    @Test
+    void republishRelation_notifiesExactlyOnceWithoutMutatingOrSaving() {
+        Relation relation = createPersistedRelation(null);
+        var idempotenceId = relation.getIdempotenceId();
+        var createdAt = relation.getCreatedAt();
+
+        relationService.republishRelation(relation);
+
+        verify(relationListener).relationsAdded(notifiedRelationsCaptor.capture());
+        assertThat(notifiedRelationsCaptor.getValue()).singleElement().satisfies(apiRelation -> {
+            assertThat(apiRelation.getOriginProcessId()).isEqualTo(ORIGIN_PROCESS_ID);
+            assertThat(apiRelation.getIdempotenceId()).isEqualTo(idempotenceId);
+            assertThat(apiRelation.getCreatedAt()).isEqualTo(createdAt);
+        });
+        assertThat(relation.getIdempotenceId()).isEqualTo(idempotenceId);
+        assertThat(relation.getCreatedAt()).isEqualTo(createdAt);
+        verifyNoInteractions(relationRepository);
+    }
+
+    @Test
+    void republishRelation_inactiveFeatureFlagThrowsClearException() {
+        Relation relation = createPersistedRelation("DISABLED");
+        when(featureManager.isActive(any(NamedFeature.class))).thenReturn(false);
+
+        assertThatThrownBy(() -> relationService.republishRelation(relation))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("DISABLED").hasMessageContaining("inactive");
+        verifyNoInteractions(relationListener, relationRepository);
+    }
+
+    @Test
+    void republishRelation_listenerExceptionPropagates() {
+        Relation relation = createPersistedRelation(null);
+        doThrow(new IllegalStateException("listener failed")).when(relationListener).relationsAdded(any());
+
+        assertThatThrownBy(() -> relationService.republishRelation(relation))
+                .isInstanceOf(IllegalStateException.class).hasMessage("listener failed");
+    }
+
+    private Relation createPersistedRelation(String featureFlag) {
+        Relation relation = Relation.builder().processInstance(processInstance).systemId("system")
+                .subjectType("subject").subjectId("subject-1").objectType("object").objectId("object-1")
+                .predicateType("predicate").featureFlag(featureFlag).build();
+        relation.onPrePersist();
+        return relation;
     }
 
     private static RelationCandidate candidate(String objectValue, String subjectValue) {

@@ -39,7 +39,7 @@ class AddProcessDataCommandConsumerTest {
 
     @Test
     void onMessage_successHandlesAndAcknowledges() {
-        consumer.onMessage(record(), acknowledgment);
+        consumer.onMessage(consumerRecord(), acknowledgment);
 
         verify(commandService).handle(expectedCommand());
         verify(acknowledgment).acknowledge();
@@ -51,7 +51,7 @@ class AddProcessDataCommandConsumerTest {
         IllegalStateException exception = new IllegalStateException("command failed");
         doThrow(exception).when(commandService).handle(any());
 
-        consumer.onMessage(record(), acknowledgment);
+        consumer.onMessage(consumerRecord(), acknowledgment);
 
         InOrder persistenceBeforeAcknowledgment = inOrder(resultService, acknowledgment);
         persistenceBeforeAcknowledgment.verify(resultService).markFailedInNewTransaction(TASK_ID, exception);
@@ -64,7 +64,7 @@ class AddProcessDataCommandConsumerTest {
                 new MaintenanceCommandRejectedException("Maintenance command jobId does not match the durable task");
         doThrow(exception).when(commandService).handle(any());
 
-        consumer.onMessage(record(), acknowledgment);
+        consumer.onMessage(consumerRecord(), acknowledgment);
 
         InOrder persistenceBeforeAcknowledgment = inOrder(resultService, acknowledgment);
         persistenceBeforeAcknowledgment.verify(resultService).markFailedInNewTransaction(TASK_ID, exception);
@@ -75,7 +75,7 @@ class AddProcessDataCommandConsumerTest {
     void onMessage_missingTaskAcknowledgesWithoutPersistingFailedResult() {
         doThrow(new MaintenanceTaskNotFoundException()).when(commandService).handle(any());
 
-        consumer.onMessage(record(), acknowledgment);
+        consumer.onMessage(consumerRecord(), acknowledgment);
 
         verifyNoInteractions(resultService);
         verify(acknowledgment).acknowledge();
@@ -85,7 +85,7 @@ class AddProcessDataCommandConsumerTest {
     void onMessage_missingTargetPersistsNotFoundResultAndAcknowledges() {
         doThrow(new MaintenanceTargetNotFoundException()).when(commandService).handle(any());
 
-        consumer.onMessage(record(), acknowledgment);
+        consumer.onMessage(consumerRecord(), acknowledgment);
 
         InOrder persistenceBeforeAcknowledgment = inOrder(resultService, acknowledgment);
         persistenceBeforeAcknowledgment.verify(resultService).markNotFoundInNewTransaction(TASK_ID);
@@ -99,7 +99,7 @@ class AddProcessDataCommandConsumerTest {
         doThrow(commandException).when(commandService).handle(any());
         doThrow(persistenceException).when(resultService).markFailedInNewTransaction(TASK_ID, commandException);
 
-        assertThatThrownBy(() -> consumer.onMessage(record(), acknowledgment))
+        assertThatThrownBy(() -> consumer.onMessage(consumerRecord(), acknowledgment))
                 .isSameAs(persistenceException);
 
         verify(acknowledgment, never()).acknowledge();
@@ -115,7 +115,7 @@ class AddProcessDataCommandConsumerTest {
         assertThat(listener.groupId()).isEqualTo("${spring.application.name}-add-process-data-command");
     }
 
-    private static ConsumerRecord<AvroMessageKey, AddProcessDataCommand> record() {
+    private static ConsumerRecord<AvroMessageKey, AddProcessDataCommand> consumerRecord() {
         return new ConsumerRecord<>("add-process-data", 0, 0, null, command());
     }
 

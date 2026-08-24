@@ -31,6 +31,7 @@ class MaintenanceTaskEntity {
     private MaintenanceTargetType targetType;
     private String targetKey;
     private String originProcessId;
+    private UUID relationId;
     @Enumerated(EnumType.STRING)
     private MaintenanceTaskState taskState;
     private Instant createdAt;
@@ -47,6 +48,7 @@ class MaintenanceTaskEntity {
                 task.targetType(),
                 task.targetKey(),
                 task.originProcessId(),
+                task.relationId(),
                 task.taskState(),
                 task.createdAt(),
                 task.modifiedAt(),
@@ -61,6 +63,7 @@ class MaintenanceTaskEntity {
                 targetType,
                 targetKey,
                 originProcessId,
+                relationId,
                 taskState,
                 createdAt,
                 modifiedAt,

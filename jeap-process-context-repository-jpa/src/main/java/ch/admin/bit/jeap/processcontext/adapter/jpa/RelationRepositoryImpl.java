@@ -29,6 +29,23 @@ class RelationRepositoryImpl implements RelationRepository {
     }
 
     @Override
+    public Optional<Relation> findById(UUID relationId) {
+        return relationJpaRepository.findById(relationId);
+    }
+
+    @Override
+    public Map<UUID, String> findOriginProcessIdsByIds(Collection<UUID> relationIds) {
+        List<UUID> relationIdList = new ArrayList<>(relationIds);
+        Map<UUID, String> owners = new HashMap<>();
+        for (int i = 0; i < relationIdList.size(); i += BATCH_SIZE) {
+            List<UUID> batch = relationIdList.subList(i, Math.min(i + BATCH_SIZE, relationIdList.size()));
+            relationJpaRepository.findOwnersByRelationIds(batch)
+                    .forEach(owner -> owners.put(owner.getRelationId(), owner.getOriginProcessId()));
+        }
+        return owners;
+    }
+
+    @Override
     public Set<Relation> saveAllNewRelations(Collection<Relation> relations) {
         if (relations.isEmpty()) {
             return Set.of();

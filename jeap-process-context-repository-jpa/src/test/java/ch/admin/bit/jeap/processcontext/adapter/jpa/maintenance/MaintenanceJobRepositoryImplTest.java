@@ -85,6 +85,21 @@ class MaintenanceJobRepositoryImplTest {
     }
 
     @Test
+    void taskEntity_preservesRelationIdAcrossMappingAndTransition() {
+        UUID relationId = UUID.fromString("019c8c72-6fd1-7f25-a9a1-3b3d51fbb322");
+        Instant now = Instant.parse("2026-08-06T08:03:12Z");
+        MaintenanceTask task = new MaintenanceTask(UUID.randomUUID(), MaintenanceTargetType.RELATION,
+                relationId.toString(), null, relationId, MaintenanceTaskState.EVENT_QUEUED,
+                now, null, null, null, List.of());
+
+        MaintenanceTask mapped = MaintenanceTaskEntity.fromDomain(UUID.randomUUID(), task).toDomain(List.of())
+                .transitionTo(MaintenanceTaskState.SUCCEEDED, null, null, now.plusSeconds(1));
+
+        assertThat(mapped.relationId()).isEqualTo(relationId);
+        assertThat(mapped.targetKey()).isEqualTo(relationId.toString());
+    }
+
+    @Test
     void findByTaskIdForUpdate_loadsOnlyTargetTaskAndItsProcessData() {
         UUID taskId = UUID.fromString("019c8c72-6fd1-7f25-a9a1-3b3d51fbb321");
         MaintenanceTask task = new MaintenanceTask(taskId, MaintenanceTargetType.PROCESS, "assessment-4711",

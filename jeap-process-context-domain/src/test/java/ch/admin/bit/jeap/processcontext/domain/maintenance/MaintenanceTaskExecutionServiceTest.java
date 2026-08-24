@@ -3,6 +3,8 @@ package ch.admin.bit.jeap.processcontext.domain.maintenance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstance;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessInstanceRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.ProcessDataValue;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.Relation;
+import ch.admin.bit.jeap.processcontext.domain.processinstance.RelationRepository;
 import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
 import ch.admin.bit.jeap.processcontext.domain.tx.Transactions;
@@ -28,6 +30,7 @@ class MaintenanceTaskExecutionServiceTest {
 
     private static final UUID JOB_ID = UUID.fromString("88dbb65f-9634-4685-bc86-17b72d715d3e");
     private static final UUID TASK_ID = UUID.fromString("019c8c72-6fd1-7f25-a9a1-3b3d51fbb321");
+    private static final UUID RELATION_ID = UUID.fromString("019c8c72-6fd1-7f25-a9a1-3b3d51fbb322");
 
     @Mock
     private MaintenanceJobRepository repository;
@@ -36,6 +39,8 @@ class MaintenanceTaskExecutionServiceTest {
     @Mock
     private RelationService relationService;
     @Mock
+    private RelationRepository relationRepository;
+    @Mock
     private Transactions transactions;
 
     private MaintenanceTaskExecutionService service;
@@ -43,7 +48,7 @@ class MaintenanceTaskExecutionServiceTest {
     @BeforeEach
     void setUp() {
         service = new MaintenanceTaskExecutionService(repository, processInstanceRepository, relationService,
-                transactions);
+                relationRepository, transactions);
         doAnswer(invocation -> {
             invocation.getArgument(0, Runnable.class).run();
             return null;
@@ -137,6 +142,61 @@ class MaintenanceTaskExecutionServiceTest {
         verifyNoInteractions(processInstanceRepository, relationService);
     }
 
+    @Test
+    void execute_republishesRelationAndCompletesOnlyAfterListenerReturns() {
+        MaintenanceJob job = republicationJob(MaintenanceTaskState.EVENT_QUEUED, RELATION_ID);
+        Relation relation = mock(Relation.class);
+        when(repository.findByTaskIdForUpdate(TASK_ID)).thenReturn(Optional.of(job));
+        when(relationRepository.findById(RELATION_ID)).thenReturn(Optional.of(relation));
+
+        service.execute(TASK_ID, MaintenanceUpdateType.REPUBLISH_RELATION_JOB);
+
+        var inOrder = inOrder(relationService, repository);
+        inOrder.verify(relationService).republishRelation(relation);
+        ArgumentCaptor<MaintenanceTask> captor = ArgumentCaptor.forClass(MaintenanceTask.class);
+        inOrder.verify(repository).updateTaskAndJob(eq(job), captor.capture());
+        assertThat(captor.getValue().taskState()).isEqualTo(MaintenanceTaskState.SUCCEEDED);
+        assertThat(captor.getValue().relationId()).isEqualTo(RELATION_ID);
+    }
+
+    @Test
+    void execute_republicationMissingRelationThrowsTargetNotFound() {
+        when(repository.findByTaskIdForUpdate(TASK_ID))
+                .thenReturn(Optional.of(republicationJob(MaintenanceTaskState.EVENT_QUEUED, RELATION_ID)));
+        when(relationRepository.findById(RELATION_ID)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.execute(TASK_ID, MaintenanceUpdateType.REPUBLISH_RELATION_JOB))
+                .isInstanceOf(MaintenanceTargetNotFoundException.class);
+        verifyNoInteractions(relationService);
+        verify(repository, never()).updateTaskAndJob(any(), any());
+    }
+
+    @Test
+    void execute_republicationListenerFailureDoesNotCompleteTask() {
+        Relation relation = mock(Relation.class);
+        when(repository.findByTaskIdForUpdate(TASK_ID))
+                .thenReturn(Optional.of(republicationJob(MaintenanceTaskState.EVENT_QUEUED, RELATION_ID)));
+        when(relationRepository.findById(RELATION_ID)).thenReturn(Optional.of(relation));
+        doThrow(new IllegalStateException("listener failed")).when(relationService).republishRelation(relation);
+
+        assertThatThrownBy(() -> service.execute(TASK_ID, MaintenanceUpdateType.REPUBLISH_RELATION_JOB))
+                .hasMessage("listener failed");
+        verify(repository, never()).updateTaskAndJob(any(), any());
+    }
+
+    @Test
+    void execute_republicationTerminalTaskIsNoOpAndMismatchIsRejected() {
+        when(repository.findByTaskIdForUpdate(TASK_ID))
+                .thenReturn(Optional.of(republicationJob(MaintenanceTaskState.SUCCEEDED, RELATION_ID)),
+                        Optional.of(republicationJob(MaintenanceTaskState.EVENT_QUEUED, RELATION_ID)));
+
+        service.execute(TASK_ID, MaintenanceUpdateType.REPUBLISH_RELATION_JOB);
+        assertThatThrownBy(() -> service.execute(TASK_ID, MaintenanceUpdateType.REEVALUATE_JOB))
+                .isInstanceOf(IllegalStateException.class);
+
+        verifyNoInteractions(relationRepository, relationService);
+    }
+
     private static ProcessInstance processInstance(String templateName) {
         ProcessInstance processInstance = mock(ProcessInstance.class);
         ProcessTemplate template = mock(ProcessTemplate.class);
@@ -163,5 +223,15 @@ class MaintenanceTaskExecutionServiceTest {
                 state == MaintenanceTaskState.SUCCEEDED ? now : null, null, null,
                 List.of(new MaintenanceTask(TASK_ID, MaintenanceTargetType.PROCESS, "assessment-4711",
                         "assessment-4711", state, now, null, null, null)));
+    }
+
+    private static MaintenanceJob republicationJob(MaintenanceTaskState state, UUID relationId) {
+        Instant now = Instant.parse("2026-08-06T08:03:12Z");
+        return new MaintenanceJob(JOB_ID, MaintenanceJobType.RELATION_REPUBLICATION, null, "c".repeat(64),
+                state.isTerminal() ? MaintenanceJobState.COMPLETED : MaintenanceJobState.OPEN,
+                state == MaintenanceTaskState.SUCCEEDED ? MaintenanceJobResult.SUCCEEDED : null, now,
+                state.isTerminal() ? now : null, null, null,
+                List.of(new MaintenanceTask(TASK_ID, MaintenanceTargetType.RELATION, relationId.toString(), null,
+                        relationId, state, now, null, null, null, List.of())));
     }
 }

@@ -9,7 +9,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice(assignableTypes = {ReevaluationJobController.class, BackfillJobController.class})
+@RestControllerAdvice(assignableTypes = {
+        ReevaluationJobController.class,
+        BackfillJobController.class,
+        RelationPublicationJobController.class
+})
 class MaintenanceJobExceptionHandler {
 
     @ExceptionHandler(MaintenanceJobException.class)

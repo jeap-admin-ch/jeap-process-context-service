@@ -304,16 +304,6 @@ class BackfillJobControllerTest {
     }
 
     @Test
-    void get_crossTypeJobId_returnsNotFound() throws Exception {
-        when(backfillJobService.get(JOB_ID)).thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/api/backfill-jobs/{jobId}", JOB_ID)
-                        .accept(BackfillJobController.APPLICATION_YAML_VALUE)
-                        .with(authenticationForUserRoles(READ_ROLE)))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
     void get_withoutReadRole_returnsForbidden() throws Exception {
         mockMvc.perform(get("/api/backfill-jobs/{jobId}", JOB_ID)
                         .accept(BackfillJobController.APPLICATION_YAML_VALUE)

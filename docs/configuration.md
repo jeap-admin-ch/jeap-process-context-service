@@ -198,13 +198,14 @@ jeap:
         max-relation-candidates-per-task: 100000
 ```
 
-`max-tasks-per-job` limits the number of processes in a relation-reevaluation request or entries in a process-data
-backfill request. `max-field-length` limits request strings by their UTF-8 byte length.
+`max-tasks-per-job` limits the number of processes in a relation-reevaluation request, entries in a process-data
+backfill request, or relation IDs in a relation-republication request. `max-field-length` limits request strings by
+their UTF-8 byte length.
 `max-process-data-values-per-task` limits the values in each backfill entry.
 `max-process-data-values-per-job` limits the total values across a backfill request, and `max-request-bytes` limits the
 YAML request size in bytes before full deserialization (10 MiB by default).
 
-When enabled, the relation-reevaluation and process-data backfill APIs described under
+When enabled, the relation-reevaluation, process-data backfill, and relation-republication APIs described under
 [Maintenance jobs](maintenance.md) are available.
 
 The endpoints use OAuth2 bearer-token authentication. Bearer-token requests are excluded from Spring Security's CSRF

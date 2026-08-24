@@ -83,8 +83,9 @@ class AddProcessDataCommandServiceTest {
         when(repository.findByTaskIdForUpdate(TASK_ID))
                 .thenReturn(Optional.of(job(MaintenanceTaskState.COMMAND_QUEUED)));
         when(processInstanceRepository.findByOriginProcessId("assessment-4711")).thenReturn(Optional.empty());
+        MaintenanceCommand command = command();
 
-        assertThatThrownBy(() -> service.handle(command()))
+        assertThatThrownBy(() -> service.handle(command))
                 .isInstanceOf(MaintenanceTargetNotFoundException.class);
 
         verifyNoInteractions(processDataService, eventPublisher);
@@ -98,8 +99,9 @@ class AddProcessDataCommandServiceTest {
         ProcessInstance processInstance = processInstance("otherProcess");
         when(processInstanceRepository.findByOriginProcessId("assessment-4711"))
                 .thenReturn(Optional.of(processInstance));
+        MaintenanceCommand command = command();
 
-        assertThatThrownBy(() -> service.handle(command()))
+        assertThatThrownBy(() -> service.handle(command))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("template");
 
@@ -137,8 +139,9 @@ class AddProcessDataCommandServiceTest {
                 job.processTemplateName(), job.requestHash(), job.jobState(), job.jobResult(), job.startedAt(),
                 job.completedAt(), job.startedByName(), job.startedByExtId(), job.tasks());
         when(repository.findByTaskIdForUpdate(TASK_ID)).thenReturn(Optional.of(reevaluationJob));
+        MaintenanceCommand command = command();
 
-        assertThatThrownBy(() -> service.handle(command()))
+        assertThatThrownBy(() -> service.handle(command))
                 .isInstanceOf(MaintenanceCommandRejectedException.class)
                 .hasMessageContaining("PROCESS_DATA_BACKFILL");
         verifyNoInteractions(eventPublisher);

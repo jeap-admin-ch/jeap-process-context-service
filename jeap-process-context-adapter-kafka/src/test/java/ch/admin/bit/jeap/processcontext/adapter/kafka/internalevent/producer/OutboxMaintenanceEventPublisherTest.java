@@ -35,7 +35,28 @@ class OutboxMaintenanceEventPublisherTest {
         ProcessContextOutdatedEvent event = mock(ProcessContextOutdatedEvent.class);
         ProcessContextProcessIdKey key = ProcessContextProcessIdKey.newBuilder().setProcessId("assessment-4711").build();
         when(factory.processContextOutdatedMaintenanceEvent(job, task)).thenReturn(event);
+        when(factory.maintenanceProcessId(task)).thenReturn("assessment-4711");
         when(factory.key("assessment-4711")).thenReturn(key);
+
+        new OutboxMaintenanceEventPublisher(outbox, topics, factory).publish(job, task);
+
+        verify(outbox).sendMessage(event, key, "process-outdated");
+    }
+
+    @Test
+    void publish_unresolvedRelationUsesRelationTargetAsOrderingKey() {
+        TransactionalOutbox outbox = mock(TransactionalOutbox.class);
+        TopicConfiguration topics = new TopicConfiguration();
+        topics.setProcessOutdatedInternal("process-outdated");
+        InternalMessageFactory factory = mock(InternalMessageFactory.class);
+        MaintenanceTask task = mock(MaintenanceTask.class);
+        MaintenanceJob job = mock(MaintenanceJob.class);
+        ProcessContextOutdatedEvent event = mock(ProcessContextOutdatedEvent.class);
+        String relationKey = "f8eb7f71-3276-49f2-a221-bb60b2cc0158";
+        ProcessContextProcessIdKey key = ProcessContextProcessIdKey.newBuilder().setProcessId(relationKey).build();
+        when(factory.processContextOutdatedMaintenanceEvent(job, task)).thenReturn(event);
+        when(factory.maintenanceProcessId(task)).thenReturn(relationKey);
+        when(factory.key(relationKey)).thenReturn(key);
 
         new OutboxMaintenanceEventPublisher(outbox, topics, factory).publish(job, task);
 

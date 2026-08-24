@@ -33,6 +33,14 @@ class MaintenanceProcessContextOutdatedEventHandlerTest {
     }
 
     @Test
+    void handle_relationRepublication_executesExplicitUpdateType() {
+        handler.handle(event(ProcessUpdateType.REPUBLISH_RELATION_JOB));
+
+        verify(executionService).execute(TASK_ID, MaintenanceUpdateType.REPUBLISH_RELATION_JOB);
+        verifyNoInteractions(resultService);
+    }
+
+    @Test
     void handle_missingProcess_persistsNotFoundWithoutRethrowing() {
         doThrow(new MaintenanceTargetNotFoundException()).when(executionService)
                 .execute(TASK_ID, MaintenanceUpdateType.REEVALUATE_JOB);
@@ -66,12 +74,16 @@ class MaintenanceProcessContextOutdatedEventHandlerTest {
     }
 
     private static ProcessContextOutdatedEvent event() {
+        return event(ProcessUpdateType.REEVALUATE_JOB);
+    }
+
+    private static ProcessContextOutdatedEvent event(ProcessUpdateType processUpdateType) {
         ProcessContextOutdatedPayload payload = mock(ProcessContextOutdatedPayload.class);
         MaintenanceJobTask task = mock(MaintenanceJobTask.class);
         when(task.getJobId()).thenReturn(JOB_ID);
         when(task.getTaskId()).thenReturn(TASK_ID);
         when(payload.getMaintenanceJobTask()).thenReturn(task);
-        when(payload.getProcessUpdateType()).thenReturn(ProcessUpdateType.REEVALUATE_JOB);
+        when(payload.getProcessUpdateType()).thenReturn(processUpdateType);
         ProcessContextOutdatedEvent event = mock(ProcessContextOutdatedEvent.class);
         when(event.getPayload()).thenReturn(payload);
         return event;

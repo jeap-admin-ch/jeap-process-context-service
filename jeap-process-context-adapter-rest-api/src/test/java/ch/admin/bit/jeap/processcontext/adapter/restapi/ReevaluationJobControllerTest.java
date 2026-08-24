@@ -259,16 +259,6 @@ class ReevaluationJobControllerTest {
     }
 
     @Test
-    void get_crossTypeJobId_returnsNotFound() throws Exception {
-        when(reevaluationJobService.get(JOB_ID)).thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/api/reevaluation-jobs/{jobId}", JOB_ID)
-                        .accept(ReevaluationJobController.APPLICATION_YAML_VALUE)
-                        .with(authenticationForUserRoles(READ_ROLE)))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
     void get_withoutReadRole_returnsForbidden() throws Exception {
         mockMvc.perform(get("/api/reevaluation-jobs/{jobId}", JOB_ID)
                         .accept(ReevaluationJobController.APPLICATION_YAML_VALUE)

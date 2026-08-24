@@ -2,9 +2,11 @@ package ch.admin.bit.jeap.processcontext.adapter.restapi.config;
 
 import ch.admin.bit.jeap.processcontext.adapter.restapi.BackfillJobController;
 import ch.admin.bit.jeap.processcontext.adapter.restapi.ReevaluationJobController;
+import ch.admin.bit.jeap.processcontext.adapter.restapi.RelationPublicationJobController;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.BackfillJobService;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.MaintenanceProperties;
 import ch.admin.bit.jeap.processcontext.domain.maintenance.ReevaluationJobService;
+import ch.admin.bit.jeap.processcontext.domain.maintenance.RelationPublicationJobService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
@@ -83,6 +85,23 @@ class MaintenanceRestApiConfigTest {
                 .withBean(BackfillJobService.class, () -> mock(BackfillJobService.class))
                 .withPropertyValues("jeap.processcontext.maintenance.enabled=true")
                 .run(context -> assertThat(context).hasSingleBean(BackfillJobController.class));
+    }
+
+    @Test
+    void disabled_doesNotRegisterRelationPublicationJobController() {
+        new ApplicationContextRunner()
+                .withUserConfiguration(RelationPublicationJobController.class)
+                .withBean(RelationPublicationJobService.class, () -> mock(RelationPublicationJobService.class))
+                .run(context -> assertThat(context).doesNotHaveBean(RelationPublicationJobController.class));
+    }
+
+    @Test
+    void enabled_registersRelationPublicationJobController() {
+        new ApplicationContextRunner()
+                .withUserConfiguration(RelationPublicationJobController.class)
+                .withBean(RelationPublicationJobService.class, () -> mock(RelationPublicationJobService.class))
+                .withPropertyValues("jeap.processcontext.maintenance.enabled=true")
+                .run(context -> assertThat(context).hasSingleBean(RelationPublicationJobController.class));
     }
 
     @Test

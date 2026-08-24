@@ -47,6 +47,16 @@ public class RelationService {
         patterns.forEach(pattern -> createRelations(processInstance, pattern));
     }
 
+    public void republishRelation(Relation relation) {
+        if (!isFeatureFlagActive(relation)) {
+            throw new IllegalStateException("Cannot republish relation because feature flag '%s' is inactive"
+                    .formatted(relation.getFeatureFlag()));
+        }
+        var apiRelation = RelationMapper.toApiObject(
+                relation.getProcessInstance().getOriginProcessId(), relation);
+        relationListener.relationsAdded(List.of(apiRelation));
+    }
+
     private void verifyCandidateLimit(ProcessInstance processInstance, List<RelationPattern> patterns) {
         long maxCandidates = maintenanceProperties.getLimits().getMaxRelationCandidatesPerTask();
         long candidates = 0;
