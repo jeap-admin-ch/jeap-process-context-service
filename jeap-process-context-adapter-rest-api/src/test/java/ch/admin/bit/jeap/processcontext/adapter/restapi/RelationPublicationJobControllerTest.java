@@ -16,6 +16,8 @@ import ch.admin.bit.jeap.security.resource.semanticAuthentication.SemanticApplic
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
 import ch.admin.bit.jeap.security.test.resource.JeapAuthenticationTestTokenBuilder;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -283,10 +285,10 @@ class RelationPublicationJobControllerTest {
 
     private static void assertOperation(Operation operation, Set<String> responseCodes) {
         assertThat(Arrays.stream(operation.responses())
-                .map(response -> response.responseCode())
+                .map(ApiResponse::responseCode)
                 .collect(Collectors.toSet())).isEqualTo(responseCodes);
         assertThat(Arrays.stream(operation.security())
-                .map(requirement -> requirement.name())
+                .map(SecurityRequirement::name)
                 .collect(Collectors.toSet())).containsExactlyInAnyOrder("OIDC_Enduser", "OIDC_System");
     }
 

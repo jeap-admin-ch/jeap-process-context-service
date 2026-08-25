@@ -87,8 +87,9 @@ class RelationPublicationJobServiceTest {
         RelationPublicationJobSubmission first = submission(List.of(RELATION_1), "first");
         when(maintenanceJobRepository.findById(JOB_ID)).thenReturn(Optional.of(
                 MaintenanceJob.createRepublication(first.normalized(properties.getLimits()), Map.of())));
+        RelationPublicationJobSubmission conflictingSubmission = submission(List.of(RELATION_2), "second");
 
-        assertThatThrownBy(() -> service.submit(submission(List.of(RELATION_2), "second")))
+        assertThatThrownBy(() -> service.submit(conflictingSubmission))
                 .isInstanceOf(MaintenanceJobException.class)
                 .extracting("reason").isEqualTo(MaintenanceJobExceptionReason.CONFLICT);
     }
