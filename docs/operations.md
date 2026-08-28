@@ -18,7 +18,7 @@ Old data is deleted automatically from the database by a scheduled job, see
 
 PCS provides maintenance jobs for relation reevaluation, process-data backfill, and explicit relation republication.
 The APIs are disabled by default and execute each target as a durable, independently tracked task. See
-[Maintenance jobs](maintenance.md) for enablement, authorization, request and report formats, processing semantics, and
+[Maintenance jobs](maintenance-jobs.md) for enablement, authorization, request and report formats, processing semantics, and
 failure handling.
 
 ## Metrics

@@ -80,8 +80,6 @@ public class RelationPublicationJobController {
                                             job-type: relation-republication
                                             job-state: open
                                             started: 2026-08-06T08:03:12Z
-                                            started-by-name: John Doe
-                                            started-by-ext-id: "287365"
                                             relations:
                                               - task-id: 019c8c72-6fd1-7f25-a9a1-3b3d51fbb321
                                                 relation-id: 019c8c72-7b42-7a04-9443-bf8ec98ce871

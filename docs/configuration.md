@@ -206,7 +206,7 @@ their UTF-8 byte length.
 YAML request size in bytes before full deserialization (10 MiB by default).
 
 When enabled, the relation-reevaluation, process-data backfill, and relation-republication APIs described under
-[Maintenance jobs](maintenance.md) are available.
+[Maintenance jobs](maintenance-jobs.md) are available.
 
 The endpoints use OAuth2 bearer-token authentication. Bearer-token requests are excluded from Spring Security's CSRF
 matcher and therefore do not require a browser CSRF cookie/header pair.

@@ -17,7 +17,7 @@ instance depending on it, containing the process definitions specific to that ap
 - [Configuration](docs/configuration.md) — the property reference
 - [User Interface](docs/user-interface.md) — views, roles, deep links and the log system link
 - [Operations](docs/operations.md) — scaling, housekeeping, metrics and error handling
-- [Maintenance Jobs](docs/maintenance.md) — relation reevaluation and process-data backfill
+- [Maintenance Jobs](docs/maintenance-jobs.md) — relation reevaluation, process-data backfill and relation republication
 - [Template Migration](docs/template-migration.md) — what happens when a process template changes
 
 ## Changes

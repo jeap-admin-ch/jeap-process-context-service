@@ -84,8 +84,6 @@ public class ReevaluationJobController {
                                     process-template-name: assessmentProcess
                                     job-state: open
                                     started: 2026-08-06T08:03:12Z
-                                    started-by-name: John Doe
-                                    started-by-ext-id: "287365"
                                     processes:
                                       - task-id: 019c8c72-6fd1-7f25-a9a1-3b3d51fbb321
                                         origin-process-id: assessment-4711
