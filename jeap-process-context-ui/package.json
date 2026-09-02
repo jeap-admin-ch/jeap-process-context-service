@@ -58,7 +58,7 @@
     "@angular/build": "^21.2.3",
     "@angular/cli": "~21.2.3",
     "@angular/compiler-cli": "^21.2.19",
-    "@cypress/vite-dev-server": "^8.0.0",
+    "@cypress/vite-dev-server": "^7.2.1",
     "@jeap/jeap-frontend-license-checker": "^1.0.1",
     "@schematics/angular": "^21.2.3",
     "@types/jest": "^30.0.0",

@@ -5,14 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [28.0.0] - 2026-09-02
+## [27.1.4] - 2026-09-02
 
 ### Dependencies
 - **ch.admin.bit.jeap:jeap-spring-boot-parent**: 40.2.0 → 40.5.0 (minor)
 - **systeminformation**: 5.33.4 → 5.33.5 (patch)
 - **jest-environment-jsdom**: 30.4.1 → 30.5.0 (minor)
 - **jest**: 30.4.2 → 30.5.0 (minor)
-- **@cypress/vite-dev-server**: 7.3.4 → 8.0.0 (major)
+
+### Changed
+- Hold `@cypress/vite-dev-server` on 7.x in Renovate: 8.0.0 requires Vite 8 and Cypress 16, which only become
+  available with the Angular 22.1 stack.
 
 ## [27.1.3] - 2026-08-28
 
