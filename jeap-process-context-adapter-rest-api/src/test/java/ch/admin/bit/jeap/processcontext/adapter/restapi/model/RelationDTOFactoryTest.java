@@ -63,9 +63,11 @@ class RelationDTOFactoryTest {
 
         assertThat(result.getTotalElements()).isEqualTo(2);
         assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).getId()).isEqualTo(relation1.getId());
         assertThat(result.getContent().get(0).getSubjectId()).isEqualTo("subject-1");
         assertThat(result.getContent().get(0).getPredicateType()).isEqualTo("relates-to");
         assertThat(result.getContent().get(1).getSubjectId()).isEqualTo("subject-2");
+        assertThat(result.getContent().get(1).getId()).isEqualTo(relation2.getId());
         assertThat(result.getContent().get(1).getPredicateType()).isEqualTo("belongs-to");
     }
 

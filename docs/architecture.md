@@ -112,6 +112,9 @@ operations.
 | `/api/relation-publication-jobs/{jobId}`             | PUT  | Empty `201` (new) or `200` (idempotent) response | `processcontextjob` / `write` |
 | `/api/relation-publication-jobs/{jobId}`             | GET  | YAML job report            | `processcontextjob` / `read` |
 
+Relation items returned by `/api/processes/{originProcessId}/relations` include their persisted `id`. This UUID can be
+used to target a relation in a [relation republication job](maintenance-jobs.md#relation-republication).
+
 The process view role is typically granted to the business user of the frontend via the OAuth authorization
 code flow. An up-to-date description of the API is served by the running application at
 `/swagger-ui/index.html`.

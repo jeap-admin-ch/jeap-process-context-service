@@ -93,6 +93,34 @@ class ProcessInstanceControllerTest {
             .build();
 
     @Test
+    void getRelationsReturnsPersistedRelationId() throws Exception {
+        String originProcessId = "process-with-relation";
+        UUID processInstanceId = UUID.randomUUID();
+        Relation relation = Relation.builder()
+                .processInstance(ProcessInstanceStubs.createProcessWithSingleTaskInstance())
+                .systemId("test-system")
+                .subjectType("SubjectType")
+                .subjectId("subject-id")
+                .objectType("ObjectType")
+                .objectId("object-id")
+                .predicateType("relates-to")
+                .build();
+        relation.onPrePersist();
+        when(repository.findIdByOriginProcessId(originProcessId)).thenReturn(processInstanceId);
+        when(relationRepository.findByProcessInstanceId(eq(processInstanceId), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(relation)));
+
+        mockMvc.perform(get("/api/processes/{originProcessId}/relations", originProcessId)
+                        .with(authentication(createAuthenticationForUserRoles(VIEW_ROLE)))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id", is(relation.getId().toString())))
+                .andExpect(jsonPath("$.content[0].subjectId", is("subject-id")))
+                .andExpect(jsonPath("$.content[0].objectId", is("object-id")))
+                .andExpect(jsonPath("$.content[0].predicateType", is("relates-to")));
+    }
+
+    @Test
     void testGetProcessInstanceByOriginProcessId_whenFound_thenReturnProcessInstanceResource() throws Exception {
         String originProcessId = "123";
         ProcessInstance processInstance = ProcessInstanceStubs.createProcessWithSingleTaskInstance();

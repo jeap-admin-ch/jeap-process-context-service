@@ -51,9 +51,11 @@ The endpoints use OAuth2 bearer tokens and semantic roles:
 | --- | --- |
 | Submit a job | `processcontextjob:write` |
 | Retrieve a report | `processcontextjob:read` |
+| Retrieve relation UUIDs | `processinstance:view` |
 
 For a system named `jme`, OAuth role names are normally `jme_@processcontextjob_#write` and
-`jme_@processcontextjob_#read`.
+`jme_@processcontextjob_#read`. Retrieving relation UUIDs additionally requires `jme_@processinstance_#view`, which
+grants read access to process instance views and their associated data.
 
 ## REST and YAML contract
 
@@ -176,8 +178,9 @@ data insertion, reevaluation, or listener failures become `FAILED`.
 ## Relation republication
 
 Republication passes explicitly selected persisted relations to the configured `RelationListener` without creating or
-changing them. The request accepts persisted relation row UUIDs only. PCS deliberately provides no all-relations or
-maintenance filtering mode; relation selection is an operator responsibility.
+changing them. The request accepts persisted relation row UUIDs only. Retrieve these UUIDs from the `id` field returned
+by `GET /api/processes/{originProcessId}/relations`. PCS deliberately provides no all-relations or maintenance filtering
+mode; relation selection is an operator responsibility.
 
 ```yaml
 relationIds:
@@ -200,6 +203,7 @@ invoke the listener more than once with the same idempotence ID.
 - Respect the configured task, request-size, field-length, process-data, and relation-candidate limits.
 - Use separate smaller jobs instead of raising limits for an unbounded request.
 - Do not use maintenance jobs as a replacement for normal event processing or data migration.
-- Select and review relation UUIDs before republication; PCS does not discover targets for an operator.
+- Select and review relation UUIDs from the process relations API before republication; PCS does not discover targets
+  for an operator.
 - Monitor reports until the job is `completed`; HTTP acceptance only confirms durable submission.
 - Keep the outbox relay and both internal Kafka topics available until all tasks are terminal.

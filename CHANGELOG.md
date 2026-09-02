@@ -23,6 +23,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **@typescript-eslint/parser**: 8.68.0 → 8.69.0 (minor)
 - **@typescript-eslint/eslint-plugin**: 8.68.0 → 8.69.0 (minor)
 
+### Changed
+- Include persisted relation UUIDs in process relation API responses for targeted relation republication.
+
 ## [27.1.4] - 2026-09-02
 
 ### Dependencies

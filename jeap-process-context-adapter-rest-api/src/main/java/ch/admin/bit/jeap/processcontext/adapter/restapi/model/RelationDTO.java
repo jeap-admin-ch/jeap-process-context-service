@@ -7,12 +7,14 @@ import lombok.Builder;
 import lombok.Value;
 
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @Value
 @AllArgsConstructor
 @Builder(access = AccessLevel.PRIVATE)
 public class RelationDTO {
 
+    UUID id;
     String subjectType;
     String subjectId;
     String objectType;
@@ -20,8 +22,14 @@ public class RelationDTO {
     String predicateType;
     ZonedDateTime createdAt;
 
+    public RelationDTO(String subjectType, String subjectId, String objectType, String objectId,
+                       String predicateType, ZonedDateTime createdAt) {
+        this(null, subjectType, subjectId, objectType, objectId, predicateType, createdAt);
+    }
+
     static RelationDTO create(Relation relation) {
         return RelationDTO.builder()
+                .id(relation.getId())
                 .subjectType(relation.getSubjectType())
                 .subjectId(relation.getSubjectId())
                 .objectType(relation.getObjectType())
