@@ -10,6 +10,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Dependencies
 - **ch.admin.bit.jeap:jeap-spring-boot-parent**: 40.7.0 → 40.8.0 (minor)
 
+### Changed
+- Include persisted relation UUIDs in process relation API responses for targeted relation republication.
+
 ## [27.2.0] - 2026-09-02
 
 ### Dependencies
@@ -22,9 +25,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **fast-uri**: 4.1.3 → 4.1.4 (patch)
 - **@typescript-eslint/parser**: 8.68.0 → 8.69.0 (minor)
 - **@typescript-eslint/eslint-plugin**: 8.68.0 → 8.69.0 (minor)
-
-### Changed
-- Include persisted relation UUIDs in process relation API responses for targeted relation republication.
 
 ## [27.1.4] - 2026-09-02
 
