@@ -23,6 +23,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.MinIOContainer;
+import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
 import java.util.Optional;
@@ -37,7 +38,10 @@ import static org.hamcrest.Matchers.is;
         "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/snapshots.json")
 class ProcessSnapshotWithS3IT extends ProcessInstanceITBase {
 
-    private static final String MINIO_IMAGE = "minio/minio:RELEASE.2025-09-07T16-13-09Z";
+    // minio/minio has been removed from Docker Hub; MinIO now only publishes to quay.io/minio/minio
+    private static final DockerImageName MINIO_IMAGE = DockerImageName
+            .parse("quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z")
+            .asCompatibleSubstituteFor("minio/minio");
     private static final String TEST_BUCKET_NAME = "test-bucket";
 
     private static final MinIOContainer MINIO_CONTAINER = new MinIOContainer(MINIO_IMAGE);

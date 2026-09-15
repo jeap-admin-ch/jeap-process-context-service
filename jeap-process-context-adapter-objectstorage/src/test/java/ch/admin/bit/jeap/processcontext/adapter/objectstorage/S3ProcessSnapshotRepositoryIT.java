@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.utils.Md5Utils;
@@ -35,7 +36,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Testcontainers
 class S3ProcessSnapshotRepositoryIT {
 
-    private static final String MINIO_IMAGE = "minio/minio:RELEASE.2025-09-07T16-13-09Z";
+    // minio/minio has been removed from Docker Hub; MinIO now only publishes to quay.io/minio/minio
+    private static final DockerImageName MINIO_IMAGE = DockerImageName
+            .parse("quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z")
+            .asCompatibleSubstituteFor("minio/minio");
     private static final String TEST_BUCKET_NAME = "test-bucket";
     private static final int SNAPSHOT_RETENTION_DAYS = 2;
 
