@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [28.0.0] - 2026-09-15
+
+### Dependencies
+- **ch.admin.bit.jeap:jeap-spring-boot-parent**: 40.11.0 → 41.3.0 (major)
+- **org.codehaus.mojo:exec-maven-plugin**: 3.6.3 → 3.6.4 (patch)
+- **org.codehaus.mojo:build-helper-maven-plugin**: 3.6.1 → 3.6.2 (patch)
+- **com.microsoft.playwright:playwright**: 1.62.0 → 1.63.0 (minor)
+- **ng-mocks**: 14.17.5 → 14.17.6 (patch)
+- **fast-uri**: 4.1.4 → 4.1.5 (patch)
+
 ## [27.5.0] - 2026-09-09
 
 ### Dependencies
