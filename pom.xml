@@ -34,17 +34,13 @@
 
     <artifactId>jeap-process-context-service</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>28.1.0-SNAPSHOT</version>
+    <version>28.1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>JEAP Process Context Service</description>
 
     <properties>
-        <java-uuid-generator.version>5.2.0</java-uuid-generator.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
         <guava.version>33.7.1-jre</guava.version>
-        <testcontainers.version>2.0.5</testcontainers.version>
-        <maven-plugin-plugin.version>3.16.0</maven-plugin-plugin.version>
-        <exec-maven-plugin.version>3.6.4</exec-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.2</build-helper-maven-plugin.version>
         <process-snapshot-created-event.version>2.0.1</process-snapshot-created-event.version>
         <process-snapshot-v1.version>1</process-snapshot-v1.version>
@@ -78,85 +74,73 @@
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-domain</artifactId>
-                <version>28.1.0-SNAPSHOT</version>
+                <version>28.1.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-plugin-api</artifactId>
-                <version>28.1.0-SNAPSHOT</version>
+                <version>28.1.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-domain-test</artifactId>
-                <version>28.1.0-SNAPSHOT</version>
+                <version>28.1.1-SNAPSHOT</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-ui</artifactId>
-                <version>28.1.0-SNAPSHOT</version>
+                <version>28.1.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-scs</artifactId>
-                <version>28.1.0-SNAPSHOT</version>
+                <version>28.1.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-repository-jpa</artifactId>
-                <version>28.1.0-SNAPSHOT</version>
+                <version>28.1.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-repository-template-json</artifactId>
-                <version>28.1.0-SNAPSHOT</version>
+                <version>28.1.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-adapter-kafka</artifactId>
-                <version>28.1.0-SNAPSHOT</version>
+                <version>28.1.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-message</artifactId>
-                <version>28.1.0-SNAPSHOT</version>
+                <version>28.1.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-adapter-micrometer</artifactId>
-                <version>28.1.0-SNAPSHOT</version>
+                <version>28.1.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-adapter-rest-api</artifactId>
-                <version>28.1.0-SNAPSHOT</version>
+                <version>28.1.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-adapter-objectstorage</artifactId>
-                <version>28.1.0-SNAPSHOT</version>
+                <version>28.1.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-process-context-service-instance</artifactId>
-                <version>28.1.0-SNAPSHOT</version>
+                <version>28.1.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap.messagetype.jeap</groupId>
                 <artifactId>add-process-data-command</artifactId>
                 <version>${add-process-data-command.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.uuid</groupId>
-                <artifactId>java-uuid-generator</artifactId>
-                <version>${java-uuid-generator.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers-bom</artifactId>
-                <version>${testcontainers.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

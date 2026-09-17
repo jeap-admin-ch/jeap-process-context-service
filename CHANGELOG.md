@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [28.1.1] - 2026-09-17
+
+### Removed
+- Removed the `com.fasterxml.uuid:java-uuid-generator` version management and the `org.testcontainers:testcontainers-bom` import from the root pom: both are already managed identically by `jeap-internal-spring-boot-parent`.
+- Removed the redundant `exec-maven-plugin.version` and `maven-plugin-plugin.version` properties: both repeat values the parent already sets, so the remaining `${...}` references resolve to the same versions from there.
+
 ## [28.1.0] - 2026-09-16
 
 ### Dependencies

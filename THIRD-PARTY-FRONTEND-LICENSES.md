@@ -326,6 +326,14 @@
     - name: @bcoe/v8-coverage
     - licenses: MIT
     - repository: https://github.com/demurgos/v8-coverage
+ - **[@cacheable/memory](https://github.com/jaredwray/cacheable)**
+    - name: @cacheable/memory
+    - licenses: MIT
+    - repository: https://github.com/jaredwray/cacheable
+ - **[@cacheable/utils](https://github.com/jaredwray/cacheable)**
+    - name: @cacheable/utils
+    - licenses: MIT
+    - repository: https://github.com/jaredwray/cacheable
  - **[@cspotcode/source-map-support](https://github.com/cspotcode/node-source-map-support)**
     - name: @cspotcode/source-map-support
     - licenses: MIT
@@ -606,6 +614,14 @@
     - name: @jridgewell/trace-mapping
     - licenses: MIT
     - repository: https://github.com/jridgewell/trace-mapping
+ - **[@keyv/bigmap](https://github.com/jaredwray/keyv)**
+    - name: @keyv/bigmap
+    - licenses: MIT
+    - repository: https://github.com/jaredwray/keyv
+ - **[@keyv/serialize](https://github.com/jaredwray/keyv)**
+    - name: @keyv/serialize
+    - licenses: MIT
+    - repository: https://github.com/jaredwray/keyv
  - **[@listr2/prompt-adapter-inquirer](https://github.com/listr2/listr2)**
     - name: @listr2/prompt-adapter-inquirer
     - licenses: MIT
@@ -946,10 +962,6 @@
     - name: @unrs/resolver-binding-linux-x64-gnu
     - licenses: MIT
     - repository: https://github.com/unrs/unrs-resolver
- - **[@unrs/resolver-binding-linux-x64-musl](https://github.com/unrs/unrs-resolver)**
-    - name: @unrs/resolver-binding-linux-x64-musl
-    - licenses: MIT
-    - repository: https://github.com/unrs/unrs-resolver
  - **[@vitejs/plugin-basic-ssl](https://github.com/vitejs/vite-plugin-basic-ssl)**
     - name: @vitejs/plugin-basic-ssl
     - licenses: MIT
@@ -1194,6 +1206,10 @@
     - name: cacache
     - licenses: ISC
     - repository: https://github.com/npm/cacache
+ - **[cacheable](https://github.com/jaredwray/cacheable)**
+    - name: cacheable
+    - licenses: MIT
+    - repository: https://github.com/jaredwray/cacheable
  - **[cachedir](LinusU/node-cachedir)**
     - name: cachedir
     - licenses: MIT
@@ -1738,10 +1754,10 @@
     - name: fdir
     - licenses: MIT
     - repository: https://github.com/thecodrr/fdir
- - **[file-entry-cache](jaredwray/file-entry-cache)**
+ - **[file-entry-cache](https://github.com/jaredwray/cacheable)**
     - name: file-entry-cache
     - licenses: MIT
-    - repository: jaredwray/file-entry-cache
+    - repository: https://github.com/jaredwray/cacheable
  - **[fill-range](jonschlinkert/fill-range)**
     - name: fill-range
     - licenses: MIT
@@ -1766,10 +1782,10 @@
     - name: find-yarn-workspace-root
     - licenses: Apache-2.0
     - repository: https://github.com/square/find-yarn-workspace-root
- - **[flat-cache](jaredwray/flat-cache)**
+ - **[flat-cache](https://github.com/jaredwray/cacheable)**
     - name: flat-cache
     - licenses: MIT
-    - repository: jaredwray/flat-cache
+    - repository: https://github.com/jaredwray/cacheable
  - **[flatted](https://github.com/WebReflection/flatted)**
     - name: flatted
     - licenses: ISC
@@ -1902,6 +1918,10 @@
     - name: hasha
     - licenses: MIT
     - repository: sindresorhus/hasha
+ - **[hashery](https://github.com/jaredwray/hashery)**
+    - name: hashery
+    - licenses: MIT
+    - repository: https://github.com/jaredwray/hashery
  - **[hasown](https://github.com/inspect-js/hasOwn)**
     - name: hasown
     - licenses: MIT
@@ -1914,6 +1934,14 @@
     - name: hono
     - licenses: MIT
     - repository: https://github.com/honojs/hono
+ - **[hookified](https://github.com/jaredwray/hookified)**
+    - name: hookified
+    - licenses: MIT
+    - repository: https://github.com/jaredwray/hookified
+ - **[hookified](https://github.com/jaredwray/hookified)**
+    - name: hookified
+    - licenses: MIT
+    - repository: https://github.com/jaredwray/hookified
  - **[hosted-git-info](https://github.com/npm/hosted-git-info)**
     - name: hosted-git-info
     - licenses: ISC
@@ -2266,10 +2294,6 @@
     - name: jsesc
     - licenses: MIT
     - repository: https://github.com/mathiasbynens/jsesc
- - **[json-buffer](https://github.com/dominictarr/json-buffer)**
-    - name: json-buffer
-    - licenses: MIT
-    - repository: https://github.com/dominictarr/json-buffer
  - **[json-parse-even-better-errors](https://github.com/npm/json-parse-even-better-errors)**
     - name: json-parse-even-better-errors
     - licenses: MIT
@@ -2881,6 +2905,10 @@
     - name: pure-rand
     - licenses: MIT
     - repository: https://github.com/dubzzz/pure-rand
+ - **[qified](https://github.com/jaredwray/qified)**
+    - name: qified
+    - licenses: MIT
+    - repository: https://github.com/jaredwray/qified
  - **[qs](https://github.com/ljharb/qs)**
     - name: qs
     - licenses: BSD-3-Clause
