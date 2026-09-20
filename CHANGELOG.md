@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [28.3.0] - 2026-09-20
+
+### Dependencies
+- **systeminformation**: 5.33.11 → 5.33.13 (patch)
+- **prettier**: 3.9.7 → 3.9.8 (patch)
+- **ng-mocks**: 14.18.0 → 14.18.1 (patch)
+- **jest-environment-jsdom**: 30.5.1 → 30.5.2 (patch)
+- **jest**: 30.5.1 → 30.5.2 (patch)
+- **fast-uri**: 4.1.5 → 4.2.1 (minor)
+- **eslint**: 10.10.0 → 10.11.0 (minor)
+
 ## [28.2.0] - 2026-09-17
 
 ### Dependencies
