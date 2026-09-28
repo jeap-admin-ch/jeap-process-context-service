@@ -491,7 +491,6 @@ MIT License
  * SLF4J API Module - [org.slf4j:slf4j-api](http://www.slf4j.org)
  * Testcontainers Core - [org.testcontainers:testcontainers](https://java.testcontainers.org)
  * Testcontainers :: JUnit Jupiter Extension - [org.testcontainers:testcontainers-junit-jupiter](https://java.testcontainers.org)
- * Testcontainers :: MinIO - [org.testcontainers:testcontainers-minio](https://java.testcontainers.org)
  * webjars-locator-lite - [org.webjars:webjars-locator-lite](https://webjars.org)
 
 MPL 1.1
