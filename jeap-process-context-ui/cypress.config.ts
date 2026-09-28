@@ -16,6 +16,13 @@ export default defineConfig({
 					optimizeDeps: {
 						include: [
 							'@angular/common',
+							'@angular/common/http',
+							'@angular/common/http/testing',
+							'@angular/core',
+							'@angular/core/testing',
+							'@angular/forms',
+							'@angular/platform-browser',
+							'@angular/router',
 							'@angular/material/button',
 							'@angular/material/card',
 							'@angular/material/expansion',
@@ -28,7 +35,14 @@ export default defineConfig({
 							'@angular/material/slide-toggle',
 							'@angular/material/sort',
 							'@angular/material/table',
-							'@angular/material/tooltip'
+							'@angular/material/tooltip',
+							'@ngx-translate/core',
+							'@oblique/oblique',
+							'@quadrel-enterprise-ui/auth',
+							'cypress/angular',
+							'ng-mocks',
+							'rxjs',
+							'rxjs/operators'
 						]
 					},
 					resolve: {
