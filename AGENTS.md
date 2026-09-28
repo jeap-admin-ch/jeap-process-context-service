@@ -66,7 +66,7 @@ npx cypress open --port 7000  # Interactive Cypress testing
 - `jeap-process-context-adapter-rest-api/` - REST endpoints with `@TransactionalReadReplica` for reads and
   `@PreAuthorize` role-based security
 - `jeap-process-context-adapter-micrometer/` - Prometheus metrics via `@Timed` annotations
-- `jeap-process-context-adapter-objectstorage/` - Optional S3/MinIO adapter for snapshot storage (AWS SDK v2)
+- `jeap-process-context-adapter-objectstorage/` - Optional S3 adapter for snapshot storage (AWS SDK v2)
 - `jeap-process-context-repository-jpa/` - JPA persistence with Flyway migrations and Caffeine caching
 - `jeap-process-context-repository-template-json/` - JSON template storage with hash-based versioning
 - `jeap-process-context-scs/` - Spring Boot application entry point (`@EnableAsync`)
@@ -110,7 +110,7 @@ Downstream projects implement these interfaces to customize behavior:
 - **JPA tests**: `@DataJpaTest` with `@ContextConfiguration(classes = JpaAdapterConfig.class)`. Uses in PostgreSQL
   mode (`jdbc:h2:mem:testdb;DATABASE_TO_UPPER=FALSE;MODE=PostgreSQL`). Mock `ProcessTemplateRepository` and
   `ProcessContextFactory` with `@MockitoBean`.
-- **Integration tests** (`*IT.java`): `@SpringBootTest` with TestContainers for PostgreSQL, Kafka, MinIO. Kafka tests
+- **Integration tests** (`*IT.java`): `@SpringBootTest` with TestContainers for PostgreSQL, Kafka, RustFS (S3). Kafka tests
   extend `KafkaAdapterIntegrationTestBase` with `@ActiveProfiles("local")`.
 - **Frontend tests**: Cypress component tests (`npm run cypress:run`), Jest for unit tests.
 - **Test stubs**: `jeap-process-context-domain-test/` module. When stubs change, rebuild this module before running

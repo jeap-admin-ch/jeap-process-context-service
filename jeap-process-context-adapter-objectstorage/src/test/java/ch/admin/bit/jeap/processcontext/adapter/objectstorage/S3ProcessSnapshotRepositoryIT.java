@@ -14,7 +14,7 @@ import org.apache.avro.specific.SpecificRecord;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MinIOContainer;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
@@ -36,10 +36,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Testcontainers
 class S3ProcessSnapshotRepositoryIT {
 
-    // minio/minio has been removed from Docker Hub; MinIO now only publishes to quay.io/minio/minio
-    private static final DockerImageName MINIO_IMAGE = DockerImageName
-            .parse("quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z")
-            .asCompatibleSubstituteFor("minio/minio");
+    // MinIO no longer publishes public images, RustFS is used as S3-compatible object storage instead
+    private static final DockerImageName RUSTFS_IMAGE = DockerImageName
+            .parse("rustfs/rustfs:1.0.0-beta.10")
+            .asCompatibleSubstituteFor("rustfs/rustfs");
+    private static final int RUSTFS_PORT = 9000;
+    private static final String RUSTFS_ACCESS_KEY = "dev";
+    private static final String RUSTFS_SECRET_KEY = "devsecret";
     private static final String TEST_BUCKET_NAME = "test-bucket";
     private static final int SNAPSHOT_RETENTION_DAYS = 2;
 
@@ -54,7 +57,11 @@ class S3ProcessSnapshotRepositoryIT {
     private S3ObjectStorageProperties s3ObjectStorageProperties;
 
     @Container
-    private final MinIOContainer minioContainer = new MinIOContainer(MINIO_IMAGE);
+    private final GenericContainer<?> rustFsContainer = new GenericContainer<>(RUSTFS_IMAGE)
+            .withExposedPorts(RUSTFS_PORT)
+            .withEnv("RUSTFS_ACCESS_KEY", RUSTFS_ACCESS_KEY)
+            .withEnv("RUSTFS_SECRET_KEY", RUSTFS_SECRET_KEY)
+            .withCommand("/data");
 
 
     @BeforeEach
@@ -304,9 +311,9 @@ class S3ProcessSnapshotRepositoryIT {
     @SneakyThrows
     private S3ObjectStorageProperties createS3ObjectStorageProperties() {
         S3ObjectStorageConnectionProperties connectionProperties = new S3ObjectStorageConnectionProperties();
-        connectionProperties.setAccessKey(minioContainer.getUserName());
-        connectionProperties.setSecretKey(minioContainer.getPassword());
-        connectionProperties.setAccessUrl(minioContainer.getS3URL());
+        connectionProperties.setAccessKey(RUSTFS_ACCESS_KEY);
+        connectionProperties.setSecretKey(RUSTFS_SECRET_KEY);
+        connectionProperties.setAccessUrl("http://" + rustFsContainer.getHost() + ":" + rustFsContainer.getMappedPort(RUSTFS_PORT));
         S3ObjectStorageProperties objectStorageProperties = new S3ObjectStorageProperties();
         objectStorageProperties.setSnapshotBucket(TEST_BUCKET_NAME);
         objectStorageProperties.setSnapshotRetentionDays(SNAPSHOT_RETENTION_DAYS);

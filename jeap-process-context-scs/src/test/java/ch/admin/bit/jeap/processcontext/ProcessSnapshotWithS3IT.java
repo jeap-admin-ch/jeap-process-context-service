@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
-import org.testcontainers.containers.MinIOContainer;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
@@ -38,32 +38,40 @@ import static org.hamcrest.Matchers.is;
         "jeap.processcontext.template.classpath-location-pattern=classpath:/process/templates/snapshots.json")
 class ProcessSnapshotWithS3IT extends ProcessInstanceITBase {
 
-    // minio/minio has been removed from Docker Hub; MinIO now only publishes to quay.io/minio/minio
-    private static final DockerImageName MINIO_IMAGE = DockerImageName
-            .parse("quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z")
-            .asCompatibleSubstituteFor("minio/minio");
+    // MinIO no longer publishes public images, RustFS is used as S3-compatible object storage instead
+    private static final DockerImageName RUSTFS_IMAGE = DockerImageName
+            .parse("rustfs/rustfs:1.0.0-beta.10")
+            .asCompatibleSubstituteFor("rustfs/rustfs");
+    private static final int RUSTFS_PORT = 9000;
+    private static final String RUSTFS_ACCESS_KEY = "dev";
+    private static final String RUSTFS_SECRET_KEY = "devsecret";
     private static final String TEST_BUCKET_NAME = "test-bucket";
 
-    private static final MinIOContainer MINIO_CONTAINER = new MinIOContainer(MINIO_IMAGE);
+    @SuppressWarnings("resource")
+    private static final GenericContainer<?> RUSTFS_CONTAINER = new GenericContainer<>(RUSTFS_IMAGE)
+            .withExposedPorts(RUSTFS_PORT)
+            .withEnv("RUSTFS_ACCESS_KEY", RUSTFS_ACCESS_KEY)
+            .withEnv("RUSTFS_SECRET_KEY", RUSTFS_SECRET_KEY)
+            .withCommand("/data");
 
     @DynamicPropertySource
     static void registerObjectStorageProperties(DynamicPropertyRegistry registry) {
         registry.add("jeap.processcontext.objectstorage.snapshot-bucket", () -> TEST_BUCKET_NAME);
-        registry.add("jeap.processcontext.objectstorage.connection.accessUrl", MINIO_CONTAINER::getS3URL);
-        registry.add("jeap.processcontext.objectstorage.connection.accessKey", MINIO_CONTAINER::getUserName);
-        registry.add("jeap.processcontext.objectstorage.connection.secretKey", MINIO_CONTAINER::getPassword);
+        registry.add("jeap.processcontext.objectstorage.connection.accessUrl", ProcessSnapshotWithS3IT::getRustFsUrl);
+        registry.add("jeap.processcontext.objectstorage.connection.accessKey", () -> RUSTFS_ACCESS_KEY);
+        registry.add("jeap.processcontext.objectstorage.connection.secretKey", () -> RUSTFS_SECRET_KEY);
     }
 
     @BeforeAll
     static void setup() {
-        MINIO_CONTAINER.start();
+        RUSTFS_CONTAINER.start();
         TimedS3Client s3Client = new TimedS3Client(createS3ConnectionProperties(), null);
         s3Client.createBucket(CreateBucketRequest.builder().bucket(TEST_BUCKET_NAME).build());
     }
 
     @AfterAll
     static void tearDown() {
-        MINIO_CONTAINER.stop();
+        RUSTFS_CONTAINER.stop();
     }
 
     @Autowired
@@ -148,9 +156,13 @@ class ProcessSnapshotWithS3IT extends ProcessInstanceITBase {
 
     private static S3ObjectStorageConnectionProperties createS3ConnectionProperties() {
         S3ObjectStorageConnectionProperties connectionProperties = new S3ObjectStorageConnectionProperties();
-        connectionProperties.setAccessKey(MINIO_CONTAINER.getUserName());
-        connectionProperties.setSecretKey(MINIO_CONTAINER.getPassword());
-        connectionProperties.setAccessUrl(MINIO_CONTAINER.getS3URL());
+        connectionProperties.setAccessKey(RUSTFS_ACCESS_KEY);
+        connectionProperties.setSecretKey(RUSTFS_SECRET_KEY);
+        connectionProperties.setAccessUrl(getRustFsUrl());
         return connectionProperties;
+    }
+
+    private static String getRustFsUrl() {
+        return "http://" + RUSTFS_CONTAINER.getHost() + ":" + RUSTFS_CONTAINER.getMappedPort(RUSTFS_PORT);
     }
 }

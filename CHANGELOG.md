@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [28.5.0] - 2026-09-27
 
+### Changed
+- Replaced the MinIO test container with RustFS in the S3 integration tests, as MinIO no longer publishes public
+  container images.
+- Pre-bundle all third-party modules used by the Cypress component tests to prevent flaky failures caused by Vite
+  re-optimizing dependencies during a test run.
+
 ### Dependencies
 - **ch.admin.bit.jeap:jeap-spring-boot-parent**: 41.9.0 → 41.10.0 (minor)
 - **@analogjs/vite-plugin-angular**: 2.7.2 → 2.7.5 (patch)
