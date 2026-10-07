@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [28.10.0] - 2026-10-07
+
+### Dependencies
+- **ch.admin.bit.jeap:jeap-spring-boot-parent**: 41.14.0 → 41.17.1 (minor)
+- **@typescript-eslint/parser**: 8.71.0 → 8.71.1 (patch)
+- **@typescript-eslint/eslint-plugin**: 8.71.0 → 8.71.1 (patch)
+
 ## [28.9.0] - 2026-10-04
 
 ### Dependencies
