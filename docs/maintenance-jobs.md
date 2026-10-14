@@ -11,7 +11,7 @@ Maintenance is not a bulk data editing API. Requests identify every process or r
 durably, and the configured limits protect an instance from unsafe workloads.
 
 For command syntax, CSV handling, and client-side validation, use the
-[jEAP CLI PCS maintenance documentation](https://github.com/jeap-admin-ch/jeap-cli/blob/main/docs/pcs-maintenance.md).
+[jEAP CLI PCS maintenance documentation](https://jeap-admin-ch.github.io/docs/building-blocks/tooling/jeap-cli/pcs-maintenance).
 This page documents the PCS server contract and operational behavior instead of duplicating the CLI guide.
 
 ## Enablement and dependencies
@@ -56,6 +56,9 @@ The endpoints use OAuth2 bearer tokens and semantic roles:
 For a system named `jme`, OAuth role names are normally `jme_@processcontextjob_#write` and
 `jme_@processcontextjob_#read`. Retrieving relation UUIDs additionally requires `jme_@processinstance_#view`, which
 grants read access to process instance views and their associated data.
+
+Bearer-token requests are excluded from Spring Security's CSRF matcher and do not require a browser
+CSRF cookie/header pair.
 
 ## REST and YAML contract
 
@@ -104,9 +107,16 @@ Jobs remain `open` while any task is non-terminal and become `completed` when al
 sanitized error details. Backfill reports deliberately omit the submitted process-data values. Scalar identifiers that
 resemble numbers remain quoted strings in YAML.
 
+Completed jobs and their tasks are removed by [housekeeping](configuration.md#housekeeping).
+
 ## Delivery and failure semantics
 
-Job, task, and outgoing message writes use the transactional outbox. Transport recovery is at least once: an outbox or
+Job, task, and outgoing message writes commit atomically through the transactional outbox. Messages are
+sent immediately after commit; the outbox relay remains the delivery fallback. Processing locks only the
+current task, so tasks for different processes in the same job can run concurrently. The shared job is
+locked afterwards to calculate its result from current task counts.
+
+Transport recovery is at least once: an outbox or
 Kafka message can be delivered more than once, and consumers use the durable task state to make duplicate processing
 safe where possible.
 
@@ -193,6 +203,10 @@ Canonical files:
 - [request YAML](examples/maintenance/relation-publication-request.yaml)
 - [relation CSV](examples/maintenance/relation-publication-relations.csv)
 - [report YAML](examples/maintenance/relation-publication-report.yaml)
+
+Republication queues one `REPUBLISH_RELATION_JOB` event per selected relation. Existing relations use
+their owning process ID as Kafka key; unresolved UUIDs use the relation ID so missing targets are still
+processed and reported.
 
 The consumer reloads the persisted relation and reuses its stable idempotence ID. A relation missing at execution time
 becomes `NOT_FOUND`; a disabled relation feature flag or listener exception becomes `FAILED`. At-least-once recovery can

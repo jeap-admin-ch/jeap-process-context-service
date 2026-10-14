@@ -11,14 +11,35 @@ instance depending on it, containing the process definitions specific to that ap
 
 ## Documentation
 
-- [Getting Started](docs/getting-started.md) — set up a PCS instance for your business application
-- [Architecture](docs/architecture.md) — goals, context, building blocks, domain model, cross-cutting concepts
-- [Process Templates](docs/process-templates.md) — the complete process definition reference
+### Getting started
+
+- [Getting started](docs/getting-started.md) — set up a PCS instance for your business application
+
+### Architecture
+
+- [Architecture](docs/architecture.md) — goals, context, building blocks and domain model
+- [Domain model](docs/domain-model.md) — aggregate relationships and plugin context.
+- [Runtime behavior](docs/runtime-behavior.md) — message flow, processing stages, correlation and error handling
+- [Design decisions](docs/design-decisions.md) — architecture, persistence and concurrency choices
+
+### Configuration
+
 - [Configuration](docs/configuration.md) — the property reference
-- [User Interface](docs/user-interface.md) — views, roles, deep links and the log system link
+
+### Service-specific topics
+
+- [Process templates](docs/process-templates.md) — the complete process definition reference
+- [User interface](docs/user-interface.md) — views, roles, deep links and the log system link
+
+### Operations
+
 - [Operations](docs/operations.md) — scaling, housekeeping, metrics and error handling
-- [Maintenance Jobs](docs/maintenance-jobs.md) — relation reevaluation, process-data backfill and relation republication
-- [Template Migration](docs/template-migration.md) — what happens when a process template changes
+- [Maintenance jobs](docs/maintenance-jobs.md) — relation reevaluation, process-data backfill and relation republication
+- [Template migration](docs/template-migration.md) — what happens when a process template changes
+
+### Development
+
+- [Local development and testing](#prerequisites) — prerequisites, building the library and UI, running locally and Cypress tests
 
 ## Changes
 
@@ -33,7 +54,7 @@ Before you begin, ensure you have the following installed:
 
 **Note:** Use the provided Maven Wrapper (`mvnw` / `mvnw.cmd`) to build and run the project - no separate Maven installation required.
 
-## Getting started
+## Local development
 
 Normally you will not use this project directly, but instead set up your own process context service depending on this common library. 
 If you want to test this library locally, you can use the example project [jme-process-context-example](https://github.com/jme-admin-ch/jme-process-context-example), which is available in a separate repository.
@@ -88,7 +109,7 @@ These will start the UI on http://localhost:4200/. The UI will automatically rel
 To run an example backend locally, you can use the example project [jme-process-context-example](https://github.com/jme-admin-ch/jme-process-context-example) or an own implementation of the process context service.
 The UI will also automatically connect to the process context service running on http://localhost:8080/.
 
-## Configuration
+## Instance configuration
 
 The properties of a PCS instance are documented in [Configuration](docs/configuration.md), including the
 [PAMS and ePortal](docs/configuration.md#pams-and-eportal) settings of the UI header.

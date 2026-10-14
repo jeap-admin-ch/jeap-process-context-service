@@ -63,6 +63,14 @@ High **availability** is explicitly less important: because of the decoupling an
 the service, and because the frontend serves traceability and analysis rather than business-critical
 operations.
 
+## Stakeholders
+
+Business users need process transparency and diagnostic information. Feature teams need a stable
+integration contract and understandable templates. Release Train Engineers coordinate adoption and
+operation across teams; architects assess the service's fit with the event-driven system.
+
+The [domain model](domain-model.md) explains the aggregate relationships and the separate plugin context.
+
 ## Context
 
 ### Business context
@@ -82,6 +90,43 @@ operations.
 | Process Archive Service | Kafka, HTTPS   | Is informed about new snapshots by the `ProcessSnapshotCreatedEvent` and fetches the snapshots for archiving via the REST API.                           |
 | Error Handling Service  | Kafka          | `MessageProcessingFailedEvent`s for messages whose processing failed are produced to the error topic; retries are published back to the original topic. |
 
+### Context diagram
+
+```mermaid
+flowchart LR
+    Users[Business users] -->|HTTPS| UI[PCS frontend]
+    UI -->|REST queries| PCS[PCS backend]
+    Workers[Business microservices] -->|events and commands| Kafka[Kafka]
+    Kafka -->|business messages| PCS
+    PCS -->|failure events| Kafka
+    Kafka --> EHS[Error Handling Service]
+    EHS -->|retry original messages| Kafka
+    EHS -->|permanent errors| Tasks[Task management]
+    PCS -->|snapshot-created events| Kafka
+    Kafka --> PAS[Process Archive Service]
+    PAS -->|HTTPS snapshot retrieval| PCS
+    PCS --> DB[(PostgreSQL)]
+    PCS --> Snapshots[(Snapshot object store)]
+    IdP[Identity provider] -.->|user and client credentials| UI
+    IdP -.->|API authentication| PCS
+```
+
+User access uses the authorization-code flow; service-to-service snapshot access uses client
+credentials. The identity-provider realms and task-management credentials belong to the deployment.
+The PAS reads snapshot bytes through the PCS API and stores its own archived artifact; the PCS
+snapshot store and PAS archive store have separate retention policies.
+
+### Platform constraints
+
+The service follows the platform conventions for authentication and authorization, REST APIs,
+Kafka messaging, frontend/backend deployment, logging and distributed tracing. Service-specific
+settings are in [Configuration](configuration.md), authorization in [User interface](user-interface.md#roles),
+and deployment and scaling in [Operations](operations.md#deployment).
+
+## Runtime overview
+
+See [Runtime behavior](runtime-behavior.md#runtime-overview) for the message-flow diagram and processing stages.
+
 ## Building blocks
 
 | Component                       | Description                                                                                             |
@@ -94,6 +139,32 @@ operations.
 | ProcessInstance repository (port) | Repository interface for process instances.                                                            |
 | ProcessSnapshot repository (port) | Repository interface for persisting process snapshots.                                                 |
 
+### Ports and adapters
+
+```mermaid
+flowchart LR
+    UI[Frontend] --> REST[REST adapter]
+    Kafka[Kafka] --> Consumer[Kafka consumer adapter]
+    REST --> Core[Domain services and active domain model]
+    Consumer --> Core
+    Core --> Plugins[Plugin API: conditions, extractors and listeners]
+    Core --> Ports[Repository and message-production ports]
+    Ports --> JPA[JPA adapter]
+    Ports --> JSON[JSON template adapter]
+    Ports --> S3[S3 snapshot adapter]
+    Ports --> Producer[Kafka producer adapter]
+    JPA --> DB[(PostgreSQL)]
+    JSON --> Resources[Classpath templates]
+    S3 --> Objects[(Snapshot store)]
+    Producer --> Kafka
+```
+
+Domain services coordinate work across aggregates and own transaction boundaries. Entities implement
+state changes within an aggregate. Incoming message, query and command adapters invoke those services;
+repository and producer adapters implement outgoing ports. Business applications supply plugins against
+the plugin API, rather than depending on the persistence model. The distinction between message intake
+and process updates is shown in [Runtime behavior](runtime-behavior.md#runtime-overview).
+
 ### REST API
 
 | Path                                                | Verb | Response                   | Authorization                |
@@ -105,12 +176,9 @@ operations.
 | `/api/processes/{originProcessId}/process-relations`| GET  | Process relations (paged)  | `processinstance` / `view`   |
 | `/api/processes/{originProcessId}/relations`        | GET  | Relations (paged)          | `processinstance` / `view`   |
 | `/api/snapshot/{originProcessId}`                   | GET  | A process snapshot version | `processsnapshot` / `view`   |
-| `/api/reevaluation-jobs/{jobId}`                    | PUT  | Empty `201` (new) or `200` (idempotent) response | `processcontextjob` / `write` |
-| `/api/reevaluation-jobs/{jobId}`                    | GET  | YAML job report            | `processcontextjob` / `read` |
-| `/api/backfill-jobs/{jobId}`                        | PUT  | Empty `201` (new) or `200` (idempotent) response | `processcontextjob` / `write` |
-| `/api/backfill-jobs/{jobId}`                        | GET  | YAML job report            | `processcontextjob` / `read` |
-| `/api/relation-publication-jobs/{jobId}`             | PUT  | Empty `201` (new) or `200` (idempotent) response | `processcontextjob` / `write` |
-| `/api/relation-publication-jobs/{jobId}`             | GET  | YAML job report            | `processcontextjob` / `read` |
+
+Maintenance endpoints, response codes and roles are documented in
+[Maintenance jobs](maintenance-jobs.md#rest-and-yaml-contract).
 
 Relation items returned by `/api/processes/{originProcessId}/relations` include their persisted `id`. This UUID can be
 used to target a relation in a [relation republication job](maintenance-jobs.md#relation-republication).
@@ -142,100 +210,41 @@ Archive Service.
 
 ### Published events
 
-| Event type                    | References        | Payload           | Description                            |
-|-------------------------------|-------------------|-------------------|----------------------------------------|
-| `ProcessSnapshotCreatedEvent` | `originProcessId` | `snapshotVersion` | A new process snapshot version was created. |
+See [Published events](runtime-behavior.md#published-events).
 
 ### Consumed messages
 
-Domain events and commands, depending on the business application. References to process and task are
-extracted by correlation providers, data by custom payload and reference extractors.
+See [Consumed messages](runtime-behavior.md#consumed-messages).
 
 ### Internal messages
 
-Internal Kafka messages decouple the processing steps inside the PCS. They decouple the processing from the
-partitioning of the source topics, shorten transactions, simplify error handling and generally increase
-robustness. These technical messages are modelled as jEAP domain events.
-
-| Topic (configuration key)  | Message type                  | Payload                                                                               | Description                                                                                     |
-|----------------------------|-------------------------------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| `jeap.processcontext.kafka.topic.process-outdated-internal` | `ProcessContextOutdatedEvent` | `originProcessId`, `processUpdateType`, optional message/template data or maintenance task envelope | Something happened for a process instance that potentially affects its state, or a durable maintenance task must be executed. |
-| `jeap.processcontext.kafka.topic.add-process-data-command` | `AddProcessDataCommand` | Maintenance job/task identity, template, origin process ID, and normalized process-data values | Adds durable backfill data and triggers relation reevaluation through the internal process-outdated event flow. |
-
-Maintenance commands and events are written through the transactional outbox with the origin process ID as Kafka key.
-Submitting a backfill job atomically persists the job, its `COMMAND_QUEUED` tasks, and their outbox commands. The command
-service reloads the locked durable job and task, validates the command, and atomically adds process data, queues a
-`BACKFILL_JOB` event, and moves the task to `EVENT_QUEUED`. The event reevaluates relations and completes the task.
-Duplicate commands are ignored after the transition. As PCS-internal messages, both message types are exempt from
-application contract validation; PCS instances do not need to declare producer or consumer contracts for them.
-
-Relation republication writes one `REPUBLISH_RELATION_JOB` event per selected relation through the same outbox. Existing
-relations use their owning process ID as Kafka key; unresolved UUIDs use the relation ID so missing targets are still
-processed and reported. Execution reloads the persisted relation, reapplies its live feature flag, and passes the
-unchanged mapped relation to `RelationListener`. The task reaches `SUCCEEDED` only after listener handoff.
+See [Internal messages](runtime-behavior.md#internal-messages).
 
 ## Cross-cutting concepts
 
 ### Architectural pattern
 
-**Ports and adapters**, with an active domain model implementing the domain logic:
-
-- the domain model is at the centre and can be tested separately,
-- it is not anaemic — no models consisting of pure getters and setters,
-- computation of state transitions is encapsulated centrally in the model instead of being distributed,
-- plugins of the business applications are implemented as adapters against ports.
+See [Architectural pattern](design-decisions.md#architectural-pattern) for the model and rationale.
 
 ### Persistence
 
-- **Process instance**: the domain model is persisted directly with JPA annotations on the fields of the
-  class. This avoids unnecessary mapping between JPA and the domain model; an independent persistence model
-  would be desirable but hard to justify given the mapping effort.
-- **Process template**: loaded as JSON, persisted in the database.
-- **Process snapshot**: stored in an S3 object store as an Avro binary, together with the metadata required
-  by the Process Archive Service.
+See [Persistence](design-decisions.md#persistence) for storage choices and alternatives.
 
 ### Asynchronous notifications and eventual consistency
 
-Message processing per process instance must **not** happen in parallel. Serial processing per process
-instance is essential — the *order* does not matter, only the avoidance of race conditions. This is achieved
-with the internal processing events described above: they use the process instance ID as the Kafka record
-key, which serialises the consumption of the events per process instance ID.
+See [Serial processing per instance](runtime-behavior.md#asynchronous-notifications-and-eventual-consistency).
 
 ### Late correlation
 
-Correlation based on process data allows a message to be assigned to a process instance based on information
-that becomes known to the instance only after the process has started.
-
-- If the message **writing** the process data is processed **before** the message to be correlated, the
-  correlation already happens in the `ProcessUpdateService` by searching for a process with the relevant
-  process data (*early correlation*).
-- If the messages arrive in the opposite order, that search finds nothing. The message is stored first and
-  correlated later, when the relevant process data becomes known (*late correlation*). Late correlation
-  happens in the `ProcessInstanceService`, which writes the process data: whenever it creates new process
-  data, it checks whether already received messages can now be correlated.
-
-Correlation must always happen, even if an early and a late correlation attempt occur practically at the same
-time. To prevent race conditions, processing in both services is split into two transactions: first the data
-derived from the message is stored, then the database queries detecting correlations are executed. This
-guarantees a correlation regardless of how the transactions of the two services interleave.
+See [Late correlation](runtime-behavior.md#late-correlation).
 
 ### Idempotency
 
-- **Process creation** is idempotent via the origin process ID: if an instance already exists, the creation
-  is ignored.
-- Events triggered by state changes are published successfully **before** the triggering message is
-  acknowledged. If processing fails, the original message is passed to the error handling and acknowledged;
-  a retry then relies on the idempotent processing again.
+See [Idempotency](runtime-behavior.md#idempotency).
 
 ### Error handling
 
-The Error Handling Service is used for errors occurring while processing a message. Errors are classified as:
-
-| Exception                                              | Classification |
-|--------------------------------------------------------|----------------|
-| `org.springframework.dao.TransientDataAccessException` | Temporary      |
-| `org.apache.kafka.common.errors.RetryableException`    | Temporary      |
-| Everything else                                        | Permanent      |
+See [Error handling](runtime-behavior.md#error-handling) for PCS-specific failure classification.
 
 ### Logging
 
@@ -250,40 +259,12 @@ The Error Handling Service is used for errors occurring while processing a messa
 
 ### Architectural pattern
 
-**Decision**: ports and adapters with an active domain model.
-
-**Rationale**: clear structure, transaction boundaries and a clear location for the domain logic; separation
-of infrastructure and domain; plugins of the business applications can be implemented against ports.
-The alternative considered was a layered architecture, which gives a less clearly defined structure.
+See [Architectural pattern](design-decisions.md#architectural-pattern).
 
 ### Persistence
 
-**Decision**: the domain model is persisted directly with JPA.
-
-**Rationale**: lower effort and complexity. A move to event sourcing remains possible if it later turns out
-to be necessary.
-
-| Option | Description                                                     | Advantages                                                            | Disadvantages                                                                                                     |
-|--------|-----------------------------------------------------------------|-----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| 1 (chosen) | Domain model persisted directly with JPA                    | Low effort, simple implementation                                     | Domain model has JPA dependencies; only the current state is known, not the history                                |
-| 2      | Domain model in memory only, persistence via event sourcing     | Good traceability, good expected performance through inserts only     | Database harder to analyse, higher implementation effort, more complex through the decoupling of model and persistence |
+See [Persistence](design-decisions.md#persistence).
 
 ### Asynchronous processing of messages affecting the process state
 
-**Decision**: an internally event driven architecture. The algorithm has three stages:
-
-1. consume the incoming message, persist the message type in the process context and produce a technical
-   event to update the process and task state,
-2. compute the updates of the process and task state and produce a technical event to trigger the reactions
-   to the new state,
-3. compute the reactions (snapshots, completion), persist them and produce the corresponding domain events.
-
-The integration between the three stages happens over technical Kafka events. This keeps the transaction
-boundaries small, and the partitioning — and with it the parallelism — independent of the source topics.
-
-**Rationale**: clean decoupling, no database-centric design that would not scale.
-
-Alternatives considered were pessimistic locking on a dedicated lock table (scales badly, optimises for the
-special case of parallel processing), forwarding the incoming events to an internal topic keyed per process
-instance (requires a message contract for every forwarding, exposing teams to PCS internals), and optimistic
-locking (acceptable, but may produce state events more than once).
+See [Asynchronous processing](design-decisions.md#asynchronous-processing-of-messages-affecting-the-process-state).

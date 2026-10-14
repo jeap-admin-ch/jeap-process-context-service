@@ -18,6 +18,8 @@ Pure recording can happen relatively independently of the evolution of the proce
 reaching milestones and completing tasks, and therefore the process, is more tightly coupled to the
 occurrence of expected messages and thus to the flow of the process as defined in the template.
 
+![Process templates describe observed message streams; business services own the process logic while instances may span template versions](images/template-migration-context.png)
+
 ## Constraints
 
 | #  | Constraint                            | Description                                                                                                                                                                                                                                    |
@@ -25,7 +27,7 @@ occurrence of expected messages and thus to the flow of the process as defined i
 | R1 | Recording                             | The PCS records. It cannot intervene in or control the actual process flow, it only represents it. The process flow is determined solely by the current logic of the services participating in the process. Planning dynamic tasks is likewise the responsibility of those services. |
 | R2 | "There is no process"                 | It follows that there is always exactly one productive version of a process — unless the participating services implement some kind of migration logic themselves. One could also argue that there is no process at all, only instances of connected message streams. |
 | R3 | Changes in business logic and message flow are a fact | That process flows change over time while processes are still open is a fact determined by the participating services and their business logic. The genuinely difficult part of migration therefore lies in those services: they have to make sure the changed message flow still works with already instantiated flows. The PCS perceives the symptom — the observed process no longer matches the template that was active when the process was instantiated — and has to cope with the template changing. |
-| R4 | Done means done                       | Completed processes stay completed and remain untouched by changed templates. The same applies to completed tasks.                                                                                                                              |
+| R4 | Done means done                       | Completed processes stay completed; template migration does not reopen them. Completed tasks retain their final state. The scheduled migration selects non-completed instances; message-triggered updates can still apply template changes to an already completed instance.                                                                                                                              |
 
 ## Automated migration rules
 
@@ -40,10 +42,24 @@ the template has changed, so that new definitions (new process data etc.) are ap
 
 | Change in the process template | Task instance state | Migration rule                             |
 |--------------------------------|---------------------|--------------------------------------------|
-| New dynamic task type          | –                   | Create a task instance in the state `UNKNOWN` |
-| New single task type           | –                   | Create a task instance in the state `UNKNOWN` |
+| New task type with `lifecycle=static` | – | Create a missing task instance initially in `UNKNOWN`; evaluate completion against existing messages. |
+| New task type with `lifecycle=dynamic` or `observed` | – | No placeholder task is created by template migration; instances follow their message-driven lifecycle. |
 | Task type deleted              | Non-final state     | Change the task instance state to `DELETED` |
 | Task type deleted              | Final state         | No action                                  |
+
+```mermaid
+flowchart TD
+    Added[New static task in changed template] --> Unknown[UNKNOWN]
+    Unknown --> Evaluate[Evaluate against recorded messages]
+    Evaluate -->|completion condition met| Completed[COMPLETED]
+    Evaluate -->|not resolved| Decision[Project-specific business decision]
+    Removed[Task type removed] --> Final{Task already final?}
+    Final -->|yes| Keep[Keep final state]
+    Final -->|no| Deleted[DELETED]
+```
+
+The diagram separates automatic evaluation from project-specific migration. It does not imply that
+adding a template task starts new work in the business services.
 
 ### Messages
 
@@ -75,5 +91,7 @@ the template has changed, so that new definitions (new process data etc.) are ap
 
 ## Specific migration rules
 
-All elements created with the state `UNKNOWN` during the automated migration (tasks) have to be migrated with
-a database script. This migration depends on the business context and has to be implemented by the project.
+For tasks that remain in `UNKNOWN` after automated migration and completion evaluation, the project
+must determine the correct state from the business context. If a database migration script is needed,
+it is application-specific. The PCS cannot infer business work that was never represented by the
+recorded messages.

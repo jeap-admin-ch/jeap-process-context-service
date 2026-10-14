@@ -1,13 +1,50 @@
 # Operations
 
+## Deployment
+
+A business application packages the PCS with its templates, plugins and environment configuration.
+Several replicas can run together, including during a rolling deployment; they share the database,
+Kafka consumer group and snapshot store.
+
+```mermaid
+flowchart TB
+    Browser[Browser: PCS frontend] -->|HTTPS| API[Application ingress and REST API]
+    subgraph App[Business application deployment]
+        A[PCS replica with templates and plugins]
+        B[PCS replica with templates and plugins]
+    end
+    API --> A
+    API --> B
+    A --> Kafka[Kafka]
+    B --> Kafka
+    A --> DB[(Shared PostgreSQL)]
+    B --> DB
+    A --> S3[(Snapshot object store)]
+    B --> S3
+```
+
+Kafka partition assignment serializes internal updates per process instance. See
+[Template migration](template-migration.md) for instances that span template changes and
+[Configuration](configuration.md) for the required infrastructure settings.
+
 ## Scaling
 
 The PCS has to be multi-instance capable: operating the application is the responsibility of the teams, and
 it is not realistic to require that the service is never scaled and never deployed with zero downtime (which
 requires at least temporary multi-instance operation).
 
-The service scales with the number of instances and the number of partitions of the consumed topics, see
-[Scaling and concurrency](getting-started.md#scaling-and-concurrency).
+The PCS scales with the number of instances and the number of partitions of the consumed topics:
+
+- The partition count of the **business application topics** controls the parallelism while consuming
+  incoming messages. Scaling is usually not necessary here, as those messages are consumed very quickly.
+- The partition count of the **`process-outdated-internal` topic** controls the parallelism of the internal
+  processing (state updates). Increasing it is recommended for instances under very high load.
+
+The configured consumer capacity is `number of instances × listener concurrency`. For a single topic
+and consumer group, active consumption is also limited by the topic's partition count. Consumers beyond
+that count remain idle.
+
+Set the listener concurrency in [Configuration](configuration.md#kafka).
 
 ## Housekeeping
 
@@ -67,11 +104,21 @@ is created for 50%, 80% and 99% of all measurements (`quantile` tag).
 | `jeap_pcs_s3_client_*`                             | S3 client operations for snapshots (`put_object`, `get_object`, `head_bucket`, `list_objects`, and the bucket lifecycle configuration) |
 | `jeap_pcs_repository_*`                            | Repository and query timers for database access, per entity (`processinstance`, `message`, `taskinstance`, `processdata`, `relation`, …) |
 
+The exact S3 metric names are `jeap_pcs_s3_client_put_object`, `jeap_pcs_s3_client_get_object`,
+`jeap_pcs_s3_client_head_bucket`, `jeap_pcs_s3_client_list_objects`,
+`jeap_pcs_s3_client_get_bucketlifecycleconfiguration` and
+`jeap_pcs_s3_client_put_bucketlifecycleconfiguration`. The old spelling
+`jeap_pcss_s3_client_put_object` was a documentation typo.
+
+Application-specific relation listeners may expose additional metrics. Older Transparenza integrations
+used `jeap_pcs_transparenza_relations_commands_created` (`relationsCount`) and
+`jeap_pcs_transparenza_relations_commands_sent` (`commandsCount`). These are not core PCS metrics;
+check the listener installed in the instance when migrating dashboards.
+
 In addition, the state of the [feature flags](process-templates.md#relation-patterns-with-a-feature-flag) is
 published as the `feature_flag` gauge.
 
 ## Error handling
 
-Errors occurring while processing a message are handled by the Error Handling Service. Transient data access
-and retryable Kafka exceptions are classified as temporary, everything else as permanent, see
-[Error handling](architecture.md#error-handling).
+For business-message failures and their classification, see [Error handling](runtime-behavior.md#error-handling).
+Maintenance tasks use separate [delivery and failure semantics](maintenance-jobs.md#delivery-and-failure-semantics).

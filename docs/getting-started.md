@@ -6,61 +6,9 @@ available properties see [Configuration](configuration.md).
 
 ## How it works
 
-The PCS consumes the messages declared in its process templates, keeps the state of the process instances up
-to date, and publishes what it has derived from them:
-
-```mermaid
-flowchart LR
-  Services["Business services"]
-  Topics[/"Business topics<br/>(domain events, commands)"/]
-
-  subgraph PCS["Process Context Service"]
-    direction TB
-    Consumer["Message consumer<br/>(topics from the process templates)"]
-    Filter["Message filter<br/>(optional, per message type)"]
-    Correlate["Correlation to a process instance<br/>(processId, correlation provider<br/>or process data)"]
-    Internal[/"Internal topic<br/>process-outdated-internal<br/>(keyed by origin process ID)"/]
-    Update["Process update:<br/>plan and complete tasks,<br/>derive process data and relations,<br/>evaluate completion conditions"]
-    Snapshot["Snapshot creation<br/>(on completion, if configured)"]
-    Api["REST API<br/>+ bundled Angular UI"]
-    DB[("PostgreSQL")]
-
-    Consumer --> Filter
-    Filter --> Correlate
-    Correlate -->|" Persist message,<br/>notify that the state is outdated "| Internal
-    Internal --> Update
-    Update --> DB
-    Update --> Snapshot
-    Api --- DB
-  end
-
-  subgraph EXTERNAL["Other systems"]
-    direction TB
-    S3[("S3 object storage")]
-    PAS["Process Archive Service"]
-    EHS["Error Handling Service"]
-    Listener["RelationListener<br/>(instance-specific plugin)"]
-    Browser["Business user<br/>(browser)"]
-  end
-
-  Services -->|" Publish "| Topics
-  Topics --> Consumer
-  Consumer -->|" MessageProcessingFailedEvent<br/>on a processing failure "| EHS
-  Snapshot -->|" Store snapshot "| S3
-  Snapshot -->|" ProcessSnapshotCreatedEvent "| PAS
-  PAS -->|" Fetch snapshot for archiving "| Api
-  Update -->|" New relations between<br/>business objects "| Listener
-  Browser --> Api
-```
-
-The internal topic decouples the ingestion from the state computation: it is keyed by the origin process ID,
-so the updates of one process instance are processed serially while different instances are processed in
-parallel. This keeps the transactions short and makes the parallelism independent of the partitioning of the
-business topics — see [Architecture](architecture.md#asynchronous-notifications-and-eventual-consistency).
-
-Note that the PCS is strictly passive: it never decides which activities are to be executed and never
-triggers one. `ProcessSnapshotCreatedEvent` is the only message it publishes on its own; anything else
-reaching other systems is produced by an instance-specific `RelationListener`.
+See the [runtime overview](runtime-behavior.md#runtime-overview) for message ingestion, process updates,
+snapshots and integration with PAS and EHS. The PCS observes the process; the participating business
+services remain responsible for executing it.
 
 ## 1. Create a service instance
 
@@ -121,36 +69,20 @@ process templates.
 
 ### Scaling and concurrency
 
-The PCS scales with the number of instances and the number of partitions of the consumed topics:
-
-- The partition count of the **business application topics** controls the parallelism while consuming
-  incoming messages. Scaling is usually not necessary here, as those messages are consumed very quickly.
-- The partition count of the **`process-outdated-internal` topic** controls the parallelism of the internal
-  processing (state updates). Increasing it is recommended for instances under very high load.
-
-The maximum possible concurrency is `number of instances × listener concurrency`:
-
-```yaml
-spring:
-  kafka:
-    listener:
-      concurrency: 3
-```
+See [Operations](operations.md#scaling) for partition sizing and listener concurrency.
 
 ## 3. Order the user role
 
-| Semantic role                     | Usage                                                                     |
-|-----------------------------------|---------------------------------------------------------------------------|
-| `<system>_@processinstance_#view` | Role for users of the process context UI. Must be assigned to the users.  |
-
-The system name has to be configured in both of these properties:
-
-- `jeap.security.oauth2.resourceserver.system-name`
-- `jeap.processcontext.frontend.system-name`
+Assign the process-instance view role described in [User Interface](user-interface.md#roles).
+That section also documents the system-name settings used to construct role names.
 
 ## 4. Configure the application
 
-A minimal configuration of an instance looks as follows:
+The following excerpt shows service-specific settings. Complete it with the deployment's datasource
+connection and credentials, Kafka/schema-registry connection and authentication, OAuth issuer,
+[frontend URLs and PAMS mode](configuration.md#frontend-and-oauth), and [log link](configuration.md#log-deep-link).
+If templates enable snapshots, configure the snapshot bucket and storage access as well. See the
+[complete integration examples](#complete-integration-examples) for the full deployment configuration.
 
 ```yaml
 server:
@@ -205,6 +137,8 @@ The PCS loads its process templates from the classpath, matching the pattern
 `process/templates/*.json`. The structure of a template is described in
 [Process Templates](process-templates.md).
 
+![Example classpath layout for process template resources](images/process-template-resource-overview.png)
+
 ### JSON schema support in the IDE
 
 A JSON schema for process templates is available at
@@ -214,6 +148,15 @@ template and use *No JSON schema* in the status bar → *New Schema Mapping*:
 
 - **Schema file or URL**: the schema file above
 - **File path pattern**: `**/src/main/resources/process/templates/*.json`
+
+The screenshots below illustrate the IDE workflow. Their UI and schema URL are from an older setup;
+use the current schema file and path pattern above.
+
+![Select the JSON schema indicator](images/intellij-no-json-schema.png)
+
+![Create a schema mapping using the current schema and template path](images/intellij-new-schema-mapping.png)
+
+![Template validation and completion after registering the schema](images/intellij-schema-validated.png)
 
 ## 6. Instantiate processes
 
@@ -228,7 +171,23 @@ or `processInstantiationCondition` on the corresponding message declaration in t
   discovered relations between business objects, see [Relation patterns](process-templates.md#relation-patterns).
 - **Message filters** — ignore irrelevant messages of a given type, see
   [Message filters](configuration.md#message-filters).
-- **Encrypted Kafka records** — the PCS can consume records encrypted with jeap-messaging / jeap-crypto.
-  This usually only requires the Vault URL and system name to be configured, plus the `jeap-vault-starter`
-  and `jeap-crypto-vault-starter` dependencies.
+- **Encrypted Kafka records** — see [Configuration](configuration.md#encrypted-kafka-records) for
+  dependencies and connection settings.
 - **Housekeeping and template migration scheduling** — see [Configuration](configuration.md).
+
+## Complete integration examples
+
+The following source examples include the complete build, configuration and plugin implementations.
+Use them with the version of the service you integrate; the examples evolve with their repositories.
+
+- [jme-process-context-example](https://github.com/jme-admin-ch/jme-process-context-example)
+- [jme-process-context-example / jme-process-context-scs/pom.xml](https://github.com/jme-admin-ch/jme-process-context-example/blob/main/jme-process-context-scs/pom.xml)
+- [jme-process-context-example / jme-process-context-scs / JmeRaceMobileCheckpointPassedEventPayloadExtractor.java](https://github.com/jme-admin-ch/jme-process-context-example/blob/main/jme-process-context-scs/src/main/java/ch/admin/bit/jeap/jme/processcontext/event/JmeRaceMobileCheckpointPassedEventPayloadExtractor.java)
+- [jme-process-context-example / jme-process-context-scs / JmeRaceStartedEventMessageFilter.java](https://github.com/jme-admin-ch/jme-process-context-example/blob/main/jme-process-context-scs/src/main/java/ch/admin/bit/jeap/jme/processcontext/event/JmeRaceStartedEventMessageFilter.java)
+- [jme-process-context-example / jme-process-context-scs/src/main/resources/application.yml](https://github.com/jme-admin-ch/jme-process-context-example/blob/main/jme-process-context-scs/src/main/resources/application.yml)
+- [jme-process-context-example / jme-process-context-scs/src/main/resources/process/messages/messages.properties](https://github.com/jme-admin-ch/jme-process-context-example/blob/main/jme-process-context-scs/src/main/resources/process/messages/messages.properties)
+- [jme-process-context-example / jme-process-context-scs/src/main/resources/process/messages/messages_fr.properties](https://github.com/jme-admin-ch/jme-process-context-example/blob/main/jme-process-context-scs/src/main/resources/process/messages/messages_fr.properties)
+- [jme-process-context-example / jme-process-context-scs/src/main/resources/process/messages/messages_it.properties](https://github.com/jme-admin-ch/jme-process-context-example/blob/main/jme-process-context-scs/src/main/resources/process/messages/messages_it.properties)
+- [jme-process-context-example / jme-process-context-scs/src/main/resources/process/templates/raceProcess.json](https://github.com/jme-admin-ch/jme-process-context-example/blob/main/jme-process-context-scs/src/main/resources/process/templates/raceProcess.json)
+- [jme-process-context-example / jme-process-context-scs](https://github.com/jme-admin-ch/jme-process-context-example/tree/main/jme-process-context-scs)
+- [jme-process-context-example / jme-process-context-scs / condition](https://github.com/jme-admin-ch/jme-process-context-example/tree/main/jme-process-context-scs/src/main/java/ch/admin/bit/jeap/jme/processcontext/condition)

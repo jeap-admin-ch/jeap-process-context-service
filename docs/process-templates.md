@@ -91,6 +91,37 @@ is a dynamic multi-instance task whose instance count is planned by a message:
 > is recommended, as it will no longer be supported in the future: replace `cardinality=single` with
 > `lifecycle=static` and `cardinality=dynamic` with `lifecycle=dynamic`.
 
+### Task types and instances
+
+```mermaid
+flowchart LR
+    Template[Process template] -->|instantiates| Process[Process instance]
+    Template --> Type1[Static task type]
+    Template --> Type2[Dynamic task type]
+    Type1 -->|one instance| Task1[Task instance]
+    Type2 -->|planning message| Task2[Task instance: originTaskId 123]
+    Type2 -->|planning message| Task3[Task instance: originTaskId 456]
+    Process --> Task1
+    Process --> Task2
+    Process --> Task3
+```
+
+### Task state transitions
+
+```mermaid
+stateDiagram-v2
+    [*] --> PLANNED: static task instantiated
+    [*] --> PLANNED: dynamic task planning message
+    PLANNED --> COMPLETED: completion message
+    [*] --> COMPLETED: observed task message
+    COMPLETED --> [*]
+```
+
+Dynamic tasks planned by messages have no `NOT_PLANNED` placeholder. An observed task is instantiated
+already completed. Legacy count-based task planning can use `NOT_PLANNED` and can resolve a zero count
+to `NOT_REQUIRED`; migration additionally introduces `UNKNOWN` and `DELETED`, as described in
+[Template migration](template-migration.md#tasks).
+
 ### Tasks planned by messages
 
 Tasks can be planned by messages. Such tasks are always planned dynamically and are optional. Optional tasks
@@ -341,6 +372,17 @@ public interface MessageCorrelationProvider<M extends Message> {
 }
 ```
 
+```mermaid
+flowchart LR
+    Message[Message: processId 1 and task references 123, 456] --> Provider[Correlation provider]
+    Provider --> Process[Origin process ID 1]
+    Provider --> TaskA[Related task ID 123]
+    Provider --> TaskB[Related task ID 456]
+```
+
+Process IDs select the affected process instances; related task IDs select the task instances within
+that process context. A single message can refer to more than one process or task.
+
 ### Correlation by process ID vs. by process data
 
 Correlation providers usually extract the process ID directly from the message — from the message attribute
@@ -353,7 +395,7 @@ data** helps.
 Two messages are involved: one message writes a kind of ID into the process data of a process instance, the
 other references the same ID in its message data. Through a `correlatedBy` entry on the type of the second
 message, that message is correlated with the process instance of the first one. **The order in which the two
-messages are processed does not matter** — see [late correlation](architecture.md#late-correlation).
+messages are processed does not matter** — see [late correlation](runtime-behavior.md#late-correlation).
 
 A message can be correlated with a process instance exactly when the message contains data under the
 specified message data key and this data (value, role) is found exactly under the given process data key in
@@ -420,6 +462,8 @@ Process data enables the correlation of messages that only arise in the course o
 
 When a message named `SomeEventName` arrives, the PCS checks whether message data with the key `someKeyName`
 exists. If so, its value and role are stored in the process data under the key `processDataKey`.
+
+![Extracted message data is copied to a named process-data key, retaining its value and role](images/process-data-example.png)
 
 ## Relation patterns
 
@@ -717,8 +761,10 @@ with ascending integer version numbers. The creation of a snapshot is announced 
 
 The snapshots are stored in an S3 object storage and kept for a configured number of days, see
 [Configuration](configuration.md#process-snapshots). They are made available over a REST interface compatible
-with the archive data interface of the Process Archive Service, so that they can be archived by a PAS
-instance.
+with the PAS [archive-data REST interface](https://jeap-admin-ch.github.io/docs/building-blocks/reusable-microservices/jeap-process-archive-service/archive-data-rest-interface),
+so that they can be archived by a PAS instance. The PCS bucket holds temporary snapshots; PAS
+[retention and locking](https://jeap-admin-ch.github.io/docs/building-blocks/reusable-microservices/jeap-process-archive-service/data-expiration-and-locking)
+govern the archived copies.
 
 ```json
 "snapshots": [
@@ -739,11 +785,23 @@ reached: `succeeded`, `cancelled` or `aborted`.
 |--------|---------------------------------|---------------------|---------------------------------------------------------------------------------------------|--------------------------------------------------------------|
 | GET    | `/api/snapshot/{processOriginId}` | `version` (optional) | jEAP OAuth2 bearer token with the semantic role `system: <system>`, `resource: processsnapshot`, `operation: view` | `200` with the binary Avro representation (`avro/binary`), `403` denied, `404` version not found |
 
-Without a version parameter, the newest available snapshot version is returned.
+Without a version parameter, the newest available snapshot version is returned. When archiving in
+response to `ProcessSnapshotCreatedEvent`, pass that event's `snapshotVersion` through the PAS
+`ArchiveDataReference` and use a URI such as `/api/snapshot/{id}?version={version}`. Fetching the latest
+snapshot instead could archive a different snapshot if another version was created in the meantime.
+The snapshot version identifies one snapshot of the process; it is distinct from the Avro schema version.
+
+The response includes the standard archive-data headers and `Archive-Data-Retention-Period-Months`
+from `jeap.processcontext.process-snapshot-archive-retention-period-months`. The current PAS remote-data
+mapper does not use this extra header to determine retention. Configure retention in the PAS archive
+type's `expirationDays`; the PCS setting does not override that policy. Also size the PCS temporary
+snapshot retention to cover expected PAS processing delays and retries: an expired snapshot cannot
+be fetched for later archiving.
 
 For a PAS instance to be able to validate the archive data objects, the process snapshot schema defined by
 the PCS has to be added to the archive type registry of the business application. Make sure that the snapshot
-schema versions matching the currently and previously used PCS versions are known to the PAS instance.
+schema versions matching the currently and previously used PCS versions are known to the PAS instance;
+see [Registering Avro archive types](https://jeap-admin-ch.github.io/docs/building-blocks/reusable-microservices/jeap-process-archive-service/archive-types#avro-defined-archive-types-recommended).
 
 ## Provided implementations
 

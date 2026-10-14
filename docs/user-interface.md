@@ -16,17 +16,21 @@ The labels of processes, tasks, task data, completion reasons and relation roles
 of the process template, see
 [Internationalization](process-templates.md#internationalization).
 
+![Example process view with task checklist, messages and process data; labels depend on the deployed version and template](images/pcs-ui-example.png)
+
+![Example process-relation navigation between related process instances](images/process-relations-ui.png)
+
 ## Roles
 
 | Semantic role                         | Usage                                                   |
 |---------------------------------------|---------------------------------------------------------|
 | `<system>_@processinstance_#view`     | Required to open the UI and read the REST API.          |
 | `<system>_@processsnapshot_#view`     | Required to read process snapshots over the REST API.   |
-| `<system>_@processcontextjob_#write`  | Required to submit relation-reevaluation and process-data backfill jobs. |
-| `<system>_@processcontextjob_#read`   | Required to retrieve maintenance job reports.           |
 
 The system name has to be configured in `jeap.security.oauth2.resourceserver.system-name` and
 `jeap.processcontext.frontend.system-name`.
+
+Maintenance API authorization is described separately in [Maintenance jobs](maintenance-jobs.md#security).
 
 ## Deep links
 
