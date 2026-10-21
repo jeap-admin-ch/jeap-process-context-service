@@ -421,6 +421,11 @@ The extractor runs once per matching process template, even if the message has n
 Its output is combined with payload and reference data and can also be used for correlation by process data.
 Omitting `messageExtractor`, or setting it to an empty or blank string, uses `EmptySetMessageExtractor`.
 
+For an end-to-end example, see `MessageExtractorIT` in the `jeap-process-context-scs` test sources and its
+`process/templates/message_extraction.json` test template. It covers metadata extraction alone and alongside payload
+and reference extractors, the default behavior when no message extractor is configured, persistence without process
+correlation, and a custom completion condition using extracted metadata.
+
 ### Payload extractors
 
 To extract specific data from the payload of a message:

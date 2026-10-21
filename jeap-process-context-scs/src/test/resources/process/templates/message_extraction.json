@@ -1,0 +1,40 @@
+{
+  "name": "messageExtraction",
+  "tasks": [
+    {
+      "name": "mandatory",
+      "completedBy": {
+        "message": "Test2Event"
+      }
+    }
+  ],
+  "messages": [
+    {
+      "messageName": "Test1Event",
+      "topicName": "topic.test1",
+      "messageExtractor": "ch.admin.bit.jeap.processcontext.testevent.MetadataMessageExtractor",
+      "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.Test1EventPayloadExtractor",
+      "referenceExtractor": "ch.admin.bit.jeap.processcontext.testevent.RelationTestEventExtractor",
+      "triggersProcessInstantiation": true
+    },
+    {
+      "messageName": "Test2Event",
+      "topicName": "topic.test2",
+      "payloadExtractor": "ch.admin.bit.jeap.processcontext.testevent.RelationTestEventExtractor",
+      "triggersProcessInstantiation": true
+    },
+    {
+      "messageName": "Test3Event",
+      "topicName": "topic.test3",
+      "messageExtractor": "ch.admin.bit.jeap.processcontext.testevent.MetadataMessageExtractor",
+      "triggersProcessInstantiation": true
+    }
+  ],
+  "completions": [
+    {
+      "completedBy": {
+        "condition": "ch.admin.bit.jeap.processcontext.processcompletion.ExtractedMetadataProcessCompletionCondition"
+      }
+    }
+  ]
+}

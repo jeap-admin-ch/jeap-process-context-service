@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - Add `EmptySetMessageExtractor` as a no-op implementation of `MessageExtractor`.
 - Support an optional `messageExtractor` in process-template message references to extract data from the whole message alongside payload and reference data.
+- Add integration coverage for whole-message extraction, combined extractors, default behavior, uncorrelated messages and metadata-based process completion.
 
 ## [28.14.0] - 2026-10-18
 
