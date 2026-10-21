@@ -259,7 +259,7 @@ message data entries to extract:
 
 A declared `sourceMessage` must reference a message type that starts or completes the task, i.e. a type
 already listed in `plannedBy` or `completedBy`. The declared `messageDataKeys` must address message data
-entries provided by a payload or reference extractor for that message type.
+entries provided by a message, payload or reference extractor for that message type.
 
 Translations can be defined for the extracted keys, see [Internationalization](#internationalization).
 
@@ -281,12 +281,13 @@ The `messages` block references the messages to be consumed.
 | `correlationProvider`          | optional  | A `MessageCorrelationProvider` extracting process IDs and optionally task IDs from a message. Default: messages are correlated via the message attribute `processId`, no task ID is extracted. |
 | `payloadExtractor`             | optional  | A `PayloadExtractor` extracting data from the payload of a message.                                                                                                             |
 | `referenceExtractor`           | optional  | A `ReferenceExtractor` extracting data from the references of a message.                                                                                                        |
+| `messageExtractor`             | optional  | A `MessageExtractor` extracting data from the whole message. Default: `EmptySetMessageExtractor` (extracts nothing).                                                             |
 | `correlatedBy`                 | optional  | Declares that a message is correlated to a process instance because one of its message data entries matches a process data entry, see [Correlation by process data](#correlation-by-process-id-vs-by-process-data). |
 | `triggersProcessInstantiation` | optional  | If `true`, receiving this message creates a process instance unless one with that process ID already exists. If `false`, no process instance is created, even if a `processInstantiationCondition` is configured. Default: `null`. |
 | `processInstantiationCondition`| optional  | A `ProcessInstantiationCondition` deciding, based on the message, whether the process is instantiated. Not evaluated if `triggersProcessInstantiation` is `false`.               |
 
-Data extracted by a payload or reference extractor is persisted as `MessageData` and is available for further
-processing, e.g. in a custom condition.
+Data extracted by message, payload and reference extractors is combined into a set (removing duplicates),
+persisted as `MessageData` and available for further processing, e.g. in a custom condition.
 
 ```json
 "messages": [
@@ -400,6 +401,25 @@ messages are processed does not matter** — see [late correlation](runtime-beha
 A message can be correlated with a process instance exactly when the message contains data under the
 specified message data key and this data (value, role) is found exactly under the given process data key in
 the process data of the instance.
+
+### Message extractors
+
+To extract data from the whole message, including metadata, configure `messageExtractor` with the fully qualified
+class name of a `MessageExtractor` implementation with a no-argument constructor:
+
+```java
+public class MessageIdExtractor implements MessageExtractor<Message> {
+
+    @Override
+    public Set<MessageData> getMessageData(Message message) {
+        return Set.of(new MessageData("messageId", message.getIdentity().getId()));
+    }
+}
+```
+
+The extractor runs once per matching process template, even if the message has no payload or references.
+Its output is combined with payload and reference data and can also be used for correlation by process data.
+Omitting `messageExtractor`, or setting it to an empty or blank string, uses `EmptySetMessageExtractor`.
 
 ### Payload extractors
 
@@ -815,6 +835,7 @@ own class:
 | `NeverProcessInstantiationCondition`                 | Never instantiates the process.                                                                |
 | `AllTasksInFinalStateProcessCompletionCondition`     | Completes the process when all its tasks have reached a final state.                           |
 | `EmptySetPayloadExtractor` / `EmptySetReferenceExtractor` | Extract nothing; useful as an explicit no-op.                                             |
+| `EmptySetMessageExtractor`                            | Implements `MessageExtractor` for whole messages and returns an empty set of `MessageData`.   |
 | `LoggingRelationListener`                            | Logs newly discovered relations — useful for development and for verifying relation patterns.  |
 
 ### Testing custom conditions

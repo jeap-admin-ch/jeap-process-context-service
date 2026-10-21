@@ -13,6 +13,7 @@ public class MessageReferenceDefinition {
     private String correlationProvider;
     private String payloadExtractor;
     private String referenceExtractor;
+    private String messageExtractor;
     private CorrelatedByProcessDataDefinition correlatedBy;
     private Boolean triggersProcessInstantiation;
     private String processInstantiationCondition;

@@ -155,6 +155,7 @@ public class ProcessTemplateDeserializer {
         String correlationProvider = eventRefDefinition.getCorrelationProvider();
         String payloadExtractor = eventRefDefinition.getPayloadExtractor();
         String referenceExtractor = eventRefDefinition.getReferenceExtractor();
+        String messageExtractor = eventRefDefinition.getMessageExtractor();
         String processInstanceCondition = getProcessInstantiationCondition(eventRefDefinition);
         CorrelatedByProcessData correlatedByProcessData = toCorrelatedByProcessData(eventRefDefinition.getCorrelatedBy());
 
@@ -173,6 +174,9 @@ public class ProcessTemplateDeserializer {
         if (!hasText(referenceExtractor)) {
             referenceExtractor = EmptySetReferenceExtractor.class.getName();
         }
+        if (!hasText(messageExtractor)) {
+            messageExtractor = EmptySetMessageExtractor.class.getName();
+        }
         return MessageReference.builder()
                 .messageName(messageName)
                 .topicName(topicName)
@@ -180,6 +184,7 @@ public class ProcessTemplateDeserializer {
                 .correlationProvider(ProcessTemplateUtils.newInstance(correlationProvider))
                 .payloadExtractor(ProcessTemplateUtils.newInstance(payloadExtractor))
                 .referenceExtractor(ProcessTemplateUtils.newInstance(referenceExtractor))
+                .messageExtractor(ProcessTemplateUtils.newInstance(messageExtractor))
                 .processInstantiationCondition(ProcessTemplateUtils.newInstance(processInstanceCondition))
                 .correlatedByProcessData(correlatedByProcessData)
                 .build();

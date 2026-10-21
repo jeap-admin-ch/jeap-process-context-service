@@ -9,6 +9,7 @@ import ch.admin.bit.jeap.processcontext.domain.processinstance.api.ProcessContex
 import ch.admin.bit.jeap.processcontext.domain.processinstance.relation.RelationService;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import ch.admin.bit.jeap.processcontext.domain.tx.Transactions;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.EmptySetMessageExtractor;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.EmptySetPayloadExtractor;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.EmptySetReferenceExtractor;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageProcessIdCorrelationProvider;
@@ -252,6 +253,7 @@ class ProcessInstanceServiceTest {
                         .correlationProvider(new MessageProcessIdCorrelationProvider())
                         .payloadExtractor(new EmptySetPayloadExtractor())
                         .referenceExtractor(new EmptySetReferenceExtractor())
+                        .messageExtractor(new EmptySetMessageExtractor())
                         .processInstantiationCondition(new NeverProcessInstantiationCondition())
                         .correlatedByProcessData(CorrelatedByProcessData.builder()
                                 .processDataKey("myProcessDataKey")

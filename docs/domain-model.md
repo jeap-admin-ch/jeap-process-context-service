@@ -174,6 +174,7 @@ classDiagram
     MessageReference --> MessageCorrelationProvider
     MessageReference --> PayloadExtractor
     MessageReference --> ReferenceExtractor
+    MessageReference --> MessageExtractor
     MessageReference --> ProcessInstantiationCondition
     MessageReference --> CorrelatedByProcessData
     RelationPattern --> RelationNodeSelector : subject and object selectors
@@ -182,7 +183,7 @@ classDiagram
 | Definition | Relevant information |
 | --- | --- |
 | Task type | Name, ordering, lifecycle, cardinality, planning/completion rules and displayed task data. |
-| Message reference | Message name, topic, optional cluster, correlation provider, payload/reference extractors and instantiation/correlation conditions. |
+| Message reference | Message name, topic, optional cluster, correlation provider, message/payload/reference extractors and instantiation/correlation conditions. |
 | Process data | Destination key and source message/data key. |
 | Process relation | Name, role type, origin and target roles, visibility, and source message/data key identifying the related process. |
 | Relation pattern | Predicate and subject/object selectors, including process-data keys and roles. |

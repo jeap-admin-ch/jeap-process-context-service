@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.messaging.model.Message;
 import ch.admin.bit.jeap.messaging.model.MessagePayload;
 import ch.admin.bit.jeap.messaging.model.MessageReferences;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageCorrelationProvider;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageExtractor;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.PayloadExtractor;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.ProcessInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.ReferenceExtractor;
@@ -19,6 +20,7 @@ public class MessageReference {
     MessageCorrelationProvider<Message> correlationProvider;
     PayloadExtractor<MessagePayload> payloadExtractor;
     ReferenceExtractor<MessageReferences> referenceExtractor;
+    MessageExtractor<Message> messageExtractor;
     ProcessInstantiationCondition<Message> processInstantiationCondition;
     CorrelatedByProcessData correlatedByProcessData;
 
@@ -30,6 +32,7 @@ public class MessageReference {
                             @NonNull MessageCorrelationProvider<Message> correlationProvider,
                             @NonNull PayloadExtractor<MessagePayload> payloadExtractor,
                             @NonNull ReferenceExtractor<MessageReferences> referenceExtractor,
+                            @NonNull MessageExtractor<Message> messageExtractor,
                             @NonNull ProcessInstantiationCondition<Message> processInstantiationCondition,
                             CorrelatedByProcessData correlatedByProcessData) {
         this.messageName = messageName;
@@ -38,6 +41,7 @@ public class MessageReference {
         this.correlationProvider = correlationProvider;
         this.payloadExtractor = payloadExtractor;
         this.referenceExtractor = referenceExtractor;
+        this.messageExtractor = messageExtractor;
         this.correlatedByProcessData = correlatedByProcessData;
         this.processInstantiationCondition = processInstantiationCondition;
     }

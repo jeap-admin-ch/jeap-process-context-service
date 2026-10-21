@@ -224,6 +224,13 @@ class MessageService implements MessageReceiver {
         Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> messageData = new HashSet<>(
                 getMessageDataFromPayload(message, messageReference));
         messageData.addAll(getMessageDataFromReferences(message, messageReference));
+        messageData.addAll(getMessageDataFromMessage(message, messageReference));
+        return messageData;
+    }
+
+    private Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> getMessageDataFromMessage(ch.admin.bit.jeap.messaging.model.Message message, MessageReference messageReference) {
+        Set<ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData> messageData = messageReference.getMessageExtractor().getMessageData(message);
+        log.debug("Message data extracted from message {}: {}", message.getType().getName(), messageData);
         return messageData;
     }
 

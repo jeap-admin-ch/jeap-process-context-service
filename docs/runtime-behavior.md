@@ -66,7 +66,7 @@ Snapshot creation and the PAS integration are described under [Process snapshots
 ### Consumed messages
 
 Domain events and commands, depending on the business application. References to process and task are
-extracted by correlation providers, data by custom payload and reference extractors.
+extracted by correlation providers, data by custom message, payload and reference extractors.
 
 ### Internal messages
 

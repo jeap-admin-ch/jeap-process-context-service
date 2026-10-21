@@ -24,6 +24,9 @@
         "referenceExtractor": {
           "type": "string"
         },
+        "messageExtractor": {
+          "type": "string"
+        },
         "correlatedBy": {
           "$ref": "#/definitions/correlatedByProcessData"
         },

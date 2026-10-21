@@ -15,6 +15,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -29,6 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -135,6 +138,8 @@ class DomainMessageServiceTest {
     private MessageReferences messageReferences;
     @Mock
     private MessagePayload messagePayload;
+    @Mock
+    private MessageExtractor<ch.admin.bit.jeap.messaging.model.Message> messageExtractor;
     @Mock
     private TraceContextProvider traceContextProvider;
     @Captor
@@ -253,6 +258,80 @@ class DomainMessageServiceTest {
         assertThat(messageSaved.getMessageData(templateProcessDataCorrelationWithoutRoleName)).containsOnly(
                 new MessageData(templateProcessDataCorrelationWithoutRoleName, "process-data-without-role-event-key", "process-data-without-role-event-value", null));
         assertThat(messageSaved.getTraceId()).isEqualTo("66016cec9b6734e17b88d21c0466c6e7");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void domainEventReceived_withMessageExtractor(boolean hasPayloadAndReferences) {
+        MessageReference messageReference = MessageReference.builder()
+                .messageName(EVENT_NAME)
+                .topicName(TOPIC_NAME)
+                .correlationProvider(new MessageProcessIdCorrelationProvider())
+                .payloadExtractor(PAYLOAD_EXTRACTOR_FIRST_TEMPLATE)
+                .referenceExtractor(REFERENCE_EXTRACTOR_FIRST_TEMPLATE)
+                .messageExtractor(messageExtractor)
+                .processInstantiationCondition(new NeverProcessInstantiationCondition())
+                .correlatedByProcessData(CorrelatedByProcessData.builder()
+                        .processDataKey("process-message-id")
+                        .messageDataKey("messageId")
+                        .build())
+                .build();
+        doReturn(Map.of("template", messageReference)).when(processTemplateRepository)
+                .getMessageReferencesByTemplateNameForMessageName(EVENT_NAME);
+        when(message.getType()).thenReturn(messageType);
+        when(messageType.getName()).thenReturn(EVENT_NAME);
+        when(message.getIdentity()).thenReturn(messageIdentity);
+        when(messageIdentity.getId()).thenReturn(EVENT_ID);
+        when(messageIdentity.getIdempotenceId()).thenReturn(IDEMPOTENCE_ID);
+        doReturn(hasPayloadAndReferences ? Optional.of(messagePayload) : Optional.empty()).when(message).getOptionalPayload();
+        doReturn(hasPayloadAndReferences ? Optional.of(messageReferences) : Optional.empty()).when(message).getOptionalReferences();
+        when(messageExtractor.getMessageData(message)).thenAnswer(invocation -> Set.of(
+                new ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData("messageId", message.getIdentity().getId(), "origin"),
+                new ch.admin.bit.jeap.processcontext.plugin.api.message.MessageData("pkey1-first", "pvalue1-first")));
+        when(processInstanceQueryRepository.findUncompletedProcessInstancesHavingProcessData(
+                "template", "process-message-id", EVENT_ID, "origin")).thenReturn(Set.of("originProcessId"));
+        Message savedMessage = mock(Message.class);
+        when(messageRepository.save(any())).thenReturn(savedMessage);
+
+        domainEventService.messageReceived(message);
+
+        verify(messageExtractor).getMessageData(message);
+        verifyNoMoreInteractions(messageExtractor);
+        verify(messageRepository).save(eventCaptor.capture());
+        assertThat(eventCaptor.getValue().getMessageData()).contains(
+                new MessageData("template", "messageId", EVENT_ID, "origin"),
+                new MessageData("template", "pkey1-first", "pvalue1-first"));
+        assertThat(eventCaptor.getValue().getMessageData()).hasSize(hasPayloadAndReferences ? 3 : 2);
+        if (hasPayloadAndReferences) {
+            assertThat(eventCaptor.getValue().getMessageData()).contains(
+                    new MessageData("template", "rkey1-first", "rvalue1-first"));
+        }
+        verify(processInstanceQueryRepository).findUncompletedProcessInstancesHavingProcessData(
+                "template", "process-message-id", EVENT_ID, "origin");
+        verify(processUpdateService).messageReceived("originProcessId", savedMessage);
+    }
+
+    @Test
+    void domainEventReceived_messageExtractorFailure() {
+        MessageReference messageReference = MessageReference.builder()
+                .messageName(EVENT_NAME)
+                .topicName(TOPIC_NAME)
+                .correlationProvider(new MessageProcessIdCorrelationProvider())
+                .payloadExtractor(new EmptySetPayloadExtractor())
+                .referenceExtractor(new EmptySetReferenceExtractor())
+                .messageExtractor(messageExtractor)
+                .processInstantiationCondition(new NeverProcessInstantiationCondition())
+                .build();
+        when(message.getType()).thenReturn(messageType);
+        when(messageType.getName()).thenReturn(EVENT_NAME);
+        doReturn(Map.of("template", messageReference)).when(processTemplateRepository)
+                .getMessageReferencesByTemplateNameForMessageName(EVENT_NAME);
+        IllegalStateException failure = new IllegalStateException("Cannot extract message data");
+        when(messageExtractor.getMessageData(message)).thenThrow(failure);
+
+        assertThatThrownBy(() -> domainEventService.messageReceived(message)).isSameAs(failure);
+
+        verifyNoInteractions(messageRepository, processUpdateService);
     }
 
     @Test
@@ -383,6 +462,7 @@ class DomainMessageServiceTest {
                         .correlationProvider(CORRELATION_PROVIDER_FIRST_TEMPLATE)
                         .payloadExtractor(PAYLOAD_EXTRACTOR_FIRST_TEMPLATE)
                         .referenceExtractor(REFERENCE_EXTRACTOR_FIRST_TEMPLATE)
+                        .messageExtractor(new EmptySetMessageExtractor())
                         .processInstantiationCondition(new NeverProcessInstantiationCondition())
                         .build()))
                 .build();
@@ -401,6 +481,7 @@ class DomainMessageServiceTest {
                         .correlationProvider(CORRELATION_PROVIDER_SECOND_TEMPLATE)
                         .payloadExtractor(PAYLOAD_EXTRACTOR_SECOND_TEMPLATE)
                         .referenceExtractor(REFERENCE_EXTRACTOR_SECOND_TEMPLATE)
+                        .messageExtractor(new EmptySetMessageExtractor())
                         .processInstantiationCondition(new NeverProcessInstantiationCondition())
                         .build()))
                 .build();
@@ -418,6 +499,7 @@ class DomainMessageServiceTest {
                         .topicName(topicName)
                         .payloadExtractor(PAYLOAD_EXTRACTOR_FOR_PROCESS_DATA_CORRELATION_TEMPLATE)
                         .referenceExtractor(new EmptySetReferenceExtractor())
+                        .messageExtractor(new EmptySetMessageExtractor())
                         .correlationProvider(new MessageProcessIdCorrelationProvider())
                         .processInstantiationCondition(new NeverProcessInstantiationCondition())
                         .correlatedByProcessData(CorrelatedByProcessData.builder()
@@ -440,6 +522,7 @@ class DomainMessageServiceTest {
                         .topicName(topicName)
                         .payloadExtractor(PAYLOAD_EXTRACTOR_FOR_PROCESS_DATA_CORRELATION_WITHOUT_ROLE_TEMPLATE)
                         .referenceExtractor(new EmptySetReferenceExtractor())
+                        .messageExtractor(new EmptySetMessageExtractor())
                         .correlationProvider(new MessageProcessIdCorrelationProvider())
                         .processInstantiationCondition(new NeverProcessInstantiationCondition())
                         .correlatedByProcessData(CorrelatedByProcessData.builder()

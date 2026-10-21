@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.messaging.model.MessagePayload;
 import ch.admin.bit.jeap.messaging.model.MessageReferences;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.MessageReference;
 import ch.admin.bit.jeap.processcontext.domain.processtemplate.ProcessTemplate;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.EmptySetMessageExtractor;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageCorrelationProvider;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.PayloadExtractor;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.ProcessInstantiationCondition;
@@ -43,6 +44,7 @@ class JsonProcessTemplateConsumerContractValidatorTest {
                 .correlationProvider(correlationProvider)
                 .payloadExtractor(payloadExtractor)
                 .referenceExtractor(referenceExtractor)
+                .messageExtractor(new EmptySetMessageExtractor())
                 .processInstantiationCondition(processInstantiationCondition)
                 .build();
 
@@ -52,6 +54,7 @@ class JsonProcessTemplateConsumerContractValidatorTest {
                 .correlationProvider(correlationProvider)
                 .payloadExtractor(payloadExtractor)
                 .referenceExtractor(referenceExtractor)
+                .messageExtractor(new EmptySetMessageExtractor())
                 .processInstantiationCondition(processInstantiationCondition)
                 .build();
 

@@ -6,8 +6,10 @@ import ch.admin.bit.jeap.processcontext.domain.processtemplate.*;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.AllTasksInFinalStateProcessCompletionCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.MessageProcessCompletionCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.EmptySetMessageExtractor;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageProcessIdCorrelationProvider;
 import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider;
+import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestMessageExtractor;
 import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestPayloadExtractor;
 import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestReferenceExtractor;
 import org.junit.jupiter.api.BeforeEach;
@@ -159,9 +161,11 @@ class JsonProcessTemplateRepositoryTest {
         // TestEvent 2
         MessageReference event2 = messageReferences.get(1);
         assertInstanceOf(MessageProcessIdCorrelationProvider.class, event2.getCorrelationProvider());
+        assertInstanceOf(EmptySetMessageExtractor.class, event2.getMessageExtractor());
         // Test Event 3
         MessageReference event3 = messageReferences.get(2);
         assertInstanceOf(TestPayloadExtractor.class, event3.getPayloadExtractor());
+        assertInstanceOf(TestMessageExtractor.class, event3.getMessageExtractor());
         // Test Event 4
         MessageReference event4 = messageReferences.get(3);
         assertInstanceOf(TestReferenceExtractor.class, event4.getReferenceExtractor());

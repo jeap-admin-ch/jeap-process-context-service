@@ -7,13 +7,18 @@ import ch.admin.bit.jeap.processcontext.plugin.api.condition.MessageProcessCompl
 import ch.admin.bit.jeap.processcontext.plugin.api.condition.TaskInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.plugin.api.context.ProcessCompletionConclusion;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.AlwaysProcessInstantiationCondition;
+import ch.admin.bit.jeap.processcontext.plugin.api.message.EmptySetMessageExtractor;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.MessageProcessIdCorrelationProvider;
 import ch.admin.bit.jeap.processcontext.plugin.api.message.NeverProcessInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.repository.template.json.TestProcessInstantiationCondition;
 import ch.admin.bit.jeap.processcontext.repository.template.json.model.*;
 import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestCorrelationProvider;
+import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestMessageExtractor;
 import ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestPayloadExtractor;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 import java.util.Set;
@@ -369,6 +374,7 @@ class ProcessTemplateDeserializerTest {
         messageReferenceDefinitionThree.setMessageName("EventThree");
         messageReferenceDefinitionThree.setTopicName("TopicNameThree");
         messageReferenceDefinitionThree.setPayloadExtractor(TestPayloadExtractor.class.getName());
+        messageReferenceDefinitionThree.setMessageExtractor(TestMessageExtractor.class.getName());
 
         MessageReferenceDefinition messageReferenceDefinitionFour = new MessageReferenceDefinition();
         messageReferenceDefinitionFour.setMessageName("EventFour");
@@ -387,11 +393,49 @@ class ProcessTemplateDeserializerTest {
         assertEquals("EventOne", template.getMessageReferences().getFirst().getMessageName());
         assertEquals("TopicNameOne", template.getMessageReferences().getFirst().getTopicName());
         assertInstanceOf(MessageProcessIdCorrelationProvider.class, template.getMessageReferences().getFirst().getCorrelationProvider());
+        assertInstanceOf(EmptySetMessageExtractor.class, template.getMessageReferences().getFirst().getMessageExtractor());
         assertInstanceOf(TestCorrelationProvider.class, template.getMessageReferences().get(1).getCorrelationProvider());
         assertInstanceOf(TestPayloadExtractor.class, template.getMessageReferences().get(2).getPayloadExtractor());
+        assertInstanceOf(TestMessageExtractor.class, template.getMessageReferences().get(2).getMessageExtractor());
         assertInstanceOf(TestPayloadExtractor.class, template.getMessageReferences().get(2).getPayloadExtractor());
         assertEquals("SomeProcessDataKey", template.getMessageReferences().get(3).getCorrelatedByProcessData().getProcessDataKey());
         assertEquals("SomeEventDataKey", template.getMessageReferences().get(3).getCorrelatedByProcessData().getMessageDataKey());
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {" ", "\t"})
+    void toTemplate_defaultMessageExtractor(String messageExtractor) {
+        MessageReferenceDefinition messageReference = new MessageReferenceDefinition();
+        messageReference.setMessageName("message");
+        messageReference.setTopicName("topic");
+        messageReference.setTriggersProcessInstantiation(true);
+        messageReference.setMessageExtractor(messageExtractor);
+        ProcessTemplateDefinition definition = new ProcessTemplateDefinition();
+        definition.setName("template");
+        definition.setMessages(List.of(messageReference));
+        definition.setTasks(List.of(new TaskTypeDefinition("task")));
+
+        ProcessTemplate template = new ProcessTemplateDeserializer(definition, "hash").toProcessTemplate();
+
+        assertInstanceOf(EmptySetMessageExtractor.class, template.getMessageReferences().getFirst().getMessageExtractor());
+    }
+
+    @Test
+    void toTemplate_unknownMessageExtractor() {
+        MessageReferenceDefinition messageReference = new MessageReferenceDefinition();
+        messageReference.setMessageName("message");
+        messageReference.setTopicName("topic");
+        messageReference.setTriggersProcessInstantiation(true);
+        messageReference.setMessageExtractor("nonexistent.MessageExtractor");
+        ProcessTemplateDefinition definition = new ProcessTemplateDefinition();
+        definition.setName("template");
+        definition.setMessages(List.of(messageReference));
+        definition.setTasks(List.of(new TaskTypeDefinition("task")));
+
+        assertThatThrownBy(() -> new ProcessTemplateDeserializer(definition, "hash").toProcessTemplate())
+                .isInstanceOf(TemplateDefinitionException.class)
+                .hasMessageContaining("nonexistent.MessageExtractor");
     }
 
     @Test

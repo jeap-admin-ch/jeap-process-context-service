@@ -14,6 +14,7 @@
     {
       "eventName": "TestEvent3",
       "topicName": "test3.topic",
+      "messageExtractor": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestMessageExtractor",
       "payloadExtractor": "ch.admin.bit.jeap.processcontext.repository.template.json.stubs.TestPayloadExtractor"
     },
     {
