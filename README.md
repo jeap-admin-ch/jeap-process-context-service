@@ -41,10 +41,6 @@ instance depending on it, containing the process definitions specific to that ap
 
 - [Local development and testing](#prerequisites) — prerequisites, building the library and UI, running locally and Cypress tests
 
-## Changes
-
-Change log is available at [CHANGELOG.md](./CHANGELOG.md)
-
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:
@@ -129,6 +125,10 @@ npx cypress open --port 7000
 cd jeap-process-context-ui
 npm run cypress:run
 ```
+
+## Changes
+
+Change log is available at [CHANGELOG.md](./CHANGELOG.md)
 
 ## Note
 
