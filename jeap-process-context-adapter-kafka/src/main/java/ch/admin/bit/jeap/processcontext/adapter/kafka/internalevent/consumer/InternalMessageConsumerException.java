@@ -52,9 +52,11 @@ public class InternalMessageConsumerException extends RuntimeException implement
                     e
             );
         }
+        // Leave other failures to the temporality resolver of jEAP messaging, which inspects the cause chain and
+        // recognizes e.g. wrapped database connection failures. Unresolved failures are handled as permanent.
         return new InternalMessageConsumerException("COULD_NOT_UPDATE_PROCESS",
                 "The given process could not be updated",
-                Temporality.PERMANENT,
+                Temporality.UNKNOWN,
                 e
         );
     }

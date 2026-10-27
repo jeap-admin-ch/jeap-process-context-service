@@ -186,13 +186,29 @@ regular message path; [maintenance jobs](maintenance-jobs.md) have their own tra
 
 Message-processing failures are delegated to the
 [Error Handling Service](https://jeap-admin-ch.github.io/docs/building-blocks/reusable-microservices/jeap-error-handling/message-flows).
-For exceptions passed to `InternalMessageConsumerException.from`, the classification is:
+Temporary failures are resubmitted by the Error Handling Service; permanent ones are not. For exceptions passed to
+`InternalMessageConsumerException.from` (internal process-update events), the classification is:
 
-| Exception                                              | Classification |
-|--------------------------------------------------------|----------------|
-| `org.springframework.dao.TransientDataAccessException` | Temporary      |
-| `org.apache.kafka.common.errors.RetriableException`    | Temporary      |
-| Everything else                                        | Permanent      |
+| Exception                                                    | Classification                 |
+|--------------------------------------------------------------|--------------------------------|
+| Process template or message not found                        | Permanent                      |
+| Task cannot be planned                                       | Permanent                      |
+| `org.springframework.dao.TransientDataAccessException`       | Temporary                      |
+| `org.apache.kafka.common.errors.RetriableException`          | Temporary                      |
+| Everything else                                              | Resolved by jEAP Messaging     |
+
+Failures of incoming business messages (`KafkaEventListenerException`) are always resolved by jEAP Messaging.
+Its default exception temporality resolver inspects the cause chain and classifies known transient errors as
+temporary, among them database connection failures such as an Aurora failover (`FailoverSuccessSQLException`,
+SQLState `08S02`) wrapped in a `DataAccessResourceFailureException`. This requires jEAP Messaging 19.23.0 or later;
+older versions do not inspect the cause chain. Failures it does not recognize are reported with an unknown
+temporality, which the Error Handling Service treats as permanent. Resubmitting is safe because message
+processing is idempotent (see [Idempotency](#idempotency)).
+
+The failover retry of `jeap-spring-boot-tx` (`@RetryOnDatabaseFailover` or
+`jeap.datasource.aws.failover-retry.enabled`) does not apply to message processing. It only advises
+`@Transactional` methods with `REQUIRED` propagation, whereas the service starts its transactions
+programmatically with `REQUIRES_NEW`.
 
 ## Related
 
