@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.processcontext.adapter.kafka.message.consumer;
 
 import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerExceptionInformation.Temporality;
+import ch.admin.bit.jeap.messaging.kafka.errorhandling.DefaultExceptionTemporalityResolver;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataAccessResourceFailureException;
 
@@ -21,5 +22,15 @@ class KafkaEventListenerExceptionTest {
         assertThat(result.getTemporality()).isEqualTo(Temporality.UNKNOWN);
         assertThat(result.getErrorCode()).isEqualTo("ERROR_CONSUMING_EVENT");
         assertThat(result.getCause()).isSameAs(exception);
+    }
+
+    @Test
+    void from_databaseFailover_isResolvedAsTemporaryByMessagingResolver() {
+        SQLException failover = new SQLException("The active SQL connection has changed", "08S02");
+
+        KafkaEventListenerException result = KafkaEventListenerException.from(
+                new DataAccessResourceFailureException("could not execute statement", failover));
+
+        assertThat(new DefaultExceptionTemporalityResolver().resolve(result)).contains(Temporality.TEMPORARY);
     }
 }

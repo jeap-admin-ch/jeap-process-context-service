@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.processcontext.adapter.kafka.internalevent.consumer;
 
 import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerExceptionInformation.Temporality;
+import ch.admin.bit.jeap.messaging.kafka.errorhandling.DefaultExceptionTemporalityResolver;
 import org.apache.kafka.common.errors.TimeoutException;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -23,6 +24,24 @@ class InternalMessageConsumerExceptionTest {
         assertThat(result.getTemporality()).isEqualTo(Temporality.UNKNOWN);
         assertThat(result.getErrorCode()).isEqualTo("COULD_NOT_UPDATE_PROCESS");
         assertThat(result.getCause()).isSameAs(exception);
+    }
+
+    @Test
+    void from_databaseFailover_isResolvedAsTemporaryByMessagingResolver() {
+        SQLException failover = new SQLException("The active SQL connection has changed", "08S02");
+        RuntimeException processUpdateFailure = new RuntimeException("Failed updating process",
+                new DataAccessResourceFailureException("could not execute batch", failover));
+
+        InternalMessageConsumerException result = InternalMessageConsumerException.from(processUpdateFailure);
+
+        assertThat(new DefaultExceptionTemporalityResolver().resolve(result)).contains(Temporality.TEMPORARY);
+    }
+
+    @Test
+    void from_otherException_isNotResolvedByMessagingResolver() {
+        InternalMessageConsumerException result = InternalMessageConsumerException.from(new IllegalStateException("bug"));
+
+        assertThat(new DefaultExceptionTemporalityResolver().resolve(result)).isEmpty();
     }
 
     @Test

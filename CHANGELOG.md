@@ -9,14 +9,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - Leave the temporality of unclassified message-processing failures to the jEAP Messaging resolver instead of
-  reporting them as permanent. From jEAP Messaging 19.23.0 on, a database failover with the AWS Advanced JDBC
-  Wrapper (`FailoverSuccessSQLException`, SQLState `08S02`) is then retried by the Error Handling Service instead of
-  having to be resent manually. Unrecognized failures are still handled as permanent.
+  reporting them as permanent. With jEAP Messaging 19.23.0 or later, a database failover with the AWS Advanced JDBC
+  Wrapper (`FailoverSuccessSQLException`, SQLState `08S02`) is therefore retried by the Error Handling Service instead
+  of having to be resent manually. Unrecognized failures are still handled as permanent.
 - Document the failure classification and why the `jeap-spring-boot-tx` failover retry does not apply to message
   processing.
 
 ### Dependencies
-- **ch.admin.bit.jeap:jeap-spring-boot-parent**: 41.25.0 → 41.27.0 (minor)
+- **ch.admin.bit.jeap:jeap-spring-boot-parent**: 41.25.0 → 41.27.0 (minor), which brings jEAP Messaging 19.24.0
 
 ## [28.17.0] - 2026-10-27
 
