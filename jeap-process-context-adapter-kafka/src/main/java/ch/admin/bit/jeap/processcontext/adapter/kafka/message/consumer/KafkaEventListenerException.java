@@ -10,7 +10,7 @@ public class KafkaEventListenerException extends MessageHandlerException {
         super(temporality, cause, null, errorCode, description);
     }
 
-    // The temporality is resolved by jEAP messaging from the cause chain; unresolved failures are handled as permanent
+    // The temporality is resolved by jEAP messaging; unresolved failures are handled as permanent
     public static KafkaEventListenerException from(Exception e) {
         return new KafkaEventListenerException("ERROR_CONSUMING_EVENT",
                 "Error while consuming event",

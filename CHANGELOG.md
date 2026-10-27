@@ -9,9 +9,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - Leave the temporality of unclassified message-processing failures to the jEAP Messaging resolver instead of
-  reporting them as permanent. From jEAP Messaging 19.23.0, which inspects the cause chain, database connection
-  failures such as an Aurora failover (`FailoverSuccessSQLException`, SQLState `08S02`) are then retried by the
-  Error Handling Service instead of having to be resent manually. Unrecognized failures are still handled as permanent.
+  reporting them as permanent. From jEAP Messaging 19.23.0 on, a database failover with the AWS Advanced JDBC
+  Wrapper (`FailoverSuccessSQLException`, SQLState `08S02`) is then retried by the Error Handling Service instead of
+  having to be resent manually. Unrecognized failures are still handled as permanent.
 - Document the failure classification and why the `jeap-spring-boot-tx` failover retry does not apply to message
   processing.
 

@@ -198,12 +198,13 @@ Temporary failures are resubmitted by the Error Handling Service; permanent ones
 | Everything else                                              | Resolved by jEAP Messaging     |
 
 Failures of incoming business messages (`KafkaEventListenerException`) are always resolved by jEAP Messaging.
-Its default exception temporality resolver inspects the cause chain and classifies known transient errors as
-temporary, among them database connection failures such as an Aurora failover (`FailoverSuccessSQLException`,
-SQLState `08S02`) wrapped in a `DataAccessResourceFailureException`. This requires jEAP Messaging 19.23.0 or later;
-older versions do not inspect the cause chain. Failures it does not recognize are reported with an unknown
-temporality, which the Error Handling Service treats as permanent. Resubmitting is safe because message
-processing is idempotent (see [Idempotency](#idempotency)).
+Its default exception temporality resolver classifies known transient errors as temporary. From jEAP Messaging
+19.23.0 on, this includes a database failover with the AWS Advanced JDBC Wrapper (`FailoverSuccessSQLException`,
+SQLState `08S02`), also when it is wrapped, e.g. in a `DataAccessResourceFailureException`. Other connection
+failures, such as `08007` where the outcome of the interrupted transaction is unknown, are not classified.
+Failures the resolver does not recognize are reported with an unknown temporality, which the Error Handling
+Service treats as permanent. Resubmitting after a failover is safe because message processing is idempotent
+(see [Idempotency](#idempotency)).
 
 The failover retry of `jeap-spring-boot-tx` (`@RetryOnDatabaseFailover` or
 `jeap.datasource.aws.failover-retry.enabled`) does not apply to message processing. It only advises
