@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [28.18.0] - 2026-10-27
+## [28.18.1] - 2026-10-27
 
 ### Changed
 - Leave the temporality of unclassified message-processing failures to the jEAP Messaging resolver instead of
@@ -14,6 +14,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   of having to be resent manually. Unrecognized failures are still handled as permanent.
 - Document the failure classification and why the `jeap-spring-boot-tx` failover retry does not apply to message
   processing.
+
+## [28.18.0] - 2026-10-27
 
 ### Dependencies
 - **ch.admin.bit.jeap:jeap-spring-boot-parent**: 41.25.0 → 41.27.0 (minor), which brings jEAP Messaging 19.24.0
