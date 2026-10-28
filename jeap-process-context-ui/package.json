@@ -44,7 +44,7 @@
     "lodash": "4.18.1",
     "picomatch": "4.0.7",
     "qs": "6.17.0",
-    "systeminformation": "5.33.16",
+    "systeminformation": "5.33.18",
     "tmp": "0.2.7"
   },
   "devDependencies": {
