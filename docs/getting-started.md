@@ -191,3 +191,9 @@ Use them with the version of the service you integrate; the examples evolve with
 - [jme-process-context-example / jme-process-context-scs/src/main/resources/process/templates/raceProcess.json](https://github.com/jme-admin-ch/jme-process-context-example/blob/main/jme-process-context-scs/src/main/resources/process/templates/raceProcess.json)
 - [jme-process-context-example / jme-process-context-scs](https://github.com/jme-admin-ch/jme-process-context-example/tree/main/jme-process-context-scs)
 - [jme-process-context-example / jme-process-context-scs / condition](https://github.com/jme-admin-ch/jme-process-context-example/tree/main/jme-process-context-scs/src/main/java/ch/admin/bit/jeap/jme/processcontext/condition)
+
+## Frontend dependency compatibility
+
+The UI uses Angular 21, Oblique 15 and Quadrel Auth 21. Quadrel Auth currently requires
+Angular 21; upgrading to Oblique 16 / Angular 22 also requires a compatible Quadrel
+release. Install dependencies with `npm ci` without `--legacy-peer-deps`.
