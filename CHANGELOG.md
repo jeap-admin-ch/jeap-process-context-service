@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [28.23.0] - 2026-11-11
+
+### Dependencies
+- **ch.admin.bit.jeap:jeap-spring-boot-parent**: 41.34.0 → 41.36.0 (minor)
+- **ng-mocks**: 14.18.5 → 14.18.6 (patch)
+
 ## [28.22.0] - 2026-11-09
 
 ### Dependencies
