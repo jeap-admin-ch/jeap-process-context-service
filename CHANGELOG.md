@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [28.24.0] - 2026-11-15
+
+### Dependencies
+- **ch.admin.bit.jeap:jeap-spring-boot-parent**: 41.36.0 → 41.37.0 (minor)
+- **org.codehaus.mojo:build-helper-maven-plugin**: 3.7.0 → 3.8.0 (minor)
+- **com.microsoft.playwright:playwright**: 1.64.0 → 1.65.0 (minor)
+- **systeminformation**: 5.33.19 → 5.33.20 (patch)
+- **prettier**: 3.9.10 → 3.10.1 (minor)
+- **@typescript-eslint/parser**: 8.72.1 → 8.72.2 (patch)
+- **@typescript-eslint/eslint-plugin**: 8.72.1 → 8.72.2 (patch)
+- **@analogjs/vite-plugin-angular**: 2.9.6 → 2.9.7 (patch)
+
 ## [28.23.0] - 2026-11-11
 
 ### Dependencies
