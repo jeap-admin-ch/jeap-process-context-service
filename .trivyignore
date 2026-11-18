@@ -1,4 +1,6 @@
-# Transitive dependency of Cypress, used only for frontend component tests.
-# Not included in the runtime artifact. No fixed upstream version available.
-# Re-evaluate by 2026-09-14.
-CVE-2026-56876
+# CVE-2026-112366 (GHSA-fc5q-39xc-vjpf): picomatch ReDoS via single-branch repeated extglobs (JEAP-7856).
+# Added 2026-11-18. No fixed picomatch version available (all versions <= 4.0.7 affected).
+# Only production path: @oblique/oblique -> @schematics/angular -> @angular-devkit/core -> picomatch,
+# i.e. ng-add schematics tooling. Not part of the browser bundle, no user-supplied glob patterns.
+# Expires 30 days after adding; remove once picomatch ships a fix and the Angular devkit picks it up.
+CVE-2026-112366 exp:2026-12-18
