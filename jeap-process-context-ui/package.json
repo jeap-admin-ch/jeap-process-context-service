@@ -78,7 +78,7 @@
     "prettier": "^3.8.1",
     "typescript": "5.9.3",
     "vite-tsconfig-paths": "^6.1.1",
-    "@angular-devkit/build-angular": "21.2.29"
+    "@angular-devkit/build-angular": "21.2.30"
   },
   "jestSonar": {
     "reportPath": "./coverage/sonarQube",
