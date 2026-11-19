@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
@@ -61,7 +62,10 @@ class S3ProcessSnapshotRepositoryIT {
             .withExposedPorts(RUSTFS_PORT)
             .withEnv("RUSTFS_ACCESS_KEY", RUSTFS_ACCESS_KEY)
             .withEnv("RUSTFS_SECRET_KEY", RUSTFS_SECRET_KEY)
-            .withCommand("/data");
+            .withCommand("/data")
+            // RustFS opens its port before the S3 API is ready and answers 503 for a short while; /health already
+            // reports ok during that window. Wait until an unauthenticated S3 request is rejected with a 4xx instead.
+            .waitingFor(Wait.forHttp("/").forPort(RUSTFS_PORT).forStatusCodeMatching(status -> status >= 400 && status < 500));
 
 
     @BeforeEach

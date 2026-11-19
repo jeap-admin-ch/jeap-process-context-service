@@ -666,6 +666,18 @@
     - name: @discoveryjs/json-ext
     - licenses: MIT
     - repository: https://github.com/discoveryjs/json-ext
+ - **[@emnapi/core](https://github.com/toyobayashi/emnapi)**
+    - name: @emnapi/core
+    - licenses: MIT
+    - repository: https://github.com/toyobayashi/emnapi
+ - **[@emnapi/runtime](https://github.com/toyobayashi/emnapi)**
+    - name: @emnapi/runtime
+    - licenses: MIT
+    - repository: https://github.com/toyobayashi/emnapi
+ - **[@emnapi/wasi-threads](https://github.com/toyobayashi/emnapi)**
+    - name: @emnapi/wasi-threads
+    - licenses: MIT
+    - repository: https://github.com/toyobayashi/emnapi
  - **[@esbuild/linux-x64](https://github.com/evanw/esbuild)**
     - name: @esbuild/linux-x64
     - licenses: MIT
@@ -806,6 +818,9 @@
     - name: @isaacs/fs-minipass
     - licenses: ISC
     - repository: https://github.com/npm/fs-minipass
+ - **@isaacs/nonrecursive-glob-match**
+    - name: @isaacs/nonrecursive-glob-match
+    - licenses: BlueOak-1.0.0
  - **[@istanbuljs/load-nyc-config](https://github.com/istanbuljs/load-nyc-config)**
     - name: @istanbuljs/load-nyc-config
     - licenses: ISC
@@ -1038,6 +1053,10 @@
     - name: @napi-rs/nice
     - licenses: MIT
     - repository: https://github.com/Brooooooklyn/nice
+ - **[@napi-rs/wasm-runtime](https://github.com/napi-rs/napi-rs)**
+    - name: @napi-rs/wasm-runtime
+    - licenses: MIT
+    - repository: https://github.com/napi-rs/napi-rs
  - **[@ngtools/webpack](https://github.com/angular/angular-cli)**
     - name: @ngtools/webpack
     - licenses: MIT
@@ -1254,6 +1273,10 @@
     - name: @tufjs/models
     - licenses: MIT
     - repository: https://github.com/theupdateframework/tuf-js
+ - **[@tybys/wasm-util](https://github.com/toyobayashi/wasm-util)**
+    - name: @tybys/wasm-util
+    - licenses: MIT
+    - repository: https://github.com/toyobayashi/wasm-util
  - **[@types/babel__core](https://github.com/DefinitelyTyped/DefinitelyTyped)**
     - name: @types/babel__core
     - licenses: MIT
@@ -3502,6 +3525,10 @@
     - name: minimalistic-assert
     - licenses: ISC
     - repository: https://github.com/calvinmetcalf/minimalistic-assert
+ - **[minimatch](https://github.com/isaacs/minimatch)**
+    - name: minimatch
+    - licenses: BlueOak-1.0.0
+    - repository: https://github.com/isaacs/minimatch
  - **[minimatch](https://github.com/isaacs/minimatch)**
     - name: minimatch
     - licenses: BlueOak-1.0.0

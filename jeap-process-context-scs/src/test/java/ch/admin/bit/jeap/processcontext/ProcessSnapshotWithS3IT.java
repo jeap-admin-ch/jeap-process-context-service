@@ -23,6 +23,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
@@ -52,7 +53,10 @@ class ProcessSnapshotWithS3IT extends ProcessInstanceITBase {
             .withExposedPorts(RUSTFS_PORT)
             .withEnv("RUSTFS_ACCESS_KEY", RUSTFS_ACCESS_KEY)
             .withEnv("RUSTFS_SECRET_KEY", RUSTFS_SECRET_KEY)
-            .withCommand("/data");
+            .withCommand("/data")
+            // RustFS opens its port before the S3 API is ready and answers 503 for a short while; /health already
+            // reports ok during that window. Wait until an unauthenticated S3 request is rejected with a 4xx instead.
+            .waitingFor(Wait.forHttp("/").forPort(RUSTFS_PORT).forStatusCodeMatching(status -> status >= 400 && status < 500));
 
     @DynamicPropertySource
     static void registerObjectStorageProperties(DynamicPropertyRegistry registry) {
