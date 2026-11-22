@@ -35,6 +35,7 @@ Apache License Version 2.0
  * ch.admin.bit.jeap:jeap-process-context-repository-template-json - [ch.admin.bit.jeap:jeap-process-context-repository-template-json](https://github.com/jeap-admin-ch/jeap-process-context-service/tree/main/jeap-process-context-repository-template-json)
  * ch.admin.bit.jeap:jeap-process-context-scs - [ch.admin.bit.jeap:jeap-process-context-scs](https://github.com/jeap-admin-ch/jeap-process-context-service/tree/main/jeap-process-context-scs)
  * ch.admin.bit.jeap:jeap-process-context-ui - [ch.admin.bit.jeap:jeap-process-context-ui](https://github.com/jeap-admin-ch/jeap-process-context-service/tree/main/jeap-process-context-ui)
+ * ch.admin.bit.jeap:jeap-reaction-observer-header-starter - [ch.admin.bit.jeap:jeap-reaction-observer-header-starter](https://github.com/jeap-admin-ch/jeap-reaction-observer/tree/main/jeap-reaction-observer-header-starter)
  * ch.admin.bit.jeap:jeap-spring-boot-application-starter - [ch.admin.bit.jeap:jeap-spring-boot-application-starter](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-application-starter)
  * ch.admin.bit.jeap:jeap-spring-boot-featureflag-starter - [ch.admin.bit.jeap:jeap-spring-boot-featureflag-starter](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-featureflag-starter)
  * ch.admin.bit.jeap:jeap-spring-boot-logging-starter - [ch.admin.bit.jeap:jeap-spring-boot-logging-starter](https://github.com/jeap-admin-ch/jeap-spring-boot-starters/tree/main/jeap-spring-boot-logging-starter)
