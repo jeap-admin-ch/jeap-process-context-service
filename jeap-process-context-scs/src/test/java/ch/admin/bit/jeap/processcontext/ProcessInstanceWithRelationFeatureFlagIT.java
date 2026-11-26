@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.processcontext.event.test1.SubjectReference;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1Event;
 import ch.admin.bit.jeap.processcontext.event.test1.Test1EventReferences;
 import ch.admin.bit.jeap.processcontext.plugin.api.relation.Relation;
+import ch.admin.bit.jeap.processcontext.plugin.api.relation.RelationType;
 import ch.admin.bit.jeap.processcontext.testevent.Test1EventBuilder;
 import ch.admin.bit.jeap.processcontext.testevent.Test2EventBuilder;
 import ch.admin.bit.jeap.security.resource.token.JeapAuthenticationToken;
@@ -27,6 +28,18 @@ class ProcessInstanceWithRelationFeatureFlagIT extends ProcessInstanceMockS3ITBa
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private RelationListenerStub relationListenerStub;
+
+    @Test
+    void startup_reportsDeclaredRelationTypesOfAllTemplates_includingInactiveFeatureFlags() {
+        // Invoked exactly once per application context, at startup
+        assertThat(relationListenerStub.getDeclaredRelationTypes()).hasSize(1);
+        // FEATURE_FLAG_1 is not active (see application.yml), its relation type is reported nevertheless
+        assertThat(relationListenerStub.getDeclaredRelationTypes().getFirst()).containsExactlyInAnyOrder(
+                relationType("ch.test.Subject", "ch.test.Object", "FEATURE_FLAG_1"),
+                relationType("ch.test.Object", "ch.test.Subject", "FEATURE_FLAG_2"),
+                relationType("ch.test.Subject", "ch.test.Object", "FEATURE_FLAG_3"),
+                relationType("ch.test.Object", "ch.test.Subject", "FEATURE_FLAG_3"));
+    }
 
     @Test
     @WithAuthentication("viewAndCreateRoleToken")
@@ -61,6 +74,16 @@ class ProcessInstanceWithRelationFeatureFlagIT extends ProcessInstanceMockS3ITBa
                 });
 
         return relationListenerStub.getRelations(originProcessId);
+    }
+
+    private static RelationType relationType(String subjectType, String objectType, String featureFlag) {
+        return RelationType.builder()
+                .systemId("ch.test.System")
+                .predicateType("ch.test.predicate.Knows")
+                .subjectType(subjectType)
+                .objectType(objectType)
+                .featureFlag(featureFlag)
+                .build();
     }
 
     private void sendTest1Event(String s) {

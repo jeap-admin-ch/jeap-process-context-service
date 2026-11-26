@@ -168,7 +168,8 @@ or `processInstantiationCondition` on the corresponding message declaration in t
 
 - **Custom conditions, payload and reference extractors** — see [Process Templates](process-templates.md).
 - **Relation listener** — implement `RelationListener` as a Spring bean to be notified about newly
-  discovered relations between business objects, see [Relation patterns](process-templates.md#relation-patterns).
+  discovered relations between business objects, and optionally to validate the declared relation types at
+  startup, see [Relation patterns](process-templates.md#relation-patterns).
 - **Message filters** — ignore irrelevant messages of a given type, see
   [Message filters](configuration.md#message-filters).
 - **Encrypted Kafka records** — see [Configuration](configuration.md#encrypted-kafka-records) for

@@ -529,8 +529,32 @@ public interface RelationListener {
      * Invoked when new relations have been added to a process
      */
     void relationsAdded(Collection<Relation> relations);
+
+    /**
+     * Invoked once at startup with the relation types declared in the process templates
+     */
+    default void relationTypesDeclared(Set<RelationType> relationTypes) {
+    }
 }
 ```
+
+`relationTypesDeclared` lets a listener validate the relations an instance will create before it processes any
+message, for example against an external registry:
+
+- **When:** once at startup, after the process templates have been loaded and before the Kafka message consumers
+  are started (they start on Spring Boot's `ApplicationStartedEvent`). This also holds with
+  `spring.main.lazy-initialization=true`.
+- **What:** the distinct relation types declared by the relation patterns of all templates. A `RelationType`
+  consists of `systemId` (the `relationSystemId` of the declaring template, which every created `Relation` carries
+  as `systemId`), `predicateType`, `subjectType`, `objectType` and the optional `featureFlag` name. All attributes
+  are part of a relation type: the same subject, predicate and object combination yields one relation type per
+  system ID and per feature flag (or absence of a feature flag) it is declared with.
+- **Feature flags:** relation types are reported regardless of the state of their feature flag, so a listener can
+  also verify relations which are only activated later.
+- **Failure:** if the method throws an exception, the startup of the instance is aborted.
+
+The method has a no-op default implementation. `LoggingRelationListener`, the default listener of an instance
+without own `RelationListener`, logs the declared relation types.
 
 ### Relation patterns with multiple process data keys
 
@@ -841,7 +865,7 @@ own class:
 | `AllTasksInFinalStateProcessCompletionCondition`     | Completes the process when all its tasks have reached a final state.                           |
 | `EmptySetPayloadExtractor` / `EmptySetReferenceExtractor` | Extract nothing; useful as an explicit no-op.                                             |
 | `EmptySetMessageExtractor`                            | Implements `MessageExtractor` for whole messages and returns an empty set of `MessageData`.   |
-| `LoggingRelationListener`                            | Logs newly discovered relations — useful for development and for verifying relation patterns.  |
+| `LoggingRelationListener`                            | Logs newly discovered relations and, at startup, the declared relation types — useful for development and for verifying relation patterns. |
 
 ### Testing custom conditions
 

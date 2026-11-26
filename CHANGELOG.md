@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [28.28.0] - 2026-11-26
+
+### Added
+- Plugin API: new startup callback `RelationListener.relationTypesDeclared(Set<RelationType>)`, invoked once before any
+  message is consumed with the relation types declared by the relation patterns of all process templates (system ID,
+  predicate, subject and object type, feature flag), regardless of the feature flag state. A listener can use it to
+  validate the relation types; an exception aborts the startup.
+- The method has a no-op default implementation, existing listeners are unaffected. `LoggingRelationListener` logs
+  the declared relation types.
+
 ## [28.27.0] - 2026-11-25
 
 ### Dependencies
